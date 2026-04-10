@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-04-10T06:51:57Z",
-  "run_id": "24230482290",
+  "run_date": "2026-04-10T12:31:46Z",
+  "run_id": "24242983896",
   "fork_prs": 0,
-  "agent_prs_found": 3,
-  "agent_prs_excluded": 3,
-  "notes": "3 open Copilot-authored PRs found, all same-repo branches (not forks). Excluded per fork-only triage policy.",
+  "agent_prs_found": 7,
+  "agent_prs_excluded": 7,
+  "notes": "7 open agent-authored PRs found (6 by Copilot, 1 by github-actions[bot]), all same-repo branches (not forks). Excluded per fork-only triage policy.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -18,39 +18,81 @@
   },
   "prs_examined": [
     {
-      "number": 25590,
-      "title": "fix: restore mcp/fetch container for Codex web-fetch tool",
+      "number": 25638,
+      "title": "[WIP] Refactor semantic function clustering analysis for workflow and cli packages",
+      "author": "Copilot",
       "draft": true,
-      "created_at": "2026-04-10T00:00:00Z",
+      "created_at": "2026-04-10T12:31:47Z",
       "labels": [],
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork"
     },
     {
-      "number": 25589,
-      "title": "fix: set PROMPT_TEXT inside AWF container for agent file imports",
-      "draft": true,
-      "created_at": "2026-04-10T00:00:00Z",
-      "labels": [],
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 25581,
-      "title": "fix: handle race condition when PR merged before agent job checks out branch",
+      "number": 25637,
+      "title": "Add --no-ask-user flag to copilot agentic engine for fully autonomous mode",
+      "author": "Copilot",
       "draft": false,
-      "created_at": "2026-04-10T00:00:00Z",
+      "created_at": "2026-04-10T12:27:49Z",
       "labels": [],
-      "reviews": "approved by bot",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork"
+    },
+    {
+      "number": 25636,
+      "title": "[WIP] Fix agent imports path for workflow files",
+      "author": "Copilot",
+      "draft": true,
+      "created_at": "2026-04-10T12:26:29Z",
+      "labels": [],
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork"
+    },
+    {
+      "number": 25630,
+      "title": "[dead-code] chore: remove dead functions — 5 functions removed",
+      "author": "github-actions[bot]",
+      "draft": false,
+      "created_at": "2026-04-10T12:11:06Z",
+      "labels": ["chore", "dead-code"],
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork"
+    },
+    {
+      "number": 25628,
+      "title": "refactor: centralize close-flow logic into shared `createCloseEntityHandler`",
+      "author": "Copilot",
+      "draft": false,
+      "created_at": "2026-04-10T12:03:20Z",
+      "labels": [],
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork"
+    },
+    {
+      "number": 25619,
+      "title": "feat: container image digest pinning in actions-lock.json with upgrade command",
+      "author": "Copilot",
+      "draft": true,
+      "created_at": "2026-04-10T11:36:44Z",
+      "labels": [],
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork"
+    },
+    {
+      "number": 25618,
+      "title": "security: fix agent-stdio.log world-readable exposure and MCP gateway token hardening",
+      "author": "Copilot",
+      "draft": false,
+      "created_at": "2026-04-10T11:33:27Z",
+      "labels": [],
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork"
     }
   ],
   "previous_run": {
-    "run_id": "24220921278",
-    "run_date": "2026-04-10T00:57:54Z",
+    "run_id": "24230482290",
+    "run_date": "2026-04-10T06:51:57Z",
     "fork_prs": 0,
-    "agent_prs_found": 2,
-    "agent_prs_excluded": 2
+    "agent_prs_found": 3,
+    "agent_prs_excluded": 3
   }
 }
