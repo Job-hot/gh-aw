@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-04-10T12:31:46Z",
-  "run_id": "24242983896",
+  "run_date": "2026-04-10T18:30:42Z",
+  "run_id": "24257964834",
   "fork_prs": 0,
-  "agent_prs_found": 7,
-  "agent_prs_excluded": 7,
-  "notes": "7 open agent-authored PRs found (6 by Copilot, 1 by github-actions[bot]), all same-repo branches (not forks). Excluded per fork-only triage policy.",
+  "agent_prs_found": 6,
+  "agent_prs_excluded": 6,
+  "notes": "6 open agent-authored PRs found (all by Copilot), all same-repo branches (not forks). Excluded per fork-only triage policy.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -18,81 +18,71 @@
   },
   "prs_examined": [
     {
-      "number": 25638,
-      "title": "[WIP] Refactor semantic function clustering analysis for workflow and cli packages",
+      "number": 25688,
+      "title": "feat: container image digest pinning in actions-lock.json with update/upgrade integration",
       "author": "Copilot",
       "draft": true,
-      "created_at": "2026-04-10T12:31:47Z",
+      "created_at": "2026-04-10T18:20:41Z",
+      "labels": [],
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork"
+    },
+    {
+      "number": 25686,
+      "title": "feat: add --no-ask-user flag to copilot agentic engine for fully autonomous runs",
+      "author": "Copilot",
+      "draft": true,
+      "created_at": "2026-04-10T18:16:27Z",
+      "labels": [],
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork"
+    },
+    {
+      "number": 25685,
+      "title": "[WIP] Optimize Token Usage for Test Quality Sentinel",
+      "author": "Copilot",
+      "draft": true,
+      "created_at": "2026-04-10T18:16:24Z",
+      "labels": [],
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork"
+    },
+    {
+      "number": 25684,
+      "title": "Doc: document firewall-audit-logs artifact name for downstream consumers",
+      "author": "Copilot",
+      "draft": false,
+      "created_at": "2026-04-10T17:56:28Z",
       "labels": [],
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork"
     },
     {
       "number": 25637,
-      "title": "Add --no-ask-user flag to copilot agentic engine for fully autonomous mode",
+      "title": "Add --no-ask-user flag to copilot agentic engine for fully autonomous runs",
       "author": "Copilot",
       "draft": false,
       "created_at": "2026-04-10T12:27:49Z",
-      "labels": [],
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 25636,
-      "title": "[WIP] Fix agent imports path for workflow files",
-      "author": "Copilot",
-      "draft": true,
-      "created_at": "2026-04-10T12:26:29Z",
-      "labels": [],
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 25630,
-      "title": "[dead-code] chore: remove dead functions — 5 functions removed",
-      "author": "github-actions[bot]",
-      "draft": false,
-      "created_at": "2026-04-10T12:11:06Z",
-      "labels": ["chore", "dead-code"],
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 25628,
-      "title": "refactor: centralize close-flow logic into shared `createCloseEntityHandler`",
-      "author": "Copilot",
-      "draft": false,
-      "created_at": "2026-04-10T12:03:20Z",
-      "labels": [],
+      "labels": ["smoke-claude", "smoke-copilot", "ai-inspected", "lgtm"],
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork"
     },
     {
       "number": 25619,
-      "title": "feat: container image digest pinning in actions-lock.json with upgrade command",
-      "author": "Copilot",
-      "draft": true,
-      "created_at": "2026-04-10T11:36:44Z",
-      "labels": [],
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 25618,
-      "title": "security: fix agent-stdio.log world-readable exposure and MCP gateway token hardening",
+      "title": "feat: container image digest pinning in actions-lock.json with update/upgrade integration",
       "author": "Copilot",
       "draft": false,
-      "created_at": "2026-04-10T11:33:27Z",
+      "created_at": "2026-04-10T11:36:44Z",
       "labels": [],
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork"
     }
   ],
   "previous_run": {
-    "run_id": "24230482290",
-    "run_date": "2026-04-10T06:51:57Z",
+    "run_id": "24242983896",
+    "run_date": "2026-04-10T12:31:46Z",
     "fork_prs": 0,
-    "agent_prs_found": 3,
-    "agent_prs_excluded": 3
+    "agent_prs_found": 7,
+    "agent_prs_excluded": 7
   }
 }
