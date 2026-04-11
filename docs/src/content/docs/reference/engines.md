@@ -32,6 +32,7 @@ Not all features are available across all engines. The table below summarizes pe
 | `tools.web-search` | via MCP | via MCP | ✅ (opt-in) | via MCP |
 | `engine.agent` (custom agent file) | ✅ | ❌ | ❌ | ❌ |
 | `engine.api-target` (custom endpoint) | ✅ | ✅ | ✅ | ✅ |
+| `engine.bare` (disable context loading) | ✅ | ✅ | ❌ | ❌ |
 | Tools allowlist | ✅ | ✅ | ✅ | ✅ |
 
 **Notes:**
@@ -39,6 +40,7 @@ Not all features are available across all engines. The table below summarizes pe
 - `max-continuations` enables autopilot mode with multiple consecutive runs (Copilot only).
 - `web-search` for Codex is disabled by default; add `tools: web-search:` to enable it. Other engines use a third-party MCP server — see [Using Web Search](/gh-aw/guides/web-search/).
 - `engine.agent` references a `.github/agents/` file for custom Copilot agent behavior. See [Copilot Custom Configuration](#copilot-custom-configuration).
+- `engine.bare` disables automatic context loading; see [Bare Mode](#bare-mode-bare) for details.
 
 ## Extended Coding Agent Configuration
 
@@ -53,6 +55,7 @@ engine:
   args: ["--add-dir", "/workspace"]     # custom CLI arguments
   agent: agent-id                       # custom agent file identifier
   api-target: api.acme.ghe.com          # custom API endpoint hostname (GHEC/GHES)
+  bare: false                           # disable automatic context loading (Copilot and Claude only)
 ```
 
 ### Pinning a Specific Engine Version
@@ -249,6 +252,22 @@ engine:
 `multipliers` is a map of model names to numeric multipliers relative to `claude-sonnet-4.5` (= 1.0). Keys are case-insensitive and support prefix matching. `token-class-weights` overrides the per-class weights applied before the model multiplier; the defaults are `input: 1.0`, `cached-input: 0.1`, `output: 4.0`, `reasoning: 4.0`, `cache-write: 1.0`.
 
 Custom weights are embedded in the compiled workflow YAML and read by `gh aw logs` and `gh aw audit` when analyzing runs.
+
+### Bare Mode (`bare`)
+
+Set `bare: true` to disable automatic loading of context and custom instructions for the engine. This is useful when you want full control over the agent's context without any automatic additions.
+
+| Engine | Effect of `bare: true` |
+|--------|------------------------|
+| Copilot | Passes `--no-custom-instructions` — suppresses `.github/AGENTS.md` and user-level config loading |
+| Claude | Passes `--bare` — disables automatic context injection |
+| Codex, Gemini | Not supported — emits a compiler warning; setting is ignored |
+
+```yaml wrap
+engine:
+  id: copilot
+  bare: true
+```
 
 ## Timeout Configuration
 

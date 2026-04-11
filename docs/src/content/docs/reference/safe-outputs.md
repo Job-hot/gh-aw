@@ -59,6 +59,7 @@ The agent requests issue creation; a separate job with `issues: write` creates i
 - [**Create Project Status Update**](#project-status-updates-create-project-status-update) (`create-project-status-update`) - Create project status updates
 - [**Update Release**](#release-updates-update-release) (`update-release`) - Update GitHub release descriptions (max: 1)
 - [**Upload Assets**](#asset-uploads-upload-asset) (`upload-asset`) - Upload files to orphaned git branch (max: 10, same-repo only)
+- [**Upload Artifact**](#artifact-uploads-upload-artifact) (`upload-artifact`) - Upload files as run-scoped GitHub Actions artifacts (default max: 1)
 
 ### Security & Agent Tasks
 
@@ -840,6 +841,27 @@ git checkout --orphan my-custom-branch && git rm -rf . && git commit --allow-emp
 **Security**: File path validation (workspace/`/tmp` only), extension allowlist, size limits, SHA-256 verification, orphaned branch isolation, minimal permissions.
 
 **Outputs**: `published_count`, `branch_name`. **Limits**: Same-repo only, max 50MB/file, 100 assets/run.
+
+### Artifact Uploads (`upload-artifact:`)
+
+Uploads files as run-scoped GitHub Actions artifacts. The agent calls the `upload_artifact` tool with a file path or glob filters; the artifact is available for download from the workflow run page or via `gh run download`.
+
+Files can be specified by their original path — the handler automatically copies them to the staging directory before upload. Absolute paths and workspace-relative paths are both accepted.
+
+```yaml wrap
+safe-outputs:
+  upload-artifact:
+    max-uploads: 3                    # max upload_artifact calls (default: 1)
+    retention-days: "30"              # artifact retention in days (agent cannot override)
+    max-size-bytes: 52428800          # max total bytes per upload (default: 100MB)
+    allowed-paths:                    # restrict which paths the agent may upload
+      - "reports/**"
+      - "*.json"
+```
+
+**Security**: Symlinks are rejected. Path traversal validation is enforced after auto-copy. Size and path restrictions are fixed by workflow configuration and cannot be overridden by the agent.
+
+**Outputs**: `upload_artifact_count`, `upload_artifact_slot_N_tmp_id` (temporary IDs for downstream consumers).
 
 ### No-Op Logging (`noop:`)
 

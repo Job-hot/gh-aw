@@ -1873,6 +1873,13 @@ engine:
   args: []
     # Array of strings
 
+  # Disable automatic context loading for the engine. When true, suppresses
+  # automatic loading of custom instructions and context files. Copilot passes
+  # --no-custom-instructions; Claude passes --bare. Not supported by Codex or
+  # Gemini (emits a compiler warning if set).
+  # (optional)
+  bare: false
+
   # Custom model token weights for effective token computation. Overrides or
   # extends the built-in model multipliers from model_multipliers.json. Useful
   # for custom models or adjusted cost ratios.
@@ -5377,6 +5384,42 @@ safe-outputs:
 
   # Option 2: Enable asset publishing with default configuration
   upload-asset: null
+
+  # Enable AI agents to upload files as run-scoped GitHub Actions artifacts.
+  # Files can be referenced by their original path or pre-staged in the upload
+  # directory; the handler auto-copies files as needed.
+  # (optional)
+  # This field supports multiple formats (oneOf):
+
+  # Option 1: Configuration for uploading files as GitHub Actions artifacts
+  upload-artifact:
+    # Maximum number of upload_artifact tool calls allowed per run (default: 1)
+    # (optional)
+    max-uploads: 1
+
+    # Artifact retention period in days (1-90). Fixed by workflow config; agent
+    # cannot override. Supports GitHub Actions expressions.
+    # (optional)
+    retention-days: "30"
+
+    # Maximum total bytes per upload (default: 104857600 = 100MB)
+    # (optional)
+    max-size-bytes: 104857600
+
+    # Glob patterns restricting which paths the agent may upload. If empty, any
+    # path accessible to the agent is allowed (subject to other security checks).
+    # (optional)
+    allowed-paths: []
+      # Array of glob strings
+
+    # Default include/exclude filters applied when the agent omits filters
+    # (optional)
+    filters:
+      include: []
+      exclude: []
+
+  # Option 2: Enable artifact uploads with default configuration
+  upload-artifact: null
 
   # Enable AI agents to edit and update GitHub release content, including release
   # notes, assets, and metadata.
