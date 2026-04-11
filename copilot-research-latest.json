@@ -1,39 +1,40 @@
 {
-  "timestamp": "2026-04-10T21:04:42Z",
-  "workflow_run_id": "24264054881",
-  "previous_run_id": "24051154005",
-  "previous_timestamp": "2026-04-06T21:04:57Z",
+  "timestamp": "2026-04-11T21:02:50Z",
+  "workflow_run_id": "24291521035",
+  "previous_run_id": "24264054881",
+  "previous_timestamp": "2026-04-10T21:04:42Z",
   "total_workflows": 187,
-  "copilot_workflows": 93,
+  "copilot_workflows": 90,
   "claude_workflows": 45,
   "codex_workflows": 9,
-  "copilot_adoption_rate": "50%",
+  "copilot_adoption_rate": "48%",
   "features_available": [
     "engine.version", "engine.model", "engine.agent", "engine.args",
     "engine.api-target", "engine.command", "engine.env", "max-continuations",
     "mcp-scripts", "web-fetch", "playwright", "cache-memory",
     "sandbox-awf", "sandbox-srt", "network", "features.copilot-requests",
     "toolsets", "strict", "repo-memory", "bare-mode", "block-domains", "rate-limit",
-    "min-integrity"
+    "min-integrity", "tracker-id"
   ],
   "copilot_feature_adoption": {
-    "engine_version_pinned": {"count": 10, "out_of": 93, "pct": "11%", "prev_pct": "3%", "trend": "+"},
-    "engine_model_override": {"count": 7, "out_of": 93, "pct": "8%", "prev_pct": "2%", "trend": "+"},
-    "engine_agent": {"count": 3, "out_of": 93, "pct": "3%", "prev_pct": "3%", "trend": "="},
-    "engine_args": {"count": 1, "out_of": 93, "pct": "1%", "prev_pct": "1%", "trend": "="},
-    "engine_api_target": {"count": 0, "out_of": 93, "pct": "0%", "prev_pct": "0%", "trend": "="},
-    "engine_env": {"count": 10, "out_of": 93, "pct": "11%"},
-    "max_continuations": {"count": 3, "out_of": 93, "pct": "3%", "prev_pct": "1%", "trend": "+"},
-    "mcp_scripts": {"count": 17, "out_of": 93, "pct": "18%", "prev_pct": "5%", "trend": "++"},
-    "web_fetch": {"count": 17, "out_of": 93, "pct": "18%", "prev_pct": "9%", "trend": "+"},
-    "playwright": {"count": 12, "out_of": 93, "pct": "13%", "prev_pct": "4%", "trend": "++"},
-    "repo_memory": {"count": 19, "out_of": 93, "pct": "20%", "prev_pct": "16%", "trend": "+"},
-    "sandbox_awf": {"count": 15, "out_of": 93, "pct": "16%", "prev_pct": "12%", "trend": "+"},
-    "bare_mode": {"count": 2, "out_of": 93, "pct": "2%"},
-    "block_domains": {"count": 1, "out_of": 93, "pct": "1%"},
-    "rate_limit": {"count": 3, "out_of": 93, "pct": "3%"},
-    "min_integrity": {"count": 27, "out_of": 93, "pct": "29%"},
-    "strict_true": {"count": 93, "out_of": 187, "pct": "50%"}
+    "engine_version_pinned": {"count": 20, "out_of": 90, "pct": "22%", "prev_pct": "11%", "trend": "++"},
+    "engine_model_override": {"count": 7, "out_of": 90, "pct": "8%", "prev_pct": "8%", "trend": "="},
+    "engine_agent": {"count": 5, "out_of": 90, "pct": "6%", "prev_pct": "3%", "trend": "+"},
+    "engine_args": {"count": 9, "out_of": 90, "pct": "10%", "prev_pct": "1%", "trend": "++"},
+    "engine_api_target": {"count": 0, "out_of": 90, "pct": "0%", "prev_pct": "0%", "trend": "="},
+    "engine_env": {"count": 10, "out_of": 90, "pct": "11%"},
+    "max_continuations": {"count": 2, "out_of": 90, "pct": "2%", "prev_pct": "3%", "trend": "-"},
+    "mcp_scripts_production": {"count": 0, "out_of": 90, "pct": "0%", "note": "feature exists but no production workflows use it"},
+    "web_fetch": {"count": 17, "out_of": 90, "pct": "19%", "prev_pct": "18%", "trend": "="},
+    "playwright": {"count": 12, "out_of": 90, "pct": "13%", "prev_pct": "13%", "trend": "="},
+    "cache_memory": {"count": 53, "out_of": 187, "pct": "28%"},
+    "sandbox_awf_srt": {"count": 16, "out_of": 90, "pct": "18%", "prev_pct": "16%", "trend": "+"},
+    "bare_mode": {"count": 2, "out_of": 90, "pct": "2%", "trend": "="},
+    "block_domains": {"count": 0, "out_of": 90, "pct": "0%", "prev_pct": "1%", "trend": "-"},
+    "network_restrictions": {"count": 43, "out_of": 90, "pct": "48%"},
+    "no_network_restrictions": {"count": 47, "out_of": 90, "pct": "52%"},
+    "tracker_id": {"count": 62, "out_of": 187, "pct": "33%"},
+    "strict_true": {"count": 108, "out_of": 187, "pct": "58%"}
   },
   "unused_custom_agents": [
     "agentic-workflows", "adr-writer", "contribution-checker",
@@ -41,14 +42,21 @@
     "grumpy-reviewer", "interactive-agent-designer", "w3c-specification-writer"
   ],
   "top_opportunities": [
-    "AWF firewall only 15/93 (16%) - many write-capable workflows unprotected",
-    "8 of 10 custom agent files unused via engine.agent - specialized behaviors available",
-    "bare: true only 2/93 (2%) - underused for clean-slate prompting",
-    "max-continuations only 3/93 (3%) - Copilot-exclusive autopilot barely used",
-    "block-domains only 1/93 (1%) - security hardening available but unused",
-    "rate-limit only 3/93 (3%) - high-freq scheduled workflows unprotected",
-    "toolsets: [all] in 3 workflows - over-permissive GitHub API access",
-    "engine.args only 1/93 (1%) - custom CLI flags mostly unused",
-    "engine.api-target never used - GHE compatibility feature unused"
-  ]
+    "52% of copilot workflows (47/90) have no network restrictions - security gap",
+    "block-domains dropped to 0 (was 1) - security hardening feature unused",
+    "8/10 custom agent files unused via engine.agent - specialized behaviors available",
+    "max-continuations only 2/90 (2%) - Copilot-exclusive autopilot barely used",
+    "mcp-scripts: 0 production workflows - powerful feature completely unused",
+    "17 copilot workflows use only default toolset - over-broad GitHub API permissions",
+    "engine.api-target never used - GHE/GHEC feature available but not leveraged",
+    "bare: true only 2/90 (2%) - clean-slate prompting underused for focused tasks"
+  ],
+  "trends_vs_previous": {
+    "copilot_workflows": "93 -> 90 (slight decrease, -3)",
+    "engine_version_pinning": "11% -> 22% (IMPROVED significantly)",
+    "engine_args": "1% -> 10% (IMPROVED significantly)",
+    "engine_agent": "3% -> 6% (slight improvement)",
+    "block_domains": "1% -> 0% (REGRESSION - dropped to 0)",
+    "max_continuations": "3% -> 2% (slight regression)"
+  }
 }
