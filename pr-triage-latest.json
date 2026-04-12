@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-04-11T18:22:25Z",
-  "run_id": "24288675202",
+  "run_date": "2026-04-12T01:02:56Z",
+  "run_id": "24295465215",
   "fork_prs": 0,
-  "agent_prs_found": 2,
-  "agent_prs_excluded": 2,
-  "notes": "2 open Copilot-authored PRs found (#25830, #25827), both same-repo branches (not forks). Excluded per fork-only triage policy.",
+  "agent_prs_found": 6,
+  "agent_prs_excluded": 6,
+  "notes": "6 open Copilot-authored PRs found (#25873, #25872, #25871, #25870, #25868, #25830), all same-repo branches (not forks). Excluded per fork-only triage policy.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -18,6 +18,57 @@
   },
   "prs_examined": [
     {
+      "number": 25873,
+      "title": "[WIP] Fix artipacked credential persistence in workflows",
+      "head_repo": "github/gh-aw",
+      "base_repo": "github/gh-aw",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "draft": true,
+      "created_at": "2026-04-12T00:57:01Z"
+    },
+    {
+      "number": 25872,
+      "title": "[WIP] Fix shellcheck SC2086 unquoted variables in workflows",
+      "head_repo": "github/gh-aw",
+      "base_repo": "github/gh-aw",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "draft": true,
+      "created_at": "2026-04-12T00:56:41Z"
+    },
+    {
+      "number": 25871,
+      "title": "[WIP] Update strict mode to allow secrets in step-level with for action steps",
+      "head_repo": "github/gh-aw",
+      "base_repo": "github/gh-aw",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "draft": true,
+      "created_at": "2026-04-12T00:56:18Z"
+    },
+    {
+      "number": 25870,
+      "title": "[WIP] Remove pull request review for design decision gate",
+      "head_repo": "github/gh-aw",
+      "base_repo": "github/gh-aw",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "draft": true,
+      "created_at": "2026-04-12T00:42:22Z"
+    },
+    {
+      "number": 25868,
+      "title": "Merge firewall-audit-logs into unified agent artifact",
+      "head_repo": "github/gh-aw",
+      "base_repo": "github/gh-aw",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "draft": false,
+      "labels": ["ai-inspected"],
+      "created_at": "2026-04-12T00:18:25Z"
+    },
+    {
       "number": 25830,
       "title": "feat: add OpenCode engine integration (re-apply PR #18403)",
       "head_repo": "github/gh-aw",
@@ -25,24 +76,15 @@
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork",
       "draft": false,
+      "labels": ["lgtm"],
       "created_at": "2026-04-11T16:04:49Z"
-    },
-    {
-      "number": 25827,
-      "title": "Add AWF Sandbox Specification v1.0.0",
-      "head_repo": "github/gh-aw",
-      "base_repo": "github/gh-aw",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork",
-      "draft": true,
-      "created_at": "2026-04-11T15:26:07Z"
     }
   ],
   "previous_run": {
-    "run_id": "24282403499",
-    "run_date": "2026-04-11T12:25:04Z",
+    "run_id": "24288675202",
+    "run_date": "2026-04-11T18:22:25Z",
     "fork_prs": 0,
-    "agent_prs_found": 8,
-    "agent_prs_excluded": 8
+    "agent_prs_found": 2,
+    "agent_prs_excluded": 2
   }
 }
