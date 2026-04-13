@@ -1,56 +1,61 @@
-# Workflow Health - 2026-04-11T12:00Z
+# Workflow Health - 2026-04-13T12:12Z
 
-Score: 73/100 (↓2 from 75 yesterday). 187 workflows. Run: §24281978807
+Score: 74/100 (→ stable, ↑1 from 73 Apr 11). 187 workflows. Run: §24342586738
 
 ## KEY FINDINGS
 
-### NEW: Smoke Claude Engine Crash (#25727)
-- Claude engine terminated exitCode 1, no output (Apr 11 00:44 UTC)
-- Single failure - monitor for recurrence
-- Previous state: ✅ healthy
+### Recoveries Since Last Run (Apr 11-13)
+- ✅ Smoke Copilot: RECOVERED — passing scheduled runs
+- ✅ Contribution Check: RECOVERED — now passing (was report_incomplete)
+- ✅ 20 PRs merged by Copilot bot (OTel, SEC-004, cache cleanup, agent assignments)
 
-### NEW: Daily Rendering Scripts Verifier - Placeholder False Positive
-- `validate_prompt_placeholders.sh` incorrectly flags literal `__GH_AW_TRUE__`/`__GH_AW_FALSE__` strings
-- These are test inputs embedded in the workflow description for render_template.cjs tests
-- New issue created for tracking (#aw_render → actual number from safe-outputs)
-- Run: §24281115984
+### NEW: Daily Semgrep Scan Failure (Apr 13)
+- 0/1 success on Apr 13 — new failure
+- Issue #aw_semgrep1 created this run (actual number from safeoutputs)
+- P2 priority — security scan degraded
 
-## P2 Issues (Active)
-- Smoke Claude: NEW failure (#25727, Apr 11, engine crash exitCode 1)
-- Rendering Scripts Verifier: NEW bug (prompt placeholder false positive)
-- Design Decision Gate: ongoing (#25548, --print empty prompt bug)
-- Documentation Unbloat: ~$55/week Claude, 0 safe outputs
-- Daily Issues Report: recurring (#25265, #25503, Copilot agent crash)
-- Smoke Gemini: 100% failure (Gemini CLI 0.37.0 compatibility)
-
-## P3 Issues (Ongoing)
+### Ongoing P2 Issues
+- Smoke Claude: fails on SCHEDULE, passes on PR runs — environment-specific (#25727)
+- Smoke Gemini: 100% failure (#25216, Gemini CLI 0.37.0 compat)
+- Smoke Cross-Repo PR Create: persistent fail (#25221)
+- Smoke Cross-Repo PR Update: persistent fail (#25217)
+- Daily Issues Report: recurring Copilot crash (#25265, #25503)
 - Daily Firewall Logs: safe_outputs process failure (#25456)
-- Contribution Check: report_incomplete every run
-- GitHub Remote MCP Auth Test: 100% failure
+
+### P3 Issues (Ongoing)
+- GitHub Remote MCP Auth Test: 100% failure (#24829 closed not_planned)
+- Documentation Unbloat: 50% success, ~$55/week Claude
+
+## Compilation
+- 187/187 lock files present ✅
+- ~10 files with 1ms timestamp diff (git checkout ordering artifact, not real staleness)
+- All workflows properly compiled
 
 ## Copilot Status
-- v1.0.20 PINNED (stable)
-- v1.0.24 bump PR #25752 CLOSED as draft (Apr 11 09:33)
-- --no-ask-user PR #25772 OPEN
-
-## Open Failure Issues (~18)
-Key: #25727 (Smoke Claude, TODAY), #25265 (Daily Issues Report), #25456 (Daily Firewall)
-#25503 (Deep-Report: Issues Report investigation), #25548 (Design Decision Gate)
+- v1.0.21 ACTIVE (current in production)
+- v1.0.24 upgrade tracked in #25978 (not yet PRed)
 
 ## Score Breakdown
 - Compilation: 187/187 ✅: +35
-- Copilot v1.0.20 stable: +20
-- Smoke Claude crash (new): -5
-- Rendering Scripts false positive (new): -3
-- DDG + Unbloat + Gemini: -7
-- ~18 open failure issues: -8
-- v1.0.24 upgrade blocked: -5
-- Net: 73/100
+- Smoke Copilot recovered: +2
+- Contribution Check recovered: +1
+- Smoke Claude schedule fail: -3
+- Daily Semgrep new fail: -1
+- Smoke Gemini + Cross-Repo persist: -5
+- Daily Issues + Firewall issues: -3
+- ~16 open failure issues: -8
+- v1.0.21 stable: +18
+- Net: 74/100
 
 ## Score Trend
-68 → 71 → 73 → 71 → 70 → 75 → 73 (Apr 5–11)
+68 → 71 → 73 → 71 → 70 → 75 → 73 → 74 → 74
+Apr5  Apr6  Apr7  Apr8  Apr9  Apr10 Apr11 Apr12 Apr13
 
 ## Dashboard Issue
-Created new issue #aw_dash411 (Apr 11)
+Created new issue #aw_dash413 (Apr 13, this run)
 
-Last updated: 2026-04-11T12:00Z
+## Note: API Rate Limited
+GitHub API rate limited during this run (reset 41min after start).
+Fresh run data unavailable — analysis based on shared orchestrator memory (04:47Z today).
+
+Last updated: 2026-04-13T12:12Z
