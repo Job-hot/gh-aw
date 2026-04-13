@@ -56,5 +56,13 @@
     "recommendations_count": 4,
     "estimated_savings_per_run": 2000000,
     "notes": "45% failure rate across 11 runs. Runaway 103-turn failed run consumed 9.1M tokens (75% of daily total). Primary lever: reduce timeout-minutes 15\u219210 + remove Serena import (unused Go LSP for .md optimization). No max-turns available for Copilot engine."
+  },
+  {
+    "date": "2026-04-13",
+    "workflow_name": "Contribution Check",
+    "total_tokens_analyzed": 5627252,
+    "runs_audited": 2,
+    "recommendations_count": 4,
+    "estimated_savings_per_run": 1300000
   }
 ]
