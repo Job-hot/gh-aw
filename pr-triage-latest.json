@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-04-13T18:40:56Z",
-  "run_id": "24360452914",
+  "run_date": "2026-04-14T01:02:15Z",
+  "run_id": "24375139146",
   "fork_prs": 0,
   "agent_prs_found": 7,
   "agent_prs_excluded": 7,
-  "notes": "7 open agent-authored same-repo PRs found (#26076, #26075, #26074, #26060, #26037, #25928, #25830). All are same-repo branches (not forks). No fork PRs to triage per policy.",
+  "notes": "7 open agent-authored same-repo PRs found (#26124, #26123, #26122, #26121, #26113, #25928, #25830). All are same-repo branches (not forks). No fork PRs to triage per policy.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -17,82 +17,19 @@
     "by_action": {}
   },
   "prs_examined": [
-    {
-      "number": 26076,
-      "title": "Update instructions to use upload-artifact with skip-archive instead of upload-asset",
-      "head_repo": "github/gh-aw",
-      "base_repo": "github/gh-aw",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork",
-      "author": "Copilot",
-      "created_at": "2026-04-13T17:54:54Z"
-    },
-    {
-      "number": 26075,
-      "title": "Migrate chart image uploads to upload-artifact with skip-archive in shell scripts",
-      "head_repo": "github/gh-aw",
-      "base_repo": "github/gh-aw",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork",
-      "author": "Copilot",
-      "created_at": "2026-04-13T17:48:37Z"
-    },
-    {
-      "number": 26074,
-      "title": "Skip Docker image validation when Docker is unavailable",
-      "head_repo": "github/gh-aw",
-      "base_repo": "github/gh-aw",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork",
-      "author": "Copilot",
-      "created_at": "2026-04-13T17:48:04Z"
-    },
-    {
-      "number": 26060,
-      "title": "Add --gemini-api-target to AWF proxy for Gemini API routing",
-      "head_repo": "github/gh-aw",
-      "base_repo": "github/gh-aw",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork",
-      "author": "Copilot",
-      "created_at": "2026-04-13T15:42:30Z"
-    },
-    {
-      "number": 26037,
-      "title": "Fix `gh pr checkout` failing with GH_HOST mismatch in issue_comment workflows",
-      "head_repo": "github/gh-aw",
-      "base_repo": "github/gh-aw",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork",
-      "author": "Copilot",
-      "created_at": "2026-04-13T13:26:14Z"
-    },
-    {
-      "number": 25928,
-      "title": "feat: mount MCP servers as local CLIs after gateway starts",
-      "head_repo": "github/gh-aw",
-      "base_repo": "github/gh-aw",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork",
-      "author": "Copilot",
-      "created_at": "2026-04-12T18:48:24Z"
-    },
-    {
-      "number": 25830,
-      "title": "feat: add OpenCode engine integration (re-apply PR #18403)",
-      "head_repo": "github/gh-aw",
-      "base_repo": "github/gh-aw",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork",
-      "author": "Copilot",
-      "created_at": "2026-04-11T16:04:49Z"
-    }
+    {"number": 26124, "title": "[WIP] Optimize contribution check for token efficiency", "author": "Copilot", "head_repo": "github/gh-aw", "base_repo": "github/gh-aw", "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-14T00:52:14Z"},
+    {"number": 26123, "title": "docs: add working-directory navigation example to side-repo-ops pattern", "author": "Copilot", "head_repo": "github/gh-aw", "base_repo": "github/gh-aw", "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-14T00:47:43Z"},
+    {"number": 26122, "title": "[WIP] Fix max-turns flag dropped in engine configuration", "author": "Copilot", "head_repo": "github/gh-aw", "base_repo": "github/gh-aw", "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-14T00:45:12Z"},
+    {"number": 26121, "title": "feat(otel): add token breakdown attributes to conclusion spans", "author": "Copilot", "head_repo": "github/gh-aw", "base_repo": "github/gh-aw", "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-14T00:44:33Z"},
+    {"number": 26113, "title": "feat: support `env` field in shared imports", "author": "Copilot", "head_repo": "github/gh-aw", "base_repo": "github/gh-aw", "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-14T00:08:52Z"},
+    {"number": 25928, "title": "feat: mount MCP servers as local CLIs after gateway starts", "author": "Copilot", "head_repo": "github/gh-aw", "base_repo": "github/gh-aw", "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-12T18:48:24Z"},
+    {"number": 25830, "title": "feat: add OpenCode engine integration (re-apply PR #18403)", "author": "Copilot", "head_repo": "github/gh-aw", "base_repo": "github/gh-aw", "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-11T16:04:49Z"}
   ],
   "previous_run": {
-    "run_id": "24343771676",
-    "run_date": "2026-04-13T12:40:03Z",
+    "run_id": "24360452914",
+    "run_date": "2026-04-13T18:40:56Z",
     "fork_prs": 0,
     "agent_prs_found": 7,
-    "agent_prs_excluded": 6
+    "agent_prs_excluded": 7
   }
 }
