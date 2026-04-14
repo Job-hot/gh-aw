@@ -1,17 +1,10 @@
-# Agent Performance - 2026-04-13
-Run: §24326084430 | Q:73↑3 E:65↑5
+# Agent Performance - 2026-04-14
+Run: §24381155966 | Q:74↑1 E:66↑1
 
-Top: CLI Version Checker (Q:90 E:92), Copilot Coding Agent (Q:85 E:88, 20 PRs Apr 12-13), Issue Monster (Q:87 E:90 - 5/5), Agentic Maintenance (Q:83 E:82 - added cache cleanup), Smoke Copilot (Q:82 E:80 - RECOVERED to scheduled pass)
+Top: CLI Version Checker (Q:92 E:94 - #26158 detailed 4-tool upgrade), Semantic Function Refactoring (Q:88 E:84 - #26018 code analysis), Copilot Coding Agent (Q:85 E:88 - 20 PRs merged Apr 12-13), Issue Monster (Q:87 E:90), Agentic Maintenance (Q:83 E:82)
 
-Watch: Smoke Claude (Q:40 E:35 - fails on schedule, passes on PR runs - environment-specific), Smoke Gemini (Q:10 E:10 - 100% fail #25216), Smoke Cross-Repo PR Create/Update (#25221, #25217 still open), GitHub Remote MCP Auth Test (persistent fail), Documentation Unbloat (50% success - inconsistent), Daily Semgrep Scan (new failure today)
+Watch: Smoke Claude (Q:40 E:35 - schedule fails, PR runs pass - environment-specific), Smoke Gemini (Q:10 E:10 - 100% fail #25216 - Gemini 0.37.2 now available may help), Smoke Cross-Repo PR Create/Update (#25221, #25217 still open), Daily Semgrep (new fail Apr 13), Documentation Unbloat (50% success, ~$55/wk)
 
-Smoke Tests Apr 13: Copilot ✅ (sched) | Claude ❌ (sched) / ✅ (PR) | Codex ✅ | Multi PR ✅ | Gemini ❌ | Cross-Repo ❌/❌
+Notable Apr 13-14: CLI Version Checker upgraded 4 tools (Copilot 1.0.25 with new --remote flag, Claude Code 2.1.105, Codex 0.120.0, Gemini 0.37.2). Semantic Function Refactor found version state duplication issue. Weekly discussion created.
 
-Notable Apr 12-13: 20 PRs merged by Copilot bot (OTel spans, SEC-004 sanitization, cache cleanup, allow multiple agent assignments). CLI bump issue #25978 (Copilot 1.0.24, Claude Code 2.1.104, Codex 0.120.0, MCP v0.2.18). Contribution Check now passing (was report_incomplete).
-
-Note: Shared alerts reference "#25548 DDG (Design Decision Gate)" - but #25548 is actually "AWF Diagnostic Logs feat request". Shared alerts metadata may be stale/mismatched.
-
-Issues this cycle: ~15 stale smoke test failures from Apr 8-11 still open (#25371, #25372, #25374, #25395, #25415, #25727, etc.)
-PRs merged: 20 (Apr 12-13) | Engine split: copilot:~124wf, claude:~41wf, codex:~18wf
-
-Actions: Weekly discussion created. No new improvement issues (existing tracking in place).
+Open stale failure issues: ~15 from Apr 8-11 plus new Semgrep Apr 13.
