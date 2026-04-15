@@ -480,8 +480,8 @@ func findPreviousSuccessfulWorkflowRuns(ctx context.Context, current WorkflowRun
 		args = append(args, "--hostname", hostname)
 	}
 	args = append(args, endpoint, "--jq", jq)
-Context(ctx, 
-	output, err := workflow.RunGHCombined("Fetching previous successful workflow run...", args...)
+
+	output, err := workflow.RunGHCombinedContext(ctx, "Fetching previous successful workflow run...", args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch previous successful workflow run: %w", err)
 	}
