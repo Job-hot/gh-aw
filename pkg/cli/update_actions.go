@@ -181,7 +181,7 @@ func getLatestActionRelease(ctx context.Context, repo, currentVersion string, al
 		if gitutil.IsAuthError(outputStr) || gitutil.IsAuthError(err.Error()) {
 			updateLog.Printf("GitHub API authentication failed, attempting git ls-remote fallback for %s", repo)
 			// Try fallback using git ls-remote
-			latestRelease, latestSHA, gitErr := getLatestActionReleaseViaGit(ctx, repo, currentVersion, allowMajor, verbose)
+			latestRelease, latestSHA, gitErr := getLatestActionReleaseViaGitFn(ctx, repo, currentVersion, allowMajor, verbose)
 			if gitErr != nil {
 				return "", "", fmt.Errorf("failed to fetch releases via GitHub API and git: API error: %w, Git Error: %w", err, gitErr)
 			}
