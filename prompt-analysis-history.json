@@ -10,6 +10,17 @@
       "wip_rate": 8.5,
       "conv_commit_rate": 85,
       "no_prefix_rate": 76
+    },
+    {
+      "date": "2026-04-16",
+      "total": 1000,
+      "merged": 799,
+      "closed": 193,
+      "open": 8,
+      "rate": 80.5,
+      "wip_rate": 8.8,
+      "conv_commit_rate": 85,
+      "no_prefix_rate": 76
     }
   ]
 }
