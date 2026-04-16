@@ -77,9 +77,6 @@ workflow 'owner/repo/internal-tooling' is private and cannot be added to other r
 
 Use this field for internal tooling, sensitive automation, or workflows that depend on repository-specific context and are not intended for external reuse.
 
-> [!NOTE]
-> The `private:` field only blocks installation via `gh aw add`. It does not affect the visibility of the workflow file itself — that is controlled by your repository's access settings.
-
 ### Resources (`resources:`)
 
 Declares additional workflow or action files to fetch alongside this workflow when running `gh aw add`. Use this field when the workflow depends on companion workflows or custom actions stored in the same directory.
@@ -99,13 +96,11 @@ In addition to files explicitly listed in `resources:`, `gh aw add` automaticall
 
 ### Labels (`labels:`)
 
-Optional array of strings for categorizing and organizing workflows. Labels are displayed in `gh aw status` command output and can be filtered using the `--label` flag.
+Optional array of strings for categorizing and organizing workflows. Labels appear in `gh aw status` output and can be filtered with `--label`.
 
 ```yaml wrap
 labels: ["automation", "ci", "diagnostics"]
 ```
-
-Labels help organize workflows by purpose, team, or functionality. They appear in status command table output as `[automation ci diagnostics]` and as a JSON array in `--json` mode. Filter workflows by label using `gh aw status --label automation`.
 
 ### Metadata (`metadata:`)
 
@@ -124,7 +119,6 @@ metadata:
 - Values: Maximum 1024 characters
 - Only string values are supported
 
-Metadata provides a flexible way to add descriptive information to workflows without affecting execution.
 
 ### APM Dependencies (`shared/apm.md` import)
 
@@ -175,46 +169,19 @@ Override default runtime versions for languages and tools used in workflows. The
 
 **Examples**:
 
-Override Node.js version:
-
 ```yaml wrap
 runtimes:
   node:
     version: "22"
-```
-
-Use specific Python version with custom setup action:
-
-```yaml wrap
-runtimes:
   python:
     version: "3.12"
-    action-repo: "actions/setup-python"
+    action-repo: "actions/setup-python"  # custom setup action
     action-version: "v5"
-```
-
-Multiple runtime overrides:
-
-```yaml wrap
-runtimes:
-  node:
-    version: "20"
-  python:
-    version: "3.11"
   go:
     version: "1.22"
 ```
 
-**Default Behavior**: If not specified, workflows use default runtime versions as defined in the system. The compiler automatically detects which runtimes are needed based on tool configurations (e.g., `bash: ["node"]`, `bash: ["python"]`) and workflow steps.
-
-**Use Cases**:
-
-- Pin specific runtime versions for reproducibility
-- Use preview/beta runtime versions for testing
-- Use custom setup actions (forks, enterprise mirrors)
-- Override system defaults for compatibility requirements
-
-**Note**: Runtimes from imported shared workflows are automatically merged with your workflow's runtime configuration.
+Runtimes from imported shared workflows are automatically merged with your workflow's runtime configuration.
 
 ### Permissions (`permissions:`)
 
@@ -256,20 +223,7 @@ on:
     - "agentic-workflows-dev[bot]"
 ```
 
-**Behavior**:
-
-- When specified, only the listed bot accounts can trigger the workflow
-- The bot must be active (installed) on the repository to trigger the workflow
-- Combine with `on.roles:` for comprehensive access control
-- Applies to all workflow triggers (`pull_request`, `issues`, etc.)
-- When `on.roles: all` is set, bot filtering is not enforced
-
-**Common bot names**:
-
-- `dependabot[bot]` - GitHub Dependabot for dependency updates
-- `renovate[bot]` - Renovate bot for automated dependency management
-- `github-actions[bot]` - GitHub Actions bot
-- `agentic-workflows-dev[bot]` - Development bot for testing workflows
+When specified, only the listed bot accounts can trigger the workflow. Combine with `on.roles:` for comprehensive access control. Bot filtering is not enforced when `on.roles: all` is set.
 
 > [!TIP]
 > Run `gh aw fix workflow.md --write` to automatically migrate top-level `bots:` to `on.bots:` using the built-in codemod.
@@ -287,14 +241,7 @@ on:
 
 **Available roles**: `admin`, `maintainer`/`maintain`, `write`, `triage`, `read`
 
-**Behavior**:
-
-- Workflow is cancelled during pre-activation when triggered by users with listed roles
-- Check runs before agent execution to avoid unnecessary compute costs
-- Merged as union when importing workflows (all skip-roles from imported workflows are combined)
-- Useful for AI moderation workflows that should only check external user content
-
-**Example use case**: An AI content moderation workflow that checks issues for policy violations but exempts trusted team members with write access or higher.
+Workflow is cancelled during pre-activation when triggered by users with listed roles. Skip-roles from imported workflows are merged as a union. Useful for moderation workflows that should only check external contributor content.
 
 ### Skip Bots (`on.skip-bots`)
 
@@ -309,28 +256,13 @@ on:
 
 **Bot name matching**: Automatic flexible matching handles bot names with or without the `[bot]` suffix. For example, specifying `github-actions` matches both `github-actions` and `github-actions[bot]` actors automatically.
 
-**Behavior**:
-
-- Workflow is cancelled during pre-activation when `github.actor` matches any listed actor
-- Check runs before agent execution to avoid unnecessary compute costs
-- Merged as union when importing workflows (all skip-bots from imported workflows are combined)
-- Accepts both user accounts and bot accounts
-
-**String or array format**:
+Workflow is cancelled during pre-activation when `github.actor` matches any listed actor. Skip-bots from imported workflows are merged as a union. Accepts both user and bot accounts.
 
 ```yaml wrap
-# Single bot
+# Single or multiple bots
 skip-bots: github-actions
-
-# Multiple bots
 skip-bots: [github-actions, copilot, renovate]
 ```
-
-**Example use cases**:
-
-- Skip AI workflows when triggered by automation bots to avoid bot-to-bot interactions
-- Prevent workflow loops where one workflow's output triggers another
-- Exempt specific known bots from content checks or policy enforcement
 
 ### Strict Mode (`strict:`)
 
@@ -390,34 +322,9 @@ features:
 
 - **`action`**: References custom actions from the `github/gh-aw-actions` external repository at the same release version (e.g., `uses: github/gh-aw-actions/setup@sha`). Uses SHA pinning when available, with a version-tag fallback. Use this when deploying workflows from the `github/gh-aw-actions` distribution repository.
 
-- **`script`**: Generates direct shell script calls instead of using GitHub Actions `uses:` syntax. The compiler:
-  1. Checks out the `github/gh-aw` repository's `actions` folder to `/tmp/gh-aw/actions-source`
-  2. Runs the setup script directly: `bash /tmp/gh-aw/actions-source/actions/setup/setup.sh`
-  3. Uses shallow clone (`depth: 1`) for efficiency
+- **`script`**: Generates direct shell script calls instead of using GitHub Actions `uses:` syntax — useful for debugging or environments where local action references are unavailable. Checks out `github/gh-aw`'s `actions` folder to `/tmp/gh-aw/actions-source` and runs setup scripts directly via shallow clone.
 
-**When to use script mode:**
-
-- Testing custom action scripts during development
-- Debugging action installation issues
-- Environments where local action references are not available
-- Advanced debugging scenarios requiring direct script execution
-
-**Example:**
-
-```yaml wrap
----
-name: Debug Workflow
-on: workflow_dispatch
-features:
-  action-mode: "script"
-permissions:
-  contents: read
----
-
-Debug workflow using script mode for custom actions.
-```
-
-**Note:** The `action-mode` can also be overridden via the CLI flag `--action-mode` or the environment variable `GH_AW_ACTION_MODE`. The precedence is: CLI flag > feature flag > environment variable > auto-detection.
+`action-mode` can also be overridden via the `--action-mode` CLI flag or `GH_AW_ACTION_MODE` environment variable. Precedence: CLI flag > feature flag > env var > auto-detection.
 
 #### Reaction-based Trust Signals (`features.integrity-reactions`)
 
@@ -552,14 +459,7 @@ secrets:
     description: "Production database connection string"
 ```
 
-**Security best practices:**
-
-- Always use GitHub Actions secret expressions (`${{ secrets.NAME }}`)
-- Never commit plaintext secrets to workflow files
-- Use environment-specific secrets when possible (via `environment:` field)
-- Limit secret access to only the components that need them
-
-**Note:** For passing secrets to reusable workflows, use the `jobs.<job_id>.secrets` field instead. The top-level `secrets:` field is for workflow-level secret configuration.
+Always use `${{ secrets.NAME }}` expressions — never commit plaintext secrets. For passing secrets to reusable workflows, use `jobs.<job_id>.secrets` instead of the top-level `secrets:` field.
 
 ## Environment Protection (`environment:`)
 
