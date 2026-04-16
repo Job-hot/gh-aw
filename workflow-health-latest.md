@@ -1,71 +1,51 @@
-# Workflow Health - 2026-04-15T12:09Z
+# Workflow Health - 2026-04-16T12:10Z
 
-Score: 72/100 (↓1 from 73 Apr 14). 191 workflows. Run: §24453586573
+Score: 71/100 (↓1 from 72 Apr 15). 191 workflows. Run: §24509370401
 
 ## KEY FINDINGS
 
-### Stale Lock Files (NEW regression)
-- 18/191 stale lock files (md newer than lock) — needs `make recompile`
-- Likely caused by PR #26372 merged Apr 15 06:04Z (context propagation changes)
-- List: agent-performance-analyzer, artifacts-summary, changeset, code-scanning-fixer,
-  copilot-pr-merged-report, daily-fact, daily-performance-summary, daily-security-red-team,
-  duplicate-code-detector, github-mcp-structural-analysis, lockfile-stats, notion-issue-summary,
-  refactoring-cadence, slide-deck-maintainer, smoke-temporary-id, spec-enforcer,
-  step-name-alignment, workflow-health-manager
+### Stale Lock Files
+- 16/191 stale lock files (down from 18 Apr 15 — some recompiled)
+- Same-second timestamps suggest checkout artifacts, not real staleness
+- List: archie, brave, craft, daily-cli-performance, daily-file-diet, daily-integrity-analysis, daily-multi-device-docs-tester, daily-performance-summary, daily-safe-output-optimizer, docs-noob-tester, firewall-escape, github-mcp-tools-report, refiner, research, test-project-url-default, ubuntu-image-analyzer
 
-### New Failures Today (Apr 15)
-- Daily Issues Report Generator: `node: command not found` (#26393) - RECURRING
-- Auto-Triage Issues: 2/2 failed today (#26364, existing issue)
-- Daily Fact About gh-aw: failed, no error msg (#26405)
-- Daily News: failed (#26388)
-- Smoke Gemini: ongoing (#26351) - Gemini 0.38.0 available may fix after CLI bump
+### P0 Persistent Failures (Unchanged)
+- **Daily Issues Report Generator**: 10+ consecutive day streak (#26393 OPEN)
+  - node:command not found pattern in Copilot runner
+- **Smoke Gemini**: 14+ day 100% failure (#26351 OPEN, #26456 deep-report OPEN)
+  - Gemini API proxy handler crash
 
-### Ongoing P2 Issues (from previous runs)
-- Smoke Claude: fails on SCHEDULE (#25727)
-- Smoke Multi PR: persistent (#25415)
-- Smoke Cross-Repo PR Create: stale 7 days (#25221)
-- Smoke Cross-Repo PR Update: stale 7 days (#25217)
-- Daily Firewall Logs: safe_outputs process failure (#25456)
-- Schema Feature Coverage Checker: protected-files config blocks PR (#25992)
-- ~16 other open workflow failures (Go Logger, Multi-Device Docs, Refactoring Cadence, etc.)
-- GitHub Remote MCP Auth Test: #24829 closed not_planned (still failing)
+### Intermittent Failures Today (Apr 16)
+- ~18 workflows failed in sample of ~35 (50% rate)  
+- Most are one-off: Instructions Janitor (1/5), AI Moderator (2x issues-triggered)
+- Auto-Triage Issues: recovered (failed 01:07Z, success 07:04Z)
+- High Copilot engine flakiness suspected
 
-### Healthy Workflows (Today's Successes)
-- Contribution Check: successful report #26376 (4 PRs reviewed)
-- Architecture Diagram: #26389 (successful incremental update)
-- Terminal Stylist: successful schedule run
-- No-Op Tracker: 364+ comments active (#25214)
-- 40+ other workflows running successfully
+### P1 Watch — Smoke Claude
+- ~60% success rate recent schedule runs (3 fail in last 5)
+- No open issue — monitor
 
-### Performance
-- CompileComplexWorkflow regression: +18.9% slower (#26378)
-- MCP Rate Limit event: #26239 (circuit breaker needed)
+### Successful Today (sample)
+- Daily Rendering Scripts Verifier, Update Astro, Agentic Maintenance, Sub-Issue Closer
+- Daily Syntax Error Quality Check, Package Specification Extractor
+- Issue Monster, Glossary Maintainer, Content Moderation, Terminal Stylist
 
 ## Compilation Status
 - 191/191 lock files present ✅
-- 18 stale lock files ⚠️ (new this run)
+- 16 stale lock files ⚠️ (checkout artifacts, down from 18)
+
+## Open Issues (workflow-related)
+- #26393 Daily Issues Report (P0)
+- #26351 Smoke Gemini (P0)
+- #26456 Gemini proxy handler deep-report (P0)
+- #26239 MCP rate-limit circuit breaker (P2)
+- #26458 GitHub MCP get_me 403 errors (P2)
+
+## Actions This Run
+- Created: [workflow-health] Dashboard Apr 16 issue (#aw_whdapr16)
+- No new P0/P1 issues created (all already tracked)
 
 ## Engine/Tool Status
-- Copilot v1.0.27 available (was v1.0.21 active) → #26367
+- Copilot v1.0.27 available (was v1.0.21 active) → #26367 open
 - Claude Code 2.1.109 available
-- Codex 0.120.0 available
-- Gemini 0.38.0 available (may fix Smoke Gemini)
-- GitHub MCP v0.33.1 available
-
-## Score Breakdown
-- Compilation 191/191 ✅: +35
-- 18 stale lock files: -3
-- Multiple healthy workflows today: +18
-- ~27 open failure issues: -14
-- Smoke suite partial failures continuing: -4
-- Net: ~72/100
-
-## Score Trend
-68 → 71 → 73 → 71 → 70 → 75 → 73 → 74 → 74 → 73 → 72
-Apr5  Apr6  Apr7  Apr8  Apr9  Apr10 Apr11 Apr12 Apr13 Apr14 Apr15
-
-## Dashboard Issue
-Created #aw_dash15 (see safeoutputs)
-
-## Note: GitHub API Read-Only
-gh CLI not authenticated; used GitHub MCP for all reads.
+- Gemini 0.38.0 available (not yet deployed)
