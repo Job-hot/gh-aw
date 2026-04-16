@@ -1,7 +1,7 @@
 // @ts-check
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { createRequire } from "module";
-import { mkdtempSync, readFileSync, writeFileSync, unlinkSync, existsSync } from "fs";
+import { mkdtempSync, readFileSync, writeFileSync, rmSync, unlinkSync, existsSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 
@@ -82,6 +82,7 @@ describe("action_setup_otlp.cjs", () => {
     // Clean up temp files
     if (existsSync(githubOutputPath)) unlinkSync(githubOutputPath);
     if (existsSync(githubEnvPath)) unlinkSync(githubEnvPath);
+    if (tempDir) rmSync(tempDir, { recursive: true, force: true });
   });
 
   it("should export run as a function", () => {

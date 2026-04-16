@@ -32,7 +32,8 @@ const sendOtlpSpan = require("./send_otlp_span.cjs");
 
 /**
  * Send the OTLP job-setup span and propagate trace context via GITHUB_OUTPUT /
- * GITHUB_ENV.  Non-fatal: all errors are silently swallowed.
+ * GITHUB_ENV. Errors are propagated to callers; direct script invocation
+ * swallows errors via the require.main guard below.
  *
  * The trace-id is ALWAYS resolved and written to GITHUB_OUTPUT / GITHUB_ENV so
  * that cross-job span correlation works even when OTEL_EXPORTER_OTLP_ENDPOINT
