@@ -7,8 +7,8 @@ import (
 )
 
 // StatVar accumulates a stream of float64 observations and computes descriptive
-// statistics: count, sum, min, max, mean, variance, standard deviation, and
-// median.  Mean and variance are maintained incrementally using Welford's online
+// statistics: count, min, max, mean, sample variance, sample standard deviation,
+// and median.  Mean and variance are maintained incrementally using Welford's online
 // algorithm, which avoids catastrophic cancellation when values are large or
 // tightly clustered.  All observed values are also stored so that an exact
 // median can be returned on demand.
@@ -21,14 +21,13 @@ type StatVar struct {
 	count  int
 	mean   float64 // running mean (Welford)
 	m2     float64 // running sum of squared deviations from the mean (Welford)
-	sum    float64
 	min    float64
 	max    float64
 	values []float64 // stored for median computation
 }
 
 // Add records a new observation.  Finite values are recommended; NaN and ±Inf
-// will propagate through sum, mean, and variance, but Min and Max may not update
+// will propagate through mean and variance, but Min and Max may not update
 // correctly for NaN inputs because IEEE 754 comparisons with NaN always return
 // false.  In practice, observations come from time.Duration, token counts, and
 // cost values, which are always finite.
@@ -45,7 +44,6 @@ func (s *StatVar) Add(v float64) {
 		}
 	}
 	s.count++
-	s.sum += v
 	s.values = append(s.values, v)
 	// Welford's one-pass algorithm: numerically stable incremental mean and M2.
 	delta := v - s.mean
@@ -56,9 +54,6 @@ func (s *StatVar) Add(v float64) {
 
 // Count returns the number of observations added so far.
 func (s *StatVar) Count() int { return s.count }
-
-// Sum returns the arithmetic sum of all observations, or 0 if none.
-func (s *StatVar) Sum() float64 { return s.sum }
 
 // Min returns the smallest observed value, or 0 if no observations have been added.
 func (s *StatVar) Min() float64 {
@@ -84,15 +79,6 @@ func (s *StatVar) Mean() float64 {
 	return s.mean
 }
 
-// Variance returns the population variance (divides by N).
-// Returns 0 when fewer than two observations are present.
-func (s *StatVar) Variance() float64 {
-	if s.count < 2 {
-		return 0
-	}
-	return s.m2 / float64(s.count)
-}
-
 // SampleVariance returns the sample variance with Bessel's correction (divides
 // by N−1), giving an unbiased estimator when the observations are a random
 // sample from a larger population.  Returns 0 when fewer than two observations
@@ -102,11 +88,6 @@ func (s *StatVar) SampleVariance() float64 {
 		return 0
 	}
 	return s.m2 / float64(s.count-1)
-}
-
-// StdDev returns the population standard deviation (sqrt of Variance).
-func (s *StatVar) StdDev() float64 {
-	return math.Sqrt(s.Variance())
 }
 
 // SampleStdDev returns the sample standard deviation with Bessel's correction

@@ -10,13 +10,14 @@ import (
 	"strings"
 	"testing"
 
+	actionpins "github.com/github/gh-aw/pkg/actionpins"
 	"github.com/github/gh-aw/pkg/testutil"
 )
 
 // TestActionPinsExist verifies that all action pinning entries exist
 func TestActionPinsExist(t *testing.T) {
 	// Read action pins from JSON file instead of hardcoded list
-	actionPins := getActionPins()
+	actionPins := actionpins.GetActionPins()
 
 	// Verify we have at least some pins loaded
 	if len(actionPins) == 0 {
@@ -46,7 +47,7 @@ func TestActionPinsExist(t *testing.T) {
 // TestGetActionPinReturnsValidSHA tests that getActionPin returns valid SHA references
 func TestGetActionPinReturnsValidSHA(t *testing.T) {
 	// Generate test cases dynamically from action pins JSON
-	actionPins := getActionPins()
+	actionPins := actionpins.GetActionPins()
 
 	if len(actionPins) == 0 {
 		t.Fatal("No action pins loaded from JSON file")
@@ -296,7 +297,7 @@ func TestApplyActionPinToStep(t *testing.T) {
 
 // TestGetActionPinsSorting tests that getActionPins returns sorted action pins
 func TestGetActionPinsSorting(t *testing.T) {
-	pins := getActionPins()
+	pins := actionpins.GetActionPins()
 
 	// Dynamically derive the expected count from the JSON file to avoid
 	// hardcoding a number that breaks when new pins are added or when
@@ -313,7 +314,7 @@ func TestGetActionPinsSorting(t *testing.T) {
 
 	// Verify we got all the pins from the JSON (catches parsing bugs)
 	if len(pins) != expectedCount {
-		t.Errorf("getActionPins() returned %d pins, expected %d (from action_pins.json)", len(pins), expectedCount)
+		t.Errorf("actionpins.GetActionPins() returned %d pins, expected %d (from action_pins.json)", len(pins), expectedCount)
 	}
 
 	// Verify they are sorted by version (descending) then by repository name (ascending)
@@ -861,13 +862,13 @@ func TestActionPinsCaching(t *testing.T) {
 	// Note: In production, this is handled automatically by sync.Once
 
 	// First call - should load and cache
-	pins1 := getActionPins()
+	pins1 := actionpins.GetActionPins()
 	if len(pins1) == 0 {
 		t.Fatal("No action pins loaded on first call")
 	}
 
 	// Second call - should return cached data (same slice reference)
-	pins2 := getActionPins()
+	pins2 := actionpins.GetActionPins()
 	if len(pins2) == 0 {
 		t.Fatal("No action pins loaded on second call")
 	}
