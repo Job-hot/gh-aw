@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-04-17T12:36:15Z",
-  "run_id": "24565323962",
+  "run_date": "2026-04-17T18:30:45Z",
+  "run_id": "24580637588",
   "fork_prs": 0,
-  "agent_prs_found": 8,
-  "agent_prs_excluded": 8,
-  "notes": "8 open agent-created PRs found (all same-repo branches, not forks). Per policy, only fork PRs are triaged. No fork PRs to triage. PR count increased from 5 to 8 since last run (+3 new PRs: #26858, #26838, #26837).",
+  "agent_prs_found": 10,
+  "agent_prs_excluded": 10,
+  "notes": "10 open agent-created PRs found (all same-repo branches, not forks). Per policy, only fork PRs are triaged. No fork PRs to triage. New PRs since last run: [26915, 26916, 26917, 26918, 26919, 26921, 26924, 26925, 26926]. Closed/merged: [26810, 26815, 26816, 26823, 26827, 26837, 26838, 26858].",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -17,21 +17,114 @@
     "by_action": {}
   },
   "prs_examined": [
-    {"number": 26858, "title": "[WIP] Refactor MCP gateway converter pipeline to reduce duplication", "user": "Copilot", "draft": true, "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-17", "labels": []},
-    {"number": 26838, "title": "deps: bump bubbletea v2.0.5 → v2.0.6 for wide-char rendering fix", "user": "Copilot", "draft": true, "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-17", "labels": []},
-    {"number": 26837, "title": "Harden `create_issue` concurrency: atomic max enforcement and in-flight parent deduplication", "user": "Copilot", "draft": true, "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-17", "labels": []},
-    {"number": 26827, "title": "fix: cap gh-aw native action updates at the running CLI version", "user": "Copilot", "draft": false, "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-17", "labels": []},
-    {"number": 26823, "title": "Recompile out-of-sync workflow lock file for daily cross-repo compile check", "user": "Copilot", "draft": true, "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-17", "labels": []},
-    {"number": 26816, "title": "[aw-compat] Downgrade strict missing-permission failures for default GitHub token", "user": "Copilot", "draft": true, "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-17", "labels": []},
-    {"number": 26815, "title": "[aw-compat] Add codemod to migrate unknown `tools:` entries to `mcp-servers:`", "user": "Copilot", "draft": true, "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-17", "labels": []},
-    {"number": 26810, "title": "Bump default CLI/tool versions (Claude, Copilot, Codex, GitHub MCP) and recompile", "user": "Copilot", "draft": true, "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-17", "labels": []},
-    {"number": 26658, "title": "Eliminate persistent 'Redact secrets in logs' warnings by running MCP gateway as runner user", "user": "Copilot", "draft": true, "same_repo": true, "excluded_reason": "same-repo branch, not a fork", "created_at": "2026-04-16", "labels": ["lgtm"]}
+    {
+      "number": 26926,
+      "title": "[WIP] Fix critical gaps in Quick Start documentation",
+      "user": "Copilot",
+      "draft": true,
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-17",
+      "labels": []
+    },
+    {
+      "number": 26925,
+      "title": "[WIP] Refactor function names in pkg/actionpins for clarity",
+      "user": "Copilot",
+      "draft": true,
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-17",
+      "labels": []
+    },
+    {
+      "number": 26924,
+      "title": "[WIP] Refactor fragmented thin files and string-slice extraction in pkg/workflow",
+      "user": "Copilot",
+      "draft": true,
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-17",
+      "labels": []
+    },
+    {
+      "number": 26921,
+      "title": "[WIP] Fix MCP server writing diagnostics to stdout instead of stderr",
+      "user": "Copilot",
+      "draft": true,
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-17",
+      "labels": []
+    },
+    {
+      "number": 26919,
+      "title": "[aw-compat] Add `gh aw fix` codemods for strict-mode secret leaks in step `run` and `engine.env`",
+      "user": "Copilot",
+      "draft": true,
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-17",
+      "labels": []
+    },
+    {
+      "number": 26918,
+      "title": "Harden Copilot AWF node bootstrap when `GH_AW_NODE_BIN` is invalid in container",
+      "user": "Copilot",
+      "draft": true,
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-17",
+      "labels": []
+    },
+    {
+      "number": 26917,
+      "title": "[cli-consistency] Correct engine help text and align CLI command wording",
+      "user": "Copilot",
+      "draft": false,
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-17",
+      "labels": []
+    },
+    {
+      "number": 26916,
+      "title": "Add policy-gated per-run base branch override for `create_pull_request`",
+      "user": "Copilot",
+      "draft": false,
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-17",
+      "labels": []
+    },
+    {
+      "number": 26915,
+      "title": "Add team reviewer support to `create-pull-request` and `add-reviewer` safe outputs",
+      "user": "Copilot",
+      "draft": false,
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-17",
+      "labels": []
+    },
+    {
+      "number": 26658,
+      "title": "Eliminate persistent \u201cRedact secrets in logs\u201d warnings by running MCP gateway as runner user",
+      "user": "Copilot",
+      "draft": true,
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-16",
+      "labels": [
+        "lgtm"
+      ]
+    }
   ],
   "previous_run": {
-    "run_id": "24552060057",
-    "run_date": "2026-04-17T06:53:22Z",
+    "run_id": "24565323962",
+    "run_date": "2026-04-17T12:36:15Z",
     "fork_prs": 0,
-    "agent_prs_found": 5,
-    "agent_prs_excluded": 5
+    "agent_prs_found": 8,
+    "agent_prs_excluded": 8
   }
 }
