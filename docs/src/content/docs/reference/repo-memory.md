@@ -16,7 +16,7 @@ tools:
 ---
 ```
 
-Creates branch `memory/default` at `/tmp/gh-aw/repo-memory-default/`. Files are stored within the branch at the branch name path (`memory/default/`). Files auto-commit/push after workflow completion.
+Creates branch `memory/default` at `/tmp/gh-aw/repo-memory-default/`; files auto-commit/push after workflow completion.
 
 ## Advanced Configuration
 
@@ -37,13 +37,11 @@ tools:
 ---
 ```
 
-**Branch Prefix**: Use `branch-prefix` to customize the branch name prefix (default is `memory`). The prefix must be 4-32 characters, alphanumeric with hyphens/underscores, and cannot be `copilot`. When set, branches are created as `{branch-prefix}/{id}` instead of `memory/{id}`.
-
-**File Type Restrictions**: Use `allowed-extensions` to restrict which file types can be stored (default: empty/all files allowed). When specified, only files with listed extensions (e.g., `[".json", ".txt", ".md"]`) can be saved. Files with disallowed extensions will trigger validation failures.
-
-**Patch Size Limit**: Use `max-patch-size` to limit the total size of changes in a single push (default: 10KB, max: 100KB). The total size of the git diff (all staged changes combined) must not exceed this value. If it does, the push is rejected with an error. Use this to prevent large unintentional memory updates.
-
-**Note**: File glob patterns are matched against the **relative file path** within the artifact directory, not the branch path. Use bare extension patterns like `*.json` or `*.md` — do **not** include the branch name (e.g. `memory/custom-agent-for-aw/*.json` is incorrect).
+Notable fields:
+- **`branch-prefix`**: Branch name prefix (default: `memory`). Must be 4–32 alphanumeric characters with hyphens/underscores; cannot be `copilot`.
+- **`allowed-extensions`**: Restricts storable file types. Files with unlisted extensions trigger validation failures.
+- **`max-patch-size`**: Maximum total diff size per push (default: 10KB, max: 100KB). Exceeding this rejects the push.
+- **`file-glob`**: Matched against **relative paths** within the artifact directory — not the branch name (e.g. use `*.json`, not `memory/custom/*.json`).
 
 ## Multiple Configurations
 
@@ -60,11 +58,7 @@ tools:
 ---
 ```
 
-Mounts at `/tmp/gh-aw/repo-memory-{id}/` during workflow execution. Required `id` determines folder name; `branch-name` defaults to `{branch-prefix}/{id}` (where `branch-prefix` defaults to `memory`). Files are stored within the git branch at the branch name path (e.g., for branch `memory/code-metrics`, files are stored at `memory/code-metrics/` within the branch). **File glob patterns are matched against the relative file path within the artifact directory — never include the branch name in patterns.**
-
-## Behavior
-
-Branches auto-create as orphans (default) or clone with `--depth 1`. Changes auto-commit after validation (`file-glob`, `max-file-size`, `max-file-count`), pull with `-X ours` (your changes win), and push when changes detected and threat detection passes.
+Each entry mounts at `/tmp/gh-aw/repo-memory-{id}/`. The required `id` field determines the folder name; `branch-name` defaults to `{branch-prefix}/{id}`.
 
 ## Comparison with Cache Memory
 
@@ -89,9 +83,7 @@ For fast 7-day caching without version control, see [Cache Memory](/gh-aw/refere
 
 ## Security
 
-Don't store sensitive data in repo memory. Repo memory follows repository permissions.
-
-Use private repos for sensitive data, avoid storing secrets, set constraints (`file-glob`, `max-file-size`, `max-file-count`, `max-patch-size`), consider branch protection, use `target-repo` to isolate.
+Don't store sensitive data; repo memory follows repository permissions. Use private repos, set constraints, and `target-repo` to isolate sensitive branches.
 
 ## Examples
 
