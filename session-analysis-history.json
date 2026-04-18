@@ -69,9 +69,9 @@
       "key_insights": [
         "fix-lock-file-integrity-check: Copilot SUCCESS after 47.03min; 21 total workflow runs",
         "fix-sanitize-markdown-link-titles: Copilot SUCCESS after 30.85min; 20 total workflow runs",
-        "fix-bearer-token-bypass: No Copilot agent ran; 9 CI/review-only runs \u2014 stalled branch",
+        "fix-bearer-token-bypass: No Copilot agent ran; 9 CI/review-only runs — stalled branch",
         "5th consecutive day of 100% Copilot success rate (streak: Apr 8, 9, 15, 16 so far)",
-        "Two simultaneous Copilot sessions both succeeded \u2014 highest throughput day so far",
+        "Two simultaneous Copilot sessions both succeeded — highest throughput day so far",
         "Duration trending down from 51.4min peak (Apr 15) to 38.94min avg today"
       ]
     },
@@ -92,7 +92,25 @@
         "Gate Storm anomaly: update-safe-patch triggered 8 gate runs in same minute instead of 4 (double trigger)",
         "Experimental: Gate Storm Detection reveals systemic gate re-trigger reliability issue"
       ]
+    },
+    {
+      "date": "2026-04-18",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 10.0,
+      "copilot_coding_agents": 2,
+      "copilot_success_rate_pct": 0.0,
+      "avg_copilot_duration_min": 0.18,
+      "experimental_strategy": null,
+      "key_insights": [
+        "fix-cli-bridge-type-coercion-bugs: 16 sessions, 15 action_required gates (3+ rounds), Copilot agent still pending at analysis time",
+        "recompile-workflows: Smoke Copilot FAILURE (9.83min) + Smoke Codex FAILURE (2.53min); 2 startup_failures; 7 skipped",
+        "debug-smoke-ci-failure: 7 action_required gates, Copilot agent pending",
+        "aw-failures-fix-safeoutputs-permission: Addressing comment on PR #26974 SUCCESS (10.28min)",
+        "create-smoke-ci-workflow: Addressing comment on PR #27024 CANCELLED (9.32min)",
+        "100% Copilot streak (Apr 8-17, 6 days) at risk — both agents still pending when analysis ran",
+        "Highest action_required gate density observed: 28/50 sessions (56%)"
+      ]
     }
   ],
-  "last_updated": "2026-04-17"
+  "last_updated": "2026-04-18"
 }
