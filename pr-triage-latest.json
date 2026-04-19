@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-04-19T01:04:44Z",
-  "run_id": "24617776442",
+  "run_date": "2026-04-19T06:48:16Z",
+  "run_id": "24623125582",
   "fork_prs": 0,
-  "agent_prs_found": 3,
-  "agent_prs_excluded": 3,
-  "notes": "3 open PRs found, all authored by Copilot. All are same-repo branches, not forks. Per policy, only fork PRs are triaged. No fork PRs to triage.",
+  "agent_prs_found": 9,
+  "agent_prs_excluded": 9,
+  "notes": "9 open PRs found (5 Copilot + 4 github-actions[bot]). All are same-repo branches, not forks. Per policy, only fork PRs are triaged. No fork PRs to triage.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -18,50 +18,83 @@
   },
   "prs_examined": [
     {
-      "number": 27114,
-      "title": "Reduce Copilot Token Usage Optimizer overhead via lean toolset, cli-proxy path",
-      "author": "Copilot",
-      "draft": false,
+      "number": 27154,
+      "title": "[code-simplifier] test: remove duplicate benchmark and dead code in test files",
+      "author": "github-actions[bot]",
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork",
-      "created_at": "2026-04-18",
-      "additions": 164,
-      "deletions": 256,
-      "files": 2,
-      "mergeable_state": "unstable"
+      "created_at": "2026-04-19"
     },
     {
-      "number": 27108,
-      "title": "Refactor duplicated SHA/workflow-spec helpers into shared parser and gitutil API",
-      "author": "Copilot",
-      "draft": false,
+      "number": 27148,
+      "title": "chore: update drain3 default log pattern weights",
+      "author": "github-actions[bot]",
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork",
-      "created_at": "2026-04-18",
-      "additions": 131,
-      "deletions": 53,
-      "files": 13,
-      "mergeable_state": "unstable"
+      "created_at": "2026-04-19"
     },
     {
-      "number": 27102,
-      "title": "Bump default AWF to v0.25.25 and MCP Gateway to v0.2.25",
-      "author": "Copilot",
-      "draft": false,
+      "number": 27144,
+      "title": "[jsweep] Clean action_conclusion_otlp.test.cjs",
+      "author": "github-actions[bot]",
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork",
-      "created_at": "2026-04-18",
-      "additions": 2530,
-      "deletions": 2530,
-      "files": 199,
-      "mergeable_state": "blocked"
+      "created_at": "2026-04-19"
+    },
+    {
+      "number": 27142,
+      "title": "[docs] docs: reduce bloat in engines.md (21% reduction)",
+      "author": "github-actions[bot]",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-19"
+    },
+    {
+      "number": 27138,
+      "title": "Add jobs..pre-steps support",
+      "author": "Copilot",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-19"
+    },
+    {
+      "number": 27137,
+      "title": "Add ambient context metric to audit and logs commands",
+      "author": "Copilot",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-19"
+    },
+    {
+      "number": 27135,
+      "title": "Harden workflow shell permissions by replacing wildcard bash allow-lists with explicit command sets",
+      "author": "Copilot",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-19"
+    },
+    {
+      "number": 27134,
+      "title": "Fix Codex auth regression in AWF sandbox by preserving OpenAI credential env vars",
+      "author": "Copilot",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-19"
+    },
+    {
+      "number": 27126,
+      "title": "fix: use sanitized workflow IDs for trending cache keys",
+      "author": "Copilot",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork",
+      "created_at": "2026-04-19"
     }
   ],
   "previous_run": {
-    "run_id": "24599026260",
-    "run_date": "2026-04-18T06:40:20Z",
+    "run_id": "24617776442",
+    "run_date": "2026-04-19T01:04:44Z",
     "fork_prs": 0,
-    "agent_prs_found": 4,
-    "agent_prs_excluded": 4
+    "agent_prs_found": 3,
+    "agent_prs_excluded": 3
   }
 }
