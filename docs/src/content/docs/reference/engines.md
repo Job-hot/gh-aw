@@ -242,6 +242,46 @@ network:
 
 Crush uses the OpenAI-compatible API format by default (via Copilot routing). The `model` field uses a `provider/model` format — the provider prefix determines which API domains are added to the firewall allowlist.
 
+#### Copilot BYOK Provider Configuration
+
+When using Copilot BYOK mode (`features.byok-copilot: true`), set `COPILOT_PROVIDER_*` environment variables in `engine.env` to configure the external model provider. These variables are consumed by Copilot CLI 1.0.32+:
+
+| Variable | Description |
+|---|---|
+| `COPILOT_PROVIDER_TYPE` | Provider type: `openai`, `azure`, or `anthropic` |
+| `COPILOT_PROVIDER_BASE_URL` | API endpoint URL for the custom model provider |
+| `COPILOT_PROVIDER_API_KEY` | API key for the provider (alternative to `COPILOT_PROVIDER_BEARER_TOKEN`) |
+| `COPILOT_PROVIDER_BEARER_TOKEN` | Bearer token for the provider (alternative to `COPILOT_PROVIDER_API_KEY`) |
+| `COPILOT_PROVIDER_WIRE_API` | API wire format: `completions` or `responses` |
+| `COPILOT_PROVIDER_MODEL_ID` | Model identifier as recognized by the provider |
+| `COPILOT_PROVIDER_MAX_PROMPT_TOKENS` | Maximum prompt tokens for the BYOK model |
+| `COPILOT_PROVIDER_MAX_OUTPUT_TOKENS` | Maximum output tokens for the BYOK model |
+
+Example using an Anthropic provider:
+
+```yaml wrap
+engine:
+  id: copilot
+  env:
+    COPILOT_PROVIDER_TYPE: anthropic
+    COPILOT_PROVIDER_BASE_URL: "https://api.anthropic.com"
+    COPILOT_PROVIDER_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    COPILOT_PROVIDER_MODEL_ID: claude-sonnet-4.6
+    COPILOT_PROVIDER_MAX_PROMPT_TOKENS: "200000"
+    COPILOT_PROVIDER_MAX_OUTPUT_TOKENS: "8192"
+features:
+  byok-copilot: true
+
+network:
+  allowed:
+    - github.com
+    - api.anthropic.com
+```
+
+Store the provider API key as a repository secret and reference it via `${{ secrets.* }}`. Add the provider's API hostname to `network.allowed` to allow outbound requests through the firewall.
+
+For provider setup requirements and policy details, see [Using your LLM provider API keys with Copilot](https://docs.github.com/en/copilot/how-tos/administer-copilot/manage-for-enterprise/use-your-own-api-keys).
+
 ### Engine Command-Line Arguments
 
 All engines support custom command-line arguments through the `args` field, injected before the prompt:
