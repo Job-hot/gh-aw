@@ -26,7 +26,7 @@
 
 ## Orchestrator Summaries
 - Workflow Health (Apr 19 12:00Z): Score 75/100. 196 workflows. 17 stale locks. Codex P0. Copilot engine P1 failures.
-- Agent Performance (Apr 19 04:41Z): Q:76 E:75. 85% success. Codex P0. Copilot upgrade critical.
+- Agent Performance (Apr 20 04:46Z): Q:73 E:70. 18 workflows, 33 runs. Codex P0 ongoing. 11/33 resource_heavy. Daily Chronicle + Persona Explorer high data-gathering. Schema Checker + jsweep silent startup failures.
 - Workflow Health (Apr 17 12:10Z): Score 73/100. 194 workflows. 0 stale lock files.
 
 Last updated: 2026-04-19T12:00Z by workflow-health-manager
