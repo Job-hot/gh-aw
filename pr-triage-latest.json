@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-04-21T01:02:38Z",
-  "run_id": "24698473910",
+  "run_date": "2026-04-21T06:54:22Z",
+  "run_id": "24708460710",
   "fork_prs": 0,
-  "agent_prs_found": 3,
-  "agent_prs_excluded": 3,
-  "notes": "3 open PRs found (all by Copilot). All are same-repo branches, not forks. Per policy, only fork PRs are triaged. No fork PRs to triage.",
+  "agent_prs_found": 4,
+  "agent_prs_excluded": 4,
+  "notes": "4 open PRs found (Copilot/bot authors). All are same-repo branches, not forks. Per policy, only fork PRs are triaged. No fork PRs to triage.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -18,32 +18,39 @@
   },
   "prs_examined": [
     {
-      "number": 27467,
-      "title": "Add agentic workflow spec for implementing `comment-memory` support",
+      "number": 27507,
+      "title": "[code-simplifier] Simplify OTLP error extraction in send_otlp_span.cjs",
+      "author": "github-actions[bot]",
+      "same_repo": true,
+      "excluded_reason": "same-repo branch, not a fork"
+    },
+    {
+      "number": 27506,
+      "title": "Document bash allowlist decision rule for trusted vs untrusted workflows",
       "author": "Copilot",
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork"
     },
     {
-      "number": 27466,
-      "title": "Add experimental OpenCode engine support and reassign LLM gateway ports",
+      "number": 27505,
+      "title": "Add cadence clarification prompt for scheduled workflow trigger selection",
       "author": "Copilot",
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork"
     },
     {
-      "number": 27453,
-      "title": "Add configurable agentic engine driver script support",
+      "number": 27479,
+      "title": "Add comment_memory safe output support with editable file workflow integration",
       "author": "Copilot",
       "same_repo": true,
       "excluded_reason": "same-repo branch, not a fork"
     }
   ],
   "previous_run": {
-    "run_id": "24683599103",
-    "run_date": "2026-04-20T18:34:30Z",
+    "run_id": "24698473910",
+    "run_date": "2026-04-21T01:02:38Z",
     "fork_prs": 0,
-    "agent_prs_found": 2,
-    "agent_prs_excluded": 2
+    "agent_prs_found": 3,
+    "agent_prs_excluded": 3
   }
 }
