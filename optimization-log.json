@@ -27,7 +27,7 @@
     "runs_audited": 2,
     "recommendations_count": 4,
     "estimated_savings_per_run": 8300000,
-    "notes": "Root cause: gh aw compile * pattern blocks /tmp/ absolute paths. 2/2 runs show identical 129-131 turn failure → source code fallback. Fix tool pattern to allow /tmp/*.md paths."
+    "notes": "Root cause: gh aw compile * pattern blocks /tmp/ absolute paths. 2/2 runs show identical 129-131 turn failure \u2192 source code fallback. Fix tool pattern to allow /tmp/*.md paths."
   },
   {
     "date": "2026-04-07",
@@ -55,7 +55,7 @@
     "runs_audited": 11,
     "recommendations_count": 4,
     "estimated_savings_per_run": 2000000,
-    "notes": "45% failure rate across 11 runs. Runaway 103-turn failed run consumed 9.1M tokens (75% of daily total). Primary lever: reduce timeout-minutes 15→10 + remove Serena import (unused Go LSP for .md optimization). No max-turns available for Copilot engine."
+    "notes": "45% failure rate across 11 runs. Runaway 103-turn failed run consumed 9.1M tokens (75% of daily total). Primary lever: reduce timeout-minutes 15\u219210 + remove Serena import (unused Go LSP for .md optimization). No max-turns available for Copilot engine."
   },
   {
     "date": "2026-04-13",
@@ -106,5 +106,15 @@
     "runs_audited": 10,
     "recommendations_count": 5,
     "estimated_savings_per_run": 153000
+  },
+  {
+    "date": "2026-04-21",
+    "workflow_name": "Dead Code Removal Agent",
+    "workflow_file": "dead-code-remover",
+    "total_tokens_analyzed": 4472171,
+    "runs_audited": 1,
+    "recommendations_count": 4,
+    "estimated_savings_per_run": 1265000,
+    "notes": "Single run (55 turns vs target 30). agentic_fraction=0.50, read_only actuation. Primary lever: bash pre-step to run deadcode+filter cache saves ~15 turns. Also remove pull_requests toolset and reduce timeout 30\u219220min."
   }
 ]
