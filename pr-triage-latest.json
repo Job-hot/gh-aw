@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-04-22T12:40:19.970454Z",
-  "run_id": "24778600293",
+  "run_date": "2026-04-22T18:36:47.811Z",
+  "run_id": "24795840823",
   "fork_prs": 0,
-  "agent_prs_found": 11,
-  "agent_prs_excluded": 11,
-  "notes": "11 open agent PRs found. All are same-repo branches, not forks. Per policy, only fork PRs are triaged. No fork PRs to triage.",
+  "agent_prs_found": 2,
+  "agent_prs_excluded": 2,
+  "notes": "2 open agent PRs found. Both are same-repo branches, not forks. Per policy, only fork PRs are triaged. No fork PRs to triage.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -18,88 +18,29 @@
   },
   "prs_examined": [
     {
-      "number": 27818,
-      "title": "[dead-code] chore: remove dead functions \u2014 1 function removed",
-      "author": "github-actions[bot]",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 27809,
-      "title": "Rename `notifyResolutionFailure` to `dispatchResolutionFailure`",
+      "number": 27885,
+      "title": "Add parser regression coverage for `safe-outputs.create-pull-request.allowed-base-branches`",
       "author": "Copilot",
       "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
+      "excluded_reason": "same-repo branch, not a fork",
+      "draft": true,
+      "created_at": "2026-04-22T18:12:35Z"
     },
     {
-      "number": 27807,
-      "title": "[docs] Developer docs consolidation v6.8",
-      "author": "github-actions[bot]",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 27805,
-      "title": "[community] Update community contributions in README",
-      "author": "github-actions[bot]",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 27803,
-      "title": "[instructions] Sync github-agentic-workflows.md with v0.68.3",
-      "author": "github-actions[bot]",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 27798,
-      "title": "[spec-enforcer] Enforce specifications for actionpins, agentdrain, cli",
-      "author": "github-actions[bot]",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 27797,
-      "title": "[docs] docs: Update glossary - daily scan 2026-04-22",
-      "author": "github-actions[bot]",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 27796,
-      "title": "[spec-extractor] Update package specifications for agentdrain, cli, co",
-      "author": "github-actions[bot]",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 27792,
-      "title": "[architecture] Update architecture diagram - 2026-04-22",
-      "author": "github-actions[bot]",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 27784,
-      "title": "[code-simplifier] refactor: extract lookupContainerPin helper",
-      "author": "github-actions[bot]",
-      "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
-    },
-    {
-      "number": 27783,
-      "title": "Accept deprecated `max_tokens` for MCP `audit`/`compile`",
+      "number": 27851,
+      "title": "Disable shell history expansion for bash scripts and MCP CLI wrappers",
       "author": "Copilot",
       "same_repo": true,
-      "excluded_reason": "same-repo branch, not a fork"
+      "excluded_reason": "same-repo branch, not a fork",
+      "draft": false,
+      "created_at": "2026-04-22T14:21:04Z"
     }
   ],
   "previous_run": {
-    "run_id": "24764612643",
-    "run_date": "2026-04-22T06:53:46Z",
+    "run_id": "24778600293",
+    "run_date": "2026-04-22T12:40:19.970454Z",
     "fork_prs": 0,
-    "agent_prs_found": 2,
-    "agent_prs_excluded": 2
+    "agent_prs_found": 11,
+    "agent_prs_excluded": 11
   }
 }
