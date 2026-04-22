@@ -1,0 +1,24 @@
+{
+  "daily_analysis": [
+    {
+      "date": "2026-04-22",
+      "pr_count": 46,
+      "message_count": 0,
+      "prs_with_body": 42,
+      "avg_sentiment": 0.026,
+      "top_topic": "Firewall / Error",
+      "top_keywords": [
+        "workflow",
+        "firewall",
+        "updated",
+        "behavior",
+        "test"
+      ],
+      "sentiment_breakdown": {
+        "positive": 18,
+        "neutral": 17,
+        "negative": 11
+      }
+    }
+  ]
+}
