@@ -126,5 +126,15 @@
     "recommendations_count": 4,
     "estimated_savings_per_run": 233295,
     "notes": "64% cancellation rate (9/14 runs); all 14 runs from push-to-main trigger on single day. 1.17M tokens wasted on cancelled runs (40%). Primary fix: add paths filter to push trigger. Also: remove reaction/status-comment triggers, cap cache-memory haiku scan to last 10 files."
+  },
+  {
+    "date": "2026-04-23",
+    "workflow_name": "Test Quality Sentinel",
+    "workflow_file": "test-quality-sentinel",
+    "total_tokens_analyzed": 15964870,
+    "runs_audited": 45,
+    "recommendations_count": 5,
+    "estimated_savings_per_run": 120000,
+    "notes": "26/45 runs partially_reducible (58%), 9/45 resource_heavy. Avg 8 turns, agentic_fraction=0.5. Primary lever: pre-step deterministic test collection to reduce turns."
   }
 ]
