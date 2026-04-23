@@ -7,44 +7,18 @@ sidebar:
 
 This guide shows you how to debug agentic workflow failures on **github.com** using the Copilot CLI, the `gh aw` debugging commands, and manual investigation techniques.
 
-> [!TIP]
-> The fastest path to a fix is to let an AI agent debug it for you. Launch the Copilot CLI, load the agentic-workflows agent, and paste the failing run URL.
-
 ## Debugging with the Copilot CLI
 
-The Copilot CLI can audit logs, trace failures, and suggest fixes interactively. This is the recommended first step for any workflow failure.
+The Copilot CLI is the recommended first step for any workflow failure — it audits logs, traces failures, and suggests fixes interactively.
 
-### Step 1: Launch the Copilot CLI
+1. Launch `copilot`, run `/agent`, and select **agentic-workflows** to give Copilot access to `gh aw audit`, `gh aw logs`, and other debugging tools.
+2. Paste the failing run URL:
 
-```bash
-copilot
-```
+   ```text
+   Debug this workflow run: https://github.com/OWNER/REPO/actions/runs/RUN_ID
+   ```
 
-### Step 2: Load the Agentic Workflows Agent
-
-Once inside the Copilot CLI, run:
-
-```text
-/agent
-```
-
-Select **agentic-workflows** from the list. This gives Copilot access to the `gh aw audit`, `gh aw logs`, and other debugging tools.
-
-### Step 3: Ask Copilot to Debug the Failure
-
-Paste the failing run URL and ask Copilot to investigate:
-
-```text
-Debug this workflow run: https://github.com/OWNER/REPO/actions/runs/RUN_ID
-```
-
-Copilot will:
-
-- Download and audit the run logs
-- Identify the root cause (missing tools, permission errors, network blocks, etc.)
-- Suggest targeted fixes or open a pull request with the fix
-
-You can also ask follow-up questions:
+Copilot downloads and audits the run logs, identifies the root cause (missing tools, permission errors, network blocks), and suggests fixes or opens a pull request. You can also ask follow-up questions:
 
 ```text
 What domains were blocked by the firewall?
@@ -54,7 +28,7 @@ Why did the MCP server fail to connect?
 
 ### Alternative: Copilot Chat on GitHub.com
 
-If your repository is [configured for agentic authoring](/gh-aw/guides/agentic-authoring/), you can use Copilot Chat directly on GitHub.com:
+If your repository is [configured for agentic authoring](/gh-aw/guides/agentic-authoring/):
 
 ```text
 /agent agentic-workflows debug https://github.com/OWNER/REPO/actions/runs/RUN_ID
@@ -62,7 +36,7 @@ If your repository is [configured for agentic authoring](/gh-aw/guides/agentic-a
 
 ### Alternative: Any Coding Agent
 
-For coding agents that don't have the agentic-workflows agent pre-configured, use the standalone debug prompt:
+For coding agents that don't have the agentic-workflows agent pre-configured:
 
 ```text
 Debug this workflow run using https://raw.githubusercontent.com/github/gh-aw/main/debug.md
