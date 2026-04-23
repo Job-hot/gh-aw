@@ -1,56 +1,49 @@
-# Shared Alerts — 2026-04-22T12:11Z
+# Shared Alerts — 2026-04-23T12:10Z
 
 ## P0 (Critical)
 - None currently
 
 ## P1 (High)
-- **Stale lock files — Codex 401 auth loop** (#27724 + #27731 OPEN, Apr 22): PR #27711 merged openai-proxy config but lock files not recompiled → Codex workflows use old config → 401 at api.openai.com. Fix: `make recompile`. NOW 23 stale files (was 15 yesterday).
-- **Safe outputs "session not found" at 37min** (#27755 NEW, Apr 22, @dsyme): MCP server returning session not found at 37min (not just 1h+). All long-running workflows at risk.
-- **Design Decision Gate push bundle failure** (#27756 OPEN, Apr 22): `push_to_pull_request_branch: Failed to apply bundle` — NEW failure mode on top of max_turns=5 issue.
-- **Design Decision Gate max_turns=5** (#27470 OPEN, Apr 21): ADR generation requires ≥6 turns; 5-turn hard limit makes it structurally impossible.
-- **node: command not found on aw-gpu-runner-T4** (#27534 OPEN): Recurring. Node.js PATH not available in bash on GPU runners.
+- **dependabot-go-checker compilation failure → Agentic Maintenance broken** (NEW Apr 23, #aw_deplck): `vulnerability-alerts: read` permission rejected by GitHub Actions schema validator → `agentic-maintenance` workflow fails to compile workflows step (199/200, 1 error). Fix: remove or move `vulnerability-alerts: read` from job-level permissions in `dependabot-go-checker.md`.
+- **Daily Community Attribution model not supported** (#28025 NEW Apr 23): 400 error, gpt model unavailable for subscription tier. Recurring model availability issue.
+- **Safe outputs "session not found" at 37min** (#27755 OPEN, Apr 22): MCP server returning session not found at 37min. All long-running workflows at risk.
+- **Design Decision Gate push bundle failure** (#27756 OPEN, Apr 22): push_to_pull_request_branch failed.
+- **Design Decision Gate max_turns=5** (#27470 OPEN): structurally impossible ADR generation.
+- **awf-api-proxy sidecar unhealthy** (#27888 OPEN, Apr 23): Docker compose failures, CLI Version Checker and potentially other workflows blocked.
+- **GitHub Remote MCP Auth Test REGRESSION** (#27965, Apr 23): Was resolved Apr 22, failing again. gpt-5.1-codex-mini model not supported.
+- **node: command not found on aw-gpu-runner-T4** (#27534 OPEN): Recurring.
 - **GitHub App rate limit exhaustion** (#27251 OPEN): Co-scheduled at 23:44 UTC.
-- **CODEX_HOME variable collision** (#27512 OPEN, Apr 21): cp same-file error breaks Codex workflows with MCP config.
-- **Smoke Claude** (#27030 OPEN): Ongoing
-- **Smoke Copilot** (#27028 OPEN): Ongoing since Apr 14
+- **CODEX_HOME variable collision** (#27512 OPEN): cp same-file error.
+- **Smoke Claude** (#27030 OPEN): Ongoing.
+- **Smoke Copilot** (#27028 OPEN): Ongoing since Apr 14.
 
 ## P2 (Watch)
-- **Daily Documentation Updater protected files** (#27801 OPEN, Apr 22): Tried to modify .github/aw/ agent instruction files. Fix needed: `protected-files: fallback-to-issue` or allowed-files config.
-- **Safe Outputs SEC-004** (#27235 OPEN): 4 handler files need sanitization
-- **Performance regressions** (#27280/#27279/#27278 OPEN)
-- **dev-hawk github-env** (#26933): High severity zizmor finding
-- **PR Triage Agent** (#26778 OPEN): 67% success rate
-- **MCP gateway long-running drops** (#23153 OPEN): Session not found after 30-45min (now confirmed shorter: #27755)
-- **Copilot reviewer fan-out** (#27130 OPEN): 6 review workflows per Copilot PR push
+- **THREAT_DETECTION_RESULT parse failure** (NEW Apr 23, #aw_thrdet): Duplicate Code Detector + Daily Choice Type Test — detection model not outputting expected JSON format. Recurring across at least 2 days.
+- **Daily Fact About gh-aw** (#28035 OPEN, Apr 23): agent failure, auto-issue.
+- **Safe Outputs SEC-004** (#27235 OPEN): 4 handler files need sanitization.
+- **Daily Documentation Updater protected files** (#27801 OPEN): Tried to modify .github/aw/ files.
+- **Performance regressions** (#27280/#27279/#27278 OPEN).
+- **MCP gateway long-running drops** (#23153 OPEN): Session not found after 30-45min.
+- **Copilot reviewer fan-out** (#27130 OPEN): 6 review workflows per push.
 
 ## Resolved (Recent)
-- GitHub Remote MCP Authentication Test ✅ RESOLVED Apr 22 (was persistent failure)
-- Codex 401 auth root cause IDENTIFIED (#27729) — fix pending recompile
+- Stale lock files ✅ RESOLVED Apr 23 (was 23 stale files Apr 22 — all in sync now)
+- Design Decision Gate push failure ✅ IMPROVED Apr 23 (2/2 success, was 50% failure Apr 22)
 - Smoke OpenCode ✅ NEW engine working
 
 ## Ecosystem State
-- 197 workflows (stable)
-- Stale lock files: 23 (up from 15 Apr 21; still needs `make recompile` for #27724)
-- Schedule success rate: ~90% today (27/30 runs observed)
+- 200 workflows
+- Stale lock files: 0 ✅ (resolved from 23)
+- Compilation errors: 1 (dependabot-go-checker)
+- Schedule success rate: ~83% today (25/30 runs)
 - P0 failures: 0
-- P1 failures: stale locks (Codex), safe outputs session timeout, Design Decision Gate, Smoke Copilot/Claude
-- Overall quality trend: Q:69 (↓-1 from 70)
+- P1 failures: Agentic Maintenance, Smoke Copilot/Claude, awf-api-proxy, session timeout
+- Overall quality trend: Q:68 (↓-1 from 69)
 
 ## Orchestrator Summaries
-- Workflow Health (Apr 22 12:11Z): Score 69/100. 197 workflows. 23 stale locks (#27724). 90% success rate (27/30). Protected files P2 (#27801). Codex 401 P1 (#27816/#27810).
-- Agent Performance (Apr 22 04:37Z): Q:71 E:67. 18 workflows, 29 runs. Stale lock files P1. Safe outputs 37min threshold P1. Design Decision Gate push failure P1. GitHub Remote MCP Auth RESOLVED.
-- Workflow Health (Apr 21 12:14Z): Score 70/100. 198 workflows. 15 stale locks. MCP Gateway P1 (codex+CLI servers). node not found GPU runner P1.
-- Agent Performance (Apr 21 04:45Z): Q:72 E:68. 25 workflows, 31 runs. DDG max_turns P1. Docs Unbloat 0-output cost drain P2.
-- Workflow Health (Apr 20 12:14Z): Score 73/100. 197 workflows. 0 stale locks. node not found on GPU runner P1.
+- Workflow Health (Apr 23 12:10Z): Score 68/100. 200 workflows. 0 stale locks ✅. 83% success (25/30). NEW P1: dependabot-go-checker compile error. NEW P2: THREAT_DETECTION parse failure.
+- Agent Performance (Apr 23 04:40Z): ~47% success (8/17). awf-api-proxy P1 (#27888). GitHub Remote MCP regression (#27965). Design Decision Gate IMPROVED.
+- Workflow Health (Apr 22 12:11Z): Score 69/100. 197 workflows. 23 stale locks. 90% success (27/30). Protected files P2. Codex 401 P1.
+- Agent Performance (Apr 22 04:37Z): Q:71 E:67. 18 workflows, 29 runs. Safe outputs 37min P1. DDG push failure P1.
 
-Last updated: 2026-04-22T12:11Z by workflow-health-manager
-
-## Update: 2026-04-23T04:40Z by agent-performance-manager
-
-### NEW/REGRESSED
-- **awf-api-proxy sidecar unhealthy** (#27888 OPEN): Causing docker compose failures in CLI Version Checker (#27966) and potentially other workflows. Blocking broader workflow set.
-- **GitHub Remote MCP Auth Test REGRESSION** (#27965, Apr 23): Was RESOLVED Apr 22, now failing again. Root cause: `gpt-5.1-codex-mini` model not supported on subscription — model availability likely changed. Previous resolution may have been transient.
-- **Design Decision Gate IMPROVED** ✅: 2/2 success Apr 23 (was 50% failure Apr 22 with push bundle error).
-
-### Overall Apr 23 Success Rate
-~47% (8/17 completed) — significantly lower than 90% Apr 22. Bulk of failures are ongoing P1s + new awf-api-proxy issue.
+Last updated: 2026-04-23T12:10Z by workflow-health-manager
