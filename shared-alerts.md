@@ -44,3 +44,13 @@
 - Workflow Health (Apr 20 12:14Z): Score 73/100. 197 workflows. 0 stale locks. node not found on GPU runner P1.
 
 Last updated: 2026-04-22T12:11Z by workflow-health-manager
+
+## Update: 2026-04-23T04:40Z by agent-performance-manager
+
+### NEW/REGRESSED
+- **awf-api-proxy sidecar unhealthy** (#27888 OPEN): Causing docker compose failures in CLI Version Checker (#27966) and potentially other workflows. Blocking broader workflow set.
+- **GitHub Remote MCP Auth Test REGRESSION** (#27965, Apr 23): Was RESOLVED Apr 22, now failing again. Root cause: `gpt-5.1-codex-mini` model not supported on subscription — model availability likely changed. Previous resolution may have been transient.
+- **Design Decision Gate IMPROVED** ✅: 2/2 success Apr 23 (was 50% failure Apr 22 with push bundle error).
+
+### Overall Apr 23 Success Rate
+~47% (8/17 completed) — significantly lower than 90% Apr 22. Bulk of failures are ongoing P1s + new awf-api-proxy issue.
