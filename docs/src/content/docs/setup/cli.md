@@ -165,9 +165,14 @@ gh aw add githubnext/agentics/ci-doctor           # Add single workflow
 gh aw add githubnext/agentics/ci-doctor@v1.0.0   # Add specific version
 gh aw add githubnext/agentics/ci-doctor --dir shared                  # Organize in subdirectory
 gh aw add githubnext/agentics/ci-doctor --create-pull-request        # Create PR instead of commit
+gh aw add workflow1 workflow2 workflow3            # Add multiple workflows at once
+gh aw add githubnext/agentics/ci-doctor --name my-doctor  # Override filename for single workflow
 ```
 
 **Options:** `--dir/-d`, `--create-pull-request`, `--no-gitattributes`, `--append`, `--disable-security-scanner`, `--engine/-e`, `--force/-f`, `--name/-n`, `--no-stop-after`, `--stop-after`
+
+> [!NOTE]
+> The `--name` flag cannot be used when adding multiple workflows at once. It only applies when adding a single workflow. Using `--name` with multiple workflow arguments returns an error.
 
 #### `new`
 
