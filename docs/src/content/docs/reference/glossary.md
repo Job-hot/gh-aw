@@ -97,6 +97,14 @@ Automated security analysis that scans agent output and code changes for potenti
 
 A preview mode where workflows simulate actions without making changes. The AI generates output showing what would happen, but no GitHub API write operations are performed. Use for testing before production runs. See [Staged Mode](/gh-aw/reference/staged-mode/) for details.
 
+### `acceptEdits` Mode
+
+The default Claude Code permission mode used by gh-aw. In this mode, Claude honors the `--allowed-tools` flag, so the workflow's declared `tools:` and `mcp-servers: allowed:` configuration is compiled into an explicit allowlist and passed to the Claude CLI. Only the tools listed there are accessible to the agent. Contrast with [`bypassPermissions` mode](#bypasspermissions-mode).
+
+### `bypassPermissions` Mode
+
+A Claude Code permission mode activated when a workflow grants unrestricted bash access (`bash: "*"`, `bash: [":*"]`, or `bash: null`). In this mode, Claude Code silently ignores `--allowed-tools`, making every tool exposed by the MCP gateway reachable regardless of the workflow's declared tool configuration. The **MCP gateway's `allowed:` filter is the sole effective tool boundary** in this mode. See [Claude Tool Enforcement Security Model](/gh-aw/reference/engines/#claude-tool-enforcement-security-model).
+
 ### Integrity Filtering
 
 A guardrail feature that controls which GitHub content an agent can access, filtering by author trust and merge status. Content below the configured `min-integrity` threshold is silently removed before the AI engine sees it. The four levels are `merged`, `approved`, `unapproved`, and `none` (most to least restrictive). For public repositories, `min-integrity: approved` is applied automatically — restricting content to owners, members, and collaborators — even without additional authentication. Set `min-integrity: none` to allow all content through for workflows designed to process untrusted input (e.g., triage bots).
