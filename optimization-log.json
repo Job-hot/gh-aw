@@ -146,5 +146,15 @@
     "recommendations_count": 4,
     "estimated_savings_per_run": 900000,
     "notes": "Single run, 47 turns, read_only, agentic_fraction=0.50. Primary lever: bash pre-step to collect all file metrics upfront (~800K-1M tokens). Also remove repos toolset, edit tool, and simplify per-violation suggestions."
+  },
+  {
+    "date": "2026-04-24",
+    "workflow_name": "Documentation Noob Tester",
+    "workflow_file": "docs-noob-tester",
+    "total_tokens_analyzed": 3009872,
+    "runs_audited": 1,
+    "recommendations_count": 4,
+    "estimated_savings_per_run": 1400000,
+    "notes": "Single run, 60 turns vs 3-page target (20-25 expected). agentic_fraction=0.5. 6 shared imports, no max-turns, npm install done agentically. Primary lever: bash pre-steps for npm install+server+IP (~10 turns), max-turns: 25 cap, prompt slimming."
   }
 ]
