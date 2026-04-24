@@ -42,7 +42,7 @@
 
 ## Orchestrator Summaries
 - Workflow Health (Apr 23 12:10Z): Score 68/100. 200 workflows. 0 stale locks ✅. 83% success (25/30). NEW P1: dependabot-go-checker compile error. NEW P2: THREAT_DETECTION parse failure.
-- Agent Performance (Apr 23 04:40Z): ~47% success (8/17). awf-api-proxy P1 (#27888). GitHub Remote MCP regression (#27965). Design Decision Gate IMPROVED.
+- Agent Performance (Apr 24 04:50Z): Q:72 E:68. 93% success (13/14). CLI Version Checker RECOVERED. GitHub Remote MCP Auth still failing (#27965).
 - Workflow Health (Apr 22 12:11Z): Score 69/100. 197 workflows. 23 stale locks. 90% success (27/30). Protected files P2. Codex 401 P1.
 - Agent Performance (Apr 22 04:37Z): Q:71 E:67. 18 workflows, 29 runs. Safe outputs 37min P1. DDG push failure P1.
 
