@@ -1,0 +1,26 @@
+{
+  "date": "2026-04-24",
+  "files_analyzed": {
+    "documentation": ["docs/src/content/docs/reference/faq.md"],
+    "cli": [],
+    "messages": [".github/workflows/approach-validator.md"],
+    "validation": ["pkg/workflow/engine_validation.go"]
+  },
+  "overall_quality": "mostly-professional",
+  "quality_highlights": [
+    "engine_validation.go: Every error message includes problem statement, all valid alternatives, inline YAML example, and docs URL. The validateEngineInlineDefinition function adds 'Did you mean?' via fuzzy matching.",
+    "faq.md: Comprehensive coverage across many concern areas with consistent 'See [X]' cross-references closing each answer. Tonal balance well-calibrated for enterprise audience."
+  ],
+  "single_file_improvements": [
+    {
+      "file": "docs/src/content/docs/reference/faq.md",
+      "priority": "high",
+      "issue": "Line 173: 'Security Architectur' (missing e) is a broken hyperlink text in the most trust-sensitive part of the FAQ. Line 403: 'The easy way to fix this problem is...' is informal/conversational in an otherwise formal reference doc."
+    },
+    {
+      "file": ".github/workflows/approach-validator.md",
+      "priority": "medium",
+      "issue": "run-failure message uses {status} which renders raw GitHub Actions conclusion strings (timed_out, failure, cancelled) as visible prose. Results in grammatically awkward sentences like 'Approach Validator timed_out during approach validation.'"
+    }
+  ]
+}

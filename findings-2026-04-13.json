@@ -1,1 +1,1 @@
-{"date":"2026-04-13","files":["cache-memory.md","engines.md","domains_command.go","approach-validator.md","dangerous_permissions_validation.go"],"improvements":[{"file":"docs/src/content/docs/reference/cache-memory.md","issue":"Behavior section is dense single paragraph; hard to scan"},{"file":"pkg/workflow/dangerous_permissions_validation.go","issue":"First two lines redundant; docs reference is relative path not clickable"}]}
+{"date":"2026-04-13","archived":true}

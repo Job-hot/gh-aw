@@ -1,1 +1,1 @@
-{"date":"2026-04-05","files":["network-configuration.md","hash_command.go","breaking-change-checker.md","runs_on_validation.go"],"improvements":[{"file":"pkg/cli/hash_command.go","issue":"Short description describes mechanics not purpose"},{"file":".github/workflows/breaking-change-checker.md","issue":"run-failure uses same emoji as run-started"}]}
+{"date":"2026-04-05","archived":true}

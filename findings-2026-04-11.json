@@ -1,1 +1,1 @@
-{"date":"2026-04-11","files":["quick-start.mdx","run command","brave.md","expression_syntax_validation.go"],"improvements":[{"file":"docs/src/content/docs/setup/quick-start.mdx","issue":"'What's next?' heading casual; 'Peli's Agent Factory' reference unprofessional in enterprise context"},{"file":"cmd/gh-aw/main.go","issue":"run command: 'added as actions' is ambiguous for new users"}]}
+{"date":"2026-04-11","archived":true}

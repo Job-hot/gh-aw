@@ -1,1 +1,1 @@
-{"date":"2026-04-06","files":["engines.md","editing-workflows.md","fix_command.go","domains_command.go","ci-doctor.md","archie.md","tools_validation.go"],"improvements":[{"file":"pkg/cli/fix_command.go","issue":"'codemod-style' jargon in short description"},{"file":".github/workflows/ci-doctor.md","issue":"run-failure message vague, no actionable guidance"}]}
+{"date":"2026-04-06","archived":true}
