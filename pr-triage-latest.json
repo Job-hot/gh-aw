@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-04-24T12:37:34.256Z",
-  "run_id": "24889818043",
+  "run_date": "2026-04-24T18:27:07.179Z",
+  "run_id": "24905362678",
   "fork_prs": 0,
-  "agent_prs_found": 16,
-  "agent_prs_excluded": 16,
-  "notes": "16 open PRs found. All are same-repo branches (copilot/*, dead-code/*, docs/*, ci/*, jsweep/*, architecture-diagram/* branches), not forks. Per policy, only fork PRs are triaged. No fork PRs to triage.",
+  "agent_prs_found": 1,
+  "agent_prs_excluded": 1,
+  "notes": "1 open agent PR found (#28316 copilot/add-models-request-step). It is a same-repo branch, not a fork. Per policy, only fork PRs are triaged. No fork PRs to triage.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -17,10 +17,10 @@
     "by_action": {}
   },
   "previous_run": {
-    "run_id": "24876562332",
-    "run_date": "2026-04-24T06:55:30.964Z",
+    "run_id": "24889818043",
+    "run_date": "2026-04-24T12:37:34.256Z",
     "fork_prs": 0,
-    "agent_prs_found": 6,
-    "agent_prs_excluded": 6
+    "agent_prs_found": 16,
+    "agent_prs_excluded": 16
   }
 }
