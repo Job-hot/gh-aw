@@ -152,6 +152,7 @@ Pre-configured MCP server specifications are available in [`.github/workflows/sh
 |------------|-------------|------------------|
 | **Jupyter** | `shared/mcp/jupyter.md` | Execute code, manage notebooks, visualize data |
 | **Drain3** | `shared/mcp/drain3.md` | Log pattern mining with 8 tools including `index_file`, `list_clusters`, `find_anomalies` |
+| **Kreuzberg** | `shared/mcp/kreuzberg.md` | Document intelligence: extract text and metadata from 97+ formats (PDF, DOCX, images via Tesseract OCR, legacy Office via LibreOffice). No API key required. |
 | **Others** | `shared/mcp/*.md` | AST-Grep, Azure, Brave Search, Context7, DataDog, DeepWiki, Fabric RTI, MarkItDown, Microsoft Docs, Notion, Sentry, Serena, Server Memory, Slack, Tavily |
 
 ## Adding MCP Servers from the Registry
