@@ -47,7 +47,7 @@ Extract technical vocabulary from documentation files and create a concise dicta
 ## Your Mission
 
 Create a concise dictation instruction file at `skills/dictation/SKILL.md` that:
-1. Contains a glossary of approximately 1000 project-specific terms extracted from documentation
+1. Contains a glossary of exactly 256 project-specific terms selected from the precomputed word frequency histogram
 2. Provides instructions for fixing speech-to-text errors (ambiguous terms, spacing, hyphenation)
 3. Provides instructions for "agentifying" text: removing filler words (humm, you know, um, uh, like, etc.), improving clarity, and making text more professional
 4. Does NOT include planning guidelines or examples (keep it short and focused on error correction and text cleanup)
@@ -55,21 +55,60 @@ Create a concise dictation instruction file at `skills/dictation/SKILL.md` that:
 
 ## Task Steps
 
-### 1. Scan Documentation for Project-Specific Glossary
+### 1. Compute Word Frequency Histogram
 
-Use `search` to efficiently discover documentation covering different areas of the project, then read the returned files to extract vocabulary. This is more targeted than scanning all files with `find`:
+Run the following Python script to compute a statistical histogram of technical term occurrence across all documentation files:
+
+```bash
+python3 - <<'PYEOF'
+import os
+import re
+from collections import Counter
+
+docs_dir = "docs/src/content/docs"
+words = Counter()
+
+for root, dirs, files in os.walk(docs_dir):
+    for fname in files:
+        if fname.endswith(".md"):
+            with open(os.path.join(root, fname)) as f:
+                text = f.read()
+            # Extract terms from inline code backticks
+            terms = re.findall(r'`([^`\n]{2,50})`', text)
+            # Extract ALL_CAPS identifiers (env vars, constants)
+            terms += re.findall(r'\b([A-Z][A-Z0-9_]{2,})\b', text)
+            # Extract @mentions (bot names)
+            terms += re.findall(r'(@[a-z][a-z0-9-]+)', text)
+            words.update(t.strip() for t in terms if t.strip())
+
+# Exclude generic English words and print top 256 project-specific terms
+EXCLUDE = {
+    'MUST', 'SHOULD', 'NOT', 'MAY', 'SHALL', 'NOTE', 'RECOMMENDED', 'REQUIRED', 'OPTIONAL',
+    'IMPORTANT', 'WARNING', 'TIP', 'true', 'false', 'null', 'none', 'all', 'any', 'max', 'min',
+    'yes', 'no', 'new', 'old', 'get', 'set', 'add', 'run', 'use', 'see', 'via', 'in', 'out',
+}
+filtered = [(t, c) for t, c in words.most_common(512)
+            if t not in EXCLUDE and len(t) > 2 and not t.isdigit()]
+for term, count in filtered[:256]:
+    print(f"{count:4d} {term}")
+PYEOF
+```
+
+The script prints the top 256 project-specific terms by frequency. Use these terms directly as the glossary — they are already ranked and filtered.
+
+### 2. Scan Documentation for Project-Specific Glossary
+
+Use the histogram output from Step 1 plus targeted searches to validate and supplement term selection:
 
 - `search("workflow configuration frontmatter engine permissions")` — core workflow concepts
 - `search("safe-outputs create-pull-request tools MCP server")` — tools and integrations
 - `search("compilation CLI commands audit logs")` — CLI and developer tools
 - `search("network sandbox runtime activation triggers")` — advanced features
 
-Read each returned file path for its content, then also scan any remaining documentation files in `docs/src/content/docs/` to ensure broad coverage.
-
 **Focus areas for extraction:**
 - Configuration: safe-outputs, permissions, tools, cache-memory, toolset, frontmatter
-- Engines: copilot, claude, codex, custom
-- Bot mentions: @copilot (for GitHub issue assignment)
+- Engines: @copilot, claude, codex, custom (use @copilot not copilot)
+- Bot mentions: @copilot (for GitHub issue assignment — always use @copilot)
 - Commands: compile, audit, logs, mcp, recompile
 - GitHub concepts: workflow_dispatch, pull_request, issues, discussions
 - Repository-specific: agentic workflows, gh-aw, activation, MCP servers
@@ -79,14 +118,14 @@ Read each returned file path for its content, then also scan any remaining docum
 
 **Exclude**: makefile, Astro, starlight (tooling-specific, not user-facing)
 
-### 2. Create the Dictation Instructions File
+### 3. Create the Dictation Instructions File
 
 Create `skills/dictation/SKILL.md` with:
 - Frontmatter with name and description fields
 - Title: Dictation Instructions
 - Technical Context: Brief description of gh-aw
-- Project Glossary: ~1000 terms, alphabetically sorted, one per line
-- Fix Speech-to-Text Errors: Common misrecognitions → correct terms
+- Project Glossary: exactly 256 terms from the histogram, alphabetically sorted, one per line
+- Fix Speech-to-Text Errors: Common misrecognitions → correct terms (use @copilot not copilot)
 - Clean Up and Improve Text: Instructions for removing filler words and improving clarity
 - Guidelines: General instructions as follows
 
@@ -100,7 +139,7 @@ You do not have enough background information to plan or provide code examples.
 - maintain the user's intended meaning
 ```
 
-### 3. Create Pull Request
+### 4. Create Pull Request
 
 Use the create-pull-request tool to submit your changes with:
 - Title: "[docs] Update dictation skill instructions"
@@ -108,10 +147,12 @@ Use the create-pull-request tool to submit your changes with:
 
 ## Guidelines
 
-- Scan only `docs/src/content/docs/**/*.md` files
-- Extract ~1000 terms (950-1050 acceptable)
-- Exclude tooling-specific terms (makefile, Astro, starlight)
+- Run the Python NLP histogram script first to identify high-frequency terms
+- Scan only `docs/src/content/docs/**/*.md` files for additional context
+- Select exactly 256 terms driven by histogram frequency
+- Exclude tooling-specific terms (makefile, Astro, starlight) and generic English words
 - Prioritize frequently used project-specific terms
+- Always use @copilot (not copilot) when referring to the GitHub Copilot bot
 - Alphabetize the glossary
 - No descriptions in glossary (just term names)
 - Focus on fixing speech-to-text errors, not planning or examples
@@ -120,8 +161,9 @@ Use the create-pull-request tool to submit your changes with:
 
 - ✅ File `skills/dictation/SKILL.md` exists
 - ✅ Contains proper SKILL.md frontmatter (name, description)
-- ✅ Contains ~1000 project-specific terms (950-1050 acceptable)
-- ✅ Terms extracted from documentation only
+- ✅ Contains exactly 256 project-specific terms from the histogram
+- ✅ Terms selected using precomputed word frequency histogram
+- ✅ Uses @copilot (not copilot) throughout
 - ✅ Focuses on fixing speech-to-text errors
 - ✅ Includes instructions for removing filler words and improving text clarity
 - ✅ Pull request created with changes
