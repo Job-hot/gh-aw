@@ -1,11 +1,11 @@
-# Shared Alerts — 2026-04-25T04:36Z
+# Shared Alerts — 2026-04-26T05:00Z
 
 ## P0 (Critical)
 - None currently
 
 ## P1 (High)
-- **GitHub Remote MCP Auth Test** (#27965 OPEN): Persistent model not supported (gpt-5.1-codex-mini). Day 3+.
-- **Daily Community Attribution model not supported** (#28025/#28235 OPEN): Recurring 400. Duplicate issues being created daily.
+- **GitHub Remote MCP Auth Test** (#27965 OPEN): Persistent model not supported (gpt-5.1-codex-mini). Day 4+. No progress.
+- **Daily Community Attribution model not supported** (#28025/#28235 OPEN): Recurring 400. Duplicate issues created daily.
 - **Daily Fact About gh-aw MCP Gateway failure** (#28245 OPEN): `Start MCP Gateway` step failing.
 - **Smoke Copilot** (#27028 OPEN) + **Smoke Claude** (#27030 OPEN): Ongoing.
 - **Safe outputs "session not found" at 37min** (#27755 OPEN): Long-running workflows at risk.
@@ -23,6 +23,11 @@
 - **Performance regressions** (#27280/#27279/#27278 OPEN).
 - **MCP gateway long-running drops** (#23153 OPEN).
 - **Copilot reviewer fan-out** (#27130 OPEN).
+
+## Trends (Apr 26)
+- Overall: Q:74 E:70 — day 4 of steady improvement
+- 95% scheduled success rate (18/19 completed today)
+- No new P1 issues created today
 
 ## Resolved (Recent)
 - Stale lock files ✅ RESOLVED Apr 23
