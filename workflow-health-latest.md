@@ -1,33 +1,34 @@
-# Workflow Health — 2026-04-26T12:03Z
+# Workflow Health — 2026-04-27T12:20Z
 
-Score: 73/100 (↑+1 from 72 Apr 24). 203 workflows. Run: §24956132230
+Score: 74/100 (↑+1 from 73 Apr 26). 204 workflows. Run: §24994541064
 
 ## KEY FINDINGS
 
 ### Compilation Status
-- 203/203 lock files present ✅
+- 204/204 lock files present ✅
 - **0 missing lock files** ✅
-- **0 stale lock files** ✅
+- **0 stale lock files** ✅ (increased from 203 to 204 due to new workflow)
 
-### Today's Failures (Apr 26)
-- **Daily Issues Report Generator**: `node: command not found` on aw-gpu-runner-T4 → auto-issue #28568
-- **Daily Go Function Namer**: AWF binary CDN 502 (transient) → covered by #28529
-- **CI Integration Tests**: failing (non-agentic)
+### Today's Failures (Apr 27)
+- **Daily Fact About gh-aw**: `codex: command not found` — issue #28703 auto-created. Still part of P0 #28596 (aw-gpu-runner-T4 / codex binary missing).
+- **Documentation Unbloat**: Claude engine terminated (OAuth token/auth issue) — issue #28659. Covered by failure investigation #28673.
 
-### P0 Issues (NEW)
-- **aw-gpu-runner-T4: node not found** (NEW issue #aw_gpunode created): 3 workflows 100% failing — Daily News, Daily Fact About gh-aw, Daily Issues Report Generator. All use copilot engine + aw-gpu-runner-T4. Prior issue #27534 closed "not planned" Apr 21 without fix. All still failing.
+### Scheduled Run Summary (Apr 27)
+- 30 scheduled runs executed: 28 success, 1 failure, 1 action_required
+- Effective success rate: ~93% (28/30 excl action_required)
+- Good recovery from P0 GPU runner: Daily News and Daily Issues Report Generator now running on different runners ✅
+
+### P0 Issues (Active)
+- **codex: command not found** (#28596 OPEN): Daily Fact About gh-aw still failing with codex engine — `codex` binary not found on runners. Auto-issue #28703 created today. Root cause: codex CLI not installed on runners used by this workflow.
 
 ### P1 Issues (Active/Ongoing)
-- **dependabot-go-checker compilation failure**: `vulnerability-alerts: read` not at job level
-- **AWF binary CDN 502** (#28529 OPEN): Intermittent gh-aw-firewall download failures
-- **Daily Community Attribution model not supported** (#28025/#28235 OPEN): Recurring 400
-- **Daily Fact About gh-aw** — subsumed by P0 aw-gpu-runner-T4 issue
+- **Documentation Unbloat claude auth failure** (#28659 OPEN, #28673 investigation): OAuth token issue with Claude engine in this workflow.
+- **AWF binary CDN 502** (#28529 OPEN): Intermittent, not observed today
+- **Daily Community Attribution model not supported** (#28025/#28235 OPEN): NOT observed today ✅
 - **Safe outputs "session not found" at 37min** (#27755 OPEN)
-- **Design Decision Gate push bundle failure** (#27756 OPEN)
-- **Smoke Claude** (#27030 OPEN): Ongoing
-- **Smoke Copilot** (#27028 OPEN): Ongoing
+- **Smoke Claude** (#27030 OPEN) + **Smoke Copilot** (#27028 OPEN): Not observed today
 - **awf-api-proxy sidecar unhealthy** (#27888 OPEN)
-- **GitHub Remote MCP Auth Test REGRESSION** (#27965 OPEN)
+- **GitHub Remote MCP Auth Test REGRESSION** (#27965 OPEN): Day 6+, still failing
 - **GitHub App rate limit exhaustion** (#27251 OPEN)
 - **CODEX_HOME variable collision** (#27512 OPEN)
 
@@ -39,7 +40,12 @@ Score: 73/100 (↑+1 from 72 Apr 24). 203 workflows. Run: §24956132230
 - **MCP gateway long-running drops** (#23153 OPEN)
 
 ## Issues Created This Run
-- #aw_gpunode: [P0] aw-gpu-runner-T4: node not found — 3 workflows failing 100%
+- None (auto-issues already created by failure-investigator)
 
 ## Issues Updated
-- None (no resolved issues confirmed)
+- None (existing issues tracking active failures)
+
+## Positive Trends
+- Daily Community Attribution NOT failing today (was recurring P1)
+- Daily Go Function Namer success (CDN 502 resolved)
+- 28/30 scheduled runs successful
