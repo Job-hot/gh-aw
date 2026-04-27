@@ -1,7 +1,28 @@
 {
-  "timestamp": "2026-04-23T21:10:59Z",
-  "analysis": "copilot-cli-deep-research",
-  "total_workflows": 200,
-  "copilot_workflows": 88,
-  "run_id": "24858982293"
+  "timestamp": "2026-04-27T21:15:48Z",
+  "workflow_run_id": "25019911810",
+  "total_workflows": 204,
+  "copilot_workflows": 90,
+  "claude_workflows": 47,
+  "codex_workflows": 10,
+  "features_used": {
+    "max-continuations": 2,
+    "engine.agent": 7,
+    "engine.model": 10,
+    "engine.version": 26,
+    "engine.args": 0,
+    "engine.api-target": 0,
+    "engine.bare": 8,
+    "engine.token-weights": 0,
+    "startup-timeout": 0,
+    "tool-timeout": 0,
+    "cache-memory": 84,
+    "web-fetch": 19,
+    "web-search": 2,
+    "mcp-scripts": 1,
+    "sandbox": 17,
+    "network-allowed": 107,
+    "imports": 166
+  },
+  "opportunities_found": 10
 }
