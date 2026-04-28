@@ -89,3 +89,28 @@ jobs:
             });
 
             core.info(`✅ "${version}" has been promoted to latest (prerelease: false, make_latest: true)`);
+
+      - name: Trigger canary
+        if: success()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        env:
+          CANARY_DISPATCH_URL: ${{ secrets.CANARY_DISPATCH_URL }}
+          CANARY_DISPATCH_TOKEN: ${{ secrets.CANARY_DISPATCH_TOKEN }}
+          INPUT_VERSION: ${{ inputs.version }}
+        with:
+          script: |
+            const url = process.env.CANARY_DISPATCH_URL;
+            const token = process.env.CANARY_DISPATCH_TOKEN;
+            if (!url || !token) {
+              core.info('Canary dispatch not configured — skipping');
+              return;
+            }
+            const [owner, repo] = url.replace('repos/', '').replace('/dispatches', '').split('/');
+            const octokit = github.getOctokit(token);
+            await octokit.rest.repos.createDispatchEvent({
+              owner,
+              repo,
+              event_type: 'gh-aw-release',
+              client_payload: { version: process.env.INPUT_VERSION },
+            });
+            core.info(`✅ Canary dispatch sent for ${process.env.INPUT_VERSION}`);
