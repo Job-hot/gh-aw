@@ -216,6 +216,41 @@ See [Text Sanitization](/gh-aw/reference/safe-outputs/#text-sanitization-allowed
 
 Guardrails are foundational to the design. Agentic workflows implement defense-in-depth through compilation-time validation (schema checks, expression safety, action SHA pinning), runtime isolation (sandboxed containers with network controls), permission separation (read-only defaults with [safe outputs](/gh-aw/reference/safe-outputs/) for writes), tool allowlisting, and output sanitization. See the [Security Architecture](/gh-aw/introduction/architecture/).
 
+### Who owns the final admission decision — is guardrail validation the same as external admission authority?
+
+No, and the distinction matters for high-privilege operations.
+
+gh-aw's built-in guardrails (threat detection, output limits, sanitization) run *within the same GitHub Actions workflow* that initiated execution. They answer whether the agent's proposed output looks acceptable — but the admission authority remains inside the system that produced the output.
+
+For a genuinely external admission boundary, gh-aw provides two extension points:
+
+**1. GitHub Actions environment protection rules** — add a required-reviewer environment to a [custom safe-output job](/gh-aw/reference/custom-safe-outputs/). GitHub Actions infrastructure enforces this gate before the write job runs, regardless of what the workflow logic says.
+
+```yaml wrap
+safe-outputs:
+  jobs:
+    deploy:
+      environment: production-approval   # human approval required before execution
+      runs-on: ubuntu-latest
+      steps:
+        - run: echo "Deploying..."
+```
+
+**2. External admission service in custom threat detection steps** — use [`threat-detection.post-steps:`](/gh-aw/reference/threat-detection/#custom-detection-steps) to call an external policy service. A non-zero exit blocks all write operations.
+
+```yaml wrap
+safe-outputs:
+  create-pull-request:
+  threat-detection:
+    post-steps:
+      - name: External admission gate
+        run: |
+          curl --fail -X POST https://your-admission-service/evaluate \
+            -d @/tmp/gh-aw/threat-detection/agent_output.json
+```
+
+By default, neither mechanism is enabled — you need to opt in. For workflows that request deployment authority, credentials, or other trusted context, explicitly adding one of these external gates is recommended. See the [Security Architecture](/gh-aw/introduction/architecture/#layer-3-plan-level-trust) for the full trust model.
+
 ### How is my code and data processed?
 
 By default, your workflow is run on GitHub Actions, like any other GitHub Actions workflow, and as one if its jobs it invokes your nominated [AI Engine (coding agent)](/gh-aw/reference/engines/), run in a container. This engine may in turn make tool calls and MCP calls. When using the default **GitHub Copilot CLI**, the workflow is processed by the `copilot` CLI tool which uses GitHub Copilot's services and related AI models. The specifics depend on your engine choice:
