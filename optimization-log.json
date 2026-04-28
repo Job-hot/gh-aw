@@ -142,5 +142,14 @@
     "total_tokens_analyzed": 1986286,
     "estimated_savings_per_run": 600000,
     "recommendations_count": 5
+  },
+  {
+    "date": "2026-04-28",
+    "workflow_name": "Workflow Health Manager - Meta-Orchestrator",
+    "workflow_file": "workflow-health-manager",
+    "runs_audited": 1,
+    "total_tokens_analyzed": 1841637,
+    "estimated_savings_per_run": 775000,
+    "recommendations_count": 4
   }
 ]
