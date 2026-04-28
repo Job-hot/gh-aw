@@ -1,51 +1,65 @@
-# Workflow Health — 2026-04-27T12:20Z
+# Workflow Health — 2026-04-28T12:20Z
 
-Score: 74/100 (↑+1 from 73 Apr 26). 204 workflows. Run: §24994541064
+Score: 57/100 (↓-17 from 74 Apr 27). 204 workflows. Run: §25052372422
 
 ## KEY FINDINGS
 
 ### Compilation Status
 - 204/204 lock files present ✅
 - **0 missing lock files** ✅
-- **0 stale lock files** ✅ (increased from 203 to 204 due to new workflow)
+- **0 stale lock files** ✅
 
-### Today's Failures (Apr 27)
-- **Daily Fact About gh-aw**: `codex: command not found` — issue #28703 auto-created. Still part of P0 #28596 (aw-gpu-runner-T4 / codex binary missing).
-- **Documentation Unbloat**: Claude engine terminated (OAuth token/auth issue) — issue #28659. Covered by failure investigation #28673.
+### Today's Failures (Apr 28)
+13 scheduled runs failed out of 30 (57% success rate — significant regression from 93% yesterday)
 
-### Scheduled Run Summary (Apr 27)
-- 30 scheduled runs executed: 28 success, 1 failure, 1 action_required
-- Effective success rate: ~93% (28/30 excl action_required)
-- Good recovery from P0 GPU runner: Daily News and Daily Issues Report Generator now running on different runners ✅
+**Category 1: THREAT_DETECTION_RESULT parse failure (systemic)**
+- **Dead Code Removal Agent** — detection job: "No THREAT_DETECTION_RESULT found"
+- **Daily Testify Uber Super Expert** — detection job: same error
+- **Update Astro** — detection job: same error
+- Tracked in #28866 ([aw] Detection Runs)
+
+**Category 2: Agent job failures (various)**
+- **Daily Fact About gh-aw** — codex engine agent crash (P0 ongoing)
+- **Sub-Issue Closer** — agent job crash (no OTEL = possible runtime issue)
+- **Daily Team Evolution Insights** — agent job crash
+- **Daily AstroStyleLite Markdown Spellcheck** — agent crash (no OTEL)
+- **Daily Rendering Scripts Verifier** — agent crash (Docker/Playwright env)
+- **Developer Documentation Consolidator** — agent crash (Docker env)
+- **Semantic Function Refactoring** — agent crash
+
+**Category 3: Safe outputs failure**
+- **Daily Documentation Updater** — safe_outputs job failed
+
+**Category 4: CI**
+- **CI** (scheduled integration tests) — 4 integration test jobs failed
 
 ### P0 Issues (Active)
-- **codex: command not found** (#28596 OPEN): Daily Fact About gh-aw still failing with codex engine — `codex` binary not found on runners. Auto-issue #28703 created today. Root cause: codex CLI not installed on runners used by this workflow.
+- **Daily Fact About gh-aw codex failure** (auto-issues #28703 etc): codex binary/engine crash. Daily recurring.
 
-### P1 Issues (Active/Ongoing)
-- **Documentation Unbloat claude auth failure** (#28659 OPEN, #28673 investigation): OAuth token issue with Claude engine in this workflow.
-- **AWF binary CDN 502** (#28529 OPEN): Intermittent, not observed today
-- **Daily Community Attribution model not supported** (#28025/#28235 OPEN): NOT observed today ✅
-- **Safe outputs "session not found" at 37min** (#27755 OPEN)
-- **Smoke Claude** (#27030 OPEN) + **Smoke Copilot** (#27028 OPEN): Not observed today
+### P1 Issues (Carry from Apr 27)
+- **Documentation Unbloat claude auth failure** (#28659 OPEN): Claude OAuth token issue
+- **GitHub Remote MCP Authentication Test** (#27965 OPEN): gpt-5.1-codex-mini model not supported, day 7+
+- **THREAT_DETECTION_RESULT parse failure** — NOW SYSTEMIC: affecting ≥3 workflows today (was 1-2 workflows). Tracked #28866.
+- **Safe outputs session not found** (#23153 OPEN): long-running workflows
+- **GitHub App rate limit** (#27251 OPEN)
 - **awf-api-proxy sidecar unhealthy** (#27888 OPEN)
-- **GitHub Remote MCP Auth Test REGRESSION** (#27965 OPEN): Day 6+, still failing
-- **GitHub App rate limit exhaustion** (#27251 OPEN)
-- **CODEX_HOME variable collision** (#27512 OPEN)
+- **CODEX_HOME collision** (#27512 OPEN)
 
-### P2 Issues (Watch)
-- **THREAT_DETECTION_RESULT parse failure**: Recurring
+### P2 Issues
 - **Safe Outputs SEC-004** (#27235 OPEN)
-- **Daily Documentation Updater protected files** (#27801 OPEN)
 - **Performance regressions** (#27280/#27279/#27278 OPEN)
+- **Daily Documentation Updater protected files** (#27801 OPEN)
 - **MCP gateway long-running drops** (#23153 OPEN)
 
 ## Issues Created This Run
-- None (auto-issues already created by failure-investigator)
+- None (existing tracking issues cover identified failures; threat detection tracked in #28866)
 
 ## Issues Updated
-- None (existing issues tracking active failures)
+- None
 
-## Positive Trends
-- Daily Community Attribution NOT failing today (was recurring P1)
-- Daily Go Function Namer success (CDN 502 resolved)
-- 28/30 scheduled runs successful
+## Positive Notes
+- 204/204 workflows compiled, all lock files present
+- Smoke Codex ran today (issue #28881) — mostly passing (2/8 checks failed: web-fetch unavailable, comment-memory unavailable)
+
+## Regression Alert
+- **Success rate dropped from 93% → 57%**: THREAT_DETECTION_RESULT parse failure expanded to hit multiple new workflows today. Possibly related to a detection model change or outage.
