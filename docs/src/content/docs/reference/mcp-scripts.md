@@ -53,7 +53,7 @@ mcp-scripts:
       // Your code here
     env:                               # Environment variables
       API_KEY: "${{ secrets.API_KEY }}"
-    timeout: 120                       # Optional: timeout in seconds (default: 60)
+    timeout: 120                       # Optional: timeout — seconds (120) or duration string ("2m")
 ```
 
 Each tool requires `description:` and exactly one of `script:`, `run:`, `py:`, or `go:`.
@@ -187,19 +187,30 @@ mcp-scripts:
 
 ## Timeout Configuration
 
-Set execution timeout with `timeout:` field (default: 60 seconds):
+Set execution timeout with `timeout:` field (default: 60 seconds). Accepts either an integer number of seconds or a Go duration string:
 
 ```yaml wrap
 mcp-scripts:
   slow-processing:
     description: "Process large dataset"
-    timeout: 300  # 5 minutes (default: 60)
+    timeout: 300  # 5 minutes as integer seconds
     py: |
       import json
       import time
       time.sleep(120)
       print(json.dumps({"status": "complete"}))
 ```
+
+```yaml wrap
+mcp-scripts:
+  long-running-tool:
+    description: "Tool that may take a while"
+    timeout: 6m   # duration string — equivalent to 360 seconds
+    run: |
+      some-long-command
+```
+
+Supported duration string formats: `30s`, `6m`, `1h`, `1h30m`. Plain integer strings (e.g., `"120"`) are also accepted. Invalid values fall back to the default 60-second timeout with a logged warning.
 
 Enforced for shell (`run:`) and Python (`py:`) tools. JavaScript (`script:`) tools run in-process without timeout enforcement.
 

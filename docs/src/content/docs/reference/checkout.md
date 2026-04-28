@@ -57,6 +57,7 @@ checkout:
 | `submodules` | string/bool | Submodule handling: `"recursive"`, `"true"`, or `"false"`. |
 | `lfs` | boolean | Download Git LFS objects. |
 | `current` | boolean | Marks this checkout as the primary working repository. The agent uses this as the default target for all GitHub operations. Only one checkout may set `current: true`; the compiler rejects workflows where multiple checkouts enable it. |
+| `wiki` | boolean | When `true`, checks out the repository's wiki git (`owner/repo.wiki`) instead of the main repository. Defaults to `false`. See [Checking out a Repository Wiki](#checking-out-a-repository-wiki). |
 
 ## Fetching Additional Refs
 
@@ -127,6 +128,29 @@ checkout:
 > ```
 >
 > Without this instruction, the agent starts in `$GITHUB_WORKSPACE` (the side repository checkout) and must infer the correct directory on its own.
+
+## Checking out a Repository Wiki
+
+Set `wiki: true` to clone the repository's wiki git (`owner/repo.wiki`) instead of the main repository. GitHub wiki repositories are stored as a separate git repository accessible at `{owner}/{repo}.wiki`.
+
+```yaml wrap
+checkout:
+  wiki: true              # clone wiki of current repository
+  path: ./wiki-content    # optional — where to place it
+```
+
+Check out a wiki from a different repository:
+
+```yaml wrap
+checkout:
+  - repository: owner/docs
+    path: ./docs-wiki
+    wiki: true
+```
+
+When the agent prompt describes the checkout, wiki checkouts are annotated with `(wiki)` and the repository name shows the `.wiki` suffix (e.g. `owner/repo.wiki`), so the agent knows it is working with a GitHub wiki repository.
+
+**Deduplication behavior:** `wiki: true` is part of the checkout deduplication key. A wiki checkout and a regular checkout of the same `(repository, path)` remain as separate checkout steps. Two wiki checkouts targeting the same `(repository, path)` are merged using the same rules as regular checkouts.
 
 ## Checkout Merging
 
