@@ -2,6 +2,22 @@
 
 ## Analysis History
 
+### 2026-04-29 (Run 25134300030)
+- 205 total MD workflows; 110 Copilot (improved counting: simple form 89 + object form 21)
+- **startup-timeout**: 0 (11th consecutive run — persistent gap — CRITICAL)
+- **tool-timeout**: 0 (persistent)
+- **engine.version**: 0 (persistent)
+- **sandbox AWF**: 17 (up from 11 prior run) — slowly growing
+- **cache-memory**: 79 (all forms counted — large jump due to methodology fix)
+- **repo-memory**: 23 (new metric tracked)
+- **mcp-scripts**: 6 (stable)
+- **engine.agent**: 22 (custom agents up significantly — includes awf + custom files)
+- **engine.model**: 10 (stable — gpt-5-mini, claude-haiku-4.5, etc.)
+- **max-continuations**: 2 (stable — persistent gap)
+- **web-search**: 2, **web-fetch**: 19 (stable)
+- 5 unused custom agent files: grumpy-reviewer, w3c-specification-writer, create-safe-output-type, custom-engine-implementation, interactive-agent-designer
+- Discussion created: "Copilot CLI Deep Research - 2026-04-29"
+
 ### 2026-04-25 (Run 24940623939)
 - 202 total MD workflows; 91 explicit copilot (45%)
 - **bare mode RECOVERED**: 8 workflows (from 0 yesterday → possibly counting method stabilized)
