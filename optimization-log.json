@@ -151,5 +151,14 @@
     "total_tokens_analyzed": 1841637,
     "estimated_savings_per_run": 775000,
     "recommendations_count": 4
+  },
+  {
+    "date": "2026-04-29",
+    "workflow_name": "Delight",
+    "workflow_file": "delight",
+    "runs_audited": 1,
+    "total_tokens_analyzed": 2078746,
+    "estimated_savings_per_run": 530000,
+    "recommendations_count": 4
   }
 ]
