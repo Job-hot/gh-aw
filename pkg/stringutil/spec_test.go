@@ -144,6 +144,16 @@ func TestSpec_PublicAPI_IsPositiveInteger(t *testing.T) {
 			input:    "-1",
 			expected: false,
 		},
+		{
+			name:     "zero returns false",
+			input:    "0",
+			expected: false,
+		},
+		{
+			name:     "leading zeros return false",
+			input:    "007",
+			expected: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -240,17 +250,44 @@ func TestSpec_PublicAPI_NormalizeWorkflowName(t *testing.T) {
 // TestSpec_PublicAPI_NormalizeSafeOutputIdentifier validates the documented
 // behavior of NormalizeSafeOutputIdentifier as described in the package README.md.
 //
-// Specification: "Converts dashes to underscores in safe-output identifiers,
-// normalizing the user-facing dash-separated format to the internal
-// underscore_separated format."
+// Specification: "Converts dashes and periods to underscores in safe-output
+// identifiers, normalizing user-facing dash-separated and dot-separated formats
+// to the internal underscore_separated format."
 //
-// Specification example:
+// Specification examples:
 //
-//	stringutil.NormalizeSafeOutputIdentifier("create-issue") // "create_issue"
+//	stringutil.NormalizeSafeOutputIdentifier("create-issue")            // "create_issue"
+//	stringutil.NormalizeSafeOutputIdentifier("executor-workflow.agent") // "executor_workflow_agent"
 func TestSpec_PublicAPI_NormalizeSafeOutputIdentifier(t *testing.T) {
-	result := NormalizeSafeOutputIdentifier("create-issue")
-	assert.Equal(t, "create_issue", result,
-		"NormalizeSafeOutputIdentifier should convert dashes to underscores")
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "converts dashes to underscores (documented example)",
+			input:    "create-issue",
+			expected: "create_issue",
+		},
+		{
+			name:     "converts periods to underscores (documented example)",
+			input:    "executor-workflow.agent",
+			expected: "executor_workflow_agent",
+		},
+		{
+			name:     "already underscore_separated unchanged",
+			input:    "already_ok",
+			expected: "already_ok",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := NormalizeSafeOutputIdentifier(tt.input)
+			assert.Equal(t, tt.expected, result,
+				"NormalizeSafeOutputIdentifier(%q) should convert dashes and periods to underscores", tt.input)
+		})
+	}
 }
 
 // TestSpec_PublicAPI_MarkdownToLockFile validates the documented behavior of
@@ -475,6 +512,64 @@ func TestSpec_PublicAPI_ClassifyPAT(t *testing.T) {
 	}
 }
 
+// TestSpec_PublicAPI_NormalizeWhitespace validates the documented behavior of
+// NormalizeWhitespace as described in the package README.md.
+//
+// Specification: "Normalizes trailing whitespace in multi-line content. Trims
+// trailing spaces and tabs from every line, then ensures the content ends with
+// exactly one newline (or is empty)."
+func TestSpec_PublicAPI_NormalizeWhitespace(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "empty string returns empty string",
+			input:    "",
+			expected: "",
+		},
+		{
+			name:     "trims trailing spaces from a line",
+			input:    "hello   \n",
+			expected: "hello\n",
+		},
+		{
+			name:     "trims trailing tabs from a line",
+			input:    "hello\t\t\n",
+			expected: "hello\n",
+		},
+		{
+			name:     "trims trailing whitespace from every line in multi-line content",
+			input:    "line1 \nline2\t\nline3\n",
+			expected: "line1\nline2\nline3\n",
+		},
+		{
+			name:     "content with no trailing whitespace is unchanged",
+			input:    "clean\nlines\n",
+			expected: "clean\nlines\n",
+		},
+		{
+			name:     "ensures content ends with exactly one newline",
+			input:    "no trailing newline",
+			expected: "no trailing newline\n",
+		},
+		{
+			name:     "collapses multiple trailing newlines to exactly one",
+			input:    "content\n\n\n",
+			expected: "content\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := NormalizeWhitespace(tt.input)
+			assert.Equal(t, tt.expected, result,
+				"NormalizeWhitespace(%q) should match documented behavior", tt.input)
+		})
+	}
+}
+
 // TestSpec_PublicAPI_ValidateCopilotPAT validates the documented behavior of
 // ValidateCopilotPAT as described in the package README.md.
 //
@@ -500,6 +595,47 @@ func TestSpec_PublicAPI_ValidateCopilotPAT(t *testing.T) {
 		require.Error(t, err,
 			"ValidateCopilotPAT should return an error for OAuth token")
 	})
+}
+
+// TestSpec_PublicAPI_GetPATTypeDescription validates the documented behavior of
+// GetPATTypeDescription as described in the package README.md.
+//
+// Specification: "Returns a human-readable description of the token type
+// (e.g. 'fine-grained personal access token')."
+func TestSpec_PublicAPI_GetPATTypeDescription(t *testing.T) {
+	tests := []struct {
+		name          string
+		token         string
+		expectContain string
+	}{
+		{
+			name:          "fine-grained PAT returns description containing 'fine-grained'",
+			token:         "github_pat_abc123",
+			expectContain: "fine-grained",
+		},
+		{
+			name:          "classic PAT returns non-empty description",
+			token:         "ghp_abc123",
+			expectContain: "",
+		},
+		{
+			name:          "oauth token returns non-empty description",
+			token:         "gho_abc123",
+			expectContain: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := GetPATTypeDescription(tt.token)
+			assert.NotEmpty(t, result,
+				"GetPATTypeDescription(%q) should return a non-empty human-readable description", tt.token)
+			if tt.expectContain != "" {
+				assert.Contains(t, result, tt.expectContain,
+					"GetPATTypeDescription(%q) should contain %q as documented", tt.token, tt.expectContain)
+			}
+		})
+	}
 }
 
 // TestSpec_PublicAPI_SanitizeErrorMessage validates the documented behavior of
@@ -537,5 +673,190 @@ func TestSpec_PublicAPI_SanitizeErrorMessage(t *testing.T) {
 		result := SanitizeErrorMessage("Set GH_AW_SKIP_NPX_VALIDATION=true")
 		assert.NotContains(t, result, "[REDACTED]",
 			"SanitizeErrorMessage should not redact GH_AW_ configuration variables")
+	})
+}
+
+// TestSpec_PublicAPI_SanitizeIdentifierName validates the documented behavior of
+// SanitizeIdentifierName as described in the package README.md.
+//
+// Specification: "Sanitizes a string for use as a programming-language identifier
+// by replacing invalid characters with underscores and prefixing _ when the
+// identifier starts with a digit. extraAllowed can be used to permit additional
+// runes beyond the normal identifier rules; if extraAllowed is nil, no extra
+// characters are allowed."
+func TestSpec_PublicAPI_SanitizeIdentifierName(t *testing.T) {
+	tests := []struct {
+		name         string
+		input        string
+		extraAllowed func(rune) bool
+		expected     string
+	}{
+		{
+			name:         "replaces hyphen with underscore when nil extraAllowed",
+			input:        "my-func",
+			extraAllowed: nil,
+			expected:     "my_func",
+		},
+		{
+			name:         "prefixes underscore when identifier starts with digit",
+			input:        "123abc",
+			extraAllowed: nil,
+			expected:     "_123abc",
+		},
+		{
+			name:         "valid identifier unchanged",
+			input:        "hello",
+			extraAllowed: nil,
+			expected:     "hello",
+		},
+		{
+			name:         "replaces dots with underscores when nil extraAllowed",
+			input:        "a.b.c",
+			extraAllowed: nil,
+			expected:     "a_b_c",
+		},
+		{
+			name:  "extraAllowed permits the specified rune",
+			input: "a-b",
+			extraAllowed: func(r rune) bool {
+				return r == '-'
+			},
+			expected: "a-b",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := SanitizeIdentifierName(tt.input, tt.extraAllowed)
+			assert.Equal(t, tt.expected, result,
+				"SanitizeIdentifierName(%q) should match documented behavior", tt.input)
+		})
+	}
+}
+
+// TestSpec_PublicAPI_SanitizeParameterName validates the documented behavior of
+// SanitizeParameterName as described in the package README.md.
+//
+// Specification: "Sanitizes a parameter name for use as a GitHub Actions output
+// or environment variable name. Preserves letters, digits, $, and _, and replaces
+// all other characters with underscores."
+func TestSpec_PublicAPI_SanitizeParameterName(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "replaces hyphen with underscore",
+			input:    "my-param",
+			expected: "my_param",
+		},
+		{
+			name:     "preserves dollar sign",
+			input:    "param$1",
+			expected: "param$1",
+		},
+		{
+			name:     "preserves underscore",
+			input:    "param_1",
+			expected: "param_1",
+		},
+		{
+			name:     "replaces space with underscore",
+			input:    "hello world",
+			expected: "hello_world",
+		},
+		{
+			name:     "preserves letters and digits unchanged",
+			input:    "myParam123",
+			expected: "myParam123",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := SanitizeParameterName(tt.input)
+			assert.Equal(t, tt.expected, result,
+				"SanitizeParameterName(%q) should match documented behavior", tt.input)
+		})
+	}
+}
+
+// TestSpec_PublicAPI_SanitizePythonVariableName validates the documented behavior
+// of SanitizePythonVariableName as described in the package README.md.
+//
+// Specification: "Sanitizes a string for use as a Python variable name. Similar
+// to SanitizeParameterName but follows Python identifier rules."
+func TestSpec_PublicAPI_SanitizePythonVariableName(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "replaces hyphen with underscore",
+			input:    "my-var",
+			expected: "my_var",
+		},
+		{
+			name:     "preserves letters and digits",
+			input:    "myVar123",
+			expected: "myVar123",
+		},
+		{
+			name:     "preserves underscore",
+			input:    "my_var",
+			expected: "my_var",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := SanitizePythonVariableName(tt.input)
+			assert.Equal(t, tt.expected, result,
+				"SanitizePythonVariableName(%q) should match documented behavior", tt.input)
+		})
+	}
+}
+
+// TestSpec_PublicAPI_SanitizeToolID validates the documented behavior of
+// SanitizeToolID as described in the package README.md.
+//
+// Specification: "Sanitizes a tool identifier for safe use in generated code.
+// Replaces characters that are not valid in identifiers with underscores."
+func TestSpec_PublicAPI_SanitizeToolID(t *testing.T) {
+	// SPEC_MISMATCH: README.md documents SanitizeToolID as replacing characters
+	// that are not valid in identifiers with underscores (e.g. "create-issue" →
+	// "create_issue"), but the implementation instead removes "mcp-" prefixes and
+	// "-mcp" suffixes (e.g. "notion-mcp" → "notion"). These are entirely different
+	// behaviors. Tests are skipped until the specification is corrected or the
+	// implementation is updated.
+	t.Skip("SPEC_MISMATCH: SanitizeToolID implementation removes MCP prefix/suffix instead of replacing invalid identifier characters with underscores as documented in README.md")
+}
+
+// TestSpec_PublicAPI_SanitizeForFilename validates the documented behavior of
+// SanitizeForFilename as described in the package README.md.
+//
+// Specification: "Converts a string into a filesystem-safe filename by
+// lowercasing and replacing non-alphanumeric characters with hyphens."
+func TestSpec_PublicAPI_SanitizeForFilename(t *testing.T) {
+	t.Run("replaces space with hyphen (lowercase input)", func(t *testing.T) {
+		result := SanitizeForFilename("hello world")
+		assert.Equal(t, "hello-world", result,
+			"SanitizeForFilename should replace spaces with hyphens")
+	})
+
+	t.Run("already safe filename returned unchanged", func(t *testing.T) {
+		result := SanitizeForFilename("simple")
+		assert.Equal(t, "simple", result,
+			"SanitizeForFilename should leave already-safe filenames unchanged")
+	})
+
+	// SPEC_MISMATCH: README.md documents SanitizeForFilename as "lowercasing" the
+	// input, but the implementation preserves the original case. Additionally, the
+	// spec says "replacing non-alphanumeric characters with hyphens" but the
+	// implementation preserves '-', '_', and '.'.
+	t.Run("SPEC_MISMATCH: lowercasing not implemented", func(t *testing.T) {
+		t.Skip("SPEC_MISMATCH: README.md documents SanitizeForFilename as lowercasing the input (e.g. 'Hello World' → 'hello-world'), but the implementation does not lowercase — actual result is 'Hello-World'")
 	})
 }

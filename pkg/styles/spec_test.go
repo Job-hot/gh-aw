@@ -184,3 +184,43 @@ func TestSpec_Types_HuhTheme(t *testing.T) {
 	assert.NotNil(t, HuhTheme,
 		"HuhTheme should be exported and non-nil as documented in the README.md")
 }
+
+// TestSpec_Constants_RemainingAdaptiveColorHexValues validates that the seven
+// remaining adaptive color variables have the exact hex values stated in the
+// package README.md adaptive color table.
+//
+// Specification (README.md adaptive color table):
+//
+//	ColorPurple:      Light=#8E44AD, Dark=#BD93F9
+//	ColorYellow:      Light=#B7950B, Dark=#F1FA8C
+//	ColorComment:     Light=#6C7A89, Dark=#6272A4
+//	ColorForeground:  Light=#2C3E50, Dark=#F8F8F2
+//	ColorBackground:  Light=#ECF0F1, Dark=#282A36
+//	ColorBorder:      Light=#BDC3C7, Dark=#44475A
+//	ColorTableAltRow: Light=#F5F5F5, Dark=#1A1A1A
+func TestSpec_Constants_RemainingAdaptiveColorHexValues(t *testing.T) {
+	tests := []struct {
+		colorName string
+		lightHex  string
+		darkHex   string
+		specLight string
+		specDark  string
+	}{
+		{"ColorPurple", hexColorPurpleLight, hexColorPurpleDark, "#8E44AD", "#BD93F9"},
+		{"ColorYellow", hexColorYellowLight, hexColorYellowDark, "#B7950B", "#F1FA8C"},
+		{"ColorComment", hexColorCommentLight, hexColorCommentDark, "#6C7A89", "#6272A4"},
+		{"ColorForeground", hexColorForegroundLight, hexColorForegroundDark, "#2C3E50", "#F8F8F2"},
+		{"ColorBackground", hexColorBackgroundLight, hexColorBackgroundDark, "#ECF0F1", "#282A36"},
+		{"ColorBorder", hexColorBorderLight, hexColorBorderDark, "#BDC3C7", "#44475A"},
+		{"ColorTableAltRow", hexColorTableAltRowLight, hexColorTableAltRowDark, "#F5F5F5", "#1A1A1A"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.colorName, func(t *testing.T) {
+			assert.Equal(t, tt.specLight, tt.lightHex,
+				"%s Light hex should match README.md specification", tt.colorName)
+			assert.Equal(t, tt.specDark, tt.darkHex,
+				"%s Dark hex should match README.md specification", tt.colorName)
+		})
+	}
+}
