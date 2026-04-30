@@ -162,7 +162,7 @@ The YAML frontmatter supports these fields:
     - Mints a single installation access token shared across reactions, status comments, and skip-if queries
     - Can be defined in a shared agentic workflow and inherited by importing workflows
     - Fields:
-      - `app-id:` - GitHub App ID (required, e.g., `${{ vars.APP_ID }}`)
+      - `client-id:` - GitHub App client ID (required, e.g., `${{ vars.APP_ID }}`). Use `app-id:` as a deprecated alias.
       - `private-key:` - GitHub App private key (required, e.g., `${{ secrets.APP_PRIVATE_KEY }}`)
       - `owner:` - Optional installation owner (defaults to current repository owner)
       - `repositories:` - Optional list of repositories to grant access to
@@ -173,7 +173,7 @@ The YAML frontmatter supports these fields:
         issues:
           types: [opened]
         github-app:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
       ```
 
@@ -535,7 +535,7 @@ The YAML frontmatter supports these fields:
     - `github-token:` - Custom GitHub token
     - `lockdown:` - Enable lockdown mode to limit content surfaced from public repositories to items authored by users with push access (boolean, default: false)
     - `github-app:` - GitHub App configuration for token minting; when set, mints an installation access token at workflow start that overrides `github-token`
-      - `app-id:` - GitHub App ID (required, e.g., `${{ vars.APP_ID }}`)
+      - `client-id:` - GitHub App client ID (required, e.g., `${{ vars.APP_ID }}`). Use `app-id:` as a deprecated alias.
       - `private-key:` - GitHub App private key (required, e.g., `${{ secrets.APP_PRIVATE_KEY }}`)
       - `owner:` - Optional installation owner (defaults to current repository owner)
       - `repositories:` - Optional list of repositories to grant access to (array)
@@ -1544,7 +1544,7 @@ The YAML frontmatter supports these fields:
   - `github-app:` - GitHub App credentials for minting installation access tokens (object)
     - When configured, generates a token from the app and uses it for all safe output operations (alternative to `github-token`)
     - Fields:
-      - `app-id:` - GitHub App ID (required, e.g., `${{ vars.APP_ID }}`)
+      - `client-id:` - GitHub App client ID (required, e.g., `${{ vars.APP_ID }}`). Use `app-id:` as a deprecated alias.
       - `private-key:` - GitHub App private key (required, e.g., `${{ secrets.APP_PRIVATE_KEY }}`)
       - `owner:` - Optional App installation owner (defaults to current repository owner)
       - `repositories:` - Optional list of repositories to grant access to
@@ -1553,7 +1553,7 @@ The YAML frontmatter supports these fields:
       ```yaml
       safe-outputs:
         github-app:
-          app-id: ${{ vars.APP_ID }}
+          client-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
         create-issue:
       ```
