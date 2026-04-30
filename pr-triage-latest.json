@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-04-30T01:08:37.067Z",
-  "run_id": "25142076928",
+  "run_date": "2026-04-30T07:08:58.991Z",
+  "run_id": "25152262440",
   "fork_prs": 0,
-  "agent_prs_found": 7,
-  "agent_prs_excluded": 7,
-  "notes": "7 open Copilot PRs found (#29227, #29225, #29223, #29222, #29212, #28778, #28777). All are same-repo branches (head.repo == base.repo = github/gh-aw), not forks. Per policy, only fork PRs are triaged. No fork PRs to triage.",
+  "agent_prs_found": 9,
+  "agent_prs_excluded": 9,
+  "notes": "9 open Copilot PRs found (#29270, #29269, #29264, #29259, #29257, #29254, #29236, #29223, #29222). All are same-repo branches (head.repo == base.repo = github/gh-aw), not forks. Per policy, only fork PRs are triaged. No fork PRs to triage.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -17,19 +17,21 @@
     "by_action": {}
   },
   "pr_list": [
-    {"number": 29227, "title": "[WIP] Optimize Delight workflow to reduce read-only run token usage", "draft": true, "same_repo": true},
-    {"number": 29225, "title": "Add .github/aw/skills.md — guide for leveraging skills in agentic workflows", "draft": true, "same_repo": true},
+    {"number": 29270, "title": "feat: auto-inject create-issue safe output when no safe outputs are explicitly configured", "draft": false, "same_repo": true},
+    {"number": 29269, "title": "feat: add disable_agentic_workflow label-triggered job to maintenance workflow", "draft": false, "same_repo": true},
+    {"number": 29264, "title": "fix: inject threat-detection CAUTION alert at top of markdown content", "draft": false, "same_repo": true},
+    {"number": 29259, "title": "fix(copilot-driver): fall back to fresh run when --continue auth fails mid-stream", "draft": false, "same_repo": true},
+    {"number": 29257, "title": "feat: allow safe-outputs.threat-detection to be controlled by workflow_call input", "draft": false, "same_repo": true},
+    {"number": 29254, "title": "fix(gemini): add --gemini-api-target routing fix and accept ADR-26060", "draft": false, "same_repo": true},
+    {"number": 29236, "title": "feat: add github_ref constraint on import-schema inputs with action pipeline", "draft": false, "same_repo": true},
     {"number": 29223, "title": "feat: enable checksum validation by default in install-gh-aw.sh", "draft": true, "same_repo": true},
-    {"number": 29222, "title": "[WIP] Migrate compiler to use AWF JSON config file instead of environment variables", "draft": true, "same_repo": true},
-    {"number": 29212, "title": "feat: allow GitHub Actions expressions for list-valued safe-output fields", "draft": false, "same_repo": true},
-    {"number": 28778, "title": "feat(ASI-08): Add circuit breaker for repeatedly failing workflows", "draft": false, "same_repo": true},
-    {"number": 28777, "title": "ASI-06: Sanitize repo-memory and cache-memory content before prompt injection", "draft": false, "same_repo": true}
+    {"number": 29222, "title": "feat: compiler emits AWF JSON config file instead of CLI flag soup", "draft": true, "same_repo": true}
   ],
   "previous_run": {
-    "run_id": "25127352869",
-    "run_date": "2026-04-29T18:45:15.544Z",
+    "run_id": "25142076928",
+    "run_date": "2026-04-30T01:08:37.067Z",
     "fork_prs": 0,
-    "agent_prs_found": 6,
-    "agent_prs_excluded": 6
+    "agent_prs_found": 7,
+    "agent_prs_excluded": 7
   }
 }
