@@ -1,62 +1,43 @@
-# Workflow Health — 2026-04-29T12:24Z
+# Workflow Health — 2026-04-30T12:18Z
 
-Score: 73/100 (↑+16 from 57 Apr 28). 204 workflows. Run: §25108329742
+Score: 77/100 (↑+4 from 73 Apr 29). 205 workflows. Run: §25164831125
 
 ## KEY FINDINGS
 
 ### Compilation Status
-- 204/204 lock files present ✅
-- **0 missing lock files** ✅
-- **0 stale lock files** ✅
+- 205/205 lock files present ✅
+- 0 missing lock files ✅
 
-### Today's Failures (Apr 29)
-8 scheduled runs failed out of 30 (73% success rate — improvement from 57% yesterday)
+### Today's Failures (Apr 30 - morning)
+7 scheduled runs failed out of 30 (77% success rate — slight improvement from 73% yesterday)
 
 **Category 1: Codex engine crash (P0 ongoing)**
-- **Daily Fact About gh-aw** — `codex: command not found` (auto-issue #29088)
+- **Daily Fact About gh-aw** — `codex: command not found` (#29088)
 
-**Category 2: CI integration test failures (P1)**
-- **CI** — 4 jobs failed: js-integration-live-api (`ERR_API: fetch file audit-workflows.md failed`), Integration Release Availability, DIFC Proxy sh Integration Test, Integration Update - Preserve Local Imports
-
-**Category 3: Safe outputs failures (likely agent crashes)**
-- **Daily Rendering Scripts Verifier** — safe_outputs failed, no OTEL (Docker/Playwright env)
-- **Daily Go Function Namer** — safe_outputs failed
-- **Developer Documentation Consolidator** — safe_outputs failed (Docker env)
-- **Daily AstroStyleLite Markdown Spellcheck** — safe_outputs failed, no OTEL
-- **Instructions Janitor** — safe_outputs failed, no OTEL
-- **Daily AW Cross-Repo Compile Check** — safe_outputs failed
-
-### Improvements vs Yesterday
-- THREAT_DETECTION_RESULT parse failure: NOT appearing in today's failures (was systemic yesterday - resolved or intermittent)
-- Total failure count: 8 (down from 13)
-- Success rate: 73% (up from 57%)
+**Category 2: Safe outputs failures (6 workflows - P2 recurring)**
+- Daily Rendering Scripts Verifier — safe_outputs failed
+- Developer Documentation Consolidator — safe_outputs failed
+- Daily AstroStyleLite Markdown Spellcheck — safe_outputs failed
+- Instructions Janitor — safe_outputs failed
+- Daily AW Cross-Repo Compile Check — safe_outputs failed
+- Daily Community Attribution Updater — safe_outputs failed (new today)
 
 ### P0 Issues (Active)
-- **Daily Fact About gh-aw codex failure** (#29088 auto-created today): codex binary not found. Daily recurring.
+- **Codex binary missing** (#29088): Daily Fact About gh-aw fails daily
 
-### P1 Issues (Carry from Apr 28)
-- **CI integration tests failing** (new today): js-integration-live-api `ERR_API: fetch file audit-workflows.md failed`
-- **Node.js 20 deprecation warning** in CI: actions/setup-go using deprecated Node.js 20 (end-of-life Sep 2026)
-- **Documentation Unbloat claude auth failure** (#28659 OPEN)
-- **GitHub Remote MCP Authentication Test** (#27965 OPEN): day 8+
-- **Safe outputs session not found** (#23153 OPEN)
-- **awf-api-proxy sidecar unhealthy** (#27888 OPEN)
-- **GitHub App rate limit** (#27251 OPEN)
-- **CODEX_HOME collision** (#27512 OPEN)
+### P1 Issues (Carry forward)
+- **CI integration tests failing** (Apr 29): ERR_API fetch audit-workflows.md
+- **Documentation Unbloat claude auth** (#28659) OPEN
+- **GitHub Remote MCP Auth Test** (#27965) OPEN day 9
+- **MCP gateway session timeout** (#23153) OPEN
+- **awf-api-proxy sidecar unhealthy** (#27888) OPEN
+- **GitHub App rate limit** (#27251) OPEN
+- **CODEX_HOME collision** (#27512) OPEN
 
 ### P2 Issues
-- **Safe Outputs SEC-004** (#27235 OPEN)
-- **Performance regressions** (#27280/#27279/#27278 OPEN)
-- **Daily Documentation Updater protected files** (#27801 OPEN)
-- **MCP gateway long-running drops** (#23153 OPEN)
+- **Safe Outputs SEC-004** (#27235)
+- **Node.js 20 deprecation** in CI (deadline Sep 16, 2026)
 
-## Issues Created This Run
-- None (codex failure tracked in auto-issue #29088; CI issues tracked in existing #28659)
-
-## Issues Updated
-- None
-
-## Positive Notes
-- 204/204 workflows compiled, all lock files present
-- THREAT_DETECTION_RESULT systemic failure from Apr 28 did NOT recur today
-- Success rate improved significantly: 57% → 73%
+### Dashboard Issue
+- Apr 29 dashboard: #29108 (expiring Apr 30 12:29 UTC)
+- Apr 30 dashboard: created this run
