@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-05-01T12:36:34.645Z",
-  "run_id": "25214440487",
+  "run_date": "2026-05-01T18:37:41Z",
+  "run_id": "25227485197",
   "fork_prs": 0,
   "agent_prs_found": 0,
   "agent_prs_excluded": 0,
-  "notes": "GitHub API returned 403 (access issues). Previous run (25206065799) confirmed all 7 open agent PRs are same-repo branches (isCrossRepository=false). Per policy, only fork PRs are triaged. No fork PRs to triage.",
+  "notes": "GitHub API returned 403 (access issues). Previous runs (25206065799, 25214440487) confirmed all open agent PRs are same-repo branches (isCrossRepository=false). Per policy, only fork PRs are triaged. No fork PRs to triage.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -17,10 +17,10 @@
     "by_action": {}
   },
   "previous_run": {
-    "run_id": "25206065799",
-    "run_date": "2026-05-01T07:10:33.608Z",
+    "run_id": "25214440487",
+    "run_date": "2026-05-01T12:36:34.645Z",
     "fork_prs": 0,
-    "agent_prs_found": 7,
-    "agent_prs_excluded": 7
+    "agent_prs_found": 0,
+    "agent_prs_excluded": 0
   }
 }
