@@ -8,3 +8,4 @@
 ./pkg/cli/health_command_test.go|2026-04-26
 ./pkg/parser/schedule_time_utils_test.go|2026-04-27
 ./pkg/cli/logs_formatting_test.go|2026-04-30
+./pkg/cli/update_cooldown_test.go|2026-05-01
