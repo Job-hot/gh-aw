@@ -11,17 +11,6 @@ Use DispatchOps for research tasks, operational commands, testing workflows duri
 
 ## How Workflow Dispatch Works
 
-Workflows with `workflow_dispatch` can be triggered manually rather than waiting for events like issues, pull requests, or schedules.
-
-### Basic Syntax
-
-Add `workflow_dispatch:` to the `on:` section in your workflow frontmatter:
-
-```yaml
-on:
-  workflow_dispatch:
-```
-
 ### With Input Parameters
 
 Define inputs to customize workflow behavior at runtime:
@@ -79,9 +68,7 @@ on:
 bots: ["dependabot[bot]", "github-actions[bot]"]
 ```
 
-### Fork Protection
-
-Unlike issue/PR triggers, `workflow_dispatch` only executes in the repository where it's defined-forks cannot trigger workflows in the parent repository. This provides inherent protection against fork-based attacks.
+Unlike issue/PR triggers, `workflow_dispatch` only executes in the repository where it's defined — forks cannot trigger workflows in the parent repository.
 
 ### Environment Approval Gates
 
@@ -96,8 +83,6 @@ manual-approval: production
 Configure approval rules, required reviewers, and wait timers in repository Settings → Environments. See [GitHub's environment documentation](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) for setup details.
 
 ## Running Workflows from GitHub.com
-
-### Via Actions Tab
 
 Go to the **Actions** tab, select the workflow from the sidebar, click **Run workflow**, fill in any inputs, and confirm. Only workflows with `workflow_dispatch:` in their `on:` section appear in the dropdown — if yours is missing, verify it has been compiled and the `.lock.yml` pushed to the repository.
 
@@ -135,9 +120,7 @@ Monitor workflow execution and wait for results:
 gh aw run research --raw-field topic="AI agents" --wait
 ```
 
-`--wait` monitors progress in real-time and exits with a success/failure code on completion.
-
-### Additional Options
+`--wait` monitors progress in real-time and exits with a success/failure code on completion. Additional flags:
 
 ```bash
 gh aw run research --ref feature-branch              # Run from specific branch
@@ -202,8 +185,6 @@ URGENT: Prioritize speed over completeness.
 
 ## Development Pattern: Branch Testing
 
-### Testing Workflow Changes
-
 Add `workflow_dispatch:` to feature branches for testing before merging. Use [trial mode](/gh-aw/patterns/trial-ops/) for isolated testing without affecting the production repository, or run from a branch directly:
 
 ```bash
@@ -213,27 +194,21 @@ gh aw run research --ref feature/improve-workflow          # runs against live r
 
 ## Common Use Cases
 
-**On-demand research:** Add a `topic` string input and trigger with `gh aw run research --raw-field topic="AI safety"` when needed.
-
-**Manual operations:** Use a `choice` input with predefined operations (cleanup, sync, audit) to execute specific tasks on demand.
-
-**Testing and debugging:** Add `workflow_dispatch` to event-triggered workflows (issues, PRs) with optional test URL inputs to test without creating real events.
-
-**Scheduled workflow testing:** Combine `schedule` with `workflow_dispatch` to test scheduled workflows immediately rather than waiting for the cron schedule.
+- **On-demand research**: trigger with a `topic` input — `gh aw run research --raw-field topic="AI safety"`
+- **Manual operations**: `choice` input for predefined tasks (cleanup, sync, audit)
+- **Testing**: add `workflow_dispatch` to event-triggered workflows to run without creating real events
+- **Scheduled testing**: combine `schedule` with `workflow_dispatch` for immediate on-demand runs
 
 ## Troubleshooting
 
-**Workflow not listed in GitHub UI:** Verify `workflow_dispatch:` exists in the `on:` section, compile the workflow (`gh aw compile workflow`), and push both `.md` and `.lock.yml` files. The Actions page may need a refresh.
-
-**"Workflow not found" error:** Use the filename without `.md` extension (`research` not `research.md`). Ensure the workflow exists in `.github/workflows/` and has been compiled.
-
-**"Workflow cannot be run" error:** Add `workflow_dispatch:` to the `on:` section, recompile, and verify the `.lock.yml` includes the trigger before pushing.
-
-**Permission denied:** Verify write access to the repository and check the `roles:` field in workflow frontmatter. For organization repos, confirm your org role.
-
-**Inputs not appearing:** Check YAML syntax and indentation (2 spaces) in `workflow_dispatch.inputs`. Ensure input types are valid (`string`, `boolean`, `choice`, `environment`), then recompile and push.
-
-**Wrong branch context:** Specify the branch explicitly with `--ref branch-name` in CLI or select the correct branch in the GitHub UI dropdown before running.
+| Problem | Solution |
+|---------|----------|
+| Workflow not in GitHub UI | Verify `workflow_dispatch:` exists in `on:`, recompile, push both `.md` + `.lock.yml`; refresh the page |
+| "Workflow not found" | Use filename without `.md` extension (`research` not `research.md`); verify it's compiled |
+| "Workflow cannot be run" | Add `workflow_dispatch:` to `on:`, recompile, push `.lock.yml` |
+| Permission denied | Verify write access; check `roles:` in frontmatter; confirm org role |
+| Inputs not appearing | Check YAML indentation (2 spaces); verify valid types; recompile and push |
+| Wrong branch context | Use `--ref branch-name` in CLI or select the correct branch in the UI dropdown |
 
 ## Related Documentation
 
