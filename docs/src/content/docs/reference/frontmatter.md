@@ -460,6 +460,24 @@ To use a different model, set the `GH_AW_MODEL_AGENT_COPILOT` repository variabl
 > [!NOTE]
 > Copilot BYOK defaults apply only to `engine: copilot` workflows. Other engines are unchanged.
 
+#### Copilot Requests (`features.copilot-requests`)
+
+> [!NOTE]
+> This feature is in **private preview**. It will not work unless your account has been onboarded.
+
+Enables GitHub Actions token authentication for Copilot agent workflows, removing the need for a separate PAT or GitHub App token. When set, the compiler:
+
+1. Injects `copilot-requests: write` into the workflow's GitHub token permissions.
+2. Sets `S2STOKENS=true` in the Copilot CLI execution environment, enabling service-to-service token exchange.
+3. Activates the `cli-proxy` sidecar so the CLI proxy image is included in container pre-pulls for threat-detection jobs.
+
+```yaml wrap
+features:
+  copilot-requests: true
+```
+
+Without this flag, Copilot workflows authenticate using a PAT stored as `COPILOT_GITHUB_TOKEN`. With `copilot-requests: true`, the workflow uses the built-in `github.token` instead. See [Authentication](/gh-aw/reference/auth/) for PAT-based setup.
+
 #### AWF Failure Diagnostics (`features.awf-diagnostic-logs`)
 
 Enables AWF Docker operational diagnostics collection on failure by adding `--diagnostic-logs` to AWF runtime arguments.
