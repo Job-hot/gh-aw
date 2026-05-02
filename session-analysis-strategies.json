@@ -1,1 +1,73 @@
-{"strategies":[{"name":"Agent Role Performance Matrix","date_tested":"2026-04-04","effectiveness":"High","recommendation":"Keep and expand"},{"name":"Branch Abandonment Risk Scoring","date_tested":"2026-04-07","effectiveness":"Medium","recommendation":"Keep and refine"},{"name":"CI Iteration Depth Analysis","date_tested":"2026-04-15","effectiveness":"Medium","recommendation":"Keep and refine","description":"Correlate number of CI check rounds per branch with Copilot session duration and success. More round","finding":"5 CI rounds in 51.4min session led to success; 4 CI rounds without Copilot agent = stalled branch"},{"name":"Gate Storm Detection","date_tested":"2026-04-17","effectiveness":"High","recommendation":"Keep and automate","description":"Detect anomalous gate re-trigger events by identifying time windows with >4 concurrent gate runs for","finding":"update-safe-patch had 8 concurrent gates at 11:22 (double trigger) across 5 gate rounds total."},{"name":"Multi-Branch Parallelism Analysis","date_tested":"2026-04-20","effectiveness":"Medium","recommendation":"Keep and expand","description":"Measure interference between concurrently-running Copilot branches by comparing gate concurrency lev","finding":"Two Copilot branches ran in full overlap with 45 combined gate sessions. Both succeeded independentl"},{"name":"Task Category to Copilot Assignment Correlation","date_tested":"2026-04-24","effectiveness":"High","recommendation":"Keep and expand","description":"Classify Copilot branches by task category (security patch, library version bump, code refactor, bug","finding":"Security/functional tasks (update-golang-org-x-vuln, rename-actionpins) get Copilot agents assigned."},{"name":"Sub-PR Iteration Pattern Analysis","date_tested":"2026-04-27","effectiveness":"Medium","recommendation":"Keep and refine","description":"Analyze the sub-PR branching model where a single Copilot branch (copilot/sub-pr-NNNN) generates mul","finding":"PR #28688 (docs: Organization Practices) used sub-PR model with at least 2 addressing-comment sessio"},{"name":"Historical Trend Regression Analysis","date_tested":"2026-04-28","effectiveness":"High","recommendation":"Keep and automate","description":"When fresh session data is unavailable, apply statistical regression across accumulated historical r","finding":"Duration is the strongest predictor: >15min sessions achieve 100% success vs <5min at ~7%. Agent cou"}],"last_updated":"2026-04-28"}
+{
+  "strategies": [
+    {
+      "name": "Agent Role Performance Matrix",
+      "date_tested": "2026-04-04",
+      "effectiveness": "High",
+      "recommendation": "Keep and expand"
+    },
+    {
+      "name": "Branch Abandonment Risk Scoring",
+      "date_tested": "2026-04-07",
+      "effectiveness": "Medium",
+      "recommendation": "Keep and refine"
+    },
+    {
+      "name": "CI Iteration Depth Analysis",
+      "date_tested": "2026-04-15",
+      "effectiveness": "Medium",
+      "recommendation": "Keep and refine",
+      "description": "Correlate number of CI check rounds per branch with Copilot session duration and success. More round",
+      "finding": "5 CI rounds in 51.4min session led to success; 4 CI rounds without Copilot agent = stalled branch"
+    },
+    {
+      "name": "Gate Storm Detection",
+      "date_tested": "2026-04-17",
+      "effectiveness": "High",
+      "recommendation": "Keep and automate",
+      "description": "Detect anomalous gate re-trigger events by identifying time windows with >4 concurrent gate runs for",
+      "finding": "update-safe-patch had 8 concurrent gates at 11:22 (double trigger) across 5 gate rounds total."
+    },
+    {
+      "name": "Multi-Branch Parallelism Analysis",
+      "date_tested": "2026-04-20",
+      "effectiveness": "Medium",
+      "recommendation": "Keep and expand",
+      "description": "Measure interference between concurrently-running Copilot branches by comparing gate concurrency lev",
+      "finding": "Two Copilot branches ran in full overlap with 45 combined gate sessions. Both succeeded independentl"
+    },
+    {
+      "name": "Task Category to Copilot Assignment Correlation",
+      "date_tested": "2026-04-24",
+      "effectiveness": "High",
+      "recommendation": "Keep and expand",
+      "description": "Classify Copilot branches by task category (security patch, library version bump, code refactor, bug",
+      "finding": "Security/functional tasks (update-golang-org-x-vuln, rename-actionpins) get Copilot agents assigned."
+    },
+    {
+      "name": "Sub-PR Iteration Pattern Analysis",
+      "date_tested": "2026-04-27",
+      "effectiveness": "Medium",
+      "recommendation": "Keep and refine",
+      "description": "Analyze the sub-PR branching model where a single Copilot branch (copilot/sub-pr-NNNN) generates mul",
+      "finding": "PR #28688 (docs: Organization Practices) used sub-PR model with at least 2 addressing-comment sessio"
+    },
+    {
+      "name": "Historical Trend Regression Analysis",
+      "date_tested": "2026-04-28",
+      "effectiveness": "High",
+      "recommendation": "Keep and automate",
+      "description": "When fresh session data is unavailable, apply statistical regression across accumulated historical r",
+      "finding": "Duration is the strongest predictor: >15min sessions achieve 100% success vs <5min at ~7%. Agent cou"
+    },
+    {
+      "name": "Temporal Analysis",
+      "date_tested": "2026-05-02",
+      "effectiveness": "High",
+      "recommendation": "Keep and automate",
+      "description": "Apply time-series analysis to session duration data to identify efficiency trends and correlate with completion rates. Track avg/median duration per day and flag anomalies.",
+      "finding": "Duration is the strongest predictor of session health. Apr 30 avg 150min = lowest completion rate (72.4%). Duration improving 12 min/day over the 5-day window."
+    }
+  ],
+  "last_updated": "2026-05-02"
+}
