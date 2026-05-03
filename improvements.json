@@ -1,0 +1,17 @@
+{
+  "last_updated": "2026-05-03",
+  "pending_tasks": [
+    {
+      "file": "docs/src/content/docs/guides/self-hosted-runners.md",
+      "created": "2026-05-03",
+      "status": "pending",
+      "description": "Fix broken NOTE callout: add '> ' prefix to line 17"
+    },
+    {
+      "file": "docs/src/content/docs/reference/github-tools.md",
+      "created": "2026-05-03",
+      "status": "pending",
+      "description": "Rename 'Using a magic secret' section to 'Using a reserved secret name'"
+    }
+  ]
+}
