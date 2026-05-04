@@ -105,13 +105,30 @@
         "refactor-agent-harness-runner: 21 action_required gates awaiting human review",
         "Zero orphaned branches - all 8 open PRs properly assigned"
       ]
+    },
+    {
+      "date": "2026-05-04",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 0.0,
+      "copilot_coding_agents": 3,
+      "copilot_success_rate_pct": 0.0,
+      "avg_copilot_duration_min": 0.0,
+      "experimental_strategy": null,
+      "key_insights": [
+        "All 50 sessions = gate sweeps from 3 Copilot branches (all action_required)",
+        "fix-context-propagation-sha-resolution: 25 gates, 5 fire events",
+        "refactor-safe-outputs-processing: 14 gates, 3 fire events",
+        "chore-reduce-boilerplate-domains-api: 11 gates, 2 fire events",
+        "Zero escalation-threshold orphans - all Copilot branches have Copilot assigned",
+        "No conversation logs available (0 conversation.txt files)"
+      ]
     }
   ],
-  "last_updated": "2026-05-03",
+  "last_updated": "2026-05-04",
   "historical_summary": {
-    "avg_completion_rate_pct": 14.5,
-    "avg_copilot_success_rate_pct": 60.1,
-    "avg_copilot_duration_min": 17.2,
-    "note": "Averages computed across Apr 20 - May 3 (11 data days, excluding Apr 28 no-data)"
+    "avg_completion_rate_pct": 15.2,
+    "avg_copilot_success_rate_pct": 50.1,
+    "avg_copilot_duration_min": 15.3,
+    "note": "Averages computed across Apr 23 - May 4 (9 data days)"
   }
 }
