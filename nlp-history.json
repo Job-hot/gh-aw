@@ -1,14 +1,20 @@
 {
   "daily_analysis": [
     {
-      "date": "2026-05-05",
-      "pr_count": 40,
-      "avg_sentiment": -0.040,
-      "top_topic": "Bug Fixes",
-      "positive_count": 19,
-      "neutral_count": 1,
-      "negative_count": 20,
-      "top_keywords": ["fix", "agent", "workflow", "detection", "noop"]
+      "date": "2026-05-06",
+      "pr_count": 50,
+      "avg_sentiment": -0.005,
+      "positive_count": 3,
+      "neutral_count": 43,
+      "negative_count": 4,
+      "top_keywords": [
+        "workflow",
+        "changes",
+        "updated",
+        "default",
+        "github"
+      ],
+      "top_topic": "branch, push, pr, state, target"
     }
   ]
 }
