@@ -136,9 +136,12 @@ async function main(config = {}) {
 
     // Check if bundle or patch file exists
     const hasBundleFile = !!(bundleFilePath && fs.existsSync(bundleFilePath));
+    const hasPatchFile = !!(patchFilePath && fs.existsSync(patchFilePath));
 
-    // Check if patch file exists and has valid content
-    if (!hasBundleFile && (!patchFilePath || !fs.existsSync(patchFilePath))) {
+    // Always require a patch file for policy enforcement. Bundle is used for apply-time
+    // transport, but allowed-files/protected-files checks must run on patch content
+    // (see validation block below that calls checkFileProtection on patchContent).
+    if (!hasPatchFile) {
       const msg = "No patch file found - cannot push without changes";
 
       switch (ifNoChanges) {
@@ -153,31 +156,20 @@ async function main(config = {}) {
       }
     }
 
-    // For bundle transport, there is no patch content to read/validate.
-    // The bundle file itself is the transport artifact.
-    let patchContent = "";
-    let isEmpty;
+    let patchContent = fs.readFileSync(patchFilePath, "utf8");
 
-    if (hasBundleFile) {
-      // Bundle transport: treat as non-empty (the bundle contains commits)
-      isEmpty = false;
-    } else {
-      patchContent = fs.readFileSync(patchFilePath, "utf8");
-
-      // Check for actual error conditions
-      if (patchContent.includes("Failed to generate patch")) {
-        const msg = "Patch file contains error message - cannot push without changes";
-        core.error("Patch file generation failed");
-        core.error(`Patch file location: ${patchFilePath}`);
-        core.error(`Patch file size: ${Buffer.byteLength(patchContent, "utf8")} bytes`);
-        const previewLength = Math.min(500, patchContent.length);
-        core.error(`Patch file preview (first ${previewLength} characters):`);
-        core.error(patchContent.substring(0, previewLength));
-        return { success: false, error: msg };
-      }
-
-      isEmpty = !patchContent || !patchContent.trim();
+    // Check for actual error conditions
+    if (patchContent.includes("Failed to generate patch")) {
+      const msg = "Patch file contains error message - cannot push without changes";
+      core.error("Patch file generation failed");
+      core.error(`Patch file location: ${patchFilePath}`);
+      core.error(`Patch file size: ${Buffer.byteLength(patchContent, "utf8")} bytes`);
+      const previewLength = Math.min(500, patchContent.length);
+      core.error(`Patch file preview (first ${previewLength} characters):`);
+      core.error(patchContent.substring(0, previewLength));
+      return { success: false, error: msg };
     }
+    const isEmpty = !patchContent || !patchContent.trim();
     // Validate patch/bundle size against `max_patch_size`.
     //
     // Size-check source of truth, in order of preference:
@@ -191,7 +183,7 @@ async function main(config = {}) {
     // the transport file accumulates per-commit metadata + per-commit diffs and
     // can be many MB even when each iteration only changes a few KB.
     if (!isEmpty) {
-      const patchSizeBytes = hasBundleFile ? 0 : Buffer.byteLength(patchContent, "utf8");
+      const patchSizeBytes = Buffer.byteLength(patchContent, "utf8");
       const patchSizeKb = Math.ceil(patchSizeBytes / 1024);
 
       let bundleSizeBytes = 0;
@@ -626,7 +618,7 @@ async function main(config = {}) {
           return { success: false, error: "Failed to apply bundle" };
         }
       } else {
-        // Patch transport (default): git am --3way
+        // Patch transport (non-default): git am --3way
         core.info("Applying patch...");
         try {
           if (commitTitleSuffix) {
@@ -657,36 +649,78 @@ async function main(config = {}) {
           await exec.exec(`git am --3way ${patchFilePath}`, [], baseGitOpts);
           core.info("Patch applied successfully");
         } catch (error) {
-          core.error(`Failed to apply patch: ${getErrorMessage(error)}`);
+          core.warning(`Initial patch apply failed, attempting add/add recovery: ${getErrorMessage(error)}`);
+          let recoveredFromAddAddConflict = false;
 
-          // Investigate patch failure
+          // Automatic recovery for add/add conflicts:
+          // when a patch created from the base branch tries to "add" a file that
+          // already exists on the PR branch, prefer the patch version and continue.
           try {
-            core.info("Investigating patch failure...");
+            const unresolvedFilesResult = await exec.getExecOutput("git", ["diff", "--name-only", "--diff-filter=U"], baseGitOpts);
+            const unresolvedFiles = unresolvedFilesResult.stdout
+              .split("\n")
+              .map(line => line.trim())
+              .filter(Boolean);
 
-            const statusResult = await exec.getExecOutput("git", ["status"], baseGitOpts);
-            core.info("Git status output:");
-            core.info(statusResult.stdout);
+            if (unresolvedFiles.length > 0) {
+              const statusPorcelainResult = await exec.getExecOutput("git", ["status", "--porcelain"], baseGitOpts);
+              const addAddFiles = new Set(
+                statusPorcelainResult.stdout
+                  .split("\n")
+                  .map(line => line.trim())
+                  .filter(line => line.startsWith("AA "))
+                  .map(line => line.substring(3).trim())
+              );
+              const allConflictsAreAddAdd = unresolvedFiles.every(file => addAddFiles.has(file));
 
-            const logResult = await exec.getExecOutput("git", ["log", "--oneline", "-5"], baseGitOpts);
-            core.info("Recent commits (last 5):");
-            core.info(logResult.stdout);
-
-            const diffResult = await exec.getExecOutput("git", ["diff", "HEAD"], baseGitOpts);
-            core.info("Uncommitted changes:");
-            core.info(diffResult.stdout && diffResult.stdout.trim() ? diffResult.stdout : "(no uncommitted changes)");
-
-            const patchDiffResult = await exec.getExecOutput("git", ["am", "--show-current-patch=diff"], baseGitOpts);
-            core.info("Failed patch diff:");
-            core.info(patchDiffResult.stdout);
-
-            const patchFullResult = await exec.getExecOutput("git", ["am", "--show-current-patch"], baseGitOpts);
-            core.info("Failed patch (full):");
-            core.info(patchFullResult.stdout);
-          } catch (investigateError) {
-            core.warning(`Failed to investigate patch failure: ${investigateError instanceof Error ? investigateError.message : String(investigateError)}`);
+              if (allConflictsAreAddAdd) {
+                core.warning(`Detected add/add conflict(s) for ${unresolvedFiles.join(", ")}; preferring patch version and continuing`);
+                for (const file of unresolvedFiles) {
+                  await exec.exec("git", ["checkout", "--theirs", "--", file], baseGitOpts);
+                  await exec.exec("git", ["add", "--", file], baseGitOpts);
+                }
+                await exec.exec("git", ["am", "--continue"], baseGitOpts);
+                core.info("Patch applied successfully after resolving add/add conflict(s)");
+                recoveredFromAddAddConflict = true;
+              }
+            }
+          } catch (recoveryError) {
+            core.warning(`Automatic add/add conflict recovery failed: ${getErrorMessage(recoveryError)}`);
           }
 
-          return { success: false, error: "Failed to apply patch" };
+          if (recoveredFromAddAddConflict) {
+            // Continue with normal push flow
+          } else {
+            core.error(`Failed to apply patch: ${getErrorMessage(error)}`);
+            // Investigate patch failure
+            try {
+              core.info("Investigating patch failure...");
+
+              const statusResult = await exec.getExecOutput("git", ["status"], baseGitOpts);
+              core.info("Git status output:");
+              core.info(statusResult.stdout);
+
+              const logResult = await exec.getExecOutput("git", ["log", "--oneline", "-5"], baseGitOpts);
+              core.info("Recent commits (last 5):");
+              core.info(logResult.stdout);
+
+              const diffResult = await exec.getExecOutput("git", ["diff", "HEAD"], baseGitOpts);
+              core.info("Uncommitted changes:");
+              core.info(diffResult.stdout && diffResult.stdout.trim() ? diffResult.stdout : "(no uncommitted changes)");
+
+              const patchDiffResult = await exec.getExecOutput("git", ["am", "--show-current-patch=diff"], baseGitOpts);
+              core.info("Failed patch diff:");
+              core.info(patchDiffResult.stdout);
+
+              const patchFullResult = await exec.getExecOutput("git", ["am", "--show-current-patch"], baseGitOpts);
+              core.info("Failed patch (full):");
+              core.info(patchFullResult.stdout);
+            } catch (investigateError) {
+              core.warning(`Failed to investigate patch failure: ${investigateError instanceof Error ? investigateError.message : String(investigateError)}`);
+            }
+
+            return { success: false, error: "Failed to apply patch" };
+          }
         }
       } // end else (patch path)
 

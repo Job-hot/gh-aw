@@ -784,6 +784,9 @@ index 0000000..abc1234
       // git am fails
       mockExec.exec.mockRejectedValueOnce(new Error("Patch does not apply"));
 
+      // No unresolved conflicts for automatic add/add recovery
+      mockExec.getExecOutput.mockResolvedValueOnce({ exitCode: 0, stdout: "", stderr: "" }); // git diff --name-only --diff-filter=U
+
       // Investigation commands succeed
       mockExec.getExecOutput.mockResolvedValueOnce({ exitCode: 0, stdout: "M file.txt\n", stderr: "" }); // git status
       mockExec.getExecOutput.mockResolvedValueOnce({ exitCode: 0, stdout: "abc123 commit 1\n", stderr: "" }); // git log
@@ -798,6 +801,60 @@ index 0000000..abc1234
       expect(result.success).toBe(false);
       expect(result.error).toContain("Failed to apply patch");
       expect(mockCore.info).toHaveBeenCalledWith("Investigating patch failure...");
+    });
+
+    it("should resolve add/add conflicts by preferring patch version and continuing git am", async () => {
+      const patchPath = createPatchFile();
+      const pushSignedCommitsModule = require("./push_signed_commits.cjs");
+      const pushSignedSpy = vi.spyOn(pushSignedCommitsModule, "pushSignedCommits").mockResolvedValue("pushed-sha");
+
+      try {
+        mockExec.getExecOutput = vi.fn().mockImplementation(async (cmd, args) => {
+          const argList = Array.isArray(args) ? args : [];
+
+          if (argList[0] === "ls-remote" && argList[1] === "--exit-code") {
+            return { exitCode: 0, stdout: "before-sha\trefs/heads/feature-branch\n", stderr: "" };
+          }
+          if (argList[0] === "rev-parse" && argList[1] === "HEAD") {
+            return { exitCode: 0, stdout: "before-sha\n", stderr: "" };
+          }
+          if (argList[0] === "diff" && argList[1] === "--name-only") {
+            return { exitCode: 0, stdout: "docs/findings.md\n", stderr: "" };
+          }
+          if (argList[0] === "status" && argList[1] === "--porcelain") {
+            return { exitCode: 0, stdout: "AA docs/findings.md\n", stderr: "" };
+          }
+          if (argList[0] === "rev-list" && argList[1] === "--count") {
+            return { exitCode: 0, stdout: "1\n", stderr: "" };
+          }
+
+          return { exitCode: 0, stdout: "", stderr: "" };
+        });
+
+        // Set up successful fetch, rev-parse, checkout
+        mockExec.exec.mockResolvedValueOnce(0); // fetch
+        mockExec.exec.mockResolvedValueOnce(0); // rev-parse
+        mockExec.exec.mockResolvedValueOnce(0); // checkout
+
+        // git am fails first with conflict
+        mockExec.exec.mockRejectedValueOnce(new Error("Patch does not apply"));
+
+        mockExec.exec.mockResolvedValueOnce(0); // git checkout --theirs -- docs/findings.md
+        mockExec.exec.mockResolvedValueOnce(0); // git add -- docs/findings.md
+        mockExec.exec.mockResolvedValueOnce(0); // git am --continue
+
+        const module = await loadModule();
+        const handler = await module.main({});
+        const result = await handler({ patch_path: patchPath }, {});
+
+        expect(result.success).toBe(true);
+        expect(mockCore.info).toHaveBeenCalledWith("Patch applied successfully after resolving add/add conflict(s)");
+        expect(mockExec.exec).toHaveBeenCalledWith("git", ["checkout", "--theirs", "--", "docs/findings.md"], expect.any(Object));
+        expect(mockExec.exec).toHaveBeenCalledWith("git", ["add", "--", "docs/findings.md"], expect.any(Object));
+        expect(mockExec.exec).toHaveBeenCalledWith("git", ["am", "--continue"], expect.any(Object));
+      } finally {
+        pushSignedSpy.mockRestore();
+      }
     });
 
     it("should create fallback pull request on non-fast-forward push rejection by default", async () => {
@@ -1105,17 +1162,17 @@ index 0000000..abc1234
       expect(result.error).toContain("exceeds maximum");
     });
 
-    it("should enforce max_patch_size against the bundle file size when bundle transport is used", async () => {
-      // Bundle transport does not have a format-patch file. The max_patch_size
-      // limit must still apply — using the on-disk bundle file size — so large
-      // bundles cannot silently bypass the limit.
+    it("should enforce max_patch_size against bundle size when bundle transport is used", async () => {
+      // Bundle transport still includes a patch for policy checks, but the size
+      // guard falls back to bundle size when diff_size is not provided.
       const bundlePath = path.join(tempDir, "test.bundle");
+      const patchPath = createPatchFile("small patch content");
       // 2 MB dummy bundle file (contents don't matter; only size is checked)
       fs.writeFileSync(bundlePath, Buffer.alloc(2 * 1024 * 1024));
 
       const module = await loadModule();
       const handler = await module.main({ max_patch_size: 1024 }); // 1 MB max
-      const result = await handler({ bundle_path: bundlePath }, {});
+      const result = await handler({ patch_path: patchPath, bundle_path: bundlePath }, {});
 
       expect(result.success).toBe(false);
       expect(result.error).toContain("exceeds maximum");
@@ -1127,13 +1184,14 @@ index 0000000..abc1234
       // the check must accept the push (limit reflects the real change, not the
       // compressed transport size).
       const bundlePath = path.join(tempDir, "test.bundle");
+      const patchPath = createPatchFile("small patch content");
       fs.writeFileSync(bundlePath, Buffer.alloc(2 * 1024 * 1024));
 
       mockExec.getExecOutput.mockResolvedValue({ exitCode: 0, stdout: "abc123\n", stderr: "" });
 
       const module = await loadModule();
       const handler = await module.main({ max_patch_size: 1024 }); // 1 MB max
-      const result = await handler({ bundle_path: bundlePath, diff_size: 5 * 1024 }, {});
+      const result = await handler({ patch_path: patchPath, bundle_path: bundlePath, diff_size: 5 * 1024 }, {});
 
       expect(result.success).toBe(true);
       expect(mockCore.info).toHaveBeenCalledWith("Patch size validation passed");
