@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "output_format": {
+      "executive_brief": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "25444622992",
+      "timestamp": "2026-05-06T15:24:54.674Z",
+      "assignments": {
+        "output_format": "executive_brief"
+      }
+    }
+  ]
+}
