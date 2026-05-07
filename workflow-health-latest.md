@@ -1,46 +1,38 @@
-# Workflow Health — 2026-05-06T05:37Z
+# Workflow Health — 2026-05-07T05:38Z
 
-Score: 61/100 (↓ from 63 — new CI regression on main). 214 workflows. Run: §25418403606
+Score: 61/100 (→ stable). 217 workflows (+3). Run: §25477981073
 
 ## KEY FINDINGS
 
 ### Compilation Status
-- 214/214 lock files present ✅ (stable, +1 from 213)
+- 217/217 lock files present ✅ (+3 from yesterday's 214)
 - 0 missing lock files ✅
 
 ### P0 Issues (Active, unchanged)
-- **Smoke Gemini** (#30175, #29666 OPEN): 100% failure, proxy blocks traffic (31+ days)
+- **Smoke Gemini** (#30175, #29666 OPEN): 100% failure, proxy blocks traffic (32+ days)
 - **Smoke CI** (#29666 OPEN): Chronic action_required, EROFS crash
 - **Daily Model Inventory Checker** (#30043 OPEN): Copilot CLI silent startup crash
 - **APM Unpack Systemic Failure** (#30252 OPEN): apm-default.tar.gz unpack exit code 1
 
 ### P1 Issues (Active)
-- **CI regression on main** (NEW — no issue #): TestStrictModePermissions/no_permissions_specified failing since ~01:16 UTC May 6. Playwright MCP deprecation error in strict mode. Filed via safeoutputs.
+- **Smoke macOS ARM64**: 100% failure since Feb 20 2026 (**76 days**) — **ISSUE FILED THIS RUN** ✅
+- **CI regression** (TestStrictModePermissions): Filed 2026-05-06; status unknown this run (API unavailable)
 - **config.models unsupported field** (#30307 OPEN): blocks smoke runs
-- **Smoke macOS ARM64** (NO ISSUE FILED): 100% failure since Feb 2026
-
-### P1 Issues Resolved This Run ✅
-- #30205 Auto-Triage Issues → CLOSED ✅
-- #30188 Documentation Unbloat → CLOSED ✅
-- #30233 Daily Documentation Healer → CLOSED ✅
-- #30069 Step Name Alignment → CLOSED ✅
-- #30241 Smoke Claude → CLOSED ✅
-- #30244 Smoke Codex → CLOSED ✅
+- **MCP gateway session timeout** (#23153 OPEN): Long-running workflows at risk
+- **Performance Regression in Validation** (#30180): 82.1% slower
 
 ### P2 Issues
 - Node.js 20 deprecation deadline Sep 16, 2026
-- MCP gateway session timeout (#23153)
-- 6+ PR-review agents on same triggers (~100 action_required/day)
-- Performance regression in Validation (#30180)
+- 9 PR-review agents on same triggers (~100 action_required/day)
 
 ### Actions Taken This Run
-- Created CI regression issue (via safeoutputs) for TestStrictModePermissions failure on main
 - Added health dashboard comment to #29109
+- Filed P1 issue for Smoke macOS ARM64 (76+ days overdue)
 - Updated shared memory
 
 ### Trends
-- Score: 61/100 (↓-2 from CI regression on main)
-- 6 P1 issues resolved ✅ (good recovery)
-- New CI integration test regression since ~01:16 UTC May 6
-- Gemini still completely broken (31+ days, P0 unresolved)
-- macOS ARM64 chronic failure since Feb 2026 — no issue filed (still)
+- Score: 61/100 (→ stable, no new regressions)
+- 217 workflows (+3 new), all compiled
+- P0s persist (Gemini 32+ days, CI CGO chronic)
+- macOS ARM64 issue finally filed after 76 days
+- Network-restricted run: GitHub API unavailable, analysis from pre-computed data
