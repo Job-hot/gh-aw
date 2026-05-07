@@ -2724,13 +2724,19 @@ describe("sendJobConclusionSpan", () => {
     const statSpy = vi.spyOn(fs, "statSync").mockReturnValue(/** @type {Partial<fs.Stats>} */ { mtimeMs: endMs });
     const readFileSpy = vi.spyOn(fs, "readFileSync").mockImplementation(filePath => {
       if (filePath === "/tmp/gh-aw/aw_info.json") {
-        return JSON.stringify({ context: { item_number: "42" } });
+        return JSON.stringify({ firewall_enabled: true, context: { item_number: "42", otel_trace_id: "a".repeat(32) } });
       }
       if (filePath === "/tmp/gh-aw/agent_output.json") {
         return JSON.stringify({ errors: [{ message: "first" }, { message: "second" }] });
       }
+      if (filePath === "/tmp/gh-aw/agent_usage.json") {
+        return JSON.stringify({ input_tokens: 1000, output_tokens: 200, cache_read_tokens: 1000, cache_write_tokens: 50, effective_tokens: 500 });
+      }
       if (filePath === "/tmp/gh-aw/agent-stdio.log") {
         return '[WARN] first warning\nnpm warn second warning\n{"type":"result","num_turns":7,"total_cost_usd":1.75}\n';
+      }
+      if (filePath === "/tmp/gh-aw/mcp-logs/gateway.jsonl") {
+        return [JSON.stringify({ type: "DIFC_FILTERED" }), JSON.stringify({ type: "REQUEST" })].join("\n");
       }
       throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
     });
@@ -2752,6 +2758,22 @@ describe("sendJobConclusionSpan", () => {
     expect(attrs["gh-aw.warning_count"]).toBe(3);
     expect(attrs["gh-aw.run.status"]).toBe("failure");
     expect(attrs["gh-aw.tracker.id"]).toBe("copilot-token-optimizer");
+    expect(attrs["gh-aw.observability.schema_version"]).toBe(2);
+    expect(attrs["gh-aw.observability.posture"]).toBe("read-only");
+    expect(attrs["gh-aw.observability.runtime_status"]).toBe("error");
+    expect(attrs["gh-aw.observability.blocked_requests"]).toBe(1);
+    expect(attrs["gh-aw.observability.output_error_count"]).toBe(2);
+    expect(attrs["gh-aw.optimization.total_tokens"]).toBe(5000);
+    expect(attrs["gh-aw.optimization.input_tokens"]).toBe(1000);
+    expect(attrs["gh-aw.optimization.output_tokens"]).toBe(200);
+    expect(attrs["gh-aw.optimization.cache_read_tokens"]).toBe(1000);
+    expect(attrs["gh-aw.optimization.cache_write_tokens"]).toBe(50);
+    expect(attrs["gh-aw.optimization.cache_efficiency"]).toBe(0.5);
+    expect(attrs["gh-aw.optimization.estimated_cost_usd"]).toBe(1.75);
+    expect(attrs["gh-aw.optimization.action_minutes"]).toBeGreaterThan(0);
+    expect(attrs["gh-aw.optimization.intensity"]).toBe("normal");
+    expect(attrs["gh-aw.optimization.runtime_risk_score"]).toBe(66);
+    expect(attrs["gh-aw.optimization.score"]).toBe(66);
   });
 
   it("emits gh-aw.otlp.export_errors on the conclusion job span", async () => {

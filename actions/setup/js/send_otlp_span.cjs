@@ -6,6 +6,7 @@ const fs = require("fs");
 const { buildWorkflowCallId } = require("./aw_context.cjs");
 const path = require("path");
 const { nowMs } = require("./performance_now.cjs");
+const { collectRuntimeObservabilityData } = require("./runtime_observability.cjs");
 const { buildWorkflowRunUrl } = require("./workflow_metadata_helpers.cjs");
 const { readExperimentAssignments, EXPERIMENT_ASSIGNMENTS_PATH } = require("./experiment_helpers.cjs");
 
@@ -1428,6 +1429,55 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   if (typeof agentUsage.cache_write_tokens === "number" && agentUsage.cache_write_tokens > 0) {
     usageAttrs.push(buildAttr("gen_ai.usage.cache_creation.input_tokens", agentUsage.cache_write_tokens));
   }
+
+  const runtimeObservability = collectRuntimeObservabilityData({
+    awInfo,
+    agentOutput,
+    agentUsage,
+    runtimeMetrics,
+    effectiveTokens: !isNaN(effectiveTokens) && effectiveTokens > 0 ? effectiveTokens : undefined,
+    warningCount,
+    durationMs: Math.max(0, endMs - startMs),
+  });
+  attributes.push(buildAttr("gh-aw.observability.schema_version", runtimeObservability.derived.schemaVersion));
+  attributes.push(buildAttr("gh-aw.observability.posture", runtimeObservability.derived.posture));
+  attributes.push(buildAttr("gh-aw.observability.runtime_status", runtimeObservability.derived.runtimeStatus));
+  attributes.push(buildAttr("gh-aw.observability.blocked_requests", runtimeObservability.raw.blockedRequests));
+  attributes.push(buildAttr("gh-aw.observability.created_item_count", runtimeObservability.raw.createdItemCount));
+  attributes.push(buildAttr("gh-aw.observability.output_error_count", runtimeObservability.raw.outputErrorCount));
+  attributes.push(buildAttr("gh-aw.observability.warning_count", runtimeObservability.raw.warningCount));
+  attributes.push(buildAttr("gh-aw.observability.turn_count", runtimeObservability.raw.turnCount));
+  attributes.push(buildAttr("gh-aw.observability.firewall_enabled", runtimeObservability.raw.firewallEnabled));
+  if (runtimeObservability.raw.createdItemTypes.length > 0) {
+    attributes.push(buildAttr("gh-aw.observability.created_item_types", runtimeObservability.raw.createdItemTypes.join(",")));
+  }
+  if (typeof runtimeObservability.raw.totalTokens === "number") {
+    attributes.push(buildAttr("gh-aw.optimization.total_tokens", runtimeObservability.raw.totalTokens));
+  }
+  if (typeof runtimeObservability.raw.inputTokens === "number") {
+    attributes.push(buildAttr("gh-aw.optimization.input_tokens", runtimeObservability.raw.inputTokens));
+  }
+  if (typeof runtimeObservability.raw.outputTokens === "number") {
+    attributes.push(buildAttr("gh-aw.optimization.output_tokens", runtimeObservability.raw.outputTokens));
+  }
+  if (typeof runtimeObservability.raw.cacheReadTokens === "number") {
+    attributes.push(buildAttr("gh-aw.optimization.cache_read_tokens", runtimeObservability.raw.cacheReadTokens));
+  }
+  if (typeof runtimeObservability.raw.cacheWriteTokens === "number") {
+    attributes.push(buildAttr("gh-aw.optimization.cache_write_tokens", runtimeObservability.raw.cacheWriteTokens));
+  }
+  if (typeof runtimeObservability.raw.cacheEfficiency === "number") {
+    attributes.push(buildAttr("gh-aw.optimization.cache_efficiency", runtimeObservability.raw.cacheEfficiency));
+  }
+  if (typeof runtimeObservability.raw.estimatedCostUsd === "number") {
+    attributes.push(buildAttr("gh-aw.optimization.estimated_cost_usd", runtimeObservability.raw.estimatedCostUsd));
+  }
+  if (typeof runtimeObservability.raw.actionMinutes === "number") {
+    attributes.push(buildAttr("gh-aw.optimization.action_minutes", runtimeObservability.raw.actionMinutes));
+  }
+  attributes.push(buildAttr("gh-aw.optimization.intensity", runtimeObservability.derived.tokenIntensity));
+  attributes.push(buildAttr("gh-aw.optimization.runtime_risk_score", runtimeObservability.derived.runtimeRiskScore));
+  attributes.push(buildAttr("gh-aw.optimization.score", runtimeObservability.derived.optimizationScore));
 
   const endpoints = parseOTLPEndpoints();
   const conclusionSpanId = generateSpanId();

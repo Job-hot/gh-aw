@@ -21,7 +21,7 @@ describe("generate_observability_summary.cjs", () => {
   });
 
   afterEach(() => {
-    for (const path of ["/tmp/gh-aw/aw_info.json", "/tmp/gh-aw/agent_output.json", "/tmp/gh-aw/mcp-logs/gateway.jsonl", "/tmp/gh-aw/mcp-logs/rpc-messages.jsonl"]) {
+    for (const path of ["/tmp/gh-aw/aw_info.json", "/tmp/gh-aw/agent_output.json", "/tmp/gh-aw/agent_usage.json", "/tmp/gh-aw/agent-stdio.log", "/tmp/gh-aw/mcp-logs/gateway.jsonl", "/tmp/gh-aw/mcp-logs/rpc-messages.jsonl"]) {
       if (fs.existsSync(path)) {
         fs.unlinkSync(path);
       }
@@ -46,6 +46,8 @@ describe("generate_observability_summary.cjs", () => {
         errors: ["validation failed"],
       })
     );
+    fs.writeFileSync("/tmp/gh-aw/agent_usage.json", JSON.stringify({ input_tokens: 1000, output_tokens: 200, cache_read_tokens: 1000, cache_write_tokens: 50, effective_tokens: 500 }));
+    fs.writeFileSync("/tmp/gh-aw/agent-stdio.log", '[WARN] first warning\n{"type":"result","num_turns":7,"total_cost_usd":1.75}\n');
     fs.writeFileSync("/tmp/gh-aw/mcp-logs/gateway.jsonl", [JSON.stringify({ type: "DIFC_FILTERED" }), JSON.stringify({ type: "REQUEST" })].join("\n"));
 
     await module.main(mockCore);
@@ -58,6 +60,13 @@ describe("generate_observability_summary.cjs", () => {
     expect(summary).toContain("- **trace id**: a3f2c8d1e4b7091f6a5c2e3d8f401b72");
     expect(summary).not.toContain("12345678901-1");
     expect(summary).toContain("- **posture**: write-capable");
+    expect(summary).toContain("- **runtime status**: error");
+    expect(summary).toContain("- **total tokens**: 500");
+    expect(summary).toContain("- **estimated cost usd**: 1.75");
+    expect(summary).toContain("- **turns**: 7");
+    expect(summary).toContain("- **cache efficiency**: 50%");
+    expect(summary).toContain("- **runtime risk score**: 31");
+    expect(summary).toContain("- **optimization score**: 31");
     expect(summary).toContain("- **created items**: 2");
     expect(summary).toContain("- **blocked requests**: 1");
     expect(summary).toContain("- **agent output errors**: 1");
