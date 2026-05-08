@@ -3,75 +3,26 @@ title: Multi-Repository Examples
 description: Complete examples for managing workflows across multiple GitHub repositories, including feature synchronization, cross-repo tracking, and organization-wide updates.
 ---
 
-Multi-repository operations enable coordinating work across multiple GitHub repositories while maintaining security and proper access controls. These examples demonstrate common patterns for cross-repo workflows.
+Multi-repository operations coordinate work across GitHub repositories while preserving security boundaries.
 
 ## Featured Examples
 
-### [Feature Synchronization](/gh-aw/examples/multi-repo/feature-sync/)
+- **[Feature Synchronization](/gh-aw/examples/multi-repo/feature-sync/)** — Sync code from a source repo to downstream repos via pull requests, with change detection, path filters, and bidirectional support.
+- **[Cross-Repository Issue Tracking](/gh-aw/examples/multi-repo/issue-tracking/)** — Centralize tracking issues in a hub repo with status synchronization across components.
 
-Automates code synchronization from main repositories to sub-repositories or downstream services through pull requests with change detection, path filters, and bidirectional sync support. Use for monorepo alternatives, shared component libraries, multi-platform deployments, or fork maintenance.
+## Authentication
 
-### [Cross-Repository Issue Tracking](/gh-aw/examples/multi-repo/issue-tracking/)
+Cross-repo writes require credentials scoped to the **target** repositories only (not the source repo where the workflow runs). Two options:
 
-Centralizes issue tracking by automatically creating tracking issues in a central repository with status synchronization and multi-component coordination. Use for component-based architecture visibility, multi-team coordination, cross-project initiatives, or upstream dependency tracking.
-
-## Getting Started
-
-All multi-repo workflows require proper authentication:
-
-### Personal Access Token Setup
+**Personal Access Token (PAT)** — fastest to set up:
 
 ```bash
-# Create PAT with required permissions
-gh auth token
-
-# Store as repository or organization secret
 gh aw secrets set GH_AW_CROSS_REPO_PAT --value "ghp_your_token_here"
 ```
 
-The PAT needs permissions **only on target repositories** (not the source repository where the workflow runs): `repo` for private repos, `contents: write` for commits, `issues: write` for issues, and `pull-requests: write` for PRs.
+Grant the minimum write scopes needed (`contents`, `issues`, `pull-requests`) on target repos only.
 
-> [!TIP]
-> **Security Best Practice**: If you only need to read from one repo and write to another, scope your PAT to have read access on the source and write access only on target repositories. Use separate tokens for different operations when possible.
-
-### GitHub App Configuration
-
-For enhanced security, use GitHub Apps for automatic token minting and revocation. GitHub App tokens are minted on-demand, automatically revoked after job completion, and provide better security than long-lived PATs.
-
-See [Using a GitHub App for Authentication](/gh-aw/reference/auth/#using-a-github-app-for-authentication) for complete configuration examples including specific repository scoping and org-wide access.
-
-## Common Patterns
-
-### Hub-and-Spoke Architecture
-
-Central repository aggregates information from multiple component repositories:
-
-```text
-Component Repo A ──┐
-Component Repo B ──┼──> Central Tracker
-Component Repo C ──┘
-```
-
-### Upstream-to-Downstream Sync
-
-Main repository propagates changes to downstream repositories:
-
-```text
-Main Repo ──> Sub-Repo Alpha
-          ──> Sub-Repo Beta
-          ──> Sub-Repo Gamma
-```
-
-### Organization-Wide Coordination
-
-Single workflow creates issues across multiple repositories:
-
-```text
-Control Workflow ──> Repo 1 (tracking issue)
-                 ──> Repo 2 (tracking issue)
-                 ──> Repo 3 (tracking issue)
-                 ──> ... (up to max limit)
-```
+**GitHub App** — preferred for production: tokens are minted on-demand and revoked after each job. See [Using a GitHub App for Authentication](/gh-aw/reference/auth/#using-a-github-app-for-authentication) for repo-scoped and org-wide setup.
 
 ## Cross-Repository Safe Outputs
 
@@ -101,11 +52,9 @@ safe-outputs:
     # No target-repo: operates on current repository
 ```
 
-See [Safe Outputs Reference](/gh-aw/reference/safe-outputs/) for complete configuration options.
-
 ## GitHub API Tools for Multi-Repo Access
 
-Enable GitHub toolsets to allow agents to query multiple repositories:
+Enable the toolsets your agent needs to query other repositories:
 
 ```yaml wrap
 tools:
@@ -113,21 +62,11 @@ tools:
     toolsets: [repos, issues, pull_requests, actions]
 ```
 
-Agents can access **repos** (read files, search code, list commits, get releases), **issues** (list and search across repositories), **pull_requests** (list and search PRs), and **actions** (workflow runs and artifacts).
+See [GitHub Tools](/gh-aw/reference/github-tools/) for the per-toolset capability list.
 
-## Best Practices
+## Direct Checkout for Deterministic Workflows
 
-Use GitHub Apps for automatic token revocation, scope PATs minimally, rotate tokens regularly, and store them as GitHub secrets. Set appropriate `max` limits on safe outputs, use meaningful title prefixes and consistent labels, and include clear documentation in created items. Validate repository access before operations, handle rate limits appropriately, and monitor workflow execution. Test with public repositories first, pilot with small subsets, verify configurations, and monitor costs.
-
-## Advanced Topics
-
-### Private Repository Access
-
-When working with private repositories, ensure the PAT owner has repository access, install GitHub Apps in target organizations, configure repository lists explicitly, and test permissions before full rollout.
-
-### Deterministic Workflows
-
-For direct repository access, use an AI engine with custom steps via `actions/checkout`:
+When the agent needs direct file access rather than API calls, check out the secondary repo as a workflow step:
 
 ```yaml wrap
 engine:
@@ -137,7 +76,7 @@ engine:
       uses: actions/checkout@v6
       with:
         path: main-repo
-    
+
     - name: Checkout secondary repo
       uses: actions/checkout@v6
       with:
@@ -146,20 +85,9 @@ engine:
         path: secondary-repo
 ```
 
-### Organization-Level Operations
+## See Also
 
-For organization-wide workflows, use organization-level secrets, configure GitHub Apps at organization level, plan phased rollouts, and provide clear communication.
-
-## Complete Guide
-
-For comprehensive documentation on the MultiRepoOps design pattern, see:
-
-[MultiRepoOps Design Pattern](/gh-aw/patterns/multi-repo-ops/)
-
-## Related Documentation
-
-- [Cross-Repository Operations](/gh-aw/reference/cross-repository/) - Checkout and target-repo configuration
-- [Safe Outputs Reference](/gh-aw/reference/safe-outputs/) - Configuration options
-- [GitHub Tools](/gh-aw/reference/github-tools/) - API access configuration
-- [Security Best Practices](/gh-aw/introduction/architecture/) - Authentication and security
-- [Reusing Workflows](/gh-aw/guides/packaging-imports/) - Sharing workflows
+- [MultiRepoOps Design Pattern](/gh-aw/patterns/multi-repo-ops/) — full pattern documentation
+- [Cross-Repository Operations](/gh-aw/reference/cross-repository/) — checkout and `target-repo` configuration
+- [Authentication](/gh-aw/reference/auth/) — PAT and GitHub App setup
+- [Reusing Workflows](/gh-aw/guides/packaging-imports/) — sharing imports across repos
