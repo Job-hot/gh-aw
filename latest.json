@@ -1,39 +1,35 @@
 {
-  "timestamp": "2026-05-07T04:48:29Z",
-  "workflow_run_id": "25476599555",
+  "timestamp": "2026-05-08T04:43:49Z",
+  "workflow_run_id": "25537169013",
   "total_workflows": 217,
   "copilot_workflows": 96,
-  "features_used": {
-    "max-continuations": 2,
-    "engine.agent_custom": 7,
-    "engine.model": 3,
-    "engine.bare": 9,
-    "engine.harness": 0,
-    "engine.api-target": 0,
-    "startup-timeout": 0,
-    "tool-timeout": 0,
-    "cache-memory": 30,
-    "repo-memory": 16,
+  "copilot_pct": 44,
+  "feature_usage": {
+    "cli-proxy": 88,
+    "strict_mode": 62,
+    "github_tool": 58,
+    "safe_outputs": 78,
+    "timeout_minutes": 94,
+    "bash_tool": 67,
+    "network_restrictions": 45,
+    "edit_tool": 41,
+    "cache_memory": 30,
+    "extended_engine_config": 22,
+    "engine_agent": 11,
+    "features_section": 40,
     "sandbox_awf": 11,
-    "strict_true": 62,
-    "strict_false": 0,
-    "network-config": 45,
-    "timeout-minutes": 96,
-    "version-pinning": 14
+    "playwright": 8,
+    "web_fetch": 8,
+    "bare_mode": 9,
+    "model_override": 3,
+    "max_continuations": 2,
+    "comment_memory": 3,
+    "mcp_scripts": 1,
+    "api_target": 0,
+    "engine_harness": 0,
+    "engine_args": 0,
+    "engine_version_pinning": 0
   },
-  "run_number": 17,
-  "persistent_gaps": [
-    "startup-timeout (17th run at 0)",
-    "tool-timeout (17th run at 0)",
-    "engine.api-target (0 - 17th run)",
-    "engine.harness (0 - 17th run)",
-    "max-continuations in copilot wfs (2 - stable, not growing)",
-    "unused-agent-files (5 - unchanged since April)"
-  ],
-  "unused_agent_files": ["grumpy-reviewer", "w3c-specification-writer", "create-safe-output-type", "custom-engine-implementation", "interactive-agent-designer"],
-  "security_gaps": {
-    "copilot_without_network": 51,
-    "copilot_without_strict": 34,
-    "unrestricted_bash_true": 10
-  }
+  "opportunities_found": 8,
+  "notes": "First comprehensive analysis. Key gaps: version pinning, api-target, engine.args, max-continuations underused, 30 bash workflows missing network restrictions"
 }
