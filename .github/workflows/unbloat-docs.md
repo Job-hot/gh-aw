@@ -171,23 +171,30 @@ pre-agent-steps:
 
   - name: Start documentation dev server
     run: |
+      mkdir -p /tmp/gh-aw
       cd docs
-      nohup npm run dev -- --host 0.0.0.0 --port 4321 > /tmp/preview.log 2>&1 &
+      nohup npm run dev -- --host 0.0.0.0 --port 4321 > /tmp/gh-aw/preview.log 2>&1 &
       PID=$!
-      echo $PID > /tmp/server.pid
+      echo $PID > /tmp/gh-aw/server.pid
       echo "Dev server started (PID: $PID)"
 
   - name: Wait for documentation server readiness
     run: |
+      URL="http://localhost:4321/gh-aw/"
       STATUS=""
+      echo "Readiness check target: $URL"
+      echo "Preview log: /tmp/gh-aw/preview.log"
       for i in $(seq 1 45); do
-        STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:4321/gh-aw/)
-        [ "$STATUS" = "200" ] && echo "Server ready at http://localhost:4321/gh-aw/" && break
-        echo "Waiting for server... ($i/45) (status: $STATUS)" && sleep 3
+        STATUS=$(curl -sS -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 5 "$URL" || true)
+        [ "$STATUS" = "200" ] && echo "Server ready at $URL" && break
+        if [ -z "$STATUS" ]; then STATUS="curl_error"; fi
+        echo "Waiting for server... ($i/45) (status: $STATUS)"
+        sleep 3
       done
       if [ "$STATUS" != "200" ]; then
         echo "Dev server failed to start after 135 seconds:"
-        cat /tmp/preview.log || true
+        echo "Final readiness status: $STATUS"
+        cat /tmp/gh-aw/preview.log || true
         exit 1
       fi
 

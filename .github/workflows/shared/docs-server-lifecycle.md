@@ -17,17 +17,18 @@
 Navigate to the docs directory and start the development server in the background, binding to all network interfaces on a fixed port:
 
 ```bash
+mkdir -p /tmp/gh-aw
 cd docs
-nohup npm run dev -- --host 0.0.0.0 --port 4321 > /tmp/preview.log 2>&1 &
+nohup npm run dev -- --host 0.0.0.0 --port 4321 > /tmp/gh-aw/preview.log 2>&1 &
 PID=$!
-echo $PID > /tmp/server.pid
+echo $PID > /tmp/gh-aw/server.pid
 echo "Server PID: $PID"
 ```
 
 This will:
 - Start the Astro development server on port 4321, bound to all interfaces (`0.0.0.0`)
-- Redirect output to `/tmp/preview.log`
-- Save the process ID to `/tmp/server.pid` for later cleanup
+- Redirect output to `/tmp/gh-aw/preview.log`
+- Save the process ID to `/tmp/gh-aw/server.pid` for later cleanup
 
 **Note on the `nohup ... & PID=$!` pattern:** The `$!` variable (background PID) is captured into `PID` first, then written to file. Avoid `echo $! > file` in a single line — the AWF bash guard may flag `$!` as a dangerous expansion when it appears directly in a redirection context.
 
@@ -51,16 +52,26 @@ The agent runs inside a Docker container. Binding to `0.0.0.0` ensures the serve
 Poll the server with curl until the `/gh-aw/` path returns HTTP 200:
 
 ```bash
+URL="http://localhost:4321/gh-aw/"
+STATUS=""
+echo "Readiness check target: $URL"
 for i in {1..45}; do
-  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:4321/gh-aw/)
-  [ "$STATUS" = "200" ] && echo "Server ready at http://localhost:4321/gh-aw/!" && break
+  STATUS=$(curl -sS -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 5 "$URL" || true)
+  [ "$STATUS" = "200" ] && echo "Server ready at $URL" && break
+  if [ -z "$STATUS" ]; then STATUS="curl_error"; fi
   echo "Waiting for server... ($i/45) (status: $STATUS)" && sleep 3
 done
+if [ "$STATUS" != "200" ]; then
+  echo "Dev server failed to start after 135 seconds (final status: $STATUS)"
+  cat /tmp/gh-aw/preview.log || true
+  exit 1
+fi
 ```
 
 This will:
 - Attempt to connect up to 45 times (135 seconds total) to allow for Astro dev server startup
 - Check that `/gh-aw/` specifically returns HTTP 200 (not just that the port is open)
+- Avoid exiting early on transient curl connection failures (`|| true` keeps the loop running under `set -e`)
 - Wait 3 seconds between attempts
 - Exit successfully when the docs site is fully accessible
 
@@ -88,8 +99,8 @@ curl -s http://localhost:4321/gh-aw/ | head -20
 After you're done using the server, clean up the process:
 
 ```bash
-kill $(cat /tmp/server.pid) 2>/dev/null || true
-rm -f /tmp/server.pid /tmp/preview.log
+kill $(cat /tmp/gh-aw/server.pid) 2>/dev/null || true
+rm -f /tmp/gh-aw/server.pid /tmp/gh-aw/preview.log
 ```
 
 This will:
@@ -102,6 +113,6 @@ This will:
 - The server runs on `http://localhost:4321` and is accessible at `http://localhost:4321/gh-aw/` for curl/bash and playwright-cli
 - With CLI mode (`mode: cli`), use `localhost` directly for all playwright-cli commands — no bridge IP needed
 - Always clean up the server when done to avoid orphan processes
-- If the server fails to start, check `/tmp/preview.log` for errors
+- If the server fails to start, check `/tmp/gh-aw/preview.log` for errors
 - Node.js >= 22 is required; ensure `runtimes: node: version: "22"` is set in the workflow frontmatter
 - No `npm run build` step is required before starting the dev server
