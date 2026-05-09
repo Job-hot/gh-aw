@@ -1,7 +1,7 @@
-# Shared Alerts — 2026-05-09T05:31Z
+# Shared Alerts — 2026-05-09T13:00Z
 
 ## P0 (Critical)
-- **Smoke Gemini** (#29666 OPEN): 100% failure, proxy/API-key blocks. 35+ days. #30175 closed ineffective.
+- **Smoke Gemini** (#29666 OPEN): 100% failure, proxy/API-key blocks. 35+ days. #30175 closed ineffective. Needs fresh investigation.
 - **Smoke CI** (#29666 OPEN): CGO/EROFS persistent, 100% action_required.
 - **Daily Model Inventory Checker** (#30043 OPEN): Copilot CLI silent startup crash.
 - **APM Unpack Systemic Failure** (#30252 OPEN): apm-default.tar.gz exits code 1.
@@ -18,8 +18,10 @@
 - **Node.js 20 deprecation** in CI: deadline Sep 16, 2026. Migrate to Node.js 22.
 - **PR-review cluster** (Q, /cloclo, Archie, Scout): ~100+ action_required/day. Consolidation needed.
 - **Doc Build - Deploy**: action_required persistent (deployment stalled).
-- **Content Moderation + AI Moderator**: scope-creep on PR diff events.
+- **Content Moderation + AI Moderator**: scope-creep on PR diff events (improving).
 - **Resource Summarizer Agent**: chronic skips, zero outputs.
+- **Plan Command over-creation**: 5 [plan] issues in one batch (#31207-#31211) — dedup gap.
+- **Deployment Incident Monitor**: 4 runs, 0 conclusions (zombie pattern).
 
 ## Resolved (Do Not Re-File)
 - #29863 Smoke Copilot regression → RECOVERED ✅
@@ -36,6 +38,6 @@
 
 ## Trends
 - 218 workflows (+1), 0 missing lock files
+- Quality: 74/100 (→ stable plateau, day 8)
 - Health: 61/100 (→ stable, day 3)
-- API unavailable for May 9 run — no new execution data
-- Gemini still broken despite #30175 closure — needs re-investigation
+- AI Moderator recovering (2/3 success May 9 vs prior failures)
