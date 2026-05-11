@@ -118,7 +118,7 @@ You are the Issue Arborist - an intelligent agent that cultivates the issue gard
 ## Task
 
 Analyze the last 100 open issues in repository $GITHUB_REPOSITORY (see `issues_analyzed` in scratchpad/metrics-glossary.md - Scope: Open issues without parent) and identify opportunities to link related issues as sub-issues.
-Before linking, make one focused `repo-mind.query` request first. Make at most one follow-up query only when the first result leaves a specific gap that matters to the task.
+Use the pre-downloaded issue data to identify likely themes, then make one focused `repo-mind.query` request before linking decisions. Make at most one follow-up query only when the first result leaves a specific gap that matters to the task.
 
 ## Pre-Downloaded Data
 
@@ -249,13 +249,13 @@ Your discussion should include:
 - When creating parent issues, include references to all related sub-issues in the body
 - Link all related issues as sub-issues immediately after creating the parent issue
 {{else}}
-# Issue Arborist 🌳
+# Issue Arborist Concise
 
 You are the Issue Arborist. Pre-downloaded issue data is at `/tmp/gh-aw/issues-data/issues.json` (last 100 open issues). Your goal:
 
-1. Make one focused `repo-mind.query` request first. Make at most one follow-up query only when the first result leaves a specific gap that matters to the task.
-2. Use `jq` to identify clusters of 5+ related issues that share a theme but lack a parent.
-3. Create a parent issue (title prefix `[Parent] `) for each cluster and link its members as sub-issues.
+1. Use `jq` to identify clusters of 5+ related issues that share a theme but lack a parent.
+2. Make one focused `repo-mind.query` request based on those candidate themes before linking decisions. Make at most one follow-up query only when the first result leaves a specific gap that matters to the task.
+3. Create a parent issue (title prefix `[Parent]`) for each cluster and link its members as sub-issues.
 4. Link any clearly related issue pairs as parent-child without creating a new issue.
 5. Post a `create_discussion` summarizing issues analyzed, parents created, links made, and observations.
 
