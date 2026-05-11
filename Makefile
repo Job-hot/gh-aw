@@ -696,6 +696,7 @@ sync-action-scripts:
 recompile: build
 	./$(BINARY_NAME) init --codespaces ""
 	./$(BINARY_NAME) compile --validate --verbose --purge --stats
+	./$(BINARY_NAME) compile --dir schema-demos --validate --verbose --purge --stats
 #	./$(BINARY_NAME) compile --dir pkg/cli/workflows --validate --verbose --purge
 
 # Apply automatic fixes to workflow files
