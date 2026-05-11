@@ -1,18 +1,26 @@
-# Copilot CLI Research Notes (Trimmed - last 3 runs)
+# Copilot CLI Research Notes (Trimmed - last 4 runs)
 
-### 2026-05-10 (Run 25620196538) — This Run
-- 218 total MD workflows; 96 Copilot (44%)
-- **max-continuations**: 2 (persistent gap, unchanged since tracking began)
-- **engine.api-target**: 0 (persistent gap, 3rd consecutive run)
-- **engine.harness**: 0 (persistent gap, 3rd consecutive run)
-- **engine.version pinning**: 0 (persistent gap)
+### 2026-05-11 (Run 25651194663) — This Run
+- 218 total MD workflows; ~115 Copilot (95 simple + 20 block with id: copilot)
+- **engine.agent**: 18 workflows (grew from 14 last run)
+- **model overrides**: 13 workflows (grew from 5 last run - diverse models now)
+- **max-continuations**: 2 (smoke-copilot:2, test-quality-sentinel:40) — persistent gap
+- **engine.api-target**: 0 (persistent gap, 4th consecutive run)
+- **harness script custom**: 0 (auto-applied; custom override unused)
 - **BYOK/COPILOT_PROVIDER_***: 0 (persistent gap)
-- **model:small**: 5 overrides (growing trend)
-- **cache-memory**: 89/218 (massive growth from 30 just two runs ago)
-- **sandbox AWF**: 19/218 (grew from 11 last run, +73%)
+- **mcp-scripts**: 1/218 (only security-review.md) — severely underutilized
+- **version pinning**: 2 (smoke-copilot + smoke-copilot-arm pin v1.25)
+- **bare**: 9/218; **sandbox AWF**: 19/218; **strict: true**: 130/218 (60%)
+- **cache-memory**: 89/218 (41%, stable)
+- **network.allowed**: 115/218 (53%)
+- Discussion created: "Copilot CLI Deep Research - 2026-05-11"
+
+### 2026-05-10 (Run 25620196538)
+- 218 total MD workflows; 96 Copilot (44%)
+- **max-continuations**: 2; **engine.api-target**: 0; **engine.harness**: 0
+- **engine.agent**: 14 workflows; **model:small**: 5 overrides
+- **cache-memory**: 89/218 (massive growth); **sandbox AWF**: 19/218 (+73%)
 - **strict: true**: 62/96 copilot (65%, stable)
-- **network.allowed**: 108/218 (49%)
-- **engine.agent**: 14 workflows
 - Discussion created: "Copilot CLI Deep Research - 2026-05-10"
 
 ### 2026-05-08 (Run 25537169013)
