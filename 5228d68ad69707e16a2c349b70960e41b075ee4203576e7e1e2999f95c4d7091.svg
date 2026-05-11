@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" style="background:#fff;font-family:Arial,sans-serif">
+  <text x="450" y="35" text-anchor="middle" font-size="18" font-weight="bold" fill="#222">Issue Resolution Time Trends — Last 7 Days (github/gh-aw)</text>
+  <line x1="70" y1="420.0" x2="860" y2="420.0" stroke="#eee" stroke-width="1"/>
+  <text x="62" y="424.0" text-anchor="end" font-size="11" fill="#666">0.0d</text>
+  <line x1="70" y1="360.0" x2="860" y2="360.0" stroke="#eee" stroke-width="1"/>
+  <text x="62" y="364.0" text-anchor="end" font-size="11" fill="#666">0.2d</text>
+  <line x1="70" y1="300.0" x2="860" y2="300.0" stroke="#eee" stroke-width="1"/>
+  <text x="62" y="304.0" text-anchor="end" font-size="11" fill="#666">0.3d</text>
+  <line x1="70" y1="240.0" x2="860" y2="240.0" stroke="#eee" stroke-width="1"/>
+  <text x="62" y="244.0" text-anchor="end" font-size="11" fill="#666">0.5d</text>
+  <line x1="70" y1="180.0" x2="860" y2="180.0" stroke="#eee" stroke-width="1"/>
+  <text x="62" y="184.0" text-anchor="end" font-size="11" fill="#666">0.7d</text>
+  <line x1="70" y1="120.0" x2="860" y2="120.0" stroke="#eee" stroke-width="1"/>
+  <text x="62" y="124.0" text-anchor="end" font-size="11" fill="#666">0.9d</text>
+  <polygon points="70.0,354.9 201.7,309.3 333.3,212.2 465.0,189.7 596.7,201.1 728.3,178.1 860.0,120.0 860.0,166.4 728.3,189.7 596.7,201.0 465.0,237.1 333.3,292.1 201.7,332.1 70.0,354.9" fill="#FF6B6B" opacity="0.15"/>
+  <polyline points="70.0,354.9 201.7,309.3 333.3,212.2 465.0,189.7 596.7,201.1 728.3,178.1 860.0,120.0" fill="none" stroke="#FF6B6B" stroke-width="1.5" opacity="0.6"/>
+  <polyline points="70.0,354.9 201.7,332.1 333.3,292.1 465.0,237.1 596.7,201.0 728.3,189.7 860.0,166.4" fill="none" stroke="#FF6B6B" stroke-width="2.5"/>
+  <circle cx="70.0" cy="354.9" r="3.5" fill="#FF6B6B" opacity="0.6"/>
+  <circle cx="70.0" cy="354.9" r="4" fill="#FF6B6B"/>
+  <text x="70.0" y="440" text-anchor="end" font-size="11" fill="#444" transform="rotate(-35,70.0,440)">May 05</text>
+  <text x="70.0" y="346.9" text-anchor="middle" font-size="9" fill="#aaa">n=45</text>
+  <circle cx="201.7" cy="309.3" r="3.5" fill="#FF6B6B" opacity="0.6"/>
+  <circle cx="201.7" cy="332.1" r="4" fill="#FF6B6B"/>
+  <text x="201.7" y="440" text-anchor="end" font-size="11" fill="#444" transform="rotate(-35,201.7,440)">May 06</text>
+  <text x="201.7" y="301.3" text-anchor="middle" font-size="9" fill="#aaa">n=80</text>
+  <circle cx="333.3" cy="212.2" r="3.5" fill="#FF6B6B" opacity="0.6"/>
+  <circle cx="333.3" cy="292.1" r="4" fill="#FF6B6B"/>
+  <text x="333.3" y="440" text-anchor="end" font-size="11" fill="#444" transform="rotate(-35,333.3,440)">May 07</text>
+  <text x="333.3" y="204.2" text-anchor="middle" font-size="9" fill="#aaa">n=65</text>
+  <circle cx="465.0" cy="189.7" r="3.5" fill="#FF6B6B" opacity="0.6"/>
+  <circle cx="465.0" cy="237.1" r="4" fill="#FF6B6B"/>
+  <text x="465.0" y="440" text-anchor="end" font-size="11" fill="#444" transform="rotate(-35,465.0,440)">May 08</text>
+  <text x="465.0" y="181.7" text-anchor="middle" font-size="9" fill="#aaa">n=84</text>
+  <circle cx="596.7" cy="201.1" r="3.5" fill="#FF6B6B" opacity="0.6"/>
+  <circle cx="596.7" cy="201.0" r="4" fill="#FF6B6B"/>
+  <text x="596.7" y="440" text-anchor="end" font-size="11" fill="#444" transform="rotate(-35,596.7,440)">May 09</text>
+  <text x="596.7" y="193.1" text-anchor="middle" font-size="9" fill="#aaa">n=81</text>
+  <circle cx="728.3" cy="178.1" r="3.5" fill="#FF6B6B" opacity="0.6"/>
+  <circle cx="728.3" cy="189.7" r="4" fill="#FF6B6B"/>
+  <text x="728.3" y="440" text-anchor="end" font-size="11" fill="#444" transform="rotate(-35,728.3,440)">May 10</text>
+  <text x="728.3" y="170.1" text-anchor="middle" font-size="9" fill="#aaa">n=33</text>
+  <circle cx="860.0" cy="120.0" r="3.5" fill="#FF6B6B" opacity="0.6"/>
+  <circle cx="860.0" cy="166.4" r="4" fill="#FF6B6B"/>
+  <text x="860.0" y="440" text-anchor="end" font-size="11" fill="#444" transform="rotate(-35,860.0,440)">May 11</text>
+  <text x="860.0" y="112.0" text-anchor="middle" font-size="9" fill="#aaa">n=39</text>
+  <line x1="70" y1="60" x2="70" y2="420" stroke="#aaa" stroke-width="1.5"/>
+  <line x1="70" y1="420" x2="860" y2="420" stroke="#aaa" stroke-width="1.5"/>
+  <text x="18" y="240" text-anchor="middle" font-size="13" fill="#444" transform="rotate(-90,18,240)">Days to Close</text>
+  <line x1="90" y1="77" x2="114" y2="77" stroke="#FF6B6B" stroke-width="1.5" opacity="0.6"/>
+  <text x="118" y="81" font-size="12" fill="#444">Avg Resolution Time (daily)</text>
+  <line x1="320" y1="77" x2="344" y2="77" stroke="#FF6B6B" stroke-width="2.5"/>
+  <text x="348" y="81" font-size="12" fill="#444">3-Day Moving Avg</text>
+</svg>
