@@ -1,55 +1,6 @@
 {
   "analyses": [
     {
-      "date": "2026-05-03",
-      "sessions_analyzed": 50,
-      "completion_rate_pct": 8.0,
-      "copilot_coding_agents": 4,
-      "copilot_success_rate_pct": 100.0,
-      "avg_copilot_duration_min": 14.78,
-      "experimental_strategy": "CI Smoke Test Failure Clustering",
-      "key_insights": [
-        "100% Copilot agent success (4/4) across all 4 branches",
-        "add-model-aliases: 9 gate fires failed at 03:38:35Z - transient infra incident",
-        "refactor-agent-harness-runner: 21 action_required gates awaiting human review",
-        "Zero orphaned branches - all 8 open PRs properly assigned"
-      ]
-    },
-    {
-      "date": "2026-05-04",
-      "sessions_analyzed": 50,
-      "completion_rate_pct": 0.0,
-      "copilot_coding_agents": 3,
-      "copilot_success_rate_pct": 0.0,
-      "avg_copilot_duration_min": 0.0,
-      "experimental_strategy": null,
-      "key_insights": [
-        "All 50 sessions = gate sweeps from 3 Copilot branches (all action_required)",
-        "fix-context-propagation-sha-resolution: 25 gates, 5 fire events",
-        "refactor-safe-outputs-processing: 14 gates, 3 fire events",
-        "chore-reduce-boilerplate-domains-api: 11 gates, 2 fire events",
-        "Zero escalation-threshold orphans - all Copilot branches have Copilot assigned",
-        "No conversation logs available (0 conversation.txt files)"
-      ]
-    },
-    {
-      "date": "2026-05-05",
-      "sessions_analyzed": 50,
-      "completion_rate_pct": 2.0,
-      "copilot_coding_agents": 4,
-      "copilot_success_rate_pct": 25.0,
-      "avg_copilot_duration_min": 9.0,
-      "experimental_strategy": "Gate Workflow Composition Fingerprinting",
-      "key_insights": [
-        "add-models-section: 38 gate fires across 9 workflows in 9min - largest gate footprint of the day",
-        "bump-awf-firewall: 1 gate (Haiku Printer only), immediate success - simplest task type",
-        "Gate count strongly predicts task complexity: 1 gate = simple, 9 workflows = feature addition",
-        "Security Review Agent + Grumpy Code Reviewer co-occurrence = high-risk/high-scrutiny signal",
-        "0% orphaned branches - all 8 open PRs have Copilot assigned (vs 40% historical baseline)",
-        "No conversation logs available (0 conversation.txt files)"
-      ]
-    },
-    {
       "date": "2026-05-06",
       "sessions_analyzed": 50,
       "completion_rate_pct": 8.0,
@@ -58,7 +9,6 @@
       "avg_copilot_duration_min": 11.5,
       "experimental_strategy": "Iteration Pattern & /cloclo Frequency Analysis",
       "key_insights": [
-        "66.7% Copilot success rate - strongest non-outlier result since May 3",
         "PR #30533: 5 iterations in 46min - active sub-PR cycling with 3 successes",
         "/cloclo fired 7x across 2 branches - highest /cloclo frequency observed",
         "0% orphaned branches - 4th consecutive day at zero escalation threshold"
@@ -75,7 +25,6 @@
       "key_insights": [
         "0% gate success rate (all action_required) - 4 copilot branches with persistent CI failures",
         "57.9% copilot PR success rate (11/19 merged) - above 49.3% historical avg",
-        "0% orphan rate vs 40% baseline - excellent agent coverage today",
         "Human-reviewed PRs: 85% merge rate vs 0% bot-only - review bottleneck for bot-assigned PRs",
         "Avg merge duration 31.7min (highest since May 2) - complex tasks being tackled"
       ]
@@ -90,9 +39,7 @@
       "experimental_strategy": null,
       "key_insights": [
         "fix-http-new-request-context: 24 gates + Copilot agent SUCCESS in 14.6min",
-        "sergo-fix-redundant-type-assertion: 17 gates, no agent in snapshot (completed earlier)",
-        "0% orphaned branches - 11/11 open PRs have Copilot assigned",
-        "Conversation log returned gh auth error - no internal monologue available"
+        "0% orphaned branches - 11/11 open PRs have Copilot assigned"
       ]
     },
     {
@@ -104,12 +51,10 @@
       "avg_copilot_duration_min": 12.47,
       "experimental_strategy": "Gate Sweep Branch Concentration",
       "key_insights": [
-        "100% Copilot agent success (4/4) - consecutive perfect-success day after May 8",
-        "copilot/update-community-contributions dominates: 23/50 sessions (46%) - largest single-branch gate concentration this period",
-        "Avg agent duration 12.47min - tight clustering (9.5-14.2 min range) suggests routine/templated tasks",
-        "Zero orphaned branches - 5th time at zero this period (vs 40% baseline)",
-        "Only 3 open PRs total - lowest backlog observed; high agent throughput drained queue",
-        "No conversation logs available (0 conversation.txt files) - infrastructure-only data"
+        "100% Copilot agent success (4/4) - consecutive perfect-success day",
+        "update-community-contributions dominates: 23/50 sessions (46%)",
+        "Avg agent duration 12.47min - tight clustering suggests templated tasks",
+        "Only 3 open PRs total - lowest backlog observed"
       ]
     },
     {
@@ -122,20 +67,37 @@
       "experimental_strategy": null,
       "key_insights": [
         "100% Copilot agent success (4/4 completed) - 2nd consecutive perfect-success day",
-        "Avg Copilot duration 10.15min (down from 12.47min) - tightest pace since May 6",
+        "Avg Copilot duration 10.15min - tightest pace since May 6",
         "Zero loops across all 5 Copilot runs - well-scoped task signal",
-        "daily-fact.lock.yml failed 10/10 - deterministic failure cluster (not transient infra)",
-        "26/50 sessions action_required - highest share since May 4",
-        "0 orphan escalation candidates - filtered orphan rate ~33% (raw 86% inflated by schema-coverage bot burst)",
-        "No conversation logs available (0 conversation.txt files) - 6th consecutive day"
+        "daily-fact.lock.yml failed 10/10 - deterministic failure cluster",
+        "26/50 sessions action_required - highest share since May 4"
+      ]
+    },
+    {
+      "date": "2026-05-12",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 16.0,
+      "copilot_coding_agents": 1,
+      "copilot_success_rate_pct": 100.0,
+      "avg_copilot_duration_min": 12.63,
+      "experimental_strategy": "Gate Sweep Burst Sizing",
+      "key_insights": [
+        "Lowest branch diversity: only 2 branches consume all 50 sessions",
+        "investigate-otel-connection: 35/50 sessions (70%), Copilot agent success 12.63min",
+        "Largest sweep: 14 simultaneous fires at 07:12:15Z (all action_required)",
+        "29/50 action_required (58%) - highest action_required share in 8 days",
+        "daily-fact.lock.yml failed 6/6 - 3rd consecutive day deterministic failure",
+        "4 open PRs, all with Copilot assigned - 0 orphan candidates",
+        "Burst pattern: 1 big burst (14) + 5 small (3-4) = single push + drip retries"
       ]
     }
   ],
-  "last_updated": "2026-05-11",
+  "last_updated": "2026-05-12",
   "historical_summary": {
     "avg_completion_rate_pct": 11.7,
     "avg_copilot_success_rate_pct": 59.6,
     "avg_copilot_duration_min": 16.2,
-    "note": "Averages computed across Apr 23 - May 11 (15 data days)"
+    "orphan_baseline_pct": 40.0,
+    "note": "Trimmed to 6 days (May 6-12). Older entries (Apr 23 - May 5) removed for memory size."
   }
 }

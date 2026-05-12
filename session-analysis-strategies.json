@@ -48,7 +48,14 @@
       "effectiveness": "Medium",
       "recommendation": "Keep and refine",
       "finding": "When 1 branch dominates >40% of daily sessions (here 23/50=46%), it is a routine/templated workflow (community contributions update). Branch dominance correlates with low task complexity and tight duration variance."
+    },
+    {
+      "name": "Gate Sweep Burst Sizing",
+      "date_tested": "2026-05-12",
+      "effectiveness": "Medium",
+      "recommendation": "Keep and refine",
+      "finding": "Burst-size distribution per branch reveals iteration shape: one large burst (14 fires at single timestamp) + many small bursts (3-4) = single push triggering full gate-set followed by drip retries. Investigate-otel-connection branch fits this profile: 14-burst at 07:12:15Z = new commit, 5 smaller bursts at 06:39-06:43 = polling/cleanup. Largest single burst size correlates with code-change scope; small-burst frequency correlates with reviewer/auto-retry activity."
     }
   ],
-  "last_updated": "2026-05-10"
+  "last_updated": "2026-05-12"
 }
