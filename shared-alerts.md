@@ -43,3 +43,17 @@
 - **Smoke Gemini fetch failed**: issue #31575 open — 100% failure.
 - **Firewall reporting broken** (#31607, #31620): no safe outputs from agent job.
 - **Multiple workflow failures** today: Design Decision Gate #31626, Go Logger Enhancement #31628, Step Name Alignment #31636, jsweep #31637.
+
+---
+## Update — 2026-05-12T13:19Z (Agent Performance Manager)
+
+### RESOLVED (since May 11)
+- APM Unpack #30252: CLOSED ✅
+- PR #31411 (on.labels fix): MERGED ✅
+- PR #31418 (engine.max-runs): MERGED ✅
+
+### NEW/ESCALATED
+- **4 same-day workflow failures** (2026-05-12): Design Decision Gate #31626, Go Logger Enhancement #31628, Step Name Alignment #31636, jsweep #31637 — possible shared root cause (engine availability or PR #31418 side-effect). Needs investigation.
+- **Daily Fact still failing** post-PR#31411 merge (#31432, #31524 still open)
+- **Quality/Effectiveness plateau**: Day 11 flat at Q:74/E:71 — structural bottleneck suspected (PR-review cluster waste dragging averages)
+- **PR-review cluster waste escalated**: ~272 wasted run-attempts/day confirmed — highest waste in ecosystem; trigger gate fix is highest-ROI action
