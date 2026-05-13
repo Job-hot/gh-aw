@@ -90,6 +90,26 @@
         "4 open PRs, all with Copilot assigned - 0 orphan candidates",
         "Burst pattern: 1 big burst (14) + 5 small (3-4) = single push + drip retries"
       ]
+    },
+    {
+      "date": "2026-05-13",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 0.0,
+      "copilot_coding_agents": 4,
+      "copilot_success_rate_pct": null,
+      "avg_copilot_duration_min": null,
+      "experimental_strategy": null,
+      "data_quality": "infrastructure-only",
+      "unique_branches": 4,
+      "gate_sweep_max_runs_per_branch": 18,
+      "workflow_run_id": "25785310316",
+      "key_insights": [
+        "All 50 sessions in action_required state — 7th consecutive day of pre-agent gate sweep dominance",
+        "4 copilot/* branches; PR #31884 leads with 18 stuck gates",
+        "0 true orphans (all 4 PRs have Copilot assigned) — 5th+ consecutive day at zero orphan threshold",
+        "Workflow concentration: Scout/Q/Agentic Commands = 12 firings each (72% of queue)",
+        "All 4 branches in 1-2h warning band; none yet at critical 2h+ threshold"
+      ]
     }
   ],
   "last_updated": "2026-05-12",
