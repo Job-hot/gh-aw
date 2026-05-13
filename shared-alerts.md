@@ -76,3 +76,20 @@
 ### WATCH
 - CI failures trending up (scheduled CI + CGO): possible integration test regression around #31860
 - Deep-report triage issue #31729: 18 stale [aw]-failed issues — recommend bulk close
+
+---
+## Update — 2026-05-13T13:26Z (Agent Performance Manager)
+
+### NEW (since May 13 morning)
+- **5 new workflow failures**: PR Sous Chef #31931, Draft PR Cleanup #31929, Semantic Function Refactoring #31827, Daily Security Red Team #31817, Daily Cache Strategy #31773
+- **Daily agents batch failure**: Daily Fact + Security Red Team + Cache Strategy all failing — suspected shared cron/runtime root cause; investigate together
+- **CI cluster compound friction**: CGO (22%) + CJS (25%) + Smoke CI (50%) all below threshold — contributing to PR friction
+- **Moderation twin failure**: Content Moderation + AI Moderator both at exactly 57% success — shared upstream instability suspected
+
+### WATCH
+- Quality/Effectiveness plateau: **Day 12** at Q:74/E:71 — primary driver is PR-review cluster structural waste (~272 runs/day at 0%)
+- Open [aw] failed issues increasing: 8+ open
+- Deep-report triage #31729 recommends bulk-closing 18 stale [aw]-failed issues
+
+### KEY ACTION
+- Highest ROI: Fix PR-review cluster trigger gate (#31724) — would recover ~272 wasted runs/day and likely break quality plateau

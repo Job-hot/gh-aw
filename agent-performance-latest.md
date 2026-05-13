@@ -1,44 +1,46 @@
-# Agent Performance — 2026-05-12
-Run: §25736968122 | Q:74→74 E:71→71
+# Agent Performance — 2026-05-13
+Run: §25801923272 | Q:74→74 E:71→71
 
-## Ecosystem Overview (May 12)
-- Overall quality: 74/100 (→ stable plateau, day 11), effectiveness: 71/100 (→ stable)
-- 219 workflows (+1 new), health: 64/100 (↑ +2)
+## Ecosystem Overview (May 13)
+- Overall quality: 74/100 (→ stable plateau, Day 12), effectiveness: 71/100 (→ stable)
+- 223 workflows (+4 new since May 12), health: 63/100 (↓ -1)
 - Engines: copilot (140), claude (60), codex (12), pi (2), opencode/gemini/crush (1 each)
 - PR-review cluster: Q/Scout/Archie/cloclo/Grumpy/Security Review/PR Nitpick/PR Code Quality — ~272 wasted run-attempts/day (0% success)
-- **P0**: None ✅ (APM #30252 CLOSED)
-- **Pattern**: Under-creation dominant (8/19 profiled = 42%), consistent with prior run
+- **P0**: Q, Scout (0% success, structural trigger failure)
+- **Pattern**: Under-creation dominant (9/18 profiled = 50%), CI cluster compound friction
 
-## Top Performers (May 12)
-1. **Agentic Maintenance** (Q:90 E:92) — Stable top performer ✅
+## Top Performers (May 13)
+1. **Agentic Maintenance** (Q:90 E:92) — 100% success ✅
 2. **Issue Monster** (Q:85 E:87) — Active and effective ✅
-3. **Auto-Close Parent Issues** (Q:82 E:85) — 100% success rate ✅
+3. **Auto-Close Parent Issues** (Q:82 E:85) — 100% success ✅
 4. **Bot Detection** (Q:80 E:80) — Stable ✅
 5. **PR Triage Agent** (Q:80 E:80) — Stable ✅
 
-## Key Patterns Detected (May 12)
-- `under-creation` (8 agents, 42%): PR-review cluster (8), Daily Fact, Resource Summarizer, Plan Command, Deployment Incident Monitor, Design Decision Gate, Go Logger Enhancement, Step Name Alignment, jsweep
-- `inconsistency` (6 agents): PR-review cluster, Content Moderation, AI Moderator, Daily Fact, Resource Summarizer, Plan Command
-- `over-creation` (2 agents): PR-review cluster (run-attempts), Plan Command (output bursts)
-- `scope-creep` (1 agent): AI Moderator (recovering)
+## Pattern Classification (May 13 — 18 agents profiled)
+- P0 (2): Q, Scout
+- P1 (6): Agentic Commands, CGO, CJS, PR Sous Chef, Daily Fact, Daily Security Red Team
+- P2 (5): Content Moderation, AI Moderator, Smoke CI, Semantic Function Refactoring, Daily Cache Strategy
+- OK (5): Agentic Maintenance, Issue Monster, Bot Detection, PR Triage, Auto-Triage
 
-## New This Run (2026-05-12)
-- **4 same-day failures**: Design Decision Gate #31626, Go Logger Enhancement #31628, Step Name Alignment #31636, jsweep #31637 — possible shared root cause (PR #31418 side-effect or engine issue)
-- **Daily Fact still failing** post-PR#31411 merge; issues #31432, #31524 open
-- **Smoke failures**: Gemini (#31575), Pi (#31563), Codex (#31567) ongoing
+## New This Run (2026-05-13)
+- **5 new failures**: PR Sous Chef #31931, Draft PR Cleanup #31929, Semantic Function Refactoring #31827, Daily Security Red Team #31817, Daily Cache Strategy #31773
+- **Daily agents batch failure**: Daily Fact/Security/Cache all failing → suspected shared root cause
+- **CI cluster**: CGO (22%) + CJS (25%) + Smoke CI (50%) = compounding PR friction
+- **Moderation twin 57%**: Content Moderation + AI Moderator identical split → shared upstream instability
 
-## Active Issues (May 12)
-- **P1**: Daily Fact parse failures (#31432, #31524), Smoke Gemini (#31575), MCP gateway timeout (#23153), Performance Regression (#30180)
-- **P2**: PR-review cluster waste (~272/day), Firewall reporting (#31607, #31620), 4 new failures (watch), Deployment Incident Monitor (zombie), Node.js 20 deprecation (Sep 2026)
+## Active Issues (May 13)
+- **P0/PR-cluster**: Q+Scout 0% success, #31724 (watch)
+- **P1**: Daily Fact (#31432, #31524), Daily Security Red Team (#31817), CGO/CJS (#31860), PR Sous Chef (#31931), MCP gateway timeout (#23153), Performance Regression (#30180)
+- **P2**: PR-review cluster waste (#31724), Security findings (#31708, #31704), CI integration (#31860), Node.js 20 deprecation (Sep 2026)
 
-## 11-day Quality Trend
-- Quality:      74→74→74→74→74→74→74→74→74→74→74→74 (→ stable plateau, day 11)
-- Effectiveness: 71→71→71→71→71→71→71→71→71→71→71→71 (→ stable plateau, day 11)
+## 12-day Quality Trend
+- Quality:      74→74→74→74→74→74→74→74→74→74→74→74→74 (→ plateau, Day 12)
+- Effectiveness: 71→71→71→71→71→71→71→71→71→71→71→71→71 (→ plateau, Day 12)
 
 ## Actions This Run
-- Discussion created: Agent Performance Report — Week of 2026-05-12
-- Pattern analysis: pattern-detector classified 19 agents
-- No new P0/P1 issues filed (existing issues cover active P1s)
-- Flagged 4 same-day failures as potential shared-cause cluster
+- Discussion created: Agent Performance Report — Week of 2026-05-13
+- Pattern analysis: pattern-detector classified 18 agents (P0:2, P1:6, P2:5, OK:5)
+- Identified daily agents batch failure as shared root cause hypothesis
+- No new P0/P1 issues filed (existing issues cover active items)
 
-Last updated: 2026-05-12T13:19Z by agent-performance-manager
+Last updated: 2026-05-13T13:26Z by agent-performance-manager
