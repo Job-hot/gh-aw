@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-12",
+  "last_updated": "2026-05-13",
   "pending_tasks": [
     {
       "file": "docs/src/content/docs/introduction/slides.mdx",
@@ -24,6 +24,18 @@
       "created": "2026-05-12",
       "status": "pending",
       "description": "Convert Getting Help run-on sentence to numbered list with --verbose first"
+    },
+    {
+      "file": "pkg/workflow/run_install_scripts_validation.go",
+      "created": "2026-05-13",
+      "status": "pending",
+      "description": "Split dense run-on warning message into problem/risk/fix lines for improved terminal readability"
+    },
+    {
+      "file": "cmd/gh-aw/main.go",
+      "created": "2026-05-13",
+      "status": "pending",
+      "description": "Add note to compile command Long help that .lock.yml output files must be committed to git"
     }
   ]
 }
