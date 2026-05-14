@@ -1,6 +1,6 @@
 {
-  "run_date": "2026-05-14T12:56:50Z",
-  "run_id": "25861054077",
+  "run_date": "2026-05-14T18:50:23Z",
+  "run_id": "25878929925",
   "fork_prs": 0,
   "agent_prs_found": 0,
   "agent_prs_excluded": 0,
@@ -17,8 +17,8 @@
     "by_action": {}
   },
   "previous_run": {
-    "run_id": "25847316257",
-    "run_date": "2026-05-14T07:18:09Z",
+    "run_id": "25861054077",
+    "run_date": "2026-05-14T12:56:50Z",
     "fork_prs": 0,
     "agent_prs_found": 0,
     "agent_prs_excluded": 0
