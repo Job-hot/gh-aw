@@ -108,3 +108,23 @@
 - Performance Regression (#30180): still open
 - Daily Fact parse failures (#31432, #31524): still open
 - PR-review cluster waste (#31724): still open
+
+---
+## Update — 2026-05-14T13:26Z (Agent Performance Manager)
+
+### P0 — NEW (May 14 Mass Failure Event)
+- **33 [aw] failure issues created TODAY** (#32045–#32119): highest single-day count. Affected workflows include daily agents, code quality, smoke tests, moderators, and the Failure Investigator itself. Total open: 36.
+- **Possible causes**: safe-output bundle infra disruption, engine availability window, or accumulated failures triggering batch issue creation
+- **PR #32070** (safe output bundle fix) merged today — monitor for recovery
+
+### STABLE/UNCHANGED
+- CGO/CJS push regression (#29669): still failing every push to main
+- Q + PR-review cluster (#31724): 0% success, ~272 wasted runs/day
+- Quality/Effectiveness plateau: Day 13 at Q:74/E:71
+- Daily Fact parse failures (#31432, #31524): still open
+- MCP gateway session timeout (#23153): still open
+- Performance Regression (#30180): still open
+
+### KEY ACTION
+- Human investigation needed: why did 33 workflows fail simultaneously on May 14?
+- PR-review cluster fix (#31724) remains highest-ROI action to break quality plateau
