@@ -1,51 +1,47 @@
-# Workflow Health — 2026-05-13T05:45Z
+# Workflow Health — 2026-05-14T05:41Z
 
-Score: 63/100 (↓ -1). 223 workflows. Run: §25780678654
+Score: 62/100 (↓ -1). 225 workflows. Run: §25843932794
 
 ## KEY FINDINGS
 
 ### Compilation Status
-- 223/223 lock files present ✅ (4 new workflows since last run: 219→223)
+- 225/225 lock files present ✅ (2 new workflows since last run: 223→225)
 - 0 missing lock files ✅
 - Compile validation unavailable (gh aw extension not in PATH)
 
-### New Failures Since Last Run (2026-05-13)
-- **Daily Observability Report** (#31828): failed — ongoing (was #31607)
-- **Semantic Function Refactoring** (#31827): failed — NEW
-- **Daily Security Red Team Agent** (#31817): failed — NEW
-- **Scout** (#31811): failed — NEW
-- **Daily Cache Strategy Analyzer** (#31773): failed — NEW
-- **Design Decision Gate** (#31780): failed — ongoing
-- **Smoke Codex** (#31778): failed — ongoing
-- **Smoke Pi** (#31765): failed — ongoing
-- **CI** (scheduled): failed — NEW (integration test regression)
-- **CGO**: 3/4 failed on PRs — regression (Fix failing Integration tests)
+### Active Failures Today (2026-05-14)
+- **CGO/CJS**: failing on every push to main — regression ongoing (P1, issue #29669 open)
+- **Safe Output Health Monitor** (#32063): failed — single occurrence (was success 9/10)
+- **Daily Grafana OTel Instrumentation Advisor** (#32066): failed — isolated
+- **PR Sous Chef** (#32062): failed — auto-fix in progress via copilot
+- **Daily Firewall Logs Collector** (#32045): failed — ongoing
+- **Daily Observability Report** (#32035): failed — ongoing
+- **Daily Model Inventory Checker** (#32032): failed — ongoing
 
-### Resolved Since Last Run
-- **Daily Firewall Logs Collector**: auto-close issued ✅
-- **Step Name Alignment**: auto-close issued (single run)
-- **Smoke Copilot dispatch_workflow**: auto-close issued ✅
+### Open [aw] Failure Issues: 30 total
+- Many from last 24h: AI Moderator, Design Decision Gate, Auto-Triage Issues, etc.
+- Issue #31729 (deep-report triage of stale/duplicate aw failures): open
 
 ### Active Issues (P1)
 - Daily Fact parse failures (#31432, #31524): ongoing
-- Smoke Gemini (#31778): fetch failed
 - MCP gateway session timeout (#23153): open
 - Performance Regression (#30180): 82.1% slower
-- CI integration test failure: new (Fix failing Integration tests - #31860)
+- CGO/CJS regression: every push to main fails
 
 ### P2 Issues (Watch)
 - PR-review cluster (~272 wasted/day): #31724 filed
 - Security findings: #31708, #31704 open
-- Deep-report triage: #31729 (18 stale [aw] failed issues)
 - Node.js 20 deprecation: Sep 16, 2026
+- aw-portfolio-yield defect (#31456): open
 
 ### Actions Taken This Run
-- Updated shared memory files
 - Added comment to dashboard issue #29109
+- Updated shared memory
+- Added comment to CGO issue #29669
 
 ### Trends
-- Score: 63/100 (↓ -1 from 64)
+- Score: 62/100 (↓ -1 from 63)
 - P0 count: 0 ✅
-- 223 workflows (was 219 — 4 new workflows)
-- CI integration test new failure: CGO + CI failing on main
-- Multiple agentic workflow failures: 8 open [aw] failed issues
+- 225 workflows (was 223 — 2 new workflows)
+- CGO/CJS failing on all pushes: persistent regression
+- 30 open [aw] failure issues (was ~18)

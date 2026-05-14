@@ -93,3 +93,18 @@
 
 ### KEY ACTION
 - Highest ROI: Fix PR-review cluster trigger gate (#31724) — would recover ~272 wasted runs/day and likely break quality plateau
+
+---
+## Update — 2026-05-14T05:41Z (Workflow Health Manager)
+
+### NEW/ESCALATED
+- **CGO/CJS failing on every push**: persistent regression, failing across all recent merges to main. Issue #29669 (cgo-failure) is expired but open. 
+- **Safe Output Health Monitor** (#32063): first failure after 9 consecutive successes — watch for recurrence.
+- **Daily Grafana OTel** (#32066): isolated failure, likely transient.
+- **30 open [aw] failure issues**: elevated noise level (was ~18 last week).
+
+### STABLE/UNCHANGED
+- MCP gateway session timeout (#23153): still open
+- Performance Regression (#30180): still open
+- Daily Fact parse failures (#31432, #31524): still open
+- PR-review cluster waste (#31724): still open
