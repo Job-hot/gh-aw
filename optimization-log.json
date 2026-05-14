@@ -259,5 +259,14 @@
     "total_tokens_analyzed": 55058522,
     "estimated_savings_per_run": 3600000,
     "recommendations_count": 4
+  },
+  {
+    "date": "2026-05-14",
+    "workflow_name": "Workflow Normalizer",
+    "workflow_file": "workflow-normalizer",
+    "runs_audited": 1,
+    "total_tokens_analyzed": 1856208,
+    "estimated_savings_per_run": 956000,
+    "recommendations_count": 4
   }
 ]
