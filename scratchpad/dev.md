@@ -1,7 +1,7 @@
 # Developer Instructions
 
-**Version**: 9.6
-**Last Updated**: 2026-05-13
+**Version**: 9.7
+**Last Updated**: 2026-05-14
 **Purpose**: Consolidated development guidelines for GitHub Agentic Workflows
 
 This document consolidates specifications from the scratchpad directory into unified developer instructions. It provides architecture patterns, security guidelines, code organization rules, and testing practices.
@@ -2974,6 +2974,7 @@ These files are loaded automatically by compatible AI tools (e.g., GitHub Copilo
 ---
 
 **Document History**:
+- v9.7 (2026-05-14): Maintenance tone scan — 0 tone issues found across all 63 spec files. Verified prior cleanup: no occurrences of marketing-tone terms (`powerful`, `amazing`, `seamless`, `seamlessly`, `robust`, `effortless`, `cutting-edge`, `world-class`, `industry-leading`, `simply`, `easy to use`, `easy to add`, `intuitive`, `delightful`, `comprehensive` as a marketing adjective) remain in scratchpad spec files. Remaining occurrences of `magic`/`Magic Word` in `oh-my-code.md` document an external feature name (oh-my-opencode's `ultrawork` shortcut) and are retained as proper terminology; `no magic` references in `mdflow.md` and `mdflow-comparison.md` describe the architectural absence of hidden behavior, not promotional claims. Coverage: 63 spec files (no new files).
 - v9.6 (2026-05-13): Maintenance tone scan — fixed 2 tone issues across 2 spec files: `mdflow.md` (1 fix: "Enterprise-ready with compliance and audit trails."→"GitHub Actions integration provides audit trails, role-based access controls, and version-controlled execution history." — line 309); `oh-my-code.md` (1 fix: "Best tool for each job"→"Tool selection driven by use case rather than overlap" — line 1650). Updated Package Structure section to reflect `architecture.md` (moved `pkg/stats` to Core packages; added `pkg/jsonutil` to Utility packages). Coverage: 63 spec files (no new files).
 - v9.5 (2026-05-10): Maintenance tone scan — fixed 2 tone issues across 2 spec files: `actions.md` (1 fix: "Cannot easily share actions across repositories"→"No mechanism for sharing actions across repositories" — line 35); `gastown.md` (1 fix: "These enhancements would position gh-aw as a full-featured agentic workflow platform capable of both basic automation and complex multi-agent coordination, while maintaining its security-first approach and GitHub-native integration."→"These enhancements would extend gh-aw to support both basic automation and multi-agent coordination, while preserving its existing security model and GitHub-native integration." — line 958). Coverage: 63 spec files (no new files).
 - v9.4 (2026-05-09): Maintenance tone scan — fixed 2 tone issues in `mdflow.md`: "Context gathering is a first-class feature, not an afterthought."→"Context gathering is built into the core syntax through declarative `imports:` resolution." (line 263); "Workflows are first-class GitHub citizens, not external scripts."→"Workflows compile to native GitHub Actions YAML and run inside the GitHub Actions runtime, not as external scripts." (line 301). Coverage: 63 spec files (no new files).
