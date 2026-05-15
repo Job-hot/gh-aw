@@ -800,7 +800,7 @@ Workflows triggered by label changes on issues and pull requests. Uses labels as
 
 ### MemoryOps
 
-Stateful workflows that persist data between runs using `cache-memory` and `repo-memory`, enabling progress tracking, resumption after interruptions, and incremental processing to avoid API throttling. See [MemoryOps](/gh-aw/guides/memoryops/).
+Stateful workflows that persist data between runs using `cache-memory` and `repo-memory`, enabling progress tracking, resumption after interruptions, and incremental processing to avoid API throttling. See [MemoryOps](/gh-aw/guides/memory-ops/).
 
 ### MultiRepoOps
 
