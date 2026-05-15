@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-05-14T18:50:23Z",
-  "run_id": "25878929925",
+  "run_date": "2026-05-15T01:11:16Z",
+  "run_id": "25894683613",
   "fork_prs": 0,
-  "agent_prs_found": 0,
-  "agent_prs_excluded": 0,
-  "notes": "GitHub API returned 403 Forbidden — gh CLI proxy not authenticated in this environment. Consistent across multiple runs. No fork PRs to triage.",
+  "agent_prs_found": 3,
+  "agent_prs_excluded": 3,
+  "notes": "3 open PRs from app/copilot-swe-agent found, but all are same-repo (isCrossRepository=false). No fork PRs to triage. GitHub Copilot app/github-copilot author filter returns 403 via gh CLI proxy.",
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -17,8 +17,8 @@
     "by_action": {}
   },
   "previous_run": {
-    "run_id": "25861054077",
-    "run_date": "2026-05-14T12:56:50Z",
+    "run_id": "25878929925",
+    "run_date": "2026-05-14T18:50:23Z",
     "fork_prs": 0,
     "agent_prs_found": 0,
     "agent_prs_excluded": 0
