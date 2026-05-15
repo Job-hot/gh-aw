@@ -1,47 +1,50 @@
-# Workflow Health — 2026-05-14T05:41Z
+# Workflow Health — 2026-05-15T05:43Z
 
-Score: 62/100 (↓ -1). 225 workflows. Run: §25843932794
+Score: 64/100 (↑ +2). 229 workflows. Run: §25902421370
 
 ## KEY FINDINGS
 
 ### Compilation Status
-- 225/225 lock files present ✅ (2 new workflows since last run: 223→225)
-- 0 missing lock files ✅
+- 229 workflows in workflow-list.txt
 - Compile validation unavailable (gh aw extension not in PATH)
+- No new missing lock files reported
 
-### Active Failures Today (2026-05-14)
-- **CGO/CJS**: failing on every push to main — regression ongoing (P1, issue #29669 open)
-- **Safe Output Health Monitor** (#32063): failed — single occurrence (was success 9/10)
-- **Daily Grafana OTel Instrumentation Advisor** (#32066): failed — isolated
-- **PR Sous Chef** (#32062): failed — auto-fix in progress via copilot
-- **Daily Firewall Logs Collector** (#32045): failed — ongoing
-- **Daily Observability Report** (#32035): failed — ongoing
-- **Daily Model Inventory Checker** (#32032): failed — ongoing
+### Recovery from May 14 Mass Failure Event
+- **AI Moderator**: ✅ SUCCESS today (was failed May 14)
+- **Content Moderation**: ✅ SUCCESS today (was failed May 14)
+- **Agentic Commands**: ✅ SUCCESS today
+- **Smoke CI**: ✅ SUCCESS today (was failing)
+- **Doc Build - Deploy**: ✅ SUCCESS today (was action_required)
+- **Safe Output Health Monitor**: ✅ SUCCESS today
+- **License Compliance Check**: ✅ SUCCESS today
+- PR #32070 (safe output bundle fix) merged May 14 — appears to have restored many workflows
 
-### Open [aw] Failure Issues: 30 total
-- Many from last 24h: AI Moderator, Design Decision Gate, Auto-Triage Issues, etc.
-- Issue #31729 (deep-report triage of stale/duplicate aw failures): open
+### Persistent Failures (May 15)
+- **CGO** (#29669): 2 failures + 3 action_required today — ongoing push regression (P1)
+- **CJS** (#29669 related): 2 failures + 3 action_required today — ongoing push regression (P1)
 
-### Active Issues (P1)
-- Daily Fact parse failures (#31432, #31524): ongoing
-- MCP gateway session timeout (#23153): open
-- Performance Regression (#30180): 82.1% slower
-- CGO/CJS regression: every push to main fails
+### Today's Run Summary (May 15)
+- Total: 80 runs
+- Success: 12
+- Failure: 4 (all CGO/CJS)
+- action_required: 56 (no-trigger / skipped)
+- In-progress: ~4
 
-### P2 Issues (Watch)
-- PR-review cluster (~272 wasted/day): #31724 filed
-- Security findings: #31708, #31704 open
-- Node.js 20 deprecation: Sep 16, 2026
-- aw-portfolio-yield defect (#31456): open
+### Open Tracking Issues
+- #29669: CGO/CJS regression — STILL OPEN (persistent)
+- #31432, #31524: Daily Fact parse failures — STILL OPEN
+- #23153: MCP gateway session timeout — STILL OPEN
+- #30180: Performance Regression — STILL OPEN
+- #31724: PR-review cluster waste (~272 runs/day at 0%) — STILL OPEN
+- ~30+ open [aw] failure issues (mass event May 14, partial recovery today)
 
 ### Actions Taken This Run
 - Added comment to dashboard issue #29109
 - Updated shared memory
-- Added comment to CGO issue #29669
 
 ### Trends
-- Score: 62/100 (↓ -1 from 63)
+- Score: 64/100 (↑ +2 from 62 — partial recovery post May-14 mass failure)
+- Mass failure recovery: significant ✅ (PR #32070 effective)
+- CGO/CJS regression: persistent, no resolution yet
 - P0 count: 0 ✅
-- 225 workflows (was 223 — 2 new workflows)
-- CGO/CJS failing on all pushes: persistent regression
-- 30 open [aw] failure issues (was ~18)
+- 229 workflows (+4 from 225)

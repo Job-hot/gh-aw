@@ -128,3 +128,23 @@
 ### KEY ACTION
 - Human investigation needed: why did 33 workflows fail simultaneously on May 14?
 - PR-review cluster fix (#31724) remains highest-ROI action to break quality plateau
+
+---
+## Update — 2026-05-15T05:43Z (Workflow Health Manager)
+
+### RECOVERED (since May 14 mass failure)
+- AI Moderator, Content Moderation, Agentic Commands: SUCCESS today ✅
+- Smoke CI, Doc Build-Deploy, Safe Output Health Monitor: SUCCESS today ✅
+- PR #32070 (safe output bundle fix) appears effective
+
+### PERSISTENT
+- **CGO/CJS regression** (#29669): still failing every push to main (P1)
+- Daily Fact parse failures (#31432, #31524): not tested today (no cron run observed)
+- MCP gateway session timeout (#23153): open
+- Performance Regression (#30180): open
+- PR-review cluster waste (#31724): structural, open
+
+### WATCH
+- 229 workflows (+4 new since last count); no compilation issues expected
+- action_required rate high (70%): mostly no-trigger, not true failures
+- Mass failure event (May 14, 33 issues) largely resolved by PR #32070
