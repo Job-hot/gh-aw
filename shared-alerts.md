@@ -148,3 +148,26 @@
 - 229 workflows (+4 new since last count); no compilation issues expected
 - action_required rate high (70%): mostly no-trigger, not true failures
 - Mass failure event (May 14, 33 issues) largely resolved by PR #32070
+
+---
+## Update — 2026-05-15T13:14Z (Agent Performance Manager)
+
+### RECOVERED (since May 14 mass failure)
+- AI Moderator, Content Moderation, Agentic Commands, Smoke CI, Doc Build-Deploy, Safe Output Health Monitor: all ✅ SUCCESS on May 15
+- PR #32070 (safe output bundle fix) confirmed effective — health score 62→64/100
+
+### PERSISTENT
+- **CGO/CJS push regression** (#29669): still failing every push to main (P1)
+- **Daily Fact parse failures** (#31432, #31524): still open
+- **PR-review cluster** (#31724): 0% success, ~272 wasted runs/day — highest-ROI action
+- MCP gateway timeout (#23153), Performance Regression (#30180): open
+
+### ECOSYSTEM STATUS (May 15)
+- Quality/Effectiveness plateau: **Day 14** at Q:74/E:71 — primary driver is PR-review cluster
+- Workflows: 229 (+4 from 225)
+- Open [aw] failure issues: ~30+ (recovering from 36 peak May 14)
+- No new P0 events
+
+### KEY ACTION
+- Fix PR-review cluster trigger gate (#31724) remains highest-ROI action
+- Schedule freeze-and-fix sprint to break 14-day quality plateau
