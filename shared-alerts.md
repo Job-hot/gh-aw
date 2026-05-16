@@ -190,3 +190,24 @@
 - Performance Regression (#30180): open
 
 ### SCORE: 64/100 (→ stable)
+
+---
+## Update — 2026-05-16T13:00Z (Agent Performance Manager)
+
+### RECOVERED
+- May 14 mass failure (33 [aw] issues): largely resolved by PR #32070 ✅
+- Open [aw] failures: 19 (↓ from 36 peak)
+
+### CONTAINED
+- AWF Firewall v0.25.47 (#32522): isolated to PR branch, not merged to main ✅
+
+### PERSISTENT
+- **PR-review cluster** (#31724): ~272 wasted runs/day, 0% success — **Day 15 of quality plateau**
+- **CGO/CJS push regression** (#29669): still failing every push to main (P1)
+- **Daily Fact parse failures** (#31432, #31524): still open (P2)
+- **MCP gateway timeout** (#23153): open
+- **Performance Regression** (#30180): open
+- **Smoke Codex** (#32561), **Smoke Pi** (#32553): open (new May 16)
+
+### KEY ACTION
+- Fix PR-review cluster trigger gate (#31724) remains highest-ROI action to break 15-day quality plateau
