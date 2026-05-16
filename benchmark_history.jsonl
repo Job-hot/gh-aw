@@ -1,1 +1,15 @@
 {"timestamp": "2026-05-15T15:35:59Z", "date": "2026-05-15", "benchmarks": {"CompileSimpleWorkflow": {"ns_per_op": 1951507, "bytes_per_op": 861656, "allocs_per_op": 5810, "iterations": 3}, "CompileComplexWorkflow": {"ns_per_op": 2874127, "bytes_per_op": 1191106, "allocs_per_op": 10499, "iterations": 3}, "CompileMCPWorkflow": {"ns_per_op": 392529, "bytes_per_op": 125512, "allocs_per_op": 2356, "iterations": 3}, "CompileMemoryUsage": {"ns_per_op": 2587797, "bytes_per_op": 1047354, "allocs_per_op": 8803, "iterations": 3}, "ParseWorkflow": {"ns_per_op": 280861, "bytes_per_op": 85792, "allocs_per_op": 1653, "iterations": 3}, "Validation": {"ns_per_op": 3473, "bytes_per_op": 360, "allocs_per_op": 3, "iterations": 3}, "YAMLGeneration": {"ns_per_op": 1994191, "bytes_per_op": 821722, "allocs_per_op": 5349, "iterations": 3}, "ExtractWorkflowNameFromFile": {"ns_per_op": 12517, "bytes_per_op": 1816, "allocs_per_op": 8, "iterations": 3}, "FindIncludesInContent": {"ns_per_op": 2929, "bytes_per_op": 112, "allocs_per_op": 3, "iterations": 3}}}
+{
+  "timestamp": "2026-05-16T15:13:04Z",
+  "date": "2026-05-16",
+  "benchmarks": {
+    "CompileSimpleWorkflow": {"ns_per_op": 1631875, "bytes_per_op": 875488, "allocs_per_op": 5845, "iterations": 3},
+    "CompileComplexWorkflow": {"ns_per_op": 2923091, "bytes_per_op": 1195869, "allocs_per_op": 10546, "iterations": 3},
+    "CompileMCPWorkflow": {"ns_per_op": 327953, "bytes_per_op": 125512, "allocs_per_op": 2356, "iterations": 3},
+    "CompileMemoryUsage": {"ns_per_op": 2493509, "bytes_per_op": 1068160, "allocs_per_op": 8852, "iterations": 3},
+    "ParseWorkflow": {"ns_per_op": 244698, "bytes_per_op": 85792, "allocs_per_op": 1653, "iterations": 3},
+    "Validation": {"ns_per_op": 3352, "bytes_per_op": 360, "allocs_per_op": 3, "iterations": 3},
+    "YAMLGeneration": {"ns_per_op": 1844766, "bytes_per_op": 821906, "allocs_per_op": 5368, "iterations": 3}
+  }
+}
+
