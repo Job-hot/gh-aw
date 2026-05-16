@@ -171,3 +171,22 @@
 ### KEY ACTION
 - Fix PR-review cluster trigger gate (#31724) remains highest-ROI action
 - Schedule freeze-and-fix sprint to break 14-day quality plateau
+
+---
+## Update — 2026-05-16T05:35Z (Workflow Health Manager)
+
+### NEW (since May 15 evening)
+- **AWF Firewall v0.25.47 broken** (#32522): oidc-token-provider-base missing. CONTAINED — PR #32503 closed. Main unaffected. ✅
+- **Smoke cluster failure at 01:00Z**: All smokes failed due to AWF firewall issue on closed PR. Recovering (Smoke OTEL ✅ at 05:28Z).
+- **Smoke Codex** (#32561) + **Smoke Pi** (#32553): Still open as of 05:35Z.
+- **AW Compat**: 18/19 repos green; microsoft/aspire hard failure (#32526).
+- **[aw] Dev failed** (#32519): isolated failure, May 16 01:22Z.
+
+### STABLE/PERSISTENT
+- CGO/CJS push regression (#29669): still failing (P1)
+- Daily Fact parse failures (#31432, #31524): open (P2)
+- PR-review cluster waste (#31724): 0% success, ~272 wasted runs/day (P2, highest ROI)
+- MCP gateway timeout (#23153): open
+- Performance Regression (#30180): open
+
+### SCORE: 64/100 (→ stable)

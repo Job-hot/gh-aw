@@ -1,50 +1,31 @@
-# Workflow Health — 2026-05-15T05:43Z
+# Workflow Health — 2026-05-16T05:35Z
 
-Score: 64/100 (↑ +2). 229 workflows. Run: §25902421370
+Score: 64/100 (→ stable). 229 workflows. Run: §25953979404
 
 ## KEY FINDINGS
 
-### Compilation Status
-- 229 workflows in workflow-list.txt
-- Compile validation unavailable (gh aw extension not in PATH)
-- No new missing lock files reported
+### Today's New Issues (May 16)
+- **AWF Firewall v0.25.47 broken** (#32522): CONTAINED — `oidc-token-provider-base` module missing in Node bundle. PR #32503 closed without merging; main is unaffected. Smoke gate worked as designed. ✅
+- **Smoke cluster failure at 01:00-01:02Z**: All smokes (Claude, Copilot, Gemini, OTEL, Agent Container, OTEL Backends) failed — root cause was AWF firewall v0.25.47 image on PR #32503. Now closed. Recovery in progress (Smoke OTEL ✅ at 05:28Z).
+- **Smoke Codex failed** (#32561): still open (May 16)
+- **Smoke Pi failed** (#32553): still open (May 16)
+- **AW Compat**: 18/19 repos green, 1 hard failure (microsoft/aspire) — #32526
+- **Open [aw] failure issues**: 19 (down from 30+ post-May 14 mass event)
 
-### Recovery from May 14 Mass Failure Event
-- **AI Moderator**: ✅ SUCCESS today (was failed May 14)
-- **Content Moderation**: ✅ SUCCESS today (was failed May 14)
-- **Agentic Commands**: ✅ SUCCESS today
-- **Smoke CI**: ✅ SUCCESS today (was failing)
-- **Doc Build - Deploy**: ✅ SUCCESS today (was action_required)
-- **Safe Output Health Monitor**: ✅ SUCCESS today
-- **License Compliance Check**: ✅ SUCCESS today
-- PR #32070 (safe output bundle fix) merged May 14 — appears to have restored many workflows
-
-### Persistent Failures (May 15)
-- **CGO** (#29669): 2 failures + 3 action_required today — ongoing push regression (P1)
-- **CJS** (#29669 related): 2 failures + 3 action_required today — ongoing push regression (P1)
-
-### Today's Run Summary (May 15)
-- Total: 80 runs
-- Success: 12
-- Failure: 4 (all CGO/CJS)
-- action_required: 56 (no-trigger / skipped)
-- In-progress: ~4
-
-### Open Tracking Issues
-- #29669: CGO/CJS regression — STILL OPEN (persistent)
-- #31432, #31524: Daily Fact parse failures — STILL OPEN
-- #23153: MCP gateway session timeout — STILL OPEN
-- #30180: Performance Regression — STILL OPEN
-- #31724: PR-review cluster waste (~272 runs/day at 0%) — STILL OPEN
-- ~30+ open [aw] failure issues (mass event May 14, partial recovery today)
+### Persistent Issues (Unchanged)
+- **CGO/CJS regression** (#29669): failing every push to main (P1)
+- **Daily Fact parse failures** (#31432, #31524): still open (P2)
+- **PR-review cluster waste** (#31724): ~272 wasted runs/day at 0% (P2, highest ROI fix)
+- **MCP gateway session timeout** (#23153): still open (P2)
+- **Performance Regression** (#30180): still open (P2)
 
 ### Actions Taken This Run
 - Added comment to dashboard issue #29109
 - Updated shared memory
 
 ### Trends
-- Score: 64/100 (↑ +2 from 62 — partial recovery post May-14 mass failure)
-- Mass failure recovery: significant ✅ (PR #32070 effective)
-- CGO/CJS regression: persistent, no resolution yet
-- P0 count: 0 ✅
-- 229 workflows (+4 from 225)
+- Score: 64/100 (→ stable, day 2 post-recovery)
+- Open [aw] failures: 19 (↓ from 30+ on May 14 peak; recovering)
+- AWF firewall issue: isolated, contained by smoke gate ✅
+- No new P0 cascading failures
+- 229 workflows (stable)
