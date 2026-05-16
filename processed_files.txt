@@ -16,3 +16,4 @@
 ./pkg/workflow/time_delta_test.go|2026-05-10
 ./pkg/cli/actionlint_test.go|2026-05-13
 ./pkg/stringutil/stringutil_test.go|2026-05-15
+./pkg/agentdrain/anomaly_test.go|2026-05-16
