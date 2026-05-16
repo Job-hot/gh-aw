@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-15T00:00:00Z",
+  "last_updated": "2026-05-16T00:00:00Z",
   "tool_count": 23,
   "tools": [
     "activate_project", "check_onboarding_performed", "delete_memory", "edit_memory",
@@ -11,5 +11,5 @@
     "think_about_whether_you_are_done", "write_memory"
   ],
   "param_conventions": "activate_project: --project. find_symbol: --name_path_pattern (NOT --name_path), include_body=false for header-only. find_referencing_symbols: --name_path + --relative_path (FILE, not dir). search_for_pattern: --substring_pattern (literal). Use JSON stdin pipe with '.' sentinel for multi-param.",
-  "gotchas": "Bare receiver-method names return [] from find_symbol - must qualify as '(*Type).method'. get_symbols_overview reveals the qualified form. No tool changes Runs 4-10 (23 tools stable for 7+ runs). find_symbol can take 70s+ when name_path_pattern matches widely - prefer Grep for simple name lookups; reserve find_symbol for cases that need kind filtering or body location. find_symbol REQUIRES name_path_pattern not name_path (validation error otherwise). find_referencing_symbols on focused single-symbol queries is FAST (~5s round-trip Run 10, ~2.3s Run 9) - use it freely for interface/exported-symbol usage audits. CONFIRMED Run 10: passing bare 'ResolveSHA' returned 'No symbol matching' error; qualified '(*ActionResolver).ResolveSHA' returned 11 references including 5 production ctx-Background call sites."
+  "gotchas": "Bare receiver-method names return [] from find_symbol - must qualify as '(*Type).method'. get_symbols_overview reveals the qualified form. No tool changes Runs 4-11 (23 tools stable for 8+ runs). find_symbol can take 70s+ when name_path_pattern matches widely - prefer Grep for simple name lookups; reserve find_symbol for cases that need kind filtering or body location. find_symbol REQUIRES name_path_pattern not name_path (validation error otherwise). find_referencing_symbols on focused single-symbol queries is FAST (~5s round-trip Run 10, ~2.3s Run 9) - use it freely for interface/exported-symbol usage audits. Multiline grep with for/defer body match too noisy for defer-in-loop detection - manually inspect candidates from os.Open/os.Create site list instead."
 }
