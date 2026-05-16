@@ -1,0 +1,6 @@
+# Lint-Happy Coder Config (run 15)
+# Zero warnings, zero errors, zero compromises.
+rules:
+  - no-unused-vars: error
+  - no-console: warn
+  - prefer-const: error
