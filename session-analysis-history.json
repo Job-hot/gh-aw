@@ -110,14 +110,35 @@
         "Workflow concentration: Scout/Q/Agentic Commands = 12 firings each (72% of queue)",
         "All 4 branches in 1-2h warning band; none yet at critical 2h+ threshold"
       ]
+    },
+    {
+      "date": "2026-05-16",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 8.0,
+      "copilot_coding_agents": 2,
+      "copilot_success_rate_pct": 100.0,
+      "avg_copilot_duration_min": null,
+      "experimental_strategy": null,
+      "data_quality": "infrastructure-only",
+      "unique_branches": 6,
+      "gate_sweep_max_runs_per_branch": 17,
+      "workflow_run_id": "25956046361",
+      "key_insights": [
+        "92% action_required (46/50) — gate-sweep dominance persists, similar to May 13",
+        "2 branches absorb 66% of queue: update-claude-code-and-mcp-gateway (17), refactor-git-patch-header-parsing (16)",
+        "Both top branches got Copilot success runs — gate sweep + agent success co-occurring",
+        "0 true orphans by spec definition (≥5 gates + no agent) — 6+ consecutive days at zero",
+        "5 chaos/* PRs are unassigned but have 0 active gates — no escalation impact",
+        "Workflow fingerprint: Agentic Commands + Q = 26 firings (52%) — same concentration as May 13"
+      ]
     }
   ],
-  "last_updated": "2026-05-12",
+  "last_updated": "2026-05-16",
   "historical_summary": {
-    "avg_completion_rate_pct": 11.7,
-    "avg_copilot_success_rate_pct": 59.6,
-    "avg_copilot_duration_min": 16.2,
+    "avg_completion_rate_pct": 11.3,
+    "avg_copilot_success_rate_pct": 65.6,
+    "avg_copilot_duration_min": 15.5,
     "orphan_baseline_pct": 40.0,
-    "note": "Trimmed to 6 days (May 6-12). Older entries (Apr 23 - May 5) removed for memory size."
+    "note": "Trimmed window: May 6-16 (8 entries; May 9, 14, 15 not run). Older entries removed for memory size."
   }
 }
