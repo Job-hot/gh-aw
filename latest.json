@@ -1,27 +1,28 @@
 {
-  "timestamp": "2026-05-16T04:46:59Z",
-  "workflow_run_id": "25953071091",
+  "timestamp": "2026-05-17T04:58:40Z",
+  "workflow_run_id": "25981819267",
   "total_workflows": 229,
-  "copilot_workflows": 128,
-  "copilot_pct": 56,
-  "note": "128 = 99 simple string form + 29 object engine form",
+  "copilot_workflows": 126,
+  "copilot_pct": 55,
+  "note": "126 = 99 simple string form + 27 object engine form",
   "feature_usage": {
-    "max_continuations": 6,
-    "engine_agent": 14,
-    "engine_bare": 10,
+    "max_continuations": 5,
+    "engine_agent": 25,
+    "engine_bare": 11,
     "engine_harness": 0,
     "engine_args": 0,
     "engine_api_target": 0,
-    "engine_version_pin": 10,
-    "cache_memory": 94,
+    "engine_version_pin": 0,
+    "cache_memory": 73,
     "sandbox_awf": 19,
     "web_search": 2,
-    "model_small": 6,
-    "model_large": 3,
+    "model_overrides": 18,
     "max_runs": 1,
-    "byok": 0
+    "byok": 0,
+    "mcp_scripts_frontmatter": 0,
+    "strict": 140
   },
   "unused_agent_files": ["grumpy-reviewer", "interactive-agent-designer", "w3c-specification-writer", "create-safe-output-type", "custom-engine-implementation"],
-  "opportunities_found": 9,
-  "discussion_created": "Copilot CLI Deep Research - 2026-05-16"
+  "opportunities_found": 8,
+  "discussion_created": "Copilot CLI Deep Research - 2026-05-17"
 }

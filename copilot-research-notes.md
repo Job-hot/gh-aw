@@ -1,6 +1,26 @@
 # Copilot CLI Research Notes (Trimmed - last 5 runs)
 
-### 2026-05-16 (Run 25953071091) — This Run
+### 2026-05-17 (Run 25981819267) — This Run
+- 229 total MD workflows; 126 Copilot (99 simple + 27 object form = 55%)
+- **engine.agent**: 25 workflows (up from 14 last run — growing strongly again; AWF-only + 10 custom agents)
+- **max-continuations**: 5 workflows (down from 6; contribution-check:20, test-quality-sentinel:15, mattpocock-skills-reviewer:10, smoke:2, one other)
+- **bare mode**: 11 workflows (up from 10 — slow steady growth)
+- **cache-memory**: 73 workflows (down from 94 — notable drop, likely measurement difference)
+- **sandbox AWF**: 19 workflows (stable)
+- **web-search**: 2 workflows (stable)
+- **version pinning**: 0 (was 10 last run — alarming drop, verify next run)
+- **model overrides**: 18 (stable, mostly smoke tests and experiments)
+- **engine.args**: 0 (persistent gap, 9th+ consecutive run)
+- **engine.env**: 0 (persistent gap)
+- **engine.api-target**: 0 (persistent gap, 10th consecutive run)
+- **engine.harness**: 0 (persistent gap)
+- **mcp-scripts (frontmatter)**: 0 (mcpscripts tools used in prompts but not as frontmatter tools)
+- **BYOK**: 0 (persistent gap)
+- **Unused agent files**: grumpy-reviewer, interactive-agent-designer, w3c-specification-writer, create-safe-output-type, custom-engine-implementation (5 files still unused)
+- **max-runs**: 1 workflow (daily-safe-output-optimizer:200) — severely underused
+- Discussion created: "Copilot CLI Deep Research - 2026-05-17"
+
+### 2026-05-16 (Run 25953071091)
 - 229 total MD workflows; 128 Copilot (99 simple + 29 object form = 56%)
 - **engine.agent**: 14 workflows (down from 25 — stabilizing; AWF-only agents dominate)
 - **max-continuations**: 6 workflows (up from 4 — contribution-check:20, test-quality-sentinel:15, mattpocock-skills-reviewer:10, smoke-copilot:2, smoke-otel:1, smoke-otel-backends:1)
