@@ -33,7 +33,11 @@ func (c *Compiler) addHandlerManagerConfigEnvVar(steps *[]string, data *Workflow
 	}
 
 	compilerSafeOutputsConfigLog.Print("Building handler manager configuration for safe-outputs")
-	config := make(map[string]map[string]any)
+	// config holds both per-handler configs (keyed by handler name, e.g. "add_comment") and
+	// global runtime knobs (e.g. "mentions") that safe_output_handler_manager.cjs forwards to
+	// specific handlers at startup. Handler names are the reserved keys defined in handlerRegistry;
+	// non-handler keys ("mentions") are documented in safe_outputs_config_generation.go.
+	config := make(map[string]any)
 
 	// Collect engine-specific manifest files and path prefixes (AgentFileProvider interface).
 	// These are merged with the global runtime-derived lists so that engine-specific
@@ -84,7 +88,17 @@ func (c *Compiler) addHandlerManagerConfigEnvVar(steps *[]string, data *Workflow
 				}
 			}
 			compilerSafeOutputsConfigLog.Printf("Adding %s handler configuration", handlerName)
-			config[handlerName] = handlerConfig
+			config[handlerName] = map[string]any(handlerConfig)
+		}
+	}
+
+	// Include top-level mentions configuration so the handler manager can pass it to
+	// the add_comment handler (which calls sanitizeContent with the allowed aliases).
+	// Only emitted when add_comment is active — it is the only handler-manager consumer.
+	if safeOutputs.Mentions != nil && safeOutputs.AddComments != nil {
+		mentionsCfg := buildMentionsHandlerConfig(safeOutputs.Mentions)
+		if len(mentionsCfg) > 0 {
+			config["mentions"] = mentionsCfg
 		}
 	}
 
@@ -103,6 +117,29 @@ func (c *Compiler) addHandlerManagerConfigEnvVar(steps *[]string, data *Workflow
 	} else {
 		compilerSafeOutputsConfigLog.Print("No handlers configured, skipping config env var")
 	}
+}
+
+// buildMentionsHandlerConfig converts a MentionsConfig into the map format used by
+// GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG so that safe_output_handler_manager.cjs can pass
+// the top-level mentions policy through to the add_comment handler.
+func buildMentionsHandlerConfig(m *MentionsConfig) map[string]any {
+	cfg := make(map[string]any)
+	if m.Enabled != nil {
+		cfg["enabled"] = *m.Enabled
+	}
+	if m.AllowTeamMembers != nil {
+		cfg["allowTeamMembers"] = *m.AllowTeamMembers
+	}
+	if m.AllowContext != nil {
+		cfg["allowContext"] = *m.AllowContext
+	}
+	if len(m.Allowed) > 0 {
+		cfg["allowed"] = m.Allowed
+	}
+	if m.Max != nil {
+		cfg["max"] = *m.Max
+	}
+	return cfg
 }
 
 // safeOutputsWithDispatchTargetRepo returns a shallow copy of cfg with the dispatch_workflow
