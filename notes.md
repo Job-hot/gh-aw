@@ -38,8 +38,23 @@ Across 8 consecutive runs (2026-05-06 → 2026-05-16), conversation transcripts 
 - Notable: 3 of 4 success runs were close-paired (within ~6 min) with their `action_required` gate bursts on the same branch — same sweep-after-success pattern as 05-16 but tighter time spacing
 - data_quality stays `infrastructure-only` for the 9th consecutive run (2026-05-06 → 2026-05-17). Conversation logs dir empty again.
 
+## Run: 2026-05-18
+
+- 74% action_required (37/50) — meaningful drop from the 92% level of 05-16 and 05-17 (first relief in the run-stuck pattern)
+- 22% success (11/50) — first material lift above the 8% baseline; doubled the previous high (16% on 05-12)
+- 13 active (non-zero-duration) sessions, up from 4 the prior two days — 3.25x more real agent work
+- Median active duration 8.0 min (down from 15.1 on 05-17) — faster turnaround when work actually starts
+- Long-running sessions (>10 min): 6 absolute (up from 3) but 46% of active vs 75% prior day — share dropped even as count grew
+- Workflow fingerprint: Agentic Commands + Q = 32 firings (64%) — concentration *increased* despite better completion rate, so the win is on the active-session side, not noise reduction
+- 4 "Running Copilot cloud agent" runs, all completed (durations 11.5 / 13.2 / 13.5 / 17.6 min — top end of recent range)
+- 4 "Addressing comment on PR #XXXXX" runs all finished 8-12 min — tight scope is paying off
+- 2 outright `failure` conclusions (first non-zero failures in window) — worth a follow-up
+- 0 spec-orphans across 22 open PRs; 3 in-progress runs (all on main) — same orphan picture as the 10-day window
+- data_quality stays `infrastructure-only` for the 10th consecutive run; `gh auth login` OAuth-error on conversation export persists
+
 ## Open Action Items
 
 - [ ] Investigate why conversation transcripts have never been delivered to /tmp/gh-aw/session-data/logs/
 - [ ] Consider an "approval bottleneck" severity tier — strict orphan filter misses the dominant failure mode (gates stuck despite agent assignment)
 - [ ] Once transcripts arrive, retroactively backfill prompt-quality scoring
+- [ ] Watch whether 74% action_required and 22% success hold for >3 days before declaring sustained improvement
