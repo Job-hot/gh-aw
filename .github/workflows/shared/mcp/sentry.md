@@ -23,6 +23,7 @@ mcp-servers:
     env:
       SENTRY_ACCESS_TOKEN: ${{ secrets.SENTRY_ACCESS_TOKEN }}
       SENTRY_HOST: ${{ env.SENTRY_HOST || 'sentry.io' }} # Optional - hostname only, not a full URL
+      EMBEDDED_AGENT_PROVIDER: openai # Required for AI-powered search tools when SENTRY_OPENAI_API_KEY is set
       OPENAI_API_KEY: ${{ secrets.SENTRY_OPENAI_API_KEY }} # Optional
 ---
 
