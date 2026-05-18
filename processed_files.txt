@@ -17,3 +17,4 @@
 ./pkg/cli/actionlint_test.go|2026-05-13
 ./pkg/stringutil/stringutil_test.go|2026-05-15
 ./pkg/agentdrain/anomaly_test.go|2026-05-16
+./pkg/parser/engine_includes_test.go|2026-05-18
