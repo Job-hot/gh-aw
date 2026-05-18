@@ -2788,8 +2788,8 @@ describe("add_comment", () => {
         },
       };
 
-      const warnings = [];
-      mockCore.warning = msg => warnings.push(msg);
+      const infoMessages = [];
+      mockCore.info = msg => infoMessages.push(msg);
 
       let capturedBody = null;
       mockGithub.rest.issues.createComment = async ({ body }) => {
@@ -2803,11 +2803,9 @@ describe("add_comment", () => {
       const result = await handler({ type: "add_comment", body: "@Alice @Bob check this out" }, {});
 
       expect(result.success).toBe(true);
-      // @Alice should be preserved (it's in allowedMentionAliases via parentAuthors);
-      // "alice" is deduplicated away (same alias, different casing)
-      // @Bob is preserved as unique
       expect(capturedBody).toContain("@Alice");
       expect(capturedBody).toContain("@Bob");
+      expect(infoMessages).toContain("[MENTIONS] Allowing aliases in comment: Alice, Bob");
     });
 
     it("should preserve order: parentAuthors first, then configuredMentionAliases", async () => {
@@ -2820,6 +2818,9 @@ describe("add_comment", () => {
           user: { login: "Charlie", type: "User" },
         },
       };
+
+      const infoMessages = [];
+      mockCore.info = msg => infoMessages.push(msg);
 
       let capturedBody = null;
       mockGithub.rest.issues.createComment = async ({ body }) => {
@@ -2835,6 +2836,7 @@ describe("add_comment", () => {
       expect(capturedBody).toContain("@Charlie");
       expect(capturedBody).toContain("@Dave");
       expect(capturedBody).toContain("@Eve");
+      expect(infoMessages).toContain("[MENTIONS] Allowing aliases in comment: Charlie, Dave, Eve");
     });
   });
 
