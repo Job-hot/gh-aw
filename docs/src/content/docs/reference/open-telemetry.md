@@ -28,8 +28,8 @@ observability:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `observability.otlp.endpoint` | string, object, or array | OTLP/HTTP collector endpoint URL. Accepts a plain URL string, a single `{url, headers}` object, or an array of `{url, headers}` objects for concurrent fan-out to multiple collectors. When a static URL is provided, its hostname is automatically added to the network firewall allowlist. |
-| `observability.otlp.headers` | map or string | HTTP headers sent with every OTLP export request. Only applies when `endpoint` is a plain string; object and array endpoint entries carry their own per-endpoint headers. |
+| `observability.otlp.endpoint` | string, object, or array | OTLP/HTTP collector endpoint URL or Sentry DSN. Accepts a plain string, a single `{url, headers}` object, or an array of `{url, headers}` objects for concurrent fan-out to multiple collectors. When a static URL is provided, its hostname is automatically added to the network firewall allowlist. |
+| `observability.otlp.headers` | map | HTTP headers sent with every OTLP export request. Only applies when `endpoint` is a plain string; object and array endpoint entries carry their own per-endpoint headers. |
 | `observability.otlp.if-missing` | string (`error`, `warn`, `ignore`) | Controls behavior when OTLP endpoint/header values resolve to empty values at runtime. `error` (default) fails startup. `warn` logs a warning and skips MCP gateway OTLP configuration. `ignore` skips MCP gateway OTLP configuration without warning. This setting affects MCP gateway setup only. |
 
 ### Endpoint forms
@@ -75,12 +75,28 @@ observability:
 If one endpoint fails in array mode, export still continues
 for the remaining endpoints.
 
-### Header forms
+Sentry DSN form (native Sentry span envelope transport):
+
+```yaml wrap
+observability:
+  otlp:
+    endpoint: ${{ secrets.SENTRY_DSN }}
+```
+
+When the endpoint resolves to a Sentry DSN, gh-aw converts spans into Sentry's
+native `span` envelope format and sends them to `/api/<project>/envelope/`.
+Use the DSN itself as the endpoint value. Do not configure OTLP auth headers for
+this mode.
+
+### Headers
 
 The `headers` field applies to the string endpoint form and
-accepts either a map or a comma-separated string.
+must be a map of header names to values.
 
-Map form:
+Headers are for OTLP/HTTP collector requests. They are not used for the Sentry
+DSN transport shown above.
+
+Example:
 
 ```yaml wrap
 observability:
@@ -89,15 +105,6 @@ observability:
     headers:
       Authorization: ${{ secrets.OTLP_TOKEN }}
       X-Tenant: acme
-```
-
-String form:
-
-```yaml wrap
-observability:
-  otlp:
-    endpoint: ${{ secrets.OTLP_ENDPOINT }}
-    headers: "Authorization=${{ secrets.OTLP_TOKEN }},X-Tenant=acme"
 ```
 
 ## Runtime environment variables

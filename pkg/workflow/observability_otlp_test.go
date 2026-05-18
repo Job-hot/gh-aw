@@ -379,7 +379,7 @@ func TestInjectOTLPConfig(t *testing.T) {
 				Observability: &ObservabilityConfig{
 					OTLP: &OTLPConfig{
 						Endpoint: "https://traces.example.com",
-						Headers:  "Authorization=Bearer tok,X-Tenant=acme",
+						Headers:  map[string]any{"Authorization": "Bearer tok", "X-Tenant": "acme"},
 					},
 				},
 			},
@@ -388,7 +388,7 @@ func TestInjectOTLPConfig(t *testing.T) {
 		assert.Contains(t, wd.Env, "OTEL_EXPORTER_OTLP_HEADERS: Authorization=Bearer tok,X-Tenant=acme", "headers var should be injected")
 	})
 
-	t.Run("injects OTEL_EXPORTER_OTLP_HEADERS for secret expression", func(t *testing.T) {
+	t.Run("does not inject OTEL_EXPORTER_OTLP_HEADERS for unsupported string form", func(t *testing.T) {
 		c := newCompiler()
 		wd := &WorkflowData{
 			ParsedFrontmatter: &FrontmatterConfig{
@@ -401,7 +401,7 @@ func TestInjectOTLPConfig(t *testing.T) {
 			},
 		}
 		c.injectOTLPConfig(wd)
-		assert.Contains(t, wd.Env, "OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTLP_HEADERS }}", "headers var should support secret expressions")
+		assert.NotContains(t, wd.Env, "OTEL_EXPORTER_OTLP_HEADERS:", "string-form headers should be ignored")
 	})
 
 	t.Run("does not inject OTEL_EXPORTER_OTLP_HEADERS when headers not configured", func(t *testing.T) {
@@ -480,7 +480,7 @@ func TestObservabilityConfigParsing(t *testing.T) {
 				"observability": map[string]any{
 					"otlp": map[string]any{
 						"endpoint": "https://traces.example.com",
-						"headers":  "Authorization=Bearer tok,X-Tenant=acme",
+						"headers":  map[string]any{"Authorization": "Bearer tok", "X-Tenant": "acme"},
 					},
 				},
 			},
@@ -489,7 +489,7 @@ func TestObservabilityConfigParsing(t *testing.T) {
 			expectedHeaders:  "Authorization=Bearer tok,X-Tenant=acme",
 		},
 		{
-			name: "observability with otlp headers as secret expression",
+			name: "observability with otlp headers as unsupported string expression",
 			frontmatter: map[string]any{
 				"observability": map[string]any{
 					"otlp": map[string]any{
@@ -500,7 +500,7 @@ func TestObservabilityConfigParsing(t *testing.T) {
 			},
 			wantOTLPConfig:   true,
 			expectedEndpoint: "https://traces.example.com",
-			expectedHeaders:  "${{ secrets.OTLP_HEADERS }}",
+			expectedHeaders:  "",
 		},
 	}
 
@@ -540,7 +540,7 @@ func TestInjectOTLPConfig_RawFrontmatterFallback(t *testing.T) {
 				"observability": map[string]any{
 					"otlp": map[string]any{
 						"endpoint": "${{ secrets.GH_AW_OTEL_ENDPOINT }}",
-						"headers":  "${{ secrets.GH_AW_OTEL_HEADERS }}",
+						"headers":  map[string]any{"Authorization": "${{ secrets.GH_AW_OTEL_HEADERS }}"},
 					},
 				},
 				// Simulate complex engine object that would cause ParseFrontmatterConfig to fail.
@@ -552,7 +552,7 @@ func TestInjectOTLPConfig_RawFrontmatterFallback(t *testing.T) {
 		require.NotEmpty(t, wd.Env, "Env should be set even without ParsedFrontmatter")
 		assert.Contains(t, wd.Env, "OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.GH_AW_OTEL_ENDPOINT }}", "endpoint should be injected from raw")
 		assert.Contains(t, wd.Env, "OTEL_SERVICE_NAME: gh-aw", "service name should be set")
-		assert.Contains(t, wd.Env, "OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.GH_AW_OTEL_HEADERS }}", "headers should be injected from raw")
+		assert.Contains(t, wd.Env, "OTEL_EXPORTER_OTLP_HEADERS: Authorization=${{ secrets.GH_AW_OTEL_HEADERS }}", "headers should be injected from raw")
 	})
 
 	t.Run("no-op when neither raw nor parsed frontmatter has OTLP", func(t *testing.T) {
@@ -601,7 +601,7 @@ func TestIsOTLPHeadersPresent(t *testing.T) {
 		{
 			name: "Env with secret expression headers returns true",
 			data: &WorkflowData{
-				Env: "env:\n  OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTLP_ENDPOINT }}\n  OTEL_SERVICE_NAME: gh-aw\n  OTEL_EXPORTER_OTLP_HEADERS: ${{ secrets.OTLP_HEADERS }}",
+				Env: "env:\n  OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTLP_ENDPOINT }}\n  OTEL_SERVICE_NAME: gh-aw\n  OTEL_EXPORTER_OTLP_HEADERS: Authorization=${{ secrets.OTLP_HEADERS }}",
 			},
 			expected: true,
 		},
@@ -758,7 +758,7 @@ func TestInjectOTLPConfig_OTLPHeadersField(t *testing.T) {
 		assert.Equal(t, "Authorization=Bearer tok,X-Tenant=acme", wd.OTLPHeaders, "OTLPHeaders should be set from map form")
 	})
 
-	t.Run("sets OTLPHeaders when headers are configured (string form)", func(t *testing.T) {
+	t.Run("ignores OTLPHeaders when headers are configured in unsupported string form", func(t *testing.T) {
 		wd := &WorkflowData{
 			RawFrontmatter: map[string]any{
 				"observability": map[string]any{
@@ -770,7 +770,7 @@ func TestInjectOTLPConfig_OTLPHeadersField(t *testing.T) {
 			},
 		}
 		c.injectOTLPConfig(wd)
-		assert.Equal(t, "Authorization=Bearer tok", wd.OTLPHeaders, "OTLPHeaders should be set from string form")
+		assert.Empty(t, wd.OTLPHeaders, "OTLPHeaders should be empty for unsupported string form")
 	})
 
 	t.Run("OTLPHeaders is empty when no headers are configured", func(t *testing.T) {
@@ -804,14 +804,14 @@ func TestNormalizeOTLPHeaders(t *testing.T) {
 			expectedHeaders: "",
 		},
 		{
-			name:            "non-empty string returns string",
+			name:            "non-empty string returns empty",
 			input:           "Authorization=Bearer tok",
-			expectedHeaders: "Authorization=Bearer tok",
+			expectedHeaders: "",
 		},
 		{
-			name:            "secret expression string",
+			name:            "secret expression string returns empty",
 			input:           "${{ secrets.OTLP_HEADERS }}",
-			expectedHeaders: "${{ secrets.OTLP_HEADERS }}",
+			expectedHeaders: "",
 		},
 		{
 			name:            "empty map returns empty",
@@ -871,28 +871,28 @@ func TestNormalizeOTLPHeadersForEndpoint(t *testing.T) {
 		assert.Equal(t, "x-sentry-auth=Bearer tok", gotHeaders, "Sentry endpoints should use x-sentry-auth")
 	})
 
-	t.Run("rewrites Authorization header for known sentry endpoint expression", func(t *testing.T) {
+	t.Run("ignores string-form headers for known sentry endpoint expression", func(t *testing.T) {
 		gotHeaders := normalizeOTLPHeadersForEndpoint(
 			"Authorization=Bearer tok,X-Tenant=acme",
 			"${{ secrets.GH_AW_OTEL_SENTRY_ENDPOINT }}",
 		)
-		assert.Equal(t, "x-sentry-auth=Bearer tok,X-Tenant=acme", gotHeaders, "Sentry-named endpoint expressions should use x-sentry-auth")
+		assert.Equal(t, "", gotHeaders, "string-form headers should be ignored")
 	})
 
-	t.Run("rewrites Authorization header for sentry URL with additional headers", func(t *testing.T) {
+	t.Run("ignores string-form headers for sentry URL with additional headers", func(t *testing.T) {
 		gotHeaders := normalizeOTLPHeadersForEndpoint(
 			"Authorization=Bearer tok,X-Tenant=acme",
 			"https://o123.ingest.sentry.io/api/123/envelope/",
 		)
-		assert.Equal(t, "x-sentry-auth=Bearer tok,X-Tenant=acme", gotHeaders, "Sentry endpoints should rewrite Authorization while preserving additional headers")
+		assert.Equal(t, "", gotHeaders, "string-form headers should be ignored")
 	})
 
-	t.Run("preserves Authorization header for non-standard sentry endpoint expressions", func(t *testing.T) {
+	t.Run("ignores string-form headers for non-standard sentry endpoint expressions", func(t *testing.T) {
 		gotHeaders := normalizeOTLPHeadersForEndpoint(
 			"Authorization=Bearer tok,X-Tenant=acme",
 			"${{ secrets.TEAM_SENTRY_PROXY_ENDPOINT }}",
 		)
-		assert.Equal(t, "Authorization=Bearer tok,X-Tenant=acme", gotHeaders, "Only the known Sentry endpoint expression should use x-sentry-auth")
+		assert.Equal(t, "", gotHeaders, "string-form headers should be ignored")
 	})
 
 	t.Run("preserves Authorization header for grafana endpoint", func(t *testing.T) {
@@ -903,12 +903,12 @@ func TestNormalizeOTLPHeadersForEndpoint(t *testing.T) {
 		assert.Equal(t, "Authorization=Bearer tok,X-Scope-OrgID=tenant", gotHeaders, "Non-Sentry endpoints should keep Authorization")
 	})
 
-	t.Run("preserves Authorization header when sentry appears outside URL host", func(t *testing.T) {
+	t.Run("ignores string-form headers when sentry appears outside URL host", func(t *testing.T) {
 		gotHeaders := normalizeOTLPHeadersForEndpoint(
 			"Authorization=Bearer tok,X-Tenant=acme",
 			"https://otlp-gateway-prod-us-central-0.grafana.net/sentry/proxy",
 		)
-		assert.Equal(t, "Authorization=Bearer tok,X-Tenant=acme", gotHeaders, "Only Sentry hosts should use x-sentry-auth")
+		assert.Equal(t, "", gotHeaders, "string-form headers should be ignored")
 	})
 }
 
@@ -1019,7 +1019,7 @@ func TestObservabilityConfigParsing_MapHeaders(t *testing.T) {
 		assert.Equal(t, "acme", headersMap["X-Tenant"])
 	})
 
-	t.Run("string headers parsed as any string", func(t *testing.T) {
+	t.Run("string headers remain parsed but normalize to empty", func(t *testing.T) {
 		frontmatter := map[string]any{
 			"observability": map[string]any{
 				"otlp": map[string]any{
@@ -1035,6 +1035,7 @@ func TestObservabilityConfigParsing_MapHeaders(t *testing.T) {
 		headersStr, ok := config.Observability.OTLP.Headers.(string)
 		require.True(t, ok, "Headers should be a string when string form is used")
 		assert.Equal(t, "Authorization=Bearer tok", headersStr)
+		assert.Empty(t, normalizeOTLPHeaders(config.Observability.OTLP.Headers))
 	})
 }
 
@@ -1075,7 +1076,7 @@ func TestCollectAllOTLPEndpoints(t *testing.T) {
 				},
 			},
 			wantEntries: []otlpEndpointEntry{
-				{URL: "https://traces.example.com:4317", Headers: "Authorization=Bearer tok"},
+				{URL: "https://traces.example.com:4317"},
 			},
 		},
 		{

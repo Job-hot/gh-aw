@@ -193,7 +193,8 @@ type RateLimitConfig struct {
 // OTLPEndpointConfig holds configuration for a single OTLP endpoint entry
 // used when the `endpoint` field is an object or an element of an array.
 type OTLPEndpointConfig struct {
-	// URL is the OTLP collector endpoint URL (e.g. "https://traces.example.com:4317").
+	// URL is the OTLP collector endpoint URL or Sentry DSN
+	// (e.g. "https://traces.example.com:4317" or "https://public@sentry.example.com/42").
 	// Supports GitHub Actions expressions such as ${{ secrets.OTLP_ENDPOINT }}.
 	// When a static URL is provided, its hostname is automatically added to the
 	// network firewall allowlist.
@@ -207,7 +208,8 @@ type OTLPEndpointConfig struct {
 // OTLPConfig holds configuration for OTLP (OpenTelemetry Protocol) trace export.
 type OTLPConfig struct {
 	// Endpoint accepts one of three forms:
-	//   - string:        backward-compat URL  (e.g. "https://traces.example.com:4317")
+	//   - string:        backward-compat URL or Sentry DSN
+	//                    (e.g. "https://traces.example.com:4317" or "https://public@sentry.example.com/42")
 	//   - object:        single endpoint with URL and optional headers
 	//                    (e.g. {url: "https://...", headers: {Authorization: "Bearer ${{ secrets.TOKEN }}"}})
 	//   - array:         multiple endpoints for concurrent fan-out

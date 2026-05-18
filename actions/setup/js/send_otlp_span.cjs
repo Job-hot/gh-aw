@@ -852,6 +852,211 @@ async function sendOTLPToAllEndpoints(endpoints, payload, opts = {}) {
   );
 }
 
+/** @type {string} */
+const SENTRY_ENVELOPE_CONTENT_TYPE = "application/x-sentry-envelope";
+/** @type {string} */
+const SENTRY_SPAN_ITEM_CONTENT_TYPE = "application/vnd.sentry.items.span.v2+json";
+
+/**
+ * Parse a Sentry DSN and derive its envelope ingestion URL.
+ *
+ * @param {string} endpoint
+ * @returns {{ dsn: string, publicKey: string, envelopeUrl: string } | null}
+ */
+function parseSentryDSN(endpoint) {
+  try {
+    const parsed = new URL(endpoint);
+    if ((parsed.protocol !== "https:" && parsed.protocol !== "http:") || !parsed.username) {
+      return null;
+    }
+    const pathSegments = parsed.pathname.split("/").filter(Boolean);
+    const projectId = pathSegments.pop();
+    if (!projectId) {
+      return null;
+    }
+    const basePath = pathSegments.length > 0 ? `/${pathSegments.join("/")}` : "";
+    return {
+      dsn: parsed.toString(),
+      publicKey: decodeURIComponent(parsed.username),
+      envelopeUrl: `${parsed.origin}${basePath}/api/${projectId}/envelope/`,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * @param {string | number | bigint} nanoString
+ * @returns {number}
+ */
+function nanoStringToUnixSeconds(nanoString) {
+  const nanos = BigInt(String(nanoString || "0"));
+  const seconds = nanos / 1_000_000_000n;
+  const micros = (nanos % 1_000_000_000n) / 1_000n;
+  return Number(`${seconds}.${micros.toString().padStart(6, "0")}`);
+}
+
+/**
+ * @param {unknown} otlpValue
+ * @returns {{ type: string, value: string | number | boolean } | null}
+ */
+function convertOTLPValueToSentryAttribute(otlpValue) {
+  if (!otlpValue || typeof otlpValue !== "object") {
+    return null;
+  }
+  if ("stringValue" in otlpValue) {
+    return { type: "string", value: String(otlpValue.stringValue) };
+  }
+  if ("intValue" in otlpValue) {
+    return { type: "integer", value: Number(otlpValue.intValue) };
+  }
+  if ("doubleValue" in otlpValue) {
+    return { type: "number", value: Number(otlpValue.doubleValue) };
+  }
+  if ("boolValue" in otlpValue) {
+    return { type: "boolean", value: Boolean(otlpValue.boolValue) };
+  }
+  if ("arrayValue" in otlpValue) {
+    return { type: "string", value: JSON.stringify(otlpValue.arrayValue) };
+  }
+  return null;
+}
+
+/**
+ * @param {Array<{ key?: string, value?: unknown }> | undefined} attributes
+ * @returns {Record<string, { type: string, value: string | number | boolean }>}
+ */
+function convertOTLPAttributesToSentry(attributes) {
+  /** @type {Record<string, { type: string, value: string | number | boolean }> } */
+  const sentryAttributes = Object.create(null);
+  if (!Array.isArray(attributes)) {
+    return sentryAttributes;
+  }
+  for (const attribute of attributes) {
+    if (!attribute || typeof attribute.key !== "string" || !attribute.key) {
+      continue;
+    }
+    const converted = convertOTLPValueToSentryAttribute(attribute.value);
+    if (!converted) {
+      continue;
+    }
+    sentryAttributes[attribute.key] = converted;
+  }
+  return sentryAttributes;
+}
+
+/**
+ * @param {object} span
+ * @param {Record<string, { type: string, value: string | number | boolean }>} resourceAttributes
+ * @returns {object}
+ */
+function convertOTLPSpanToSentrySpan(span, resourceAttributes) {
+  const spanAttributes = {
+    ...resourceAttributes,
+    ...convertOTLPAttributesToSentry(span.attributes),
+    "sentry.origin": { type: "string", value: "auto.gh-aw.otlp" },
+  };
+  const isSegment = !span.parentSpanId;
+  if (isSegment) {
+    spanAttributes["sentry.segment.name"] = { type: "string", value: String(span.name || "gh-aw") };
+    spanAttributes["sentry.segment.id"] = { type: "string", value: String(span.spanId || "") };
+  }
+
+  return {
+    trace_id: String(span.traceId || ""),
+    ...(span.parentSpanId ? { parent_span_id: String(span.parentSpanId) } : {}),
+    span_id: String(span.spanId || ""),
+    name: String(span.name || "gh-aw"),
+    status: span.status?.code === 2 ? "error" : "ok",
+    is_segment: isSegment,
+    start_timestamp: nanoStringToUnixSeconds(span.startTimeUnixNano || "0"),
+    end_timestamp: nanoStringToUnixSeconds(span.endTimeUnixNano || "0"),
+    attributes: spanAttributes,
+  };
+}
+
+/**
+ * @param {object} payload
+ * @returns {Array<{ span: object, resourceAttributes: Record<string, { type: string, value: string | number | boolean }> }>}
+ */
+function extractSentrySpansFromOTLPPayload(payload) {
+  /** @type {Array<{ span: object, resourceAttributes: Record<string, { type: string, value: string | number | boolean }> }> } */
+  const result = [];
+  if (!payload || !Array.isArray(payload.resourceSpans)) {
+    return result;
+  }
+
+  for (const resourceSpan of payload.resourceSpans) {
+    const resourceAttributes = convertOTLPAttributesToSentry(resourceSpan?.resource?.attributes);
+    if (!Array.isArray(resourceSpan?.scopeSpans)) {
+      continue;
+    }
+    for (const scopeSpan of resourceSpan.scopeSpans) {
+      if (!Array.isArray(scopeSpan?.spans)) {
+        continue;
+      }
+      for (const span of scopeSpan.spans) {
+        result.push({ span, resourceAttributes });
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * @param {string} endpoint
+ * @param {object} payload
+ * @returns {{ url: string, headers: Record<string, string>, body: string } | null}
+ */
+function buildSentryEnvelopeRequest(endpoint, payload) {
+  const sentryDSN = parseSentryDSN(endpoint);
+  if (!sentryDSN) {
+    return null;
+  }
+
+  const otlpSpans = extractSentrySpansFromOTLPPayload(payload);
+  if (otlpSpans.length === 0) {
+    return null;
+  }
+
+  const sentrySpans = otlpSpans.map(({ span, resourceAttributes }) => convertOTLPSpanToSentrySpan(span, resourceAttributes));
+  const segmentSpan = sentrySpans.find(span => span.is_segment) || sentrySpans[0];
+  const segmentAttributes = segmentSpan && segmentSpan.attributes && typeof segmentSpan.attributes === "object" ? segmentSpan.attributes : {};
+  const traceHeader = {
+    trace_id: segmentSpan.trace_id,
+    public_key: sentryDSN.publicKey,
+    sample_rate: "1.0",
+    sample_rand: "0.0",
+    sampled: "true",
+    ...(segmentSpan.name ? { transaction: segmentSpan.name } : {}),
+    ...(segmentAttributes["service.version"]?.type === "string" ? { release: String(segmentAttributes["service.version"].value) } : {}),
+    ...(segmentAttributes["deployment.environment"]?.type === "string" ? { environment: String(segmentAttributes["deployment.environment"].value) } : {}),
+  };
+  const itemPayload = JSON.stringify({ version: 2, items: sentrySpans });
+  const envelopeHeader = JSON.stringify({
+    sent_at: new Date().toISOString(),
+    dsn: sentryDSN.dsn,
+    sdk: {
+      name: "gh-aw",
+      version: process.env.GH_AW_INFO_VERSION || "unknown",
+    },
+    trace: traceHeader,
+  });
+  const itemHeader = JSON.stringify({
+    type: "span",
+    item_count: sentrySpans.length,
+    content_type: SENTRY_SPAN_ITEM_CONTENT_TYPE,
+    length: Buffer.byteLength(itemPayload, "utf8"),
+  });
+
+  return {
+    url: sentryDSN.envelopeUrl,
+    headers: { "Content-Type": SENTRY_ENVELOPE_CONTENT_TYPE },
+    body: `${envelopeHeader}\n${itemHeader}\n${itemPayload}`,
+  };
+}
+
 /**
  * POST an OTLP traces payload to `{endpoint}/v1/traces` with automatic retries.
  *
@@ -877,26 +1082,28 @@ async function sendOTLPSpan(endpoint, payload, { maxRetries = 2, baseDelayMs = 1
     appendToOTLPJSONL(payload);
   }
 
-  const url = endpoint.replace(/\/$/, "") + "/v1/traces";
+  const sanitizedPayload = sanitizeOTLPPayload(payload);
+  const sentryEnvelopeRequest = buildSentryEnvelopeRequest(endpoint, sanitizedPayload);
+  const url = sentryEnvelopeRequest ? sentryEnvelopeRequest.url : endpoint.replace(/\/$/, "") + "/v1/traces";
   // Use headersOverride when explicitly provided (including empty string, which means
   // "this endpoint has no configured headers" in the multi-endpoint fan-out path).
   // Fall back to OTEL_EXPORTER_OTLP_HEADERS only when headersOverride is absent
   // (undefined), which is the legacy single-endpoint case.
   const rawHeaders = headersOverride !== undefined ? headersOverride : process.env.OTEL_EXPORTER_OTLP_HEADERS || "";
-  const extraHeaders = parseOTLPHeaders(rawHeaders);
-  const headers = { "Content-Type": "application/json", ...extraHeaders };
-  const sanitizedBody = JSON.stringify(sanitizeOTLPPayload(payload));
+  const extraHeaders = sentryEnvelopeRequest ? {} : parseOTLPHeaders(rawHeaders);
+  const headers = sentryEnvelopeRequest ? sentryEnvelopeRequest.headers : { "Content-Type": "application/json", ...extraHeaders };
+  const requestBody = sentryEnvelopeRequest ? sentryEnvelopeRequest.body : JSON.stringify(sanitizedPayload);
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     if (attempt > 0) {
       await new Promise(resolve => setTimeout(resolve, baseDelayMs * 2 ** (attempt - 1)));
     }
     try {
       const response = hasProxyConfigured(endpoint)
-        ? sendOTLPViaCurl(url, headers, sanitizedBody)
+        ? sendOTLPViaCurl(url, headers, requestBody)
         : await fetch(url, {
             method: "POST",
             headers,
-            body: sanitizedBody,
+            body: requestBody,
           });
       if (response.ok) {
         return;

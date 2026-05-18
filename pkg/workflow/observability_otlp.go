@@ -17,15 +17,10 @@ var otlpLog = logger.New("workflow:observability_otlp")
 
 var sentryEndpointExpressionPattern = regexp.MustCompile(`(?i)^\$\{\{\s*secrets\.` + regexp.QuoteMeta(constants.OTELSentryEndpointSecretName) + `\s*\}\}$`)
 
-// normalizeOTLPHeaders converts the headers field value (which may be a string or a map)
+// normalizeOTLPHeaders converts the headers field value (map form only)
 // into the comma-separated key=value format required by OTEL_EXPORTER_OTLP_HEADERS.
 //
-// String form: "Authorization=Bearer tok,X-Tenant=acme"
 // Map form:    map[string]any{"Authorization": "Bearer tok", "X-Tenant": "acme"}
-//
-// Header values that themselves contain commas must use the map form because the
-// OTEL_EXPORTER_OTLP_HEADERS string format is a comma-separated list of
-// key=value pairs.
 func normalizeOTLPHeaders(raw any) string {
 	return normalizeOTLPHeadersForEndpoint(raw, "")
 }
@@ -36,10 +31,11 @@ func normalizeOTLPHeadersForEndpoint(raw any, endpoint string) string {
 	}
 	switch v := raw.(type) {
 	case string:
-		if v == "" {
+		if strings.TrimSpace(v) == "" {
 			return ""
 		}
-		return rewriteOTLPHeaderPairsForEndpoint(v, endpoint)
+		otlpLog.Printf("Ignoring unsupported string form for observability.otlp.headers; use a map of header names to values instead")
+		return ""
 	case map[string]any:
 		if len(v) == 0 {
 			return ""

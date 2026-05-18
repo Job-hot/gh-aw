@@ -737,6 +737,106 @@ describe("sendOTLPSpan", () => {
     expect(url).toBe("https://traces.example.com/v1/traces");
   });
 
+  it("uses Sentry envelope transport when endpoint is a DSN", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" });
+    vi.stubGlobal("fetch", mockFetch);
+
+    const payload = {
+      resourceSpans: [
+        {
+          resource: {
+            attributes: [
+              { key: "service.name", value: { stringValue: "gh-aw" } },
+              { key: "service.version", value: { stringValue: "v1.2.3" } },
+              { key: "deployment.environment", value: { stringValue: "production" } },
+            ],
+          },
+          scopeSpans: [
+            {
+              spans: [
+                {
+                  traceId: "6cf173d587eb48568a9b2e12dcfbea52",
+                  spanId: "438f40bd3b4a41ee",
+                  name: "gh-aw.job.setup",
+                  startTimeUnixNano: "1742921669158209000",
+                  endTimeUnixNano: "1742921669180536000",
+                  status: { code: 1 },
+                  attributes: [{ key: "github.repository", value: { stringValue: "github/gh-aw" } }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+
+    await sendOTLPSpan("https://public@example.ingest.sentry.io/42", payload);
+
+    expect(mockFetch).toHaveBeenCalledOnce();
+    const [url, init] = mockFetch.mock.calls[0];
+    expect(url).toBe("https://example.ingest.sentry.io/api/42/envelope/");
+    expect(init.method).toBe("POST");
+    expect(init.headers["Content-Type"]).toBe("application/x-sentry-envelope");
+
+    const [envelopeHeaderLine, itemHeaderLine, itemPayloadLine] = String(init.body).split("\n");
+    const envelopeHeader = JSON.parse(envelopeHeaderLine);
+    const itemHeader = JSON.parse(itemHeaderLine);
+    const itemPayload = JSON.parse(itemPayloadLine);
+
+    expect(envelopeHeader.dsn).toBe("https://public@example.ingest.sentry.io/42");
+    expect(envelopeHeader.trace).toMatchObject({
+      trace_id: "6cf173d587eb48568a9b2e12dcfbea52",
+      public_key: "public",
+      transaction: "gh-aw.job.setup",
+      release: "v1.2.3",
+      environment: "production",
+      sample_rate: "1.0",
+      sampled: "true",
+    });
+    expect(itemHeader).toMatchObject({
+      type: "span",
+      item_count: 1,
+      content_type: "application/vnd.sentry.items.span.v2+json",
+    });
+    expect(itemPayload).toMatchObject({
+      version: 2,
+      items: [
+        {
+          trace_id: "6cf173d587eb48568a9b2e12dcfbea52",
+          span_id: "438f40bd3b4a41ee",
+          name: "gh-aw.job.setup",
+          status: "ok",
+          is_segment: true,
+        },
+      ],
+    });
+    expect(itemPayload.items[0].attributes["github.repository"]).toEqual({ type: "string", value: "github/gh-aw" });
+  });
+
+  it("does not forward OTLP headers when using Sentry DSN envelope transport", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" });
+    vi.stubGlobal("fetch", mockFetch);
+    process.env.OTEL_EXPORTER_OTLP_HEADERS = "Authorization=Bearer should-not-be-forwarded";
+
+    await sendOTLPSpan("https://public@example.ingest.sentry.io/42", {
+      resourceSpans: [
+        {
+          resource: { attributes: [] },
+          scopeSpans: [
+            {
+              spans: [
+                { traceId: "6cf173d587eb48568a9b2e12dcfbea52", spanId: "438f40bd3b4a41ee", name: "gh-aw.job.setup", startTimeUnixNano: "1742921669158209000", endTimeUnixNano: "1742921669180536000", status: { code: 1 }, attributes: [] },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    const [, init] = mockFetch.mock.calls[0];
+    expect(init.headers).toEqual({ "Content-Type": "application/x-sentry-envelope" });
+  });
+
   it("uses curl when a proxy is configured", async () => {
     process.env.HTTPS_PROXY = "http://proxy.internal:3128";
     spawnSyncSpy.mockReturnValue({ error: undefined, status: 0, stdout: "200", stderr: "" });
