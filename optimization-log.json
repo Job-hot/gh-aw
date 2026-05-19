@@ -1,14 +1,5 @@
 [
   {
-    "date": "2026-04-14",
-    "workflow_name": "Auto-Triage Issues",
-    "workflow_file": "auto-triage-issues",
-    "runs_audited": 2,
-    "total_tokens_analyzed": 1320994,
-    "estimated_savings_per_run": 300000,
-    "recommendations_count": 4
-  },
-  {
     "date": "2026-04-15",
     "workflow_name": "Daily Community Attribution Updater",
     "workflow_file": "",
@@ -267,6 +258,15 @@
     "runs_audited": 10,
     "total_tokens_analyzed": 4633319,
     "estimated_savings_per_run": 90000,
+    "recommendations_count": 4
+  },
+  {
+    "date": "2026-05-19",
+    "workflow_name": "CLI Consistency Checker",
+    "workflow_file": "cli-consistency-checker",
+    "runs_audited": 1,
+    "total_tokens_analyzed": 4129650,
+    "estimated_savings_per_run": 2500000,
     "recommendations_count": 4
   }
 ]
