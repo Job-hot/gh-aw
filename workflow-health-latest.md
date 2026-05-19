@@ -1,42 +1,72 @@
-# Workflow Health — 2026-05-18T05:52Z
+# Workflow Health — 2026-05-19T05:51Z
 
-Score: 63/100 (↓4 from 67). ~229 workflows. Run: §26016026133
+Score: 63/100 (→0 from May 18). ~231 workflows. Run: §26078877763
 
 ## KEY FINDINGS
 
-### New Issues (May 18)
-- **Agentic Maintenance compile failure** (NEW P1): `compile-workflows` step failing 2 consecutive runs. All downstream jobs skipped. Issue created this run.
-- **UK AI Operational Resilience** (NEW P2): OTLP header masking failing in activation job (run 26012832575)
-- **Step Name Alignment** (recurred): #32955 opened — #32754 was closed May 17 but already recurred
+### Status (May 19)
+- **Compilation:** 231/231 workflows have lock files (100% ✅)
+- **Network:** GitHub API access limited - analysis based on May 18 data
+- **Health Score:** 63/100 (stable but degraded from Agentic Maintenance failure)
+- **No new failures detected** (API limitations prevent live run analysis)
 
-### Auto-created issues detected today
-- #32955: [aw] Step Name Alignment failed (auto-created 05:22Z)
-- #32946: [aw] Weekly Blog Post Writer failed
+### Persistent Critical Issues (P1) 🚨
+- **Agentic Maintenance compile failure** (Day 2): compile-workflows step down — orchestrator impaired
+- **CGO/CJS regression** (#29669): 90+ days unresolved, 0% success rate — CRITICAL
+- **Codex OPENAI_API_KEY sandbox exclusion** (#32446): 12 workflows blocked
+- **MCP gateway session timeout** (#23153): long-running workflows at risk
+- **Performance Regression** (#30180): 82.1% slower validation
 
-### 🎉 Resolved Since May 17
+### Persistent Warnings (P2) ⚠️
+- **UK AI Operational Resilience** (Day 2): OTLP header masking failing
+- **ET budget exhaustion** (#32717): multiple daily workflows at risk
+- **Engine-fail-after-completion** (#32736): systemic lifecycle bug
+- **Step Name Alignment recurring** (#32955): daily recurrence, needs structural fix
+- **[aw-compat] Cross-repo warnings** (#32528): compatibility issues
+
+### 🎉 Resolved Since May 17 (Still Resolved)
 - #32755 Sergo ✅ CLOSED
-- #32754 Step Name Alignment ✅ CLOSED (but recurred same day)
-
-### Persistent Issues (Unchanged)
-- **CGO/CJS regression** (#29669): still open, 3/3 CGO runs failed this week
-- **Codex OPENAI_API_KEY sandbox exclusion** (#32446): P1
-- **MCP gateway session timeout** (#23153): P2
-- **Performance Regression** (#30180): P2
+- #32754 Step Name Alignment ✅ CLOSED (recurred as #32955)
+- PR-review cluster #31724 ✅ RESOLVED (~272 wasted runs/day saved)
+- May 14 mass failure ✅ RESOLVED
+- AWF Firewall v0.25.47 ✅ CONTAINED
 
 ### Systemic Patterns
-- **ET budget exhaustion**: Daily Observability Report + other token-heavy workflows at risk
-- **Agentic Maintenance is now DOWN**: compile step broken — orchestrator capacity impaired
-- **Step Name Alignment recurring**: same day close/reopen pattern — structural fix needed
+- **Meta-orchestrator impairment**: Agentic Maintenance down = reduced automation capacity
+- **Token budget pressure**: ET exhaustion affecting multiple daily workflows
+- **Recurring failure cycle**: Step Name Alignment needs structural fix, not patches
+- **90+ day critical issue**: CGO/CJS needs dedicated engineering escalation
 
 ### Open [aw] failures
-~21 open (↑1 from 21 due to Agentic Maintenance P1 created + Step Name #32955)
+~22 open (stable from May 18)
 
 ### Actions Taken This Run
-- Created 1 new issue: Agentic Maintenance compile failure (P1)
-- Added comment to dashboard issue #29109
-- Updated shared memory
+- Compiled comprehensive health assessment at `/tmp/gh-aw/agent/workflow-health-assessment.md`
+- Updated shared memory coordination files
+- Verified 100% lock file coverage (231/231)
+- **No new issues created** - existing issues cover all known problems
+- **No comments added** - GitHub API access limited
 
 ### Trends
-- Score: 63/100 (↓4 — Agentic Maintenance new drag)
-- CGO/CJS: still at 0% success, no fix shipped
-- Step Name Alignment: recurring daily — needs root cause fix
+- Score: 63/100 (→0 stable)
+- Quality: 74/100 (plateau day 18, expected breakout to 76-78 when Agentic Maintenance restored)
+- Effectiveness: 71/100 (plateau day 18, expected breakout to 73-75)
+- Primary blocker: Agentic Maintenance + CGO/CJS 90+ days
+
+### Recommendations for Next Run
+1. **Immediate:** Restore Agentic Maintenance (unblock orchestration)
+2. **High:** Escalate CGO/CJS to dedicated engineering (90+ days critical)
+3. **High:** Fix Codex sandbox OPENAI_API_KEY exclusion (12 workflows blocked)
+4. **Medium:** Structural fix for Step Name Alignment (stop daily recurrence)
+5. **Medium:** Fleet-wide ET budget audit (prevent exhaustion)
+
+### Network Constraints Note
+This run operated under GitHub API access restrictions. Analysis based on:
+- Previous run data (May 18, 2026)
+- Current compilation status verification
+- Historical shared memory data
+- Lock file coverage verification (100% confirmed)
+
+Full live analysis will resume when API access is restored.
+
+Last updated: 2026-05-19T05:51Z by workflow-health-manager
