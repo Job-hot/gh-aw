@@ -1,11 +1,18 @@
 {
-  "run_date": "2026-05-18T18:50:42Z",
-  "run_id": "26053566043",
+  "run_date": "2026-05-19T01:17:14Z",
+  "run_id": "26070130996",
   "fork_prs": 0,
-  "agent_prs_found": 3,
-  "agent_prs_excluded": 3,
-  "notes": "3 open agent PRs found (app/copilot-swe-agent: #33124 [DRAFT], #33116, #33089), all from same-repo branches (copilot/* branch pattern). No fork PRs to triage per triage rules (head.repo == base.repo).",
-  "prs_checked": [33124, 33116, 33089],
+  "agent_prs_found": 5,
+  "agent_prs_excluded": 5,
+  "notes": "5 open agent PRs found (app/copilot-swe-agent: #33182 [DRAFT], #33181, #33180 [DRAFT], #33178, #33170), all from same-repo branches (copilot/* branch pattern, isCrossRepository=false). No fork PRs to triage per triage rules.",
+  "prs_checked": [33182, 33181, 33180, 33178, 33170],
+  "pr_details": [
+    {"number": 33182, "title": "Add per-engine default model aliases with Sonnet-sized agent defaults", "isDraft": true, "isCrossRepository": false, "changedFiles": 8, "ci": "pending"},
+    {"number": 33181, "title": "Resolve `#aw_*` temporary IDs during bundle-based signed commit replay", "isDraft": false, "isCrossRepository": false, "changedFiles": 4, "ci": "failing"},
+    {"number": 33180, "title": "Refactor current-repository lookup caches to shared `syncutil.OnceLoader`", "isDraft": true, "isCrossRepository": false, "changedFiles": 6, "ci": "pending"},
+    {"number": 33178, "title": "Restore authenticated `ls-remote` in signed commit push path", "isDraft": false, "isCrossRepository": false, "changedFiles": 4, "ci": "pending"},
+    {"number": 33170, "title": "fix(safe-outputs): warn agents about field-name divergence in add_labels, remove_labels, and update_pull_request", "isDraft": false, "isCrossRepository": false, "changedFiles": 6, "ci": "pending"}
+  ],
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -18,10 +25,10 @@
     "by_action": {}
   },
   "previous_run": {
-    "run_id": "26036755870",
-    "run_date": "2026-05-18T13:35:01Z",
+    "run_id": "26053566043",
+    "run_date": "2026-05-18T18:50:42Z",
     "fork_prs": 0,
-    "agent_prs_found": 10,
-    "agent_prs_excluded": 10
+    "agent_prs_found": 3,
+    "agent_prs_excluded": 3
   }
 }
