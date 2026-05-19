@@ -1,8 +1,8 @@
-# Shared Alerts — 2026-05-19T05:51Z
+# Shared Alerts — 2026-05-19T13:44Z
 
 ## P1 (High) 🚨
-- **Agentic Maintenance compile failure** (Day 2): compile-workflows down — orchestrator impaired, all downstream jobs skipped
-- **CGO/CJS regression** (#29669): failing every push to main (90+ days, 0% success) — **CRITICAL: 90+ days unresolved, needs escalation**
+- **Agentic Maintenance compile failure** (Day 2): compile-workflows down — orchestrator impaired, all downstream jobs skipped — **NEEDS ISSUE**
+- **CGO/CJS regression** (#29669): failing every push to main (90+ days, 0% success) — **CRITICAL: 90+ days unresolved, needs engineering escalation**
 - **Codex OPENAI_API_KEY sandbox exclusion** (#32446): blocking all Codex workflows (12 workflows)
 - **MCP gateway session timeout** (#23153): long-running workflows at risk, ~5min inactivity timeout
 - **Performance Regression in Validation** (#30180): 82.1% slower
@@ -24,24 +24,25 @@
 ## Outlook & Coordination Notes
 
 ### Critical Actions Needed
-1. **IMMEDIATE:** Restore Agentic Maintenance (orchestrator capacity blocked)
-2. **HIGH:** Escalate CGO/CJS to dedicated engineering (90+ days = critical threshold)
-3. **HIGH:** Fix Codex sandbox configuration (12 workflows blocked)
-4. **MEDIUM:** Structural fix for Step Name Alignment (daily noise, stop patching)
+1. **IMMEDIATE:** Create issue for Agentic Maintenance compile failure (NEW P1, Day 2)
+2. **IMMEDIATE:** Restore Agentic Maintenance (orchestrator capacity blocked)
+3. **HIGH:** Escalate CGO/CJS to dedicated engineering (90+ days = critical threshold)
+4. **HIGH:** Fix Codex sandbox configuration (12 workflows blocked)
+5. **MEDIUM:** Structural fix for Step Name Alignment (daily noise, stop patching)
 
 ### Cross-Orchestrator Impact
 - **Agentic Maintenance DOWN** → all meta-orchestrators impaired (workflow-health, campaign-manager, agent-performance)
-- **Quality plateau** (day 18 at 74/100) → expected breakout to 76-78 when Agentic Maintenance + PR-review fixes take effect
+- **Quality plateau** (day 18 at 74/100) → expected breakout to 76-78 when Agentic Maintenance + critical P1s resolved
 - **Effectiveness plateau** (day 18 at 71/100) → expected breakout to 73-75
 
 ### Fleet Statistics (May 19)
 - 231 executable workflows (100% lock file coverage ✅)
 - Health: 63/100 (stable but degraded)
-- Quality: 74/100 (plateau)
-- Effectiveness: 71/100 (plateau)
+- Quality: 74/100 (plateau day 18)
+- Effectiveness: 71/100 (plateau day 18)
 - Open [aw] failures: ~22 (stable)
 
-### Top Performers (from May 18 data)
+### Top Performers (from May 19 data)
 - Issue Monster (Q:85 E:87)
 - Auto-Triage Issues (Q:82 E:85)
 - Bot Detection (Q:82 E:83)
@@ -56,4 +57,4 @@ GitHub API access limited during this run. Analysis based on:
 
 Full live analysis will resume when API access restored.
 
-Last updated: 2026-05-19T05:51Z by workflow-health-manager
+Last updated: 2026-05-19T13:44Z by agent-performance-analyzer
