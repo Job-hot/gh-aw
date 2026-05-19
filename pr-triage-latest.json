@@ -1,17 +1,25 @@
 {
-  "run_date": "2026-05-19T01:17:14Z",
-  "run_id": "26070130996",
+  "run_date": "2026-05-19T07:32:45Z",
+  "run_id": "26082965672",
   "fork_prs": 0,
-  "agent_prs_found": 5,
-  "agent_prs_excluded": 5,
-  "notes": "5 open agent PRs found (app/copilot-swe-agent: #33182 [DRAFT], #33181, #33180 [DRAFT], #33178, #33170), all from same-repo branches (copilot/* branch pattern, isCrossRepository=false). No fork PRs to triage per triage rules.",
-  "prs_checked": [33182, 33181, 33180, 33178, 33170],
+  "agent_prs_found": 13,
+  "agent_prs_excluded": 13,
+  "notes": "13 open agent PRs found (copilot-swe-agent), all from same-repo branches (github/gh-aw). No fork PRs to triage per triage rules.",
+  "prs_checked": [33231, 33228, 33227, 33226, 33225, 33224, 33221, 33220, 33219, 33218, 33217, 33216, 33200],
   "pr_details": [
-    {"number": 33182, "title": "Add per-engine default model aliases with Sonnet-sized agent defaults", "isDraft": true, "isCrossRepository": false, "changedFiles": 8, "ci": "pending"},
-    {"number": 33181, "title": "Resolve `#aw_*` temporary IDs during bundle-based signed commit replay", "isDraft": false, "isCrossRepository": false, "changedFiles": 4, "ci": "failing"},
-    {"number": 33180, "title": "Refactor current-repository lookup caches to shared `syncutil.OnceLoader`", "isDraft": true, "isCrossRepository": false, "changedFiles": 6, "ci": "pending"},
-    {"number": 33178, "title": "Restore authenticated `ls-remote` in signed commit push path", "isDraft": false, "isCrossRepository": false, "changedFiles": 4, "ci": "pending"},
-    {"number": 33170, "title": "fix(safe-outputs): warn agents about field-name divergence in add_labels, remove_labels, and update_pull_request", "isDraft": false, "isCrossRepository": false, "changedFiles": 6, "ci": "pending"}
+    {"number": 33231, "title": "refactor: extract resolveSafeOutputIssueTarget to eliminate safe-output target resolution boilerplate", "is_fork": false, "changed_files": 2},
+    {"number": 33228, "title": "[chaos-test] chaos: git-archaeologist minor-rename bundling test", "is_fork": false, "changed_files": 1},
+    {"number": 33227, "title": "[chaos-test] chaos: rubber-duck-debugger staged-subset bundling test", "is_fork": false, "changed_files": 1},
+    {"number": 33226, "title": "[chaos-test] chaos: deadline-driven-dev amend bundling test", "is_fork": false, "changed_files": 1},
+    {"number": 33225, "title": "[chaos-test] chaos: typo-hunter two-commits bundling test", "is_fork": false, "changed_files": 1},
+    {"number": 33224, "title": "[chaos-test] chaos: merge-conflict-artist single-commit bundling test", "is_fork": false, "changed_files": 1},
+    {"number": 33221, "title": "Multi-Device Docs Tester: move Astro server startup to pre-agent steps to unblock background-shell failures", "is_fork": false, "changed_files": 2},
+    {"number": 33220, "title": "Normalize report-style guidance across non-compliant issue/report workflows", "is_fork": false, "changed_files": 12},
+    {"number": 33219, "title": "Bind Node toolcache into AWF chroot for Copilot-engine workflow startup reliability", "is_fork": false, "changed_files": 2},
+    {"number": 33218, "title": "[aw] Prevent Step Name Alignment from using invalid `gh search issues --state all`", "is_fork": false, "changed_files": 1},
+    {"number": 33217, "title": "Add panic recovery to `mcp inspect` background goroutines", "is_fork": false, "changed_files": 1},
+    {"number": 33216, "title": "Enforce prod errstringmatch findings and centralize 403/410 error classification", "is_fork": false, "changed_files": 11},
+    {"number": 33200, "title": "Expose reusable workflow network allowlist as an opt-in `workflow_call` input", "is_fork": false, "changed_files": 4}
   ],
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
@@ -25,10 +33,10 @@
     "by_action": {}
   },
   "previous_run": {
-    "run_id": "26053566043",
-    "run_date": "2026-05-18T18:50:42Z",
+    "run_id": "26070130996",
+    "run_date": "2026-05-19T01:17:14Z",
     "fork_prs": 0,
-    "agent_prs_found": 3,
-    "agent_prs_excluded": 3
+    "agent_prs_found": 5,
+    "agent_prs_excluded": 5
   }
 }
