@@ -52,9 +52,22 @@ Across 8 consecutive runs (2026-05-06 → 2026-05-16), conversation transcripts 
 - 0 spec-orphans across 22 open PRs; 3 in-progress runs (all on main) — same orphan picture as the 10-day window
 - data_quality stays `infrastructure-only` for the 10th consecutive run; `gh auth login` OAuth-error on conversation export persists
 
+## Run: 2026-05-19
+
+- 98% action_required (49/50) — **highest action_required share in the 12-day window**, reversing the 05-18 relief (74%) and exceeding even the 05-13 spike (100%) in concentration. The 05-18 lift was not sustained.
+- 2% success (1/50) — single Copilot cloud agent run on `copilot/fix-duplicate-code-safe-output`, completing in **22.3 min** (longest single-session duration recorded in the window; prior max was 31.7 min daily-average on 05-07)
+- 5 unique copilot/* branches absorb the queue; top branch holds 18/50 (36%) — same dominance shape as 05-13, but spread across one fewer branch
+- Workflow fingerprint: Agentic Commands + Q = 32/50 (64%) — **identical concentration to 05-18** despite opposite completion outcome. Workflow fingerprint is therefore not a predictor of daily success.
+- Two large bursts only: 5 fires at 06:39:48Z (success-timestamp gate burst — same sweep-after-success pattern as 05-16) and 4 fires at 05:56:00Z (initial push)
+- 0 spec-orphans across 13 open PRs — **12th consecutive day at zero orphan threshold**. 5 unassigned chaos/* PRs from 06:02 UTC have zero in-progress runs (same pattern as 05-17 and 05-18)
+- Open PR backlog fell from 22 → 13 (net 9 PRs merged or closed in 24h) — meaningful throughput despite low *daily* completion rate. The completion-rate-pct metric is a poor proxy for actual merge throughput.
+- data_quality stays `infrastructure-only` for the 11th consecutive run — gh auth login OAuth blocker still present
+- Per [historical_trend_regression strategy](session-analysis-strategies.json), 22.3 min duration is firmly in the >15-min "100% success" band — consistent with the day's only agent succeeding
+
 ## Open Action Items
 
 - [ ] Investigate why conversation transcripts have never been delivered to /tmp/gh-aw/session-data/logs/
 - [ ] Consider an "approval bottleneck" severity tier — strict orphan filter misses the dominant failure mode (gates stuck despite agent assignment)
 - [ ] Once transcripts arrive, retroactively backfill prompt-quality scoring
-- [ ] Watch whether 74% action_required and 22% success hold for >3 days before declaring sustained improvement
+- [ ] **Replace daily-completion-rate-pct as the headline metric** — 05-19 shows it can read 2% on a day where the open-PR backlog dropped 41%. Net PR throughput would be more informative.
+- [ ] Track whether the 05-18 → 05-19 reversal is a 2-day oscillation or whether 92%+ action_required is the steady state

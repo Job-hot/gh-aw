@@ -131,14 +131,69 @@
         "5 chaos/* PRs are unassigned but have 0 active gates — no escalation impact",
         "Workflow fingerprint: Agentic Commands + Q = 26 firings (52%) — same concentration as May 13"
       ]
+    },
+    {
+      "date": "2026-05-17",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 8.0,
+      "copilot_coding_agents": 4,
+      "copilot_success_rate_pct": 100.0,
+      "avg_copilot_duration_min": 13.5,
+      "experimental_strategy": null,
+      "data_quality": "infrastructure-only",
+      "key_insights": [
+        "92% action_required (46/50) — two-day run-stuck pattern with 05-16",
+        "Queue flatter than 05-16: top branch only 11/50 (22%) vs 17/50 before",
+        "4 distinct Copilot success runs (8/11/15/20 min, avg 13.5) — wider spread",
+        "0 spec-orphans; only 2 in-progress runs system-wide (both on main)"
+      ]
+    },
+    {
+      "date": "2026-05-18",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 22.0,
+      "copilot_coding_agents": 4,
+      "copilot_success_rate_pct": 100.0,
+      "avg_copilot_duration_min": 13.95,
+      "experimental_strategy": null,
+      "data_quality": "infrastructure-only",
+      "key_insights": [
+        "74% action_required — first relief from 92% pattern; 22% success (first material lift)",
+        "13 active (non-zero-duration) sessions — 3.25x the prior 2 days",
+        "Agentic Commands + Q = 32/50 (64%) — concentration increased despite better outcome",
+        "2 failure conclusions (first non-zero failures in window)",
+        "0 spec-orphans across 22 open PRs"
+      ]
+    },
+    {
+      "date": "2026-05-19",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 2.0,
+      "copilot_coding_agents": 1,
+      "copilot_success_rate_pct": 100.0,
+      "avg_copilot_duration_min": 22.27,
+      "experimental_strategy": null,
+      "data_quality": "infrastructure-only",
+      "unique_branches": 5,
+      "gate_sweep_max_runs_per_branch": 18,
+      "workflow_run_id": "26083961304",
+      "key_insights": [
+        "98% action_required (49/50) — highest gate-sweep dominance in the window; reverses 05-18 relief",
+        "Single Copilot agent run all day: 22.3min on copilot/fix-duplicate-code-safe-output — longest agent duration in window",
+        "5 copilot/* branches; top branch absorbs 18/50 (36%) — same dominance shape as 05-13",
+        "Agentic Commands + Q = 32/50 (64%) — identical workflow fingerprint to 05-18 despite opposite outcome",
+        "Largest burst: 5 simultaneous fires at 06:39:48Z (success-timestamp gate burst, same as 05-16 sweep-after-success)",
+        "0 spec-orphans; 5 unassigned chaos/* PRs from 06:02 UTC have zero in-progress runs",
+        "13 open PRs (up from 22 on 05-18) — net merge progress despite low daily completion rate"
+      ]
     }
   ],
-  "last_updated": "2026-05-16",
+  "last_updated": "2026-05-19",
   "historical_summary": {
-    "avg_completion_rate_pct": 11.3,
-    "avg_copilot_success_rate_pct": 65.6,
-    "avg_copilot_duration_min": 15.5,
+    "avg_completion_rate_pct": 7.3,
+    "avg_copilot_success_rate_pct": 75.2,
+    "avg_copilot_duration_min": 14.6,
     "orphan_baseline_pct": 40.0,
-    "note": "Trimmed window: May 6-16 (8 entries; May 9, 14, 15 not run). Older entries removed for memory size."
+    "note": "Window May 6-19 (11 entries; May 9, 14, 15 not run). Today's 22.3min agent run is the longest single-session duration recorded."
   }
 }
