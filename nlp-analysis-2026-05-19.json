@@ -1,0 +1,25 @@
+{
+  "date": "2026-05-19",
+  "pr_count": 59,
+  "avg_sentiment": -0.008,
+  "sentiment_distribution": {
+    "positive": 28,
+    "neutral": 1,
+    "negative": 30
+  },
+  "topics": [
+    {"label": "Skill Pkg", "count": 15},
+    {"label": "Job Actions", "count": 6},
+    {"label": "Bin Usr", "count": 5},
+    {"label": "Workflow Shared", "count": 14},
+    {"label": "Pull Agent", "count": 19}
+  ],
+  "top_keywords": [
+    "workflow",
+    "github",
+    "pkg",
+    "actions",
+    "test"
+  ],
+  "data_limitation": "Analysis based on PR titles/bodies only - no conversation data available"
+}

@@ -1,0 +1,27 @@
+{
+  "date": "2026-05-19",
+  "pr_count": 59,
+  "avg_sentiment": -0.008,
+  "sentiment_distribution": {
+    "positive": 28,
+    "neutral": 1,
+    "negative": 30
+  },
+  "topics": [
+    {"label": "Skill Pkg", "count": 15, "percentage": 25.4},
+    {"label": "Job Actions", "count": 6, "percentage": 10.2},
+    {"label": "Bin Usr", "count": 5, "percentage": 8.5},
+    {"label": "Workflow Shared", "count": 14, "percentage": 23.7},
+    {"label": "Pull Agent", "count": 19, "percentage": 32.2}
+  ],
+  "top_keywords": [
+    "workflow",
+    "github",
+    "pkg",
+    "actions",
+    "test"
+  ],
+  "data_limitation": "Analysis based on PR titles/bodies only - no conversation data available",
+  "discussion_url": "Created in audit category",
+  "workflow_run": "26093562919"
+}
