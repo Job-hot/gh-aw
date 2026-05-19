@@ -1,22 +1,12 @@
 {
-  "run_date": "2026-05-19T13:28:00Z",
-  "run_id": "26100190093",
+  "run_date": "2026-05-19T18:52:37Z",
+  "run_id": "26118240951",
   "fork_prs": 0,
-  "agent_prs_found": 9,
-  "agent_prs_excluded": 9,
-  "notes": "9 open agent PRs found (copilot-swe-agent), all from same-repo branches (github/gh-aw). No fork PRs to triage per triage rules.",
-  "prs_checked": [33282, 33281, 33276, 33275, 33273, 33272, 33246, 33240, 33219],
-  "pr_details": [
-    {"number": 33282, "title": "Enforce pre-push validation and retry-blocked branch checks for PR creation", "is_fork": false, "branch": "copilot/copilot-opt-reduce-wip-closed-prs", "state": "DRAFT"},
-    {"number": 33281, "title": "[deps] Bump charmbracelet golden pseudo-version to 920740d613be", "is_fork": false, "branch": "copilot/update-golden-dependency-version", "state": "DRAFT"},
-    {"number": 33276, "title": "Adopt Lipgloss tree rendering for MCP hierarchy and status dependencies", "is_fork": false, "branch": "copilot/use-lipgloss-tree-for-hierarchy", "state": "OPEN"},
-    {"number": 33275, "title": "Emit resolved runtime model as `gen_ai.response.model` on agent spans", "is_fork": false, "branch": "copilot/otel-advisor-improvement-emit-gen-ai-response-mode", "state": "OPEN"},
-    {"number": 33273, "title": "Add on.pull_request_reviewer: slash_command synthetic trigger and reviewer lifecycle routing", "is_fork": false, "branch": "copilot/add-synthetic-trigger-pull-request-reviewer", "state": "DRAFT"},
-    {"number": 33272, "title": "Replace raw log.Print* usage in library packages with package-scoped logger instances", "is_fork": false, "branch": "copilot/lint-monster-fix-log-replacements", "state": "OPEN"},
-    {"number": 33246, "title": "Bump default CLI/MCP toolchain versions and regenerate workflow locks", "is_fork": false, "branch": "copilot/update-cli-versions-another-one", "state": "OPEN"},
-    {"number": 33240, "title": "Make setup-gh-aw install idempotent when gh-aw is already available", "is_fork": false, "branch": "copilot/fix-setup-gh-aw-idempotency", "state": "DRAFT"},
-    {"number": 33219, "title": "Bind Node toolcache into AWF chroot for Copilot-engine workflow startup reliability", "is_fork": false, "branch": "copilot/deep-report-bind-mount-nodejs", "state": "DRAFT"}
-  ],
+  "agent_prs_found": 0,
+  "agent_prs_excluded": 0,
+  "notes": "gh CLI authentication failed (HTTP 403). Unable to fetch current PR list. Based on previous run data (26100190093), 9 same-repo agent PRs exist but are excluded per fork-only triage policy.",
+  "prs_checked": [],
+  "pr_details": [],
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -29,10 +19,11 @@
     "by_action": {}
   },
   "previous_run": {
-    "run_id": "26082965672",
-    "run_date": "2026-05-19T07:32:45Z",
+    "run_id": "26100190093",
+    "run_date": "2026-05-19T13:28:00Z",
     "fork_prs": 0,
-    "agent_prs_found": 13,
-    "agent_prs_excluded": 13
-  }
+    "agent_prs_found": 9,
+    "agent_prs_excluded": 9
+  },
+  "authentication_error": true
 }
