@@ -1,5 +1,5 @@
-# Budget Notes (CRLF variant)
+# Budget Notes
 
 Tracking chaos budget items.
 Run 28 - budget-balancer persona.
-Strategy: line-ending-variant (step 1: raw)
+Strategy: line-ending-variant (step 2: normalized)
