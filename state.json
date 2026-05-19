@@ -2,7 +2,7 @@
   "counts": {
     "output_format": {
       "collapsible": 4,
-      "inline": 8
+      "inline": 9
     }
   },
   "runs": [
@@ -93,6 +93,13 @@
     {
       "run_id": "26043888803",
       "timestamp": "2026-05-18T15:41:13.605Z",
+      "assignments": {
+        "output_format": "inline"
+      }
+    },
+    {
+      "run_id": "26107991436",
+      "timestamp": "2026-05-19T15:40:15.854Z",
       "assignments": {
         "output_format": "inline"
       }
