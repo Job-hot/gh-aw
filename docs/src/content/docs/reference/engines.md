@@ -40,7 +40,7 @@ Not all features are available across all engines. The table below summarizes pe
 | `tools.web-search` | via MCP | via MCP | ✅ (opt-in) | via MCP | via MCP | via MCP | via MCP |
 | `engine.agent` (custom agent file) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `engine.api-target` (custom endpoint) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `engine.bare` (disable context loading) | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| `engine.bare` (disable context loading) | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `engine.harness` (custom harness script) | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Tools allowlist | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
 
@@ -330,8 +330,9 @@ The underlying mechanism is engine-specific:
 |--------|--------|
 | Copilot | Passes `--no-custom-instructions` — suppresses `.github/AGENTS.md` and user-level custom instructions |
 | Claude | Passes `--bare` — suppresses CLAUDE.md memory files |
-| Codex | Passes `--no-system-prompt` — suppresses the default system prompt |
-| Gemini | Sets `GEMINI_SYSTEM_MD=/dev/null` — overrides the built-in system prompt with an empty file |
+
+> [!NOTE]
+> `engine.bare` is only honored for the `copilot` and `claude` engines. Setting `bare: true` on `codex`, `gemini`, `crush`, `opencode`, or `pi` emits a compiler warning and has no effect.
 
 Defaults to `false`.
 
