@@ -49,9 +49,7 @@ const { getActionInput } = require("./action_input_utils.cjs");
  * @param {string | undefined} jobName
  * @returns {string}
  */
-function buildSpanName(jobName) {
-  return jobName ? `gh-aw.${jobName}.conclusion` : "gh-aw.job.conclusion";
-}
+const buildSpanName = jobName => (jobName ? `gh-aw.${jobName}.conclusion` : "gh-aw.job.conclusion");
 
 /**
  * Parse a positive finite epoch-ms value from an env var string.
@@ -59,10 +57,10 @@ function buildSpanName(jobName) {
  * @param {string | undefined} raw
  * @returns {number | undefined}
  */
-function parseJobStartMs(raw) {
+const parseJobStartMs = raw => {
   const ms = Number(raw);
   return Number.isFinite(ms) && ms > 0 ? ms : undefined;
-}
+};
 
 /**
  * Send the OTLP job-conclusion span.  Errors propagate to the caller; when
@@ -76,7 +74,9 @@ async function run() {
   // duration covers the actual job execution window, not just this step's overhead.
   const startMs = parseJobStartMs(process.env.GITHUB_AW_OTEL_JOB_START_MS);
 
-  if (endpoints) {
+  const endpointsConfigured = Boolean(endpoints);
+
+  if (endpointsConfigured) {
     console.log(`[otlp] sending conclusion span "${spanName}" to configured endpoints`);
   } else {
     console.log("[otlp] GH_AW_OTLP_ENDPOINTS not set, skipping OTLP export (will attempt JSONL mirror)");
@@ -84,7 +84,7 @@ async function run() {
 
   await sendOtlpSpan.sendJobConclusionSpan(spanName, { startMs });
 
-  if (endpoints) {
+  if (endpointsConfigured) {
     console.log("[otlp] conclusion span export attempted");
   }
 }
