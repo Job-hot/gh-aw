@@ -1,0 +1,82 @@
+{
+  "analysis_date": "2026-05-20T11:25:10.188483",
+  "pr_count": 52,
+  "message_count": 52,
+  "avg_sentiment": 0.0484392518478454,
+  "sentiment_distribution": {
+    "neutral": 33,
+    "positive": 15,
+    "negative": 4
+  },
+  "top_keywords": [
+    {
+      "keyword": "command",
+      "score": 5.691564421398665
+    },
+    {
+      "keyword": "block",
+      "score": 5.617973504882664
+    },
+    {
+      "keyword": "http",
+      "score": 5.146946371580683
+    },
+    {
+      "keyword": "added",
+      "score": 4.803561296117503
+    },
+    {
+      "keyword": "triggering",
+      "score": 4.785299550173555
+    },
+    {
+      "keyword": "triggering command",
+      "score": 4.785299550173555
+    },
+    {
+      "keyword": "http block",
+      "score": 4.756862403096916
+    },
+    {
+      "keyword": "command http",
+      "score": 4.756862403096916
+    },
+    {
+      "keyword": "block triggering",
+      "score": 4.724946677644661
+    },
+    {
+      "keyword": "workflow",
+      "score": 4.258764611518563
+    },
+    {
+      "keyword": "fallback",
+      "score": 3.8672059405315617
+    },
+    {
+      "keyword": "json",
+      "score": 3.706839556344955
+    },
+    {
+      "keyword": "output",
+      "score": 3.188300236557274
+    },
+    {
+      "keyword": "path",
+      "score": 3.1033920147567424
+    },
+    {
+      "keyword": "pr",
+      "score": 2.8969084028511447
+    }
+  ],
+  "topics": {
+    "0": "triggering, triggering command, command http, http block, block triggering",
+    "1": "added, fallback, used, update, mcp",
+    "2": "reviewer, lifecycle, events, generated, workflow",
+    "3": "pr, actions, id, failure, run",
+    "4": "json, schema, path, warning, workflow"
+  },
+  "prs_with_discussion": 0,
+  "prs_without_discussion": 52
+}

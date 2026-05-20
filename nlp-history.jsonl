@@ -1,1 +1,1 @@
-{"date":"2026-05-01","pr_count":57,"avg_sentiment":0.014,"top_category":"Bug Fixes","top_category_count":24,"positive_prs":10,"neutral_prs":37,"negative_prs":10,"top_keywords":["block","command","triggering","http","firewall","workflow","agent"]}
+{"date":"2026-05-20","pr_count":52,"message_count":52,"prs_with_discussion":0,"avg_sentiment":0.048,"sentiment_neutral":33,"sentiment_positive":15,"sentiment_negative":4,"top_topic":"command_http_triggering","workflow_run":"26158790413"}
