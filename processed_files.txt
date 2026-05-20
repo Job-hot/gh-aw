@@ -18,3 +18,4 @@
 ./pkg/stringutil/stringutil_test.go|2026-05-15
 ./pkg/agentdrain/anomaly_test.go|2026-05-16
 ./pkg/parser/engine_includes_test.go|2026-05-18
+./pkg/cli/mcp_server_add_test.go|2026-05-20
