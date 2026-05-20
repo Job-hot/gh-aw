@@ -1,0 +1,45 @@
+{
+  "date": "2026-05-20",
+  "files_analyzed": {
+    "documentation": [
+      "docs/src/content/docs/reference/safe-outputs-pull-requests.md",
+      "docs/src/content/docs/reference/staged-mode.md"
+    ],
+    "workflows": [
+      ".github/workflows/pr-sous-chef.md",
+      ".github/workflows/cloclo.md"
+    ],
+    "validation": [
+      "pkg/workflow/pull_request_target_validation.go"
+    ]
+  },
+  "overall_quality": "professional-with-opportunities",
+  "quality_highlights": [
+    {
+      "file": "docs/src/content/docs/reference/staged-mode.md",
+      "strength": "Excellent progressive disclosure with clear examples and practical workflow guidance",
+      "rating": "professional"
+    },
+    {
+      "file": "pkg/workflow/pull_request_target_validation.go",
+      "strength": "Comprehensive inline documentation explaining security rationale",
+      "rating": "professional"
+    }
+  ],
+  "single_file_improvements": [
+    {
+      "file": "docs/src/content/docs/reference/safe-outputs-pull-requests.md",
+      "priority": "high",
+      "issue": "Missing introductory context and overview - dives immediately into technical details without explaining the 'why' or providing a conceptual framework",
+      "user_impact": "Enterprise users need to understand the purpose and security model before diving into configuration details",
+      "design_principle": "Clarity and Precision"
+    },
+    {
+      "file": ".github/workflows/pr-sous-chef.md",
+      "priority": "medium",
+      "issue": "Overly casual language ('sous chef', 'nudges') mixed with critical technical requirements creates inconsistent professional tone",
+      "user_impact": "Enterprise automation workflows need clear, formal communication to establish trust and authority",
+      "design_principle": "Professional Communication"
+    }
+  ]
+}

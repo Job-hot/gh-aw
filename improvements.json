@@ -1,54 +1,20 @@
 {
-  "last_updated": "2026-05-19",
-  "pending": [
+  "last_updated": "2026-05-20",
+  "pending_tasks": [
     {
-      "file": ".github/workflows/technical-doc-writer.md",
-      "status": "pending"
-    },
-    {
-      "file": "docs/src/content/docs/blog/2026-01-13-meet-the-workflows-multi-phase.md",
-      "status": "pending"
-    },
-    {
-      "file": "docs/src/content/docs/blog/2026-04-27-weekly-update.md",
-      "created": "2026-05-17",
-      "status": "pending"
-    },
-    {
-      "file": "docs/src/content/docs/introduction/architecture.mdx",
-      "created": "2026-05-17",
-      "status": "pending"
-    },
-    {
-      "file": "docs/src/content/docs/guides/network-configuration.md",
-      "created": "2026-05-18",
-      "status": "pending"
-    },
-    {
-      "file": ".github/workflows/necromancer.md",
-      "created": "2026-05-18",
-      "status": "pending"
-    },
-    {
-      "file": "pkg/workflow/pip_validation.go",
-      "created": "2026-05-19",
+      "file": "docs/src/content/docs/reference/safe-outputs-pull-requests.md",
+      "title": "Add Conceptual Overview to Safe Outputs Pull Request Documentation",
+      "created": "2026-05-20",
       "status": "pending",
-      "priority": "high",
-      "issue": "Simplify error messages - remove uncertainty language"
+      "priority": "high"
     },
     {
-      "file": "docs/src/content/docs/blog/2026-01-13-meet-the-workflows-security-compliance.md",
-      "created": "2026-05-19",
+      "file": ".github/workflows/pr-sous-chef.md",
+      "title": "Improve Professional Tone in PR Sous Chef Workflow",
+      "created": "2026-05-20",
       "status": "pending",
-      "priority": "high",
-      "issue": "Add concrete security detection examples"
-    },
-    {
-      "file": ".github/workflows/smoke-agent-all-none.md",
-      "created": "2026-05-19",
-      "status": "pending",
-      "priority": "medium",
-      "issue": "Clarify expected test behavior with explicit criteria"
+      "priority": "medium"
     }
-  ]
+  ],
+  "completed_tasks": []
 }
