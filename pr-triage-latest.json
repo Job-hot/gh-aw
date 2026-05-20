@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-05-20T07:32:17Z",
-  "run_id": "26148138573",
+  "run_date": "2026-05-20T13:15:56Z",
+  "run_id": "26164895454",
   "fork_prs": 0,
   "agent_prs_found": 0,
   "agent_prs_excluded": 0,
-  "notes": "gh CLI authentication failed (HTTP 403). Unable to fetch current PR list. System constraint: gh CLI is not authenticated in safe-output workflows. Based on historical data from previous runs (26082965672, 26118240951, 26135250674), all agent PRs are same-repo PRs which are excluded per fork-only triage policy.",
+  "notes": "gh CLI authentication failed (HTTP 403). Unable to fetch current PR list. System constraint: gh CLI is not authenticated in safe-output workflows. Based on historical data from previous runs (26082965672, 26118240951, 26135250674, 26148138573), all agent PRs are same-repo PRs which are excluded per fork-only triage policy.",
   "prs_checked": [],
   "pr_details": [],
   "total_prs_triaged": 0,
@@ -19,8 +19,8 @@
     "by_action": {}
   },
   "previous_run": {
-    "run_id": "26135250674",
-    "run_date": "2026-05-20T01:17:55Z",
+    "run_id": "26148138573",
+    "run_date": "2026-05-20T07:32:17Z",
     "fork_prs": 0,
     "agent_prs_found": 0,
     "agent_prs_excluded": 0,
