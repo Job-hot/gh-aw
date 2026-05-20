@@ -1,17 +1,1 @@
-{"timestamp": "2026-05-18T16:04:51Z", "date": "2026-05-18", "benchmarks": {"CompileSimpleWorkflow": {"ns_per_op": 1957457, "bytes_per_op": 862456, "allocs_per_op": 5913, "iterations": 3}, "CompileComplexWorkflow": {"ns_per_op": 3359569, "bytes_per_op": 1202325, "allocs_per_op": 10839, "iterations": 3}, "CompileMCPWorkflow": {"ns_per_op": 421686, "bytes_per_op": 126450, "allocs_per_op": 2377, "iterations": 3}, "CompileMemoryUsage": {"ns_per_op": 2504644, "bytes_per_op": 1072205, "allocs_per_op": 8936, "iterations": 3}, "ParseWorkflow": {"ns_per_op": 263063, "bytes_per_op": 86560, "allocs_per_op": 1674, "iterations": 3}, "Validation": {"ns_per_op": 5625, "bytes_per_op": 360, "allocs_per_op": 3, "iterations": 3}, "YAMLGeneration": {"ns_per_op": 2243238, "bytes_per_op": 827149, "allocs_per_op": 5454, "iterations": 3}, "ExtractWorkflowNameFromFile": {"ns_per_op": 15326, "bytes_per_op": 1816, "allocs_per_op": 8, "iterations": 3}, "FindIncludesInContent": {"ns_per_op": 3198, "bytes_per_op": 112, "allocs_per_op": 3, "iterations": 3}}}
-{
-  "timestamp": "2026-05-19T16:01:26Z",
-  "date": "2026-05-19",
-  "benchmarks": {
-    "CompileSimpleWorkflow": {"ns_per_op": 1878199, "bytes_per_op": 913978, "allocs_per_op": 6399, "iterations": 3},
-    "CompileComplexWorkflow": {"ns_per_op": 3664877, "bytes_per_op": 1231088, "allocs_per_op": 11316, "iterations": 3},
-    "CompileMCPWorkflow": {"ns_per_op": 487535, "bytes_per_op": 129637, "allocs_per_op": 2470, "iterations": 3},
-    "CompileMemoryUsage": {"ns_per_op": 2662870, "bytes_per_op": 1079232, "allocs_per_op": 9377, "iterations": 3},
-    "ParseWorkflow": {"ns_per_op": 326212, "bytes_per_op": 89928, "allocs_per_op": 1767, "iterations": 3},
-    "Validation": {"ns_per_op": 3667, "bytes_per_op": 360, "allocs_per_op": 3, "iterations": 3},
-    "YAMLGeneration": {"ns_per_op": 2225092, "bytes_per_op": 869397, "allocs_per_op": 5910, "iterations": 3},
-    "ExtractWorkflowNameFromFile": {"ns_per_op": 11735, "bytes_per_op": 1816, "allocs_per_op": 8, "iterations": 3},
-    "FindIncludesInContent": {"ns_per_op": 2331, "bytes_per_op": 112, "allocs_per_op": 3, "iterations": 3}
-  }
-}
-
+{"timestamp": "2026-05-20T16:06:40Z", "date": "2026-05-20", "benchmarks": {"CompileSimpleWorkflow": {"ns_per_op": 2093088, "bytes_per_op": 897949, "allocs_per_op": 6529, "iterations": 3}, "CompileComplexWorkflow": {"ns_per_op": 3204223, "bytes_per_op": 1255693, "allocs_per_op": 11558, "iterations": 3}, "CompileMCPWorkflow": {"ns_per_op": 362954, "bytes_per_op": 130077, "allocs_per_op": 2476, "iterations": 3}, "CompileMemoryUsage": {"ns_per_op": 2658223, "bytes_per_op": 1071901, "allocs_per_op": 9564, "iterations": 3}, "ParseWorkflow": {"ns_per_op": 274928, "bytes_per_op": 90296, "allocs_per_op": 1772, "iterations": 3}, "Validation": {"ns_per_op": 27358, "bytes_per_op": 9344, "allocs_per_op": 196, "iterations": 3}, "YAMLGeneration": {"ns_per_op": 2054610, "bytes_per_op": 879754, "allocs_per_op": 6026, "iterations": 3}}}
