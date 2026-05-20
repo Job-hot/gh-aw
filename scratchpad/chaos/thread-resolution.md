@@ -1,0 +1,2 @@
+# Resolution Status
+- Resolved: true
