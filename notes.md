@@ -64,6 +64,18 @@ Across 8 consecutive runs (2026-05-06 → 2026-05-16), conversation transcripts 
 - data_quality stays `infrastructure-only` for the 11th consecutive run — gh auth login OAuth blocker still present
 - Per [historical_trend_regression strategy](session-analysis-strategies.json), 22.3 min duration is firmly in the >15-min "100% success" band — consistent with the day's only agent succeeding
 
+## Run: 2026-05-20
+
+- 92% action_required (46/50) + **8% in-progress** (4 Running Copilot cloud agent) — 0% conclusive successes/failures. First time the in-progress bucket is non-zero in the 13-run window; the agent fleet was actively working at sampling time.
+- 5 unique branches; queue is even flatter than 05-17 — top two tied at **14/50 (28%) each**: copilot-opt-refactor-semantic-function-clustering and copilot/duplicate-code-fix-json-wrappers. Top-4 absorb 49/50 (98%).
+- Workflow fingerprint: Agentic Commands + Q = **24/50 (48%)** — concentration *relaxed* vs 64% on both 05-18 and 05-19, reverting to the 05-17 level (48%). The two-day stuck-at-64% is broken.
+- Burst shape: **5 bursts of exactly 5 fires each** at 06:52:03 / 06:57:58 / 07:33:18 / 07:33:27 / 07:33:40 — purest gate-sweep cadence observed; no large-burst-plus-drip pattern as on 05-12/05-19. Suggests synchronized template firing rather than commit-triggered cascades.
+- 11 open PRs (down from 13 on 05-19, 22 on 05-18) — **continued backlog reduction**; 10/11 have Copilot assigned. The single unassigned PR (enhance-sentry, mnkiefer-authored) is human-owned and brand-new (created during sampling), not a candidate for the orphan filter.
+- 0 spec-orphans — **13th consecutive day at zero orphan threshold**. The enhance-sentry PR has only 3 active runs (below the ≥5 threshold) and is <2min old; the orphan filter correctly excludes it.
+- Sampling window was 06:46:36Z → 07:52:25Z (1h 6m) — narrowest sampling span in the window; corresponds to the period when the 4 Copilot cloud agents were spinning up. No completed agent durations available.
+- data_quality stays `infrastructure-only` for the **12th consecutive run** — conversation transcript path unchanged.
+- Per [historical_trend_regression strategy](session-analysis-strategies.json), the 4 in-progress agents started in 06:46–07:46Z window are too new (<= 6min runtime at sample) to predict outcomes — they'll likely close in the >5-min "high-success" band by next run.
+
 ## Open Action Items
 
 - [ ] Investigate why conversation transcripts have never been delivered to /tmp/gh-aw/session-data/logs/

@@ -186,9 +186,30 @@
         "0 spec-orphans; 5 unassigned chaos/* PRs from 06:02 UTC have zero in-progress runs",
         "13 open PRs (up from 22 on 05-18) — net merge progress despite low daily completion rate"
       ]
+    },
+    {
+      "date": "2026-05-20",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 0.0,
+      "copilot_coding_agents": 4,
+      "copilot_success_rate_pct": null,
+      "avg_copilot_duration_min": null,
+      "experimental_strategy": null,
+      "data_quality": "infrastructure-only",
+      "unique_branches": 5,
+      "gate_sweep_max_runs_per_branch": 14,
+      "workflow_run_id": "26149157478",
+      "key_insights": [
+        "92% action_required (46/50) + 8% in-progress — first 8% in-progress signal in window (4 active Copilot cloud agent runs not yet completed)",
+        "5 unique branches; tied top branches at 14/50 (28% each) — copilot-opt-refactor-semantic-function-clustering and duplicate-code-fix-json-wrappers",
+        "Agentic Commands + Q = 24/50 (48%) — concentration relaxed vs 64% on 05-18/05-19",
+        "5 bursts of 5 fires each — purest gate-sweep cadence pattern observed",
+        "11 open PRs (down from 13) — continued backlog reduction; 10/11 PRs have Copilot assigned",
+        "0 spec-orphans — 13th consecutive day at zero orphan threshold"
+      ]
     }
   ],
-  "last_updated": "2026-05-19",
+  "last_updated": "2026-05-20",
   "historical_summary": {
     "avg_completion_rate_pct": 7.3,
     "avg_copilot_success_rate_pct": 75.2,
