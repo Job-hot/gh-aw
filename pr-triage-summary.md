@@ -1,38 +1,35 @@
-# PR Triage Summary
+# PR Triage Summary - 2026-05-21
 
-## Latest Run: 2026-05-21T01:18:55Z
+## Fork-Only Policy Applied
 
-**Status**: ❌ System constraint - gh CLI authentication failure
+Per workflow instructions, this triage agent only processes **fork PRs** (PRs where `head.repo.full_name` differs from `base.repo.full_name`).
 
-**PRs Triaged**: 0  
-**Fork PRs Found**: 0  
-**Authentication Error**: HTTP 403
+### Current Status
 
-## Issue
+- **Total Open Agent PRs**: 7
+- **Fork PRs**: 0
+- **Branch-based PRs (excluded)**: 7
+- **PRs Triaged**: 0
 
-gh CLI is not authenticated in safe-output workflows, despite workflow documentation stating "gh CLI is pre-authenticated". The runtime environment returns HTTP 403 when attempting to access GitHub API.
+### Excluded PRs (Branch-based)
 
-**Error Details:**
-- Error Code: HTTP 403: 403 Forbidden
-- Endpoint: https://localhost:18443/api/v3/meta
-- Consecutive Failures: 6 runs
+All 7 agent PRs are branch-based (opened from branches within `github/gh-aw`):
 
-## Recommendations
+1. #33716 - Deduplicate workflow expression regex usage
+2. #33702 - Fix pull_request_reviewer double-trigger  
+3. #33687 - refactor(create_pull_request): extract helpers
+4. #33685 - Standardize pkg debug logging
+5. #33683 - refactor(parser): break up oversized functions
+6. #33664 - chore: bump default gh-aw-mcpg
+7. #33219 - Bind Node toolcache into AWF chroot
 
-1. **Fix gh CLI authentication** in safe-output workflow environment
-2. **Provide alternative method** to fetch PR data (GitHub MCP tools, authenticated API)
-3. **Update workflow documentation** if gh CLI authentication is intentionally disabled
-4. **Remove fork-only restriction** for github/gh-aw if same-repo PRs should be triaged
+### Historical Context
 
-## Historical Failures
+Previous runs (6 consecutive) encountered HTTP 403 authentication errors. This run successfully fetched PR data but found no fork PRs to triage.
 
-- 26199592140 (2026-05-21 01:18 UTC): HTTP 403 ← Current run
-- 26183688727 (2026-05-20 19:03 UTC): HTTP 403
-- 26148138573 (2026-05-20 07:32 UTC): HTTP 403
-- 26135250674: HTTP 403
-- 26118240951: HTTP 403
-- 26082965672: HTTP 403
+### Next Run
 
-## Next Steps
+The triage agent will continue monitoring for fork PRs. Branch-based PRs should be handled by standard review processes.
 
-This workflow cannot function without authenticated GitHub API access. The issue requires infrastructure-level resolution.
+---
+*Last Updated: 2026-05-21T07:36:00Z*

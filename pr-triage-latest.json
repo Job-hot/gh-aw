@@ -1,12 +1,20 @@
 {
-  "run_date": "2026-05-21T01:18:55Z",
-  "run_id": "26199592140",
+  "run_date": "2026-05-21T07:35:53Z",
+  "run_id": "26212229500",
   "fork_prs": 0,
-  "agent_prs_found": 0,
-  "agent_prs_excluded": 0,
-  "notes": "gh CLI authentication failed (HTTP 403). The workflow instructions state 'gh CLI is pre-authenticated' but runtime shows 403 errors. This is a system-level issue preventing PR data retrieval. All previous triage runs since 2026-05-20 have encountered the same authentication failure.",
-  "prs_checked": [],
-  "pr_details": [],
+  "agent_prs_found": 7,
+  "agent_prs_excluded": 7,
+  "notes": "All 7 agent PRs are branch-based (same repository), not fork PRs. Per workflow instructions, only fork PRs should be triaged. All PRs excluded from triage.",
+  "prs_checked": [33716, 33702, 33687, 33685, 33683, 33664, 33219],
+  "pr_details": [
+    {"number": 33716, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
+    {"number": 33702, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
+    {"number": 33687, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
+    {"number": 33685, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
+    {"number": 33683, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
+    {"number": 33664, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
+    {"number": 33219, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"}
+  ],
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -19,16 +27,10 @@
     "by_action": {}
   },
   "previous_run": {
-    "run_id": "26183688727",
-    "run_date": "2026-05-20T19:03:14Z",
+    "run_id": "26199592140",
+    "run_date": "2026-05-21T01:18:55Z",
     "fork_prs": 0,
     "authentication_error": true
   },
-  "authentication_error": true,
-  "error_code": "HTTP 403",
-  "error_url": "https://localhost:18443/api/v3/meta",
-  "system_constraint": "gh CLI not authenticated despite workflow documentation stating it should be pre-authenticated",
-  "fork_only_policy": true,
-  "consecutive_failures": 6,
-  "recommendation": "Fix gh CLI authentication in safe-output workflow environment OR provide alternative method to fetch PR data"
+  "fork_only_policy": true
 }
