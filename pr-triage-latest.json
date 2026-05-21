@@ -1,20 +1,16 @@
 {
-  "run_date": "2026-05-21T07:35:53Z",
-  "run_id": "26212229500",
+  "run_date": "2026-05-21T13:27:39Z",
+  "run_id": "26228803657",
   "fork_prs": 0,
-  "agent_prs_found": 7,
-  "agent_prs_excluded": 7,
-  "notes": "All 7 agent PRs are branch-based (same repository), not fork PRs. Per workflow instructions, only fork PRs should be triaged. All PRs excluded from triage.",
-  "prs_checked": [33716, 33702, 33687, 33685, 33683, 33664, 33219],
-  "pr_details": [
-    {"number": 33716, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
-    {"number": 33702, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
-    {"number": 33687, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
-    {"number": 33685, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
-    {"number": 33683, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
-    {"number": 33664, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"},
-    {"number": 33219, "isCrossRepository": false, "reason": "branch-based PR (github/gh-aw)"}
-  ],
+  "agent_prs_found": "unknown",
+  "authentication_error": true,
+  "notes": "GitHub CLI authentication failed (HTTP 403). Unable to fetch current PR data. Last successful run (26212229500) found 7 agent PRs, all branch-based (not fork PRs). No fork PRs to triage.",
+  "last_successful_data": {
+    "run_id": "26212229500",
+    "run_date": "2026-05-21T07:35:53Z",
+    "agent_prs_found": 7,
+    "fork_prs": 0
+  },
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -25,12 +21,6 @@
     "by_risk": {},
     "by_priority": {},
     "by_action": {}
-  },
-  "previous_run": {
-    "run_id": "26199592140",
-    "run_date": "2026-05-21T01:18:55Z",
-    "fork_prs": 0,
-    "authentication_error": true
   },
   "fork_only_policy": true
 }

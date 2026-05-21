@@ -1,19 +1,27 @@
-# PR Triage Summary - 2026-05-21
+# PR Triage Summary - 2026-05-21T13:27:39Z
 
-## Fork-Only Policy Applied
-
-Per workflow instructions, this triage agent only processes **fork PRs** (PRs where `head.repo.full_name` differs from `base.repo.full_name`).
+## Authentication Error Encountered
 
 ### Current Status
 
-- **Total Open Agent PRs**: 7
-- **Fork PRs**: 0
-- **Branch-based PRs (excluded)**: 7
+- **GitHub CLI Status**: ❌ HTTP 403 Authentication Error
+- **Last Successful Run**: 26212229500 (2026-05-21T07:35:53Z)
+- **Fork PRs Found**: 0 (from last successful run)
+- **Branch-based Agent PRs**: 7 (from last successful run)
 - **PRs Triaged**: 0
 
-### Excluded PRs (Branch-based)
+### Issue
 
-All 7 agent PRs are branch-based (opened from branches within `github/gh-aw`):
+The `gh` CLI cannot access the GitHub API due to authentication failure:
+```
+HTTP 403: 403 Forbidden (https://localhost:18443/api/v3/meta)
+```
+
+This prevents fetching current PR data for triage.
+
+### Last Known State (from previous run)
+
+All 7 open agent PRs were **branch-based** (not fork PRs):
 
 1. #33716 - Deduplicate workflow expression regex usage
 2. #33702 - Fix pull_request_reviewer double-trigger  
@@ -23,13 +31,19 @@ All 7 agent PRs are branch-based (opened from branches within `github/gh-aw`):
 6. #33664 - chore: bump default gh-aw-mcpg
 7. #33219 - Bind Node toolcache into AWF chroot
 
-### Historical Context
+### Fork-Only Policy
 
-Previous runs (6 consecutive) encountered HTTP 403 authentication errors. This run successfully fetched PR data but found no fork PRs to triage.
+Per workflow instructions, this triage agent only processes **fork PRs** where `isCrossRepository: true`. Branch-based PRs are excluded from automated triage.
 
-### Next Run
+### Resolution Needed
 
-The triage agent will continue monitoring for fork PRs. Branch-based PRs should be handled by standard review processes.
+1. Fix GitHub CLI authentication to restore PR data access
+2. Investigate why authentication is failing (token expired, permissions issue, network configuration)
+3. Re-run triage after authentication is restored
+
+### Historical Pattern
+
+This is the **7th consecutive run** experiencing authentication issues or finding zero fork PRs to triage.
 
 ---
-*Last Updated: 2026-05-21T07:36:00Z*
+*Last Updated: 2026-05-21T13:27:39Z | Run: 26228803657*
