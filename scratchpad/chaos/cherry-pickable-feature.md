@@ -14,3 +14,10 @@ The feature is intentionally simple and atomic for clean cherry-picking.
 - No external dependencies
 - Clean commit boundaries
 - Bundle-friendly structure
+
+## Cherry-Pick Notes
+
+This feature was designed with cherry-picking in mind:
+- Self-contained changes
+- Minimal merge conflicts
+- Clear commit messages
