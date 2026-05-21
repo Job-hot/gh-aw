@@ -1,0 +1,12 @@
+{
+  "counts": {},
+  "runs": [
+    {
+      "run_id": "26238829854",
+      "timestamp": "2026-05-21T16:24:41.287Z",
+      "assignments": {
+        "sub_agent_strategy": "per_scenario"
+      }
+    }
+  ]
+}
