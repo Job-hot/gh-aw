@@ -1,14 +1,18 @@
-# Shared Alerts — 2026-05-19T13:44Z
+# Shared Alerts — 2026-05-21T05:52Z
+
+## P0 (Critical) 🚨
+- **CGO/CJS regression** (#29669): **CRITICAL ESCALATION REQUIRED**
+  - **90+ days unresolved at 0% success rate** — critical threshold exceeded
+  - **Continuous failures May 21:** 10+ failures in last few hours
+  - **Impact:** Every push to main triggers multiple failures, blocking CI confidence
+  - **ACTION NEEDED:** Dedicated engineering escalation (beyond workflow automation scope)
 
 ## P1 (High) 🚨
-- **Agentic Maintenance compile failure** (Day 2): compile-workflows down — orchestrator impaired, all downstream jobs skipped — **NEEDS ISSUE**
-- **CGO/CJS regression** (#29669): failing every push to main (90+ days, 0% success) — **CRITICAL: 90+ days unresolved, needs engineering escalation**
 - **Codex OPENAI_API_KEY sandbox exclusion** (#32446): blocking all Codex workflows (12 workflows)
 - **MCP gateway session timeout** (#23153): long-running workflows at risk, ~5min inactivity timeout
 - **Performance Regression in Validation** (#30180): 82.1% slower
 
 ## P2 (Watch) ⚠️
-- **UK AI Operational Resilience** (Day 2): OTLP header masking failing activation (run 26012832575)
 - **ET budget exhaustion**: Multiple daily workflows at risk. Audit `max-effective-tokens`. #32717
 - **Engine-fail-after-completion** pattern persists (#32736) — systemic engine lifecycle bug
 - **Step Name Alignment recurring daily**: #32955 (was #32754 closed May 17) — **needs structural fix, not patches**
@@ -24,37 +28,35 @@
 ## Outlook & Coordination Notes
 
 ### Critical Actions Needed
-1. **IMMEDIATE:** Create issue for Agentic Maintenance compile failure (NEW P1, Day 2)
-2. **IMMEDIATE:** Restore Agentic Maintenance (orchestrator capacity blocked)
-3. **HIGH:** Escalate CGO/CJS to dedicated engineering (90+ days = critical threshold)
-4. **HIGH:** Fix Codex sandbox configuration (12 workflows blocked)
-5. **MEDIUM:** Structural fix for Step Name Alignment (daily noise, stop patching)
+1. **CRITICAL:** Escalate CGO/CJS (#29669) to dedicated engineering — 90+ days at 0% = critical threshold
+   - Continuous failures May 21 (10+ failures in hours)
+   - Every push to main triggers failures
+   - Beyond workflow automation scope — needs dedicated engineering resources
+2. **HIGH:** Fix Codex sandbox configuration (#32446) — 12 workflows blocked
+3. **HIGH:** Resolve MCP gateway session timeout (#23153) — long-running workflows fail
+4. **MEDIUM:** Structural fix for Step Name Alignment (#32955) — daily noise, stop patching
+5. **MEDIUM:** Fleet-wide ET budget audit (#32717) — prevent token exhaustion
 
 ### Cross-Orchestrator Impact
-- **Agentic Maintenance DOWN** → all meta-orchestrators impaired (workflow-health, campaign-manager, agent-performance)
-- **Quality plateau** (day 18 at 74/100) → expected breakout to 76-78 when Agentic Maintenance + critical P1s resolved
-- **Effectiveness plateau** (day 18 at 71/100) → expected breakout to 73-75
+- **CGO/CJS critical threshold** → CI confidence degraded, every push triggers failures
+- **Token budget pressure** → Multiple workflows at risk of ET exhaustion
+- **Quality stable** at 63/100 but cannot improve until critical P0/P1 resolved
 
-### Fleet Statistics (May 19)
-- 231 executable workflows (100% lock file coverage ✅)
-- Health: 63/100 (stable but degraded)
-- Quality: 74/100 (plateau day 18)
-- Effectiveness: 71/100 (plateau day 18)
-- Open [aw] failures: ~22 (stable)
+### Fleet Statistics (May 21)
+- 233 executable workflows (100% lock file coverage ✅)
+- Health: 63/100 (stable)
+- Estimated success rate: ~77% (historical, API limited)
+- CGO/CJS: 0% (100% failure, ongoing May 21)
+- Critical issues: 4 P0/P1 (stable)
+- Warnings: 4 P2 (stable)
 
-### Top Performers (from May 19 data)
-- Issue Monster (Q:85 E:87)
-- Auto-Triage Issues (Q:82 E:85)
-- Bot Detection (Q:82 E:83)
-- License Compliance (Q:80 E:82)
-- PR Sous Chef (Q:80 E:82)
-
-### Network Constraints (May 19)
+### Network Constraints (May 21)
 GitHub API access limited during this run. Analysis based on:
-- Previous run data (May 18)
+- Pre-computed workflow inventory (233 workflows)
+- Recent workflow run queries (CGO/CJS confirmed ongoing)
 - Lock file verification (100% coverage confirmed)
-- Historical shared memory
+- Historical shared memory (May 19)
 
 Full live analysis will resume when API access restored.
 
-Last updated: 2026-05-19T13:44Z by agent-performance-analyzer
+Last updated: 2026-05-21T05:52:20Z by workflow-health-manager
