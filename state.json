@@ -1,12 +1,12 @@
 {
   "counts": {
     "caveman": {
-      "no": 14,
+      "no": 15,
       "yes": 15
     },
     "subagent_model": {
       "large": 5,
-      "small": 4
+      "small": 5
     }
   },
   "runs": [
@@ -220,6 +220,14 @@
       "assignments": {
         "caveman": "yes",
         "subagent_model": "large"
+      }
+    },
+    {
+      "run_id": "26202036139",
+      "timestamp": "2026-05-21T02:37:58.210Z",
+      "assignments": {
+        "caveman": "no",
+        "subagent_model": "small"
       }
     }
   ]
