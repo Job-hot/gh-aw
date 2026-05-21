@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-20T00:00:00Z",
+  "last_updated": "2026-05-21T00:00:00Z",
   "tool_count": 23,
   "tools": [
     "activate_project", "check_onboarding_performed", "delete_memory", "edit_memory",
@@ -10,6 +10,6 @@
     "think_about_collected_information", "think_about_task_adherence",
     "think_about_whether_you_are_done", "write_memory"
   ],
-  "param_conventions": "activate_project: --project. find_symbol: --name_path_pattern (NOT --name_path). find_referencing_symbols: --name_path (NOT --name_path_pattern) + --relative_path (FILE, not dir). search_for_pattern: --substring_pattern (literal). Use JSON stdin pipe with '.' sentinel for multi-param.",
-  "gotchas": "Bare receiver-method names return [] from find_symbol - must qualify as '(*Type).method'. get_symbols_overview reveals the qualified form. 23 tools stable for 11+ runs (Runs 4-14). find_symbol can take 70s+ for broad name_path_pattern - prefer Grep for simple name lookups. find_symbol REQUIRES name_path_pattern; find_referencing_symbols REQUIRES name_path (Run 14 confirmed inconsistency). find_referencing_symbols on focused single-symbol queries is FAST (~5s round-trip). activate_project elapsed ~7s on cold start. get_symbols_overview ~100ms on focused file. Bash sandbox blocks `go build` and `find/ls/mkdir` outside /home/runner/work/gh-aw/gh-aw; static analysis via Grep+Read only. Compound 'mkdir && ls' is split-checked. gh CLI returns 403 on /meta - no /api/v3 access from agent."
+  "param_conventions": "activate_project: --project (NOT --path). find_symbol: --name_path_pattern (NOT --name_path). find_referencing_symbols: --name_path (NOT --name_path_pattern) + --relative_path (FILE, not dir). search_for_pattern: --substring_pattern (literal). Use JSON stdin pipe with '.' sentinel for multi-param.",
+  "gotchas": "Bare receiver-method names return [] from find_symbol - must qualify as '(*Type).method'. get_symbols_overview reveals the qualified form. 23 tools stable for 12+ runs (Runs 4-15). find_symbol can take 70s+ for broad name_path_pattern - prefer Grep for simple name lookups. find_symbol REQUIRES name_path_pattern; find_referencing_symbols REQUIRES name_path. activate_project elapsed ~1.3s warm, ~7s cold; project name 'gh-aw' (auto-created on first activate). get_symbols_overview ~100ms on focused file. Bash sandbox blocks `go build` and `find/ls/mkdir` outside /home/runner/work/gh-aw/gh-aw; static analysis via Grep+Read only. Compound 'mkdir && ls' is split-checked. gh CLI returns 403 on /meta - no /api/v3 access from agent (no duplicate detection via gh issue list — use cache tracker)."
 }
