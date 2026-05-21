@@ -6,11 +6,7 @@ sidebar:
   badge: { text: 'Hybrid', variant: 'caution' }
 ---
 
-GitHub Agentic Workflows combine deterministic computation ([`steps:`](/gh-aw/reference/steps-jobs/#custom-steps-steps) and [`jobs:`](/gh-aw/reference/steps-jobs/#custom-jobs-jobs)) with AI reasoning, enabling data preprocessing, custom trigger filtering, and post-processing patterns. This pattern can reliably collect and prepare data, then the AI agent reads the results and generates insights. Use this for data aggregation, report generation, trend analysis, auditing, and any hybrid pipeline.
-
-## When to Use
-
-Combine deterministic steps with AI agents to precompute data, filter triggers, preprocess inputs, post-process outputs, or build multi-stage computation and reasoning pipelines.
+Combine deterministic [`steps:`](/gh-aw/reference/steps-jobs/#custom-steps-steps) and [`jobs:`](/gh-aw/reference/steps-jobs/#custom-jobs-jobs) with AI reasoning to precompute data, filter triggers, preprocess inputs, or post-process outputs. Useful for reporting, trend analysis, auditing, and any hybrid computation-and-reasoning pipeline.
 
 ## Example: Release Highlights Generator
 
@@ -46,42 +42,7 @@ steps:
 Generate release highlights for `${GITHUB_REF#refs/tags/}`. Analyze PRs in `/tmp/gh-aw/agent/prs.json`, categorize changes, and use update-release to prepend highlights to the release notes.
 ```
 
-Files in `/tmp/gh-aw/agent/` are automatically uploaded as artifacts and available to the AI agent.
-
-## Example: Multi-Job Pattern
-
-This workflow uses a separate filter job to check if a release is a major version before running the agent, skipping the workflow run entirely for minor/patch releases.
-
-Example workflow:
-
-```yaml wrap title=".github/workflows/static-analysis.md"
----
-on:
-  schedule: daily
-
-safe-outputs:
-  create-discussion:
-
-jobs:
-  run-analysis:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - run: ./gh-aw compile --zizmor --poutine > /tmp/gh-aw/agent/analysis.txt
-
-steps:
-  - uses: actions/download-artifact@v6
-    with:
-      name: analysis-results
-      path: /tmp/gh-aw/
----
-
-# Static Analysis Report
-
-Parse findings in `/tmp/gh-aw/agent/analysis.txt`, cluster by severity, and create a discussion with fix suggestions.
-```
-
-Pass data between jobs via artifacts, job outputs, or environment variables.
+Files in `/tmp/gh-aw/agent/` are automatically uploaded as artifacts and available to the AI agent. Pass data between jobs via artifacts, job outputs, or environment variables.
 
 ## Custom Trigger Filtering
 
@@ -152,42 +113,23 @@ See [Pre-Activation Steps](/gh-aw/reference/triggers/#pre-activation-steps-onste
 
 ### Multi-Job Pattern — For Complex Cases
 
-Use a separate `jobs:` entry when filtering requires heavy tooling (checkout, compiled tools, multiple runners):
+When filtering needs heavy tooling (checkout, compiled tools, multiple runners), declare a separate `jobs:` entry instead of `on.steps:`:
 
-```yaml wrap title=".github/workflows/smart-responder.md"
----
-on:
-  issues:
-    types: [opened]
-
-safe-outputs:
-  add-comment:
-
+```yaml wrap
 jobs:
   filter:
     runs-on: ubuntu-latest
     outputs:
       should-run: ${{ steps.check.outputs.result }}
     steps:
+      - uses: actions/checkout@v6
       - id: check
-        env:
-          LABELS: ${{ toJSON(github.event.issue.labels.*.name) }}
-        run: |
-          if echo "$LABELS" | grep -q '"bug"'; then
-            echo "result=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "result=false" >> "$GITHUB_OUTPUT"
-          fi
+        run: ./scripts/should-run.sh && echo "result=true" >> "$GITHUB_OUTPUT"
 
 if: needs.filter.outputs.should-run == 'true'
----
-
-# Bug Issue Responder
-
-Triage bug report: "${{ github.event.issue.title }}" and add-comment with a summary of the next steps.
 ```
 
-The compiler automatically adds the filter job as a dependency of the activation job, so when the condition is false the workflow run is **skipped** (not failed), keeping the Actions tab clean.
+The compiler adds the filter job as a dependency of the activation job, so a false condition **skips** the run (not fails it), keeping the Actions tab clean.
 
 ### Simple Context Conditions
 
@@ -264,19 +206,6 @@ Follow the report formatting guidelines from shared/reporting.md.
 
 For daily discussion-based audit workflows, prefer `shared/daily-audit-base.md` to bundle discussion publishing, reporting guidance, and OTLP observability in a single import.
 
-## Agent Data Directory
-
-Use `/tmp/gh-aw/agent/` to share data with AI agents. Files here are automatically uploaded as artifacts and accessible to the agent:
-
-```yaml
-steps:
-  - run: |
-      gh api repos/${{ github.repository }}/issues > /tmp/gh-aw/agent/issues.json
-      gh api repos/${{ github.repository }}/pulls > /tmp/gh-aw/agent/pulls.json
-```
-
-Reference in prompts: "Analyze issues in `/tmp/gh-aw/agent/issues.json` and PRs in `/tmp/gh-aw/agent/pulls.json`."
-
 ## DataOps: Scheduled Data Extraction and Analysis
 
 Use `steps:` to collect and preprocess data deterministically, then let the agent analyze and report on the results. This is especially useful for scheduled reporting, trend analysis, and auditing workflows.
@@ -352,62 +281,29 @@ Analyze the prepared data:
 Create a discussion summarizing: total PRs, merge rate, code changes (+/- lines), top contributors, and any notable trends.
 ````
 
-### Data Caching
+### Variations
 
-For workflows that run frequently or process large datasets, use caching to avoid redundant API calls:
+- **Caching** — add a `cache:` block to reuse data across runs:
 
-```aw wrap
----
-cache:
-  - key: pr-data-${{ github.run_id }}
-    path: /tmp/gh-aw/pr-data
-    restore-keys: |
-      pr-data-
+  ```yaml wrap
+  cache:
+    - key: pr-data-${{ github.run_id }}
+      path: /tmp/gh-aw/pr-data
+      restore-keys: pr-data-
+  ```
 
-steps:
-  - name: Check cache and fetch only new data
-    run: |
-      if [ -f /tmp/gh-aw/pr-data/recent-prs.json ]; then
-        echo "Using cached data"
-      else
-        gh pr list --limit 100 --json ... > /tmp/gh-aw/pr-data/recent-prs.json
-      fi
----
-```
+- **Multiple sources** — fetch from several APIs and combine with `jq -s`:
 
-### Multi-Source Data
-
-Combine data from multiple sources before analysis:
-
-```aw wrap
----
-steps:
-  - name: Fetch PR data
-    run: gh pr list --json ... > /tmp/gh-aw/prs.json
-
-  - name: Fetch issue data
-    run: gh issue list --json ... > /tmp/gh-aw/issues.json
-
-  - name: Fetch workflow runs
-    run: gh run list --json ... > /tmp/gh-aw/runs.json
-
-  - name: Combine into unified dataset
-    run: |
-      jq -s '{prs: .[0], issues: .[1], runs: .[2]}' \
-        /tmp/gh-aw/prs.json \
-        /tmp/gh-aw/issues.json \
-        /tmp/gh-aw/runs.json \
-        > /tmp/gh-aw/combined.json
----
-
-# Repository Health Report
-
-Analyze the combined data at `/tmp/gh-aw/combined.json`.
-```
+  ```yaml wrap
+  steps:
+    - run: gh pr list --json ... > /tmp/gh-aw/prs.json
+    - run: gh issue list --json ... > /tmp/gh-aw/issues.json
+    - run: jq -s '{prs: .[0], issues: .[1]}' /tmp/gh-aw/*.json > /tmp/gh-aw/combined.json
+  ```
 
 ## Subagents with Smaller Models
 
-After moving computation into `steps:`, the next optimization is to delegate narrow, repetitive reasoning tasks — categorization, per-item summarization, sentiment scoring — to **inline sub-agents** backed by a smaller, cheaper model. The main agent then only needs to read the pre-processed results and synthesize a final output.
+Delegate narrow, repetitive reasoning (categorization, per-item summarization, sentiment scoring) to **inline sub-agents** running a smaller, cheaper model. The main agent reads their results and synthesizes the final output.
 
 ```
 steps:          → deterministic shell commands (fast, reproducible, zero AI cost)
@@ -471,10 +367,7 @@ Return a JSON object: `{"number": <issue number>, "summary": "<sentence>"}`.
 
 ## Related Documentation
 
-- [Pre-Activation Steps](/gh-aw/reference/triggers/#pre-activation-steps-onsteps) — Inline step injection into the pre-activation job
-- [Pre-Activation Permissions](/gh-aw/reference/triggers/#pre-activation-permissions-onpermissions) — Grant additional scopes for `on.steps:` API calls
 - [Custom Safe Outputs](/gh-aw/reference/custom-safe-outputs/) — Custom post-processing jobs
-- [Frontmatter Reference](/gh-aw/reference/frontmatter/) — Configuration options
 - [Compilation Process](/gh-aw/reference/compilation-process/) — How jobs are orchestrated
 - [Imports](/gh-aw/reference/imports/) — Sharing configurations across workflows
-- [Templating](/gh-aw/reference/templating/) — Using GitHub Actions expressions
+- [Frontmatter Reference](/gh-aw/reference/frontmatter/) — Configuration options
