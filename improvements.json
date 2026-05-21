@@ -1,20 +1,48 @@
 {
-  "last_updated": "2026-05-20",
+  "last_updated": "2026-05-21",
   "pending_tasks": [
     {
-      "file": "docs/src/content/docs/reference/safe-outputs-pull-requests.md",
-      "title": "Add Conceptual Overview to Safe Outputs Pull Request Documentation",
-      "created": "2026-05-20",
+      "file": "docs/src/content/docs/reference/engines.md",
+      "created": "2026-05-21",
+      "priority": "high",
       "status": "pending",
-      "priority": "high"
+      "task": "Add 'Choosing an Engine for Enterprise Use' section with cost, compliance, and integration guidance"
+    },
+    {
+      "file": "pkg/workflow/runtime_import_validation.go",
+      "created": "2026-05-21",
+      "priority": "high",
+      "status": "pending",
+      "task": "Enhance security error message with clear rationale and actionable fix guidance"
+    },
+    {
+      "file": "docs/src/content/docs/reference/safe-outputs-pull-requests.md",
+      "created": "2026-05-20",
+      "priority": "high",
+      "status": "pending",
+      "task": "Add introductory overview explaining purpose and security model before technical details"
     },
     {
       "file": ".github/workflows/pr-sous-chef.md",
-      "title": "Improve Professional Tone in PR Sous Chef Workflow",
       "created": "2026-05-20",
+      "priority": "medium",
       "status": "pending",
-      "priority": "medium"
+      "task": "Align messaging tone to be more professional and formal for enterprise automation context"
     }
   ],
-  "completed_tasks": []
+  "completed_tasks": [],
+  "quality_trends": [
+    {
+      "date": "2026-05-21",
+      "professional": 5,
+      "needs_work": 2,
+      "total": 7
+    },
+    {
+      "date": "2026-05-20",
+      "professional": 3,
+      "needs_work": 2,
+      "total": 5
+    }
+  ]
 }
