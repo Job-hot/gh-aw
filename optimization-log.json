@@ -1,14 +1,5 @@
 [
   {
-    "date": "2026-04-16",
-    "workflow_name": "Workflow Skill Extractor",
-    "workflow_file": "",
-    "runs_audited": 2,
-    "total_tokens_analyzed": 4439001,
-    "estimated_savings_per_run": 1800000,
-    "recommendations_count": 5
-  },
-  {
     "date": "2026-04-17",
     "workflow_name": "Daily Compiler Quality Check",
     "workflow_file": "",
@@ -268,5 +259,14 @@
     "total_tokens_analyzed": 4392592,
     "recommendations_count": 5,
     "estimated_savings_per_run": 500000
+  },
+  {
+    "date": "2026-05-21",
+    "workflow_name": "PR Code Quality Reviewer",
+    "workflow_file": "pr-code-quality-reviewer",
+    "runs_audited": 4,
+    "total_tokens_analyzed": 3187554,
+    "estimated_savings_per_run": 290000,
+    "recommendations_count": 4
   }
 ]
