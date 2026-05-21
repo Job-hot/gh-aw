@@ -50,7 +50,7 @@ const { getActionInput } = require("./action_input_utils.cjs");
  * @returns {string}
  */
 function buildSpanName(jobName) {
-  return jobName ? `gh-aw.${jobName}.conclusion` : "gh-aw.job.conclusion";
+  return jobName?.trim() ? `gh-aw.${jobName}.conclusion` : "gh-aw.job.conclusion";
 }
 
 /**
@@ -71,16 +71,12 @@ function parseJobStartMs(raw) {
  */
 async function run() {
   const endpoints = process.env.GH_AW_OTLP_ENDPOINTS;
-  const spanName = buildSpanName(getActionInput("JOB_NAME"));
-  // Use the job-start timestamp set by action_setup_otlp so the conclusion span
-  // duration covers the actual job execution window, not just this step's overhead.
+  const jobName = getActionInput("JOB_NAME");
+  const spanName = buildSpanName(jobName);
   const startMs = parseJobStartMs(process.env.GITHUB_AW_OTEL_JOB_START_MS);
 
-  if (endpoints) {
-    console.log(`[otlp] sending conclusion span "${spanName}" to configured endpoints`);
-  } else {
-    console.log("[otlp] GH_AW_OTLP_ENDPOINTS not set, skipping OTLP export (will attempt JSONL mirror)");
-  }
+  const message = endpoints ? `[otlp] sending conclusion span "${spanName}" to configured endpoints` : "[otlp] GH_AW_OTLP_ENDPOINTS not set, skipping OTLP export (will attempt JSONL mirror)";
+  console.log(message);
 
   await sendOtlpSpan.sendJobConclusionSpan(spanName, { startMs });
 

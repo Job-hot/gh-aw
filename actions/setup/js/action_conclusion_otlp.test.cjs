@@ -212,6 +212,10 @@ describe("buildSpanName", () => {
     expect(buildSpanName("")).toBe("gh-aw.job.conclusion");
   });
 
+  it("returns default span name when jobName is whitespace only", () => {
+    expect(buildSpanName("   ")).toBe("gh-aw.job.conclusion");
+  });
+
   it("returns namespaced span name when jobName is provided", () => {
     expect(buildSpanName("agent")).toBe("gh-aw.agent.conclusion");
   });
