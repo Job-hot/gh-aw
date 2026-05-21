@@ -76,6 +76,21 @@ Across 8 consecutive runs (2026-05-06 → 2026-05-16), conversation transcripts 
 - data_quality stays `infrastructure-only` for the **12th consecutive run** — conversation transcript path unchanged.
 - Per [historical_trend_regression strategy](session-analysis-strategies.json), the 4 in-progress agents started in 06:46–07:46Z window are too new (<= 6min runtime at sample) to predict outcomes — they'll likely close in the >5-min "high-success" band by next run.
 
+## Run: 2026-05-21
+
+- **86% action_required** (43/50) — meaningful relief from 92%/98% steady-state of last 3 days; first day with all three outcome types (success/failure/action_required) since 05-18.
+- **12% success** (6/50) — second-best day in window after 05-18 (22%). 4 are real Copilot agent runs (1 cloud agent on top branch + 3 "Addressing comment" runs on 3 distinct PRs); 2 are platform gates (Doc Build + Smoke CI) on the same `parser-workflow` branch.
+- **2% failure** (1/50) — single CGO failure on `copilot/refactor-oversized-functions-parser-workflow` at the same timestamp as the Smoke CI success on the same branch. Platform-specific CGO compile issue, not a regression of the change.
+- **Top branch dominance**: `copilot/fix-duplicate-regex-patterns` absorbs **25/50 sessions (50%)** — highest single-branch share since 05-12's 70%. The branch's lone success was the Copilot cloud agent run (20.3min, success).
+- **Workflow concentration broke**: Agentic Commands + Q = **13/50 (26%)** — lowest in the 13-day window (prior min was 48% on 05-17/05-20). Compositional shift: Smoke CI is now the largest single workflow (11/50 = 22%) — points to genuine pre-merge CI activity rather than agentic-loop polling.
+- **Copilot agent durations** (all success): 7.55 / 8.83 / 12.55 / 20.27 min — average 12.3min, median 10.7min. All firmly in the >5-min high-success band per [historical_trend_regression strategy](session-analysis-strategies.json). The 20.3-min cloud agent run on `fix-duplicate-regex-patterns` is the only agent on the 50%-dominant branch.
+- **Open PR backlog: 7** (down from 11 on 05-20, 13 on 05-19, 22 on 05-18) — **4 net PRs merged or closed in 24h, lowest backlog observed in the window**.
+- **0 spec-orphans** — **14th consecutive day at zero orphan threshold**. Only 2 in-progress runs system-wide (both on `main`: Agentic Maintenance + this workflow). All 7 open PRs have a Copilot assignee.
+- **Experimental strategy**: "Inverse Gate-Count to Conclusiveness" — perfect inverse correlation across the 5 active branches today. 3-session branch = 100% conclusive; 25-session branch = 4% conclusive. Strong signal that high gate count indicates *waiting on agent*, not *waiting on CI*. Added to [strategies.json](session-analysis-strategies.json) as High effectiveness.
+- **Sampling window**: 06:02:11Z → 06:59:51Z (58 min — narrower than the 1h6m on 05-20).
+- **Bursts**: 5 fires at 06:39:29Z (sweep coincident with cloud agent start, same sweep-after-success pattern as 05-16/05-17/05-19) + 4 fires at 06:59:51Z (final-minute sweep on top branch) + 4 fires at 06:15:19Z.
+- `data_quality` stays `infrastructure-only` for the **13th consecutive run** — OAuth blocker still in effect; no conversation transcripts available.
+
 ## Open Action Items
 
 - [ ] Investigate why conversation transcripts have never been delivered to /tmp/gh-aw/session-data/logs/

@@ -55,7 +55,14 @@
       "effectiveness": "Medium",
       "recommendation": "Keep and refine",
       "finding": "Burst-size distribution per branch reveals iteration shape: one large burst (14 fires at single timestamp) + many small bursts (3-4) = single push triggering full gate-set followed by drip retries. Investigate-otel-connection branch fits this profile: 14-burst at 07:12:15Z = new commit, 5 smaller bursts at 06:39-06:43 = polling/cleanup. Largest single burst size correlates with code-change scope; small-burst frequency correlates with reviewer/auto-retry activity."
+    },
+    {
+      "name": "Inverse Gate-Count to Conclusiveness",
+      "date_tested": "2026-05-21",
+      "effectiveness": "High",
+      "recommendation": "Keep and automate",
+      "finding": "Per-branch gate-firing count is strongly inversely correlated with the rate of conclusive (success/failure) outcomes within the sampling window. On 2026-05-21: 3-session branch (refactor-oversized-functions-parser-workflow) = 100% conclusive (2 success + 1 failure); 5-session branch = 20%; 7-session = 14.3%; 10-session = 10%; 25-session (fix-duplicate-regex-patterns) = 4%. Hypothesis: branches with low gate count have either narrow scope (gates run once and resolve) or recent agent intervention (sweep already cleared); branches with high gate count are caught in a retry loop. Predictive use: branches above ~15 gates in a 1-hour window are likely waiting on agent action, not on green CI. Combine with Gate Sweep Branch Concentration (low diversity day) and Gate Workflow Composition Fingerprinting (gate-set complexity proxy) for a 3-axis branch-health classifier."
     }
   ],
-  "last_updated": "2026-05-12"
+  "last_updated": "2026-05-21"
 }
