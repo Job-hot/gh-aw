@@ -28,7 +28,18 @@
     "experiments": 16,
     "imports": 231
   },
-  "opportunities_found": 18,
+  "missed_opportunities_count": 18,
+  "high_priority_count": 6,
+  "medium_priority_count": 7,
+  "low_priority_count": 5,
   "analysis_date": "2026-05-21",
-  "previous_run": "2026-05-20"
+  "previous_run": "2026-05-20",
+  "key_findings": [
+    "NO --share flag usage despite conversation tracking benefits",
+    "ZERO engine.version pinning (reproducibility risk)",
+    "Only 2% using max-continuations (autopilot underutilized)",
+    "engine.api-target never used (GHEC/GHES compatibility gap)",
+    "max-runs severely underused (only 2 workflows)",
+    "Long timeout workflows not using max-continuations"
+  ]
 }
