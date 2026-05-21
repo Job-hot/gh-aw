@@ -1,49 +1,38 @@
-# PR Triage Summary - 2026-05-21T13:27:39Z
-
-## Authentication Error Encountered
+# PR Triage Summary - 2026-05-21T18:51:11Z
 
 ### Current Status
 
-- **GitHub CLI Status**: ❌ HTTP 403 Authentication Error
-- **Last Successful Run**: 26212229500 (2026-05-21T07:35:53Z)
-- **Fork PRs Found**: 0 (from last successful run)
-- **Branch-based Agent PRs**: 7 (from last successful run)
+- **Total Bot PRs Found**: 9
+- **Fork PRs Found**: 0
+- **Branch-based PRs**: 9 (skipped per fork-only policy)
 - **PRs Triaged**: 0
-
-### Issue
-
-The `gh` CLI cannot access the GitHub API due to authentication failure:
-```
-HTTP 403: 403 Forbidden (https://localhost:18443/api/v3/meta)
-```
-
-This prevents fetching current PR data for triage.
-
-### Last Known State (from previous run)
-
-All 7 open agent PRs were **branch-based** (not fork PRs):
-
-1. #33716 - Deduplicate workflow expression regex usage
-2. #33702 - Fix pull_request_reviewer double-trigger  
-3. #33687 - refactor(create_pull_request): extract helpers
-4. #33685 - Standardize pkg debug logging
-5. #33683 - refactor(parser): break up oversized functions
-6. #33664 - chore: bump default gh-aw-mcpg
-7. #33219 - Bind Node toolcache into AWF chroot
+- **GitHub CLI Status**: ✅ Working
 
 ### Fork-Only Policy
 
-Per workflow instructions, this triage agent only processes **fork PRs** where `isCrossRepository: true`. Branch-based PRs are excluded from automated triage.
+Per workflow instructions, this triage agent only processes **fork PRs** where the head repository differs from the base repository (`isCrossRepository: true`).
 
-### Resolution Needed
+All 9 open bot PRs are **branch-based** (created from branches within `github/gh-aw` rather than from external forks):
 
-1. Fix GitHub CLI authentication to restore PR data access
-2. Investigate why authentication is failing (token expired, permissions issue, network configuration)
-3. Re-run triage after authentication is restored
+1. #33841 - [WIP] Fix model flag position in Codex lock compiler command
+2. #33840 - [WIP] Fix branch link missing in fallback issue for protected files
+3. #33839 - [WIP] Emit langfuse.session.id and langfuse.user.id for views
+4. #33834 - [linter-miner] Add file-close-not-deferred linter
+5. #33831 - Normalize context cancellation checks to `errors.Is` in CLI paths
+6. #33830 - feat: extract cache-memory trending pattern into shared component
+7. #33829 - Consolidate npm-not-available error surface across wasm and non-wasm builds
+8. #33818 - pkg/cli: replace bare fmt.Println/Printf with explicit os.Stdout writes; add CI guard
+9. #33219 - Bind Node toolcache into AWF chroot for Copilot-engine workflow startup reliability
 
-### Historical Pattern
+### Conclusion
 
-This is the **7th consecutive run** experiencing authentication issues or finding zero fork PRs to triage.
+**No fork PRs available for automated triage.** All agent-created PRs are branch-based and excluded from this workflow's scope.
+
+### Next Steps
+
+- Monitor for new fork PRs from external contributors
+- Branch-based PRs require manual review (not handled by this automated triage)
+- Re-run triage on next scheduled interval
 
 ---
-*Last Updated: 2026-05-21T13:27:39Z | Run: 26228803657*
+*Last Updated: 2026-05-21T18:51:11Z | Run: 26246351754*

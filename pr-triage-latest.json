@@ -1,16 +1,13 @@
 {
-  "run_date": "2026-05-21T13:27:39Z",
-  "run_id": "26228803657",
+  "run_date": "2026-05-21T18:51:11Z",
+  "run_id": "26246351754",
   "fork_prs": 0,
-  "agent_prs_found": "unknown",
-  "authentication_error": true,
-  "notes": "GitHub CLI authentication failed (HTTP 403). Unable to fetch current PR data. Last successful run (26212229500) found 7 agent PRs, all branch-based (not fork PRs). No fork PRs to triage.",
-  "last_successful_data": {
-    "run_id": "26212229500",
-    "run_date": "2026-05-21T07:35:53Z",
-    "agent_prs_found": 7,
-    "fork_prs": 0
-  },
+  "agent_prs_found": 9,
+  "authentication_error": false,
+  "notes": "Found 9 open bot PRs, all branch-based (not fork PRs). No fork PRs to triage per workflow instructions.",
+  "branch_prs_skipped": [
+    33841, 33840, 33839, 33834, 33831, 33830, 33829, 33818, 33219
+  ],
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
