@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-05-20T19:03:14Z",
-  "run_id": "26183688727",
+  "run_date": "2026-05-21T01:18:55Z",
+  "run_id": "26199592140",
   "fork_prs": 0,
   "agent_prs_found": 0,
   "agent_prs_excluded": 0,
-  "notes": "gh CLI authentication failed (HTTP 403). Unable to fetch current PR list. System constraint: gh CLI is not authenticated in safe-output workflows. Based on historical data from previous runs, all agent PRs are same-repo PRs which are excluded per fork-only triage policy.",
+  "notes": "gh CLI authentication failed (HTTP 403). The workflow instructions state 'gh CLI is pre-authenticated' but runtime shows 403 errors. This is a system-level issue preventing PR data retrieval. All previous triage runs since 2026-05-20 have encountered the same authentication failure.",
   "prs_checked": [],
   "pr_details": [],
   "total_prs_triaged": 0,
@@ -19,13 +19,16 @@
     "by_action": {}
   },
   "previous_run": {
-    "run_id": "26148138573",
-    "run_date": "2026-05-20T07:32:17Z",
+    "run_id": "26183688727",
+    "run_date": "2026-05-20T19:03:14Z",
     "fork_prs": 0,
     "authentication_error": true
   },
   "authentication_error": true,
-  "system_constraint": "gh CLI not authenticated in safe-output workflows",
+  "error_code": "HTTP 403",
+  "error_url": "https://localhost:18443/api/v3/meta",
+  "system_constraint": "gh CLI not authenticated despite workflow documentation stating it should be pre-authenticated",
   "fork_only_policy": true,
-  "recommendation": "Add GitHub read capabilities to safe-output workflows OR remove fork-only restriction for github/gh-aw repository"
+  "consecutive_failures": 6,
+  "recommendation": "Fix gh CLI authentication in safe-output workflow environment OR provide alternative method to fetch PR data"
 }
