@@ -540,7 +540,7 @@ gh aw compile my-workflow
 
 ## Related Documentation
 
-- [Packaging and Updating](/gh-aw/guides/packaging-imports/) - Complete guide to managing workflow imports
+- [Reusing Workflows](/gh-aw/guides/packaging-imports/) - Adding and updating installed workflows with `gh aw add` and `gh aw update`
 - [Frontmatter](/gh-aw/reference/frontmatter/) - Configuration options reference
 - [MCPs](/gh-aw/guides/mcps/) - Model Context Protocol setup
 - [Safe Outputs](/gh-aw/reference/safe-outputs/) - Safe output configuration details
