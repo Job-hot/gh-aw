@@ -150,6 +150,7 @@ export default defineConfig({
 		'/guides/maintaining-repos/': '/gh-aw/examples/maintaining-repos/',
 		'/practices/maintaining-repos/': '/gh-aw/examples/maintaining-repos/',
 		'/guides/self-hosted-runners/': '/gh-aw/reference/self-hosted-runners/',
+		'/guides/packaging-imports/': '/gh-aw/guides/reusing-workflows/',
 		'/guides/web-search/': '/gh-aw/reference/web-search/',
 		'/guides/custom-otlp-attributes/': '/gh-aw/reference/open-telemetry/',
 		'/guides/telemetry/': '/gh-aw/reference/open-telemetry/',
@@ -317,7 +318,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Agentic Authoring', link: '/guides/agentic-authoring/' },
 						{ label: 'Editing Workflows', link: '/guides/editing-workflows/' },
-						{ label: 'Reusing Workflows', link: '/guides/packaging-imports/' },
+						{ label: 'Reusing Workflows', link: '/guides/reusing-workflows/' },
 						{ label: 'Upgrading Workflows', link: '/guides/upgrading/' },
 						{ label: 'Using MCPs', link: '/guides/mcps/' },
 						{ label: 'Network Configuration', link: '/guides/network-configuration/' },

@@ -88,4 +88,4 @@ Use GitHub Apps over PATs for automatic token revocation; scope tokens minimally
 - [Safe Outputs](/gh-aw/reference/safe-outputs/) — Complete safe output configuration
 - [GitHub Tools](/gh-aw/reference/github-tools/) — GitHub API toolsets
 - [Authentication](/gh-aw/reference/auth/) — PAT and GitHub App setup
-- [Reusing Workflows](/gh-aw/guides/packaging-imports/) — Sharing workflows across repos
+- [Reusing Workflows](/gh-aw/guides/reusing-workflows/) — Sharing workflows across repos

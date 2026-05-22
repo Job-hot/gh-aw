@@ -160,7 +160,7 @@ imports:
   - githubnext/agentics/shared/common-tools.md
 ```
 
-This enables reusable tool configurations, network settings, and permissions across workflows. See [Imports](/gh-aw/reference/imports/) and [Packaging Imports](/gh-aw/guides/packaging-imports/) for details.
+This enables reusable tool configurations, network settings, and permissions across workflows. See [Imports](/gh-aw/reference/imports/) and [Packaging Imports](/gh-aw/guides/reusing-workflows/) for details.
 
 ### Can I run workflows on a schedule?
 
