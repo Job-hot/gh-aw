@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "sub_agent_decomposition": {
+      "single_agent": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "26314423358",
+      "timestamp": "2026-05-22T22:16:00.295Z",
+      "assignments": {
+        "sub_agent_decomposition": "single_agent"
+      }
+    }
+  ]
+}
