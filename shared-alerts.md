@@ -1,9 +1,9 @@
-# Shared Alerts — 2026-05-21T05:52Z
+# Shared Alerts — 2026-05-22T05:50Z
 
 ## P0 (Critical) 🚨
 - **CGO/CJS regression** (#29669): **CRITICAL ESCALATION REQUIRED**
   - **90+ days unresolved at 0% success rate** — critical threshold exceeded
-  - **Continuous failures May 21:** 10+ failures in last few hours
+  - **Continuous failures May 22:** 10/10 failures in past 6 hours (100% failure rate)
   - **Impact:** Every push to main triggers multiple failures, blocking CI confidence
   - **ACTION NEEDED:** Dedicated engineering escalation (beyond workflow automation scope)
 
@@ -29,7 +29,7 @@
 
 ### Critical Actions Needed
 1. **CRITICAL:** Escalate CGO/CJS (#29669) to dedicated engineering — 90+ days at 0% = critical threshold
-   - Continuous failures May 21 (10+ failures in hours)
+   - Continuous failures May 22 (10/10 failures in 6 hours, 100% failure rate)
    - Every push to main triggers failures
    - Beyond workflow automation scope — needs dedicated engineering resources
 2. **HIGH:** Fix Codex sandbox configuration (#32446) — 12 workflows blocked
@@ -42,21 +42,13 @@
 - **Token budget pressure** → Multiple workflows at risk of ET exhaustion
 - **Quality stable** at 63/100 but cannot improve until critical P0/P1 resolved
 
-### Fleet Statistics (May 21)
-- 233 executable workflows (100% lock file coverage ✅)
+### Fleet Statistics (May 22)
+- 234 executable workflows (100% lock file coverage ✅)
 - Health: 63/100 (stable)
-- Estimated success rate: ~77% (historical, API limited)
-- CGO/CJS: 0% (100% failure, ongoing May 21)
+- Today's success rate: 38% (38 success / 100 runs analyzed)
+- Today's failure rate: 13% (13 failure / 100 runs analyzed)
+- CGO/CJS: 0% (10/10 failures in past 6 hours, ongoing May 22)
 - Critical issues: 4 P0/P1 (stable)
 - Warnings: 4 P2 (stable)
 
-### Network Constraints (May 21)
-GitHub API access limited during this run. Analysis based on:
-- Pre-computed workflow inventory (233 workflows)
-- Recent workflow run queries (CGO/CJS confirmed ongoing)
-- Lock file verification (100% coverage confirmed)
-- Historical shared memory (May 19)
-
-Full live analysis will resume when API access restored.
-
-Last updated: 2026-05-21T05:52:20Z by workflow-health-manager
+Last updated: 2026-05-22T05:50:30Z by workflow-health-manager
