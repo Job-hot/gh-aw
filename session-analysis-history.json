@@ -230,14 +230,39 @@
         "0 spec-orphans — 14th consecutive day at zero orphan threshold (only 2 in_progress runs system-wide, both on main)",
         "CGO failure on copilot/refactor-oversized-functions-parser-workflow — first conclusive failure since 05-18 (platform-specific, not regression)"
       ]
+    },
+    {
+      "date": "2026-05-22",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 2.0,
+      "copilot_coding_agents": 1,
+      "copilot_success_rate_pct": 100.0,
+      "avg_copilot_duration_min": 18.22,
+      "experimental_strategy": null,
+      "data_quality": "infrastructure-only",
+      "unique_branches": 6,
+      "gate_sweep_max_runs_per_branch": 16,
+      "workflow_run_id": "26275531347",
+      "key_insights": [
+        "98% action_required (49/50) + 2% success (1/50) — identical conclusiveness shape to 05-19; reverses 05-21 relief",
+        "Single Copilot cloud agent run: 18.22 min on copilot/refactor-semantic-function-clustering-please-work (success, >15-min high-success band)",
+        "Top branch absorbs 16/50 (32%) — flatter than 05-21 (50%) and 05-12 (70%); 6 unique branches absorb everything",
+        "Agentic Commands + Q = 26/50 (52%) — climbs from 26% on 05-21 back toward 05-17/05-20 (48%) baseline",
+        "Sampling window 06:02:08Z → 06:21:14Z = 19 min — NARROWEST sampling window in the 14-day window (vs 58min on 05-21, 66min on 05-20)",
+        "12 open PRs (up from 7 on 05-21) — +5 net, all 5 are unassigned chaos/* PRs created within seconds (~06:00-06:01Z)",
+        "0 spec-orphans — 15th consecutive day at zero orphan threshold; chaos/* PRs have no in-progress runs so they don't trigger filter",
+        "Largest burst: 8 fires at 06:11:32Z — 5 of those 8 are gates on the new PR #33954 (add-request-review-mode push); biggest single burst since 05-12's 14",
+        "0 failure conclusions — second consecutive day after 1 failure on 05-21",
+        "Only 3 in-progress runs system-wide, all on main (Daily Workflow Updater, Failure Investigator, this workflow)"
+      ]
     }
   ],
-  "last_updated": "2026-05-21",
+  "last_updated": "2026-05-22",
   "historical_summary": {
-    "avg_completion_rate_pct": 7.7,
-    "avg_copilot_success_rate_pct": 78.0,
-    "avg_copilot_duration_min": 14.4,
+    "avg_completion_rate_pct": 7.3,
+    "avg_copilot_success_rate_pct": 80.0,
+    "avg_copilot_duration_min": 14.7,
     "orphan_baseline_pct": 40.0,
-    "note": "Window May 6-21 (13 entries; May 9, 14, 15 not run). 14 consecutive days at 0 spec-orphans. 05-21 is the first 3-outcome day (success+failure+action_required) since 05-18."
+    "note": "Window May 6-22 (14 entries; May 9, 14, 15 not run). 15 consecutive days at 0 spec-orphans. 05-22 is a 2-outcome day (success+action_required), mirrors 05-19 shape."
   }
 }

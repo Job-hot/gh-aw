@@ -91,10 +91,24 @@ Across 8 consecutive runs (2026-05-06 → 2026-05-16), conversation transcripts 
 - **Bursts**: 5 fires at 06:39:29Z (sweep coincident with cloud agent start, same sweep-after-success pattern as 05-16/05-17/05-19) + 4 fires at 06:59:51Z (final-minute sweep on top branch) + 4 fires at 06:15:19Z.
 - `data_quality` stays `infrastructure-only` for the **13th consecutive run** — OAuth blocker still in effect; no conversation transcripts available.
 
+## Run: 2026-05-22
+
+- **98% action_required (49/50) + 2% success (1/50)** — identical conclusiveness shape to 05-19; reverses the brief 05-21 relief (86%/12%/2%). The single success is the Copilot cloud agent run on `copilot/refactor-semantic-function-clustering-please-work` (18.22 min, well in the >15-min "high-success" band per [historical_trend_regression strategy](session-analysis-strategies.json)).
+- **Sampling window: 06:02:08Z → 06:21:14Z = 19 minutes** — narrowest sampling window observed in the 14-day series (previous narrowest was 58 min on 05-21, 66 min on 05-20). The window is shrinking month-over-month — possible the upstream `copilot-session-data-fetch` module is becoming faster or the system is more idle outside the sweep window.
+- **6 unique branches** absorb the queue; top branch (`refactor-semantic-function-clustering-please-work`) holds only **16/50 (32%)** — meaningfully flatter than 05-21 (50%) and 05-12 (70%). Branch diversity is at its 14-day high.
+- **Workflow fingerprint**: Agentic Commands + Q = **26/50 (52%)** — climbs back from 05-21's 26% (the 14-day low) toward the 48% baseline of 05-17/05-20. The 05-21 dip was anomalous, not a regime shift. CGO + Smoke CI + Doc Build = 19/50 (38%) — heavy CI activity, similar to 05-21.
+- **Bursts**: 8 fires at 06:11:32Z (largest single burst since 05-12's 14) coincide with the creation of PR #33954 on `add-request-review-mode`. Next-largest are 5 fires at 06:02:11Z (5 chaos/* PRs created simultaneously) and 5 at 06:16:36 / 06:20:45. Same "push + drip" pattern as 05-12.
+- **Open PR backlog: 12** (up from 7 on 05-21, +5 net) — the increase is entirely the 5 unassigned `chaos/*` PRs created within seconds at 06:00-06:01Z (paranoid-reviewer-r48-amend, code-archaeologist-r48-two-commits, selective-stager-r48-staged-subset, minor-renamer-r48-rename, line-ending-normalizer-r48). This matches the chaos-PR pattern seen on 05-17 and 05-19 but at twice the volume.
+- **0 spec-orphans** — **15th consecutive day at zero orphan threshold**. The 5 chaos/* PRs are unassigned but have **zero active in-progress runs** in the 6h lookback (the only in-progress runs are 3 on `main`: Daily Workflow Updater, Failure Investigator, this workflow). Filter correctly excludes them. However, the chaos PRs sit at the 2h-warning threshold edge — worth tracking whether they ever attract gate activity.
+- **0 failure conclusions** — 2nd consecutive day after the 1 CGO failure on 05-21. Failure rate remains very low across the window.
+- **data_quality** stays `infrastructure-only` for the **14th consecutive run** — `/tmp/gh-aw/session-data/logs/` is empty again. OAuth blocker has been continuous since 05-06.
+- Per [inverse-gate-count-to-conclusiveness strategy](session-analysis-strategies.json), today the 16-session top branch has 6.25% conclusive rate (1/16) — consistent with the model (>15-gate branches are waiting on agent action, not on green CI). The cloud agent run at 06:03:04Z (success) is the only conclusive event, and it sits on the dominant branch.
+
 ## Open Action Items
 
-- [ ] Investigate why conversation transcripts have never been delivered to /tmp/gh-aw/session-data/logs/
+- [ ] Investigate why conversation transcripts have never been delivered to /tmp/gh-aw/session-data/logs/ — 14 consecutive runs blocked
 - [ ] Consider an "approval bottleneck" severity tier — strict orphan filter misses the dominant failure mode (gates stuck despite agent assignment)
 - [ ] Once transcripts arrive, retroactively backfill prompt-quality scoring
-- [ ] **Replace daily-completion-rate-pct as the headline metric** — 05-19 shows it can read 2% on a day where the open-PR backlog dropped 41%. Net PR throughput would be more informative.
-- [ ] Track whether the 05-18 → 05-19 reversal is a 2-day oscillation or whether 92%+ action_required is the steady state
+- [ ] **Replace daily-completion-rate-pct as the headline metric** — 05-19 and 05-22 both read 2% on days that are operationally normal. Net PR throughput would be more informative.
+- [ ] Track whether the 05-21 → 05-22 reversal (86% → 98% action_required) is a 2-day oscillation or whether the 05-21 relief was a one-off
+- [ ] Watch the 5 chaos/* PRs from 06:00-06:01Z on 05-22 — they sit at the edge of the 2h-warning band but lack active gates; if gates start firing on them within the next sampling window, they'd become true orphans (first time in 15 days)
