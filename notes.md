@@ -104,6 +104,19 @@ Across 8 consecutive runs (2026-05-06 → 2026-05-16), conversation transcripts 
 - **data_quality** stays `infrastructure-only` for the **14th consecutive run** — `/tmp/gh-aw/session-data/logs/` is empty again. OAuth blocker has been continuous since 05-06.
 - Per [inverse-gate-count-to-conclusiveness strategy](session-analysis-strategies.json), today the 16-session top branch has 6.25% conclusive rate (1/16) — consistent with the model (>15-gate branches are waiting on agent action, not on green CI). The cloud agent run at 06:03:04Z (success) is the only conclusive event, and it sits on the dominant branch.
 
+## Run: 2026-05-23
+
+- **44% success (22/50)** — first regime break of the 14-day window. The action_required-dominated pattern of 05-19 through 05-22 (86–98%) is broken. Outcome distribution is the most diverse observed: 22 success / 8 failure / 14 action_required / 4 cancelled / 2 skipped.
+- **8 outright failures** — highest single-day failure count in the window (prior max was 2 on 05-18, 1 on 05-21). Worth investigating which workflow names cluster the failures next run.
+- **Top branch `copilot/refactor-semantic-clustering` holds 27/50 (54%)** — similar concentration shape to 05-21's 50% on `fix-duplicate-regex-patterns`, but on this branch the gate-storm coincided with a high conclusiveness mix (not 4% as on 05-21). The [inverse-gate-count-to-conclusiveness strategy](session-analysis-strategies.json) did NOT hold today — the 27-session dominant branch produced conclusive outcomes. Note exception in strategy effectiveness.
+- **9 sessions ≥20 min** — long-iteration proxy at 18%, up from 0/1/0 in prior 3 days. Matches the regime shift: real agent work resumed.
+- **Avg 8.54 min, median 5.38 min** — first material agent activity since 05-18.
+- **Repo state is extremely idle**: only 1 open PR system-wide (#33219, Copilot assigned) and 1 in-progress run (this workflow on main). Orphan filter cannot escalate today; **16th consecutive day at zero orphans** (correctly).
+- **Sampling window** 02:12Z → 07:38Z (5h 26m, widest in the multi-day series) — the upstream fetch caught the full overnight active period rather than the narrow morning sweep window. Likely the regime break is partially explained by the wider sampling.
+- **Workflow fingerprint**: Agentic Commands + Q = 10/50 (20%) — lowest in the 15-day window (prior min 26% on 05-21). The compositional shift is real: CGO (5), Smoke CI (5), Label Closed PRs (5), PR Description Updater (5) each tied with Agentic Commands and Q at 5. **No workflow type dominates today** — the queue is uniformly distributed across types. Strong contrast vs prior regime where Agentic+Q held ≥48%.
+- **Trend-strategy implication**: when the sampling window widens to include real overnight work AND no single workflow dominates the queue, completion rate jumps 5–22x. Worth promoting as candidate strategy: "wide-window + workflow-diversity = success regime."
+- **data_quality** stays `infrastructure-only` for the **15th consecutive run** — conversation transcripts directory empty.
+
 ## Open Action Items
 
 - [ ] Investigate why conversation transcripts have never been delivered to /tmp/gh-aw/session-data/logs/ — 14 consecutive runs blocked

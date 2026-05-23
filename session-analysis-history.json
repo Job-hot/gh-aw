@@ -256,13 +256,38 @@
         "Only 3 in-progress runs system-wide, all on main (Daily Workflow Updater, Failure Investigator, this workflow)"
       ]
     }
+    ,
+    {
+      "date": "2026-05-23",
+      "sessions_analyzed": 50,
+      "completion_rate_pct": 44.0,
+      "copilot_coding_agents": 2,
+      "copilot_success_rate_pct": null,
+      "avg_copilot_duration_min": 8.54,
+      "experimental_strategy": null,
+      "data_quality": "infrastructure-only",
+      "unique_branches": 5,
+      "gate_sweep_max_runs_per_branch": 27,
+      "workflow_run_id": "26326889667",
+      "key_insights": [
+        "44% success (22/50) — highest in 17-day window, breaking the action_required-dominated regime of 05-19 through 05-22",
+        "Outcome mix: 22 success / 8 failure / 14 action_required / 4 cancelled / 2 skipped — most diverse outcome distribution observed",
+        "Top branch copilot/refactor-semantic-clustering absorbs 27/50 (54%) — similar dominance shape to 05-21 (50%) and 05-12 (70%), but on a single branch this time",
+        "8 outright failures — highest failure count in window (vs 0–2 most days); concentrated where? need follow-up on which workflows failed",
+        "9 sessions ≥20 min — loop/long-iteration proxy at 18%, up from ~0 in prior 3 days",
+        "Avg duration 8.54 min, median 5.38 min — first day with material agent activity since 05-18",
+        "0 spec-orphans — 16th consecutive day at zero orphan threshold (1 open PR system-wide: #33219 with Copilot assigned)",
+        "Only 1 in-progress run system-wide (this workflow on main) — extremely idle repo state outside sweep window",
+        "data_quality stays infrastructure-only for the 15th consecutive run — /tmp/gh-aw/session-data/logs/ empty again"
+      ]
+    }
   ],
-  "last_updated": "2026-05-22",
+  "last_updated": "2026-05-23",
   "historical_summary": {
-    "avg_completion_rate_pct": 7.3,
+    "avg_completion_rate_pct": 9.7,
     "avg_copilot_success_rate_pct": 80.0,
-    "avg_copilot_duration_min": 14.7,
+    "avg_copilot_duration_min": 14.3,
     "orphan_baseline_pct": 40.0,
-    "note": "Window May 6-22 (14 entries; May 9, 14, 15 not run). 15 consecutive days at 0 spec-orphans. 05-22 is a 2-outcome day (success+action_required), mirrors 05-19 shape."
+    "note": "Window May 6-23 (15 entries; May 9, 14, 15 not run). 16 consecutive days at 0 spec-orphans. 05-23 is a regime break: 44% success on a 5-outcome day, ending the 05-19→05-22 action_required dominance."
   }
 }
