@@ -1,0 +1,28 @@
+Daily CLI Performance Report - 2026-05-23
+==========================================
+
+Status: 1 regression detected, 1 warning, 1 improvement
+
+Key Findings:
+-------------
+- CompileSimpleWorkflow: 2.02ms (+12.8% slower) - REGRESSION
+- CompileComplexWorkflow: 3.68ms (+8.8% slower) - WARNING  
+- CompileMCPWorkflow: 449.39µs (-24.3% faster) - IMPROVEMENT
+
+All benchmarks remain well within performance targets:
+- Simple workflows: <100ms target (currently 2.02ms)
+- Complex workflows: <500ms target (currently 3.68ms)
+- MCP workflows: <1s target (currently 0.45ms)
+
+Stable Benchmarks:
+- CompileMemoryUsage: 2.64ms (+0.4%)
+- ParseWorkflow: 263.09µs (-4.7%)
+- Validation: 25.26µs (+1.8%)
+- YAMLGeneration: 2.25ms (-1.6%)
+
+Note: Limited history (only 2 data points: 2026-05-21 baseline, 2026-05-23 current)
+The regression may be normal variance - monitoring tomorrow's run is recommended.
+
+Issue Created: [performance] Regression in CompileSimpleWorkflow: 12.8% slower
+
+Workflow Run: https://github.com/github/gh-aw/actions/runs/26336193754
