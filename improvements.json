@@ -1,48 +1,27 @@
 {
-  "last_updated": "2026-05-21",
+  "last_updated": "2026-05-23",
   "pending_tasks": [
     {
-      "file": "docs/src/content/docs/reference/engines.md",
-      "created": "2026-05-21",
-      "priority": "high",
+      "file": ".github/workflows/smoke-pi.md",
+      "created": "2026-05-23",
       "status": "pending",
-      "task": "Add 'Choosing an Engine for Enterprise Use' section with cost, compliance, and integration guidance"
+      "priority": "high",
+      "title": "Professionalize Smoke Test Workflow Messages"
     },
     {
-      "file": "pkg/workflow/runtime_import_validation.go",
-      "created": "2026-05-21",
+      "file": "docs/src/content/docs/blog/2026-03-23-weekly-update.md",
+      "created": "2026-05-23",
+      "status": "pending",
       "priority": "high",
-      "status": "pending",
-      "task": "Enhance security error message with clear rationale and actionable fix guidance"
-    },
-    {
-      "file": "docs/src/content/docs/reference/safe-outputs-pull-requests.md",
-      "created": "2026-05-20",
-      "priority": "high",
-      "status": "pending",
-      "task": "Add introductory overview explaining purpose and security model before technical details"
-    },
-    {
-      "file": ".github/workflows/pr-sous-chef.md",
-      "created": "2026-05-20",
-      "priority": "medium",
-      "status": "pending",
-      "task": "Align messaging tone to be more professional and formal for enterprise automation context"
+      "title": "Add Progressive Disclosure to Blog Post"
     }
   ],
   "completed_tasks": [],
-  "quality_trends": [
-    {
-      "date": "2026-05-21",
-      "professional": 5,
-      "needs_work": 2,
-      "total": 7
-    },
-    {
-      "date": "2026-05-20",
-      "professional": 3,
-      "needs_work": 2,
-      "total": 5
+  "quality_trends": {
+    "2026-05-23": {
+      "professional": 4,
+      "needs_minor_work": 2,
+      "needs_significant_work": 0
     }
-  ]
+  }
 }
