@@ -1,11 +1,11 @@
 {
-  "run_date": "2026-05-22T18:50:51Z",
-  "run_id": "26305974620",
+  "run_date": "2026-05-24T18:35:14Z",
+  "run_id": "26369426372",
   "fork_prs": 0,
-  "agent_prs_found": 4,
+  "agent_prs_found": 2,
   "authentication_error": false,
-  "notes": "Found 4 open agent PRs (Copilot author), all branch-based (head_repo == base_repo). No fork PRs to triage per workflow instructions which require fork PRs only.",
-  "branch_prs_skipped": [34088, 34081, 34066, 33219],
+  "notes": "Found 2 open agent PRs (copilot-swe-agent author), all branch-based (isCrossRepository: false). No fork PRs to triage per workflow instructions which require fork PRs only.",
+  "branch_prs_skipped": [34511, 33219],
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -17,5 +17,24 @@
     "by_priority": {},
     "by_action": {}
   },
-  "fork_only_policy": true
+  "fork_only_policy": true,
+  "pr_details": [
+    {
+      "number": 34511,
+      "title": "[WIP] Improve test quality of pkg/workflow/resolve_test.go",
+      "created_at": "2026-05-24T18:35:41Z",
+      "branch": "copilot/improve-test-quality-resolve-test",
+      "is_cross_repository": false,
+      "status": "WIP, no CI yet"
+    },
+    {
+      "number": 33219,
+      "title": "Bind Node toolcache into AWF chroot for Copilot-engine workflow startup reliability",
+      "created_at": "2026-05-19T05:35:15Z",
+      "branch": "copilot/deep-report-bind-mount-nodejs",
+      "is_cross_repository": false,
+      "ci_status": "mostly passing (build-wasm FAILURE)",
+      "labels": ["smoke"]
+    }
+  ]
 }
