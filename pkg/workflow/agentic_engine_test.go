@@ -49,6 +49,13 @@ func TestEngineRegistry(t *testing.T) {
 		assert.Error(t, err, "GetEngine should return an error for unknown engine ID")
 	})
 
+	t.Run("GetEngine resolves engine ID aliases", func(t *testing.T) {
+		registry := NewEngineRegistry()
+		engine, err := registry.GetEngine("@app/copilot-swe-agent")
+		require.NoError(t, err, "GetEngine(@app/copilot-swe-agent) should resolve to copilot engine")
+		assert.Equal(t, "copilot", engine.GetID(), "@app/copilot-swe-agent should resolve to copilot engine")
+	})
+
 	t.Run("IsValidEngine", func(t *testing.T) {
 		registry := NewEngineRegistry()
 

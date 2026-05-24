@@ -425,6 +425,14 @@ func (e *BaseEngine) RenderConfig(_ *ResolvedEngineTarget) ([]map[string]any, er
 	return nil, nil
 }
 
+// engineIDAlias maps alternative engine ID strings found in aw_info.json to their
+// canonical registered engine ID.  Add entries here when a runtime or app identifier
+// differs from the canonical registration key.
+var engineIDAlias = map[string]string{
+	// The GitHub App slug "@app/copilot-swe-agent" is an alias for the copilot engine.
+	"@app/copilot-swe-agent": "copilot",
+}
+
 // EngineRegistry manages available agentic engines
 type EngineRegistry struct {
 	engines map[string]CodingAgentEngine
@@ -498,9 +506,14 @@ func (r *EngineRegistry) Register(engine CodingAgentEngine) error {
 	return nil
 }
 
-// GetEngine retrieves an engine by ID
+// GetEngine retrieves an engine by ID. Aliases defined in engineIDAlias are
+// resolved to their canonical ID before lookup.
 func (r *EngineRegistry) GetEngine(id string) (CodingAgentEngine, error) {
 	agenticEngineLog.Printf("Looking up engine: id=%s", id)
+	if canonical, ok := engineIDAlias[id]; ok {
+		agenticEngineLog.Printf("Resolved engine alias: %s -> %s", id, canonical)
+		id = canonical
+	}
 	engine, exists := r.engines[id]
 	if !exists {
 		agenticEngineLog.Printf("Engine not found: id=%s", id)
