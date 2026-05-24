@@ -1,0 +1,40 @@
+{
+  "date": "2026-05-24",
+  "files_analyzed": {
+    "documentation": [
+      "docs/src/content/docs/reference/cross-repository.md",
+      "docs/src/content/docs/guides/reusing-workflows.mdx"
+    ],
+    "cli": [],
+    "messages": [
+      ".github/workflows/refiner.md",
+      ".github/workflows/architecture-guardian.md"
+    ],
+    "validation": [
+      "pkg/workflow/dangerous_permissions_validation.go"
+    ]
+  },
+  "overall_quality": "needs-work",
+  "quality_highlights": [
+    {
+      "file": "docs/src/content/docs/reference/cross-repository.md",
+      "note": "Excellent structure: three distinct feature areas introduced up front, code examples for every pattern, explicit callout for unsupported safe-output types"
+    },
+    {
+      "file": "pkg/workflow/dangerous_permissions_validation.go",
+      "note": "Error lists offending scopes explicitly and provides a ready-to-copy corrected permissions block"
+    }
+  ],
+  "single_file_improvements": [
+    {
+      "file": ".github/workflows/architecture-guardian.md",
+      "priority": "high",
+      "issue": "Consumer-grade language in run-started/run-success/run-failure messages; run-failure provides no actionable guidance"
+    },
+    {
+      "file": "pkg/workflow/dangerous_permissions_validation.go",
+      "priority": "medium",
+      "issue": "Line 83 references docs/safe-outputs.md (relative path) instead of a clickable URL"
+    }
+  ]
+}

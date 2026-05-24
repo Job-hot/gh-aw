@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-23",
+  "last_updated": "2026-05-24",
   "pending_tasks": [
     {
       "file": ".github/workflows/smoke-pi.md",
@@ -14,6 +14,20 @@
       "status": "pending",
       "priority": "high",
       "title": "Add Progressive Disclosure to Blog Post"
+    },
+    {
+      "file": ".github/workflows/architecture-guardian.md",
+      "created": "2026-05-24",
+      "status": "pending",
+      "priority": "high",
+      "title": "Professionalize Architecture Guardian Status Messages"
+    },
+    {
+      "file": "pkg/workflow/dangerous_permissions_validation.go",
+      "created": "2026-05-24",
+      "status": "pending",
+      "priority": "medium",
+      "title": "Replace Broken Doc Path with Actionable URL in Permissions Validation Error"
     }
   ],
   "completed_tasks": [],
@@ -22,6 +36,11 @@
       "professional": 4,
       "needs_minor_work": 2,
       "needs_significant_work": 0
+    },
+    "2026-05-24": {
+      "professional": 2,
+      "needs_minor_work": 2,
+      "needs_significant_work": 1
     }
   }
 }
