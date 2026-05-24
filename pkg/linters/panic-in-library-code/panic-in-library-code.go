@@ -159,15 +159,35 @@ func stringPrefix(pass *analysis.Pass, expr ast.Expr) (string, bool) {
 		if len(e.Args) == 0 {
 			return "", false
 		}
+		// Only inspect the format argument of fmt.Sprintf to avoid false negatives
+		// from arbitrary user functions that happen to receive a "BUG:" string.
+		if !isFmtSprintf(pass, e) {
+			return "", false
+		}
 		return stringPrefix(pass, e.Args[0])
 	default:
 		return "", false
 	}
 }
 
+// isFmtSprintf reports whether call is an invocation of the fmt.Sprintf function.
+func isFmtSprintf(pass *analysis.Pass, call *ast.CallExpr) bool {
+	sel, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok || sel.Sel.Name != "Sprintf" {
+		return false
+	}
+	if obj := pass.TypesInfo.Uses[sel.Sel]; obj != nil {
+		return obj.Pkg() != nil && obj.Pkg().Path() == "fmt"
+	}
+	return false
+}
+
+// isInInitFunction reports whether the panic is inside a top-level init()
+// function. Only top-level (no receiver) init functions are recognized;
+// methods named init are ordinary methods and are not exempt.
 func isInInitFunction(stack []ast.Node) bool {
 	decl := enclosingFuncDecl(stack)
-	return decl != nil && decl.Name != nil && decl.Name.Name == "init"
+	return decl != nil && decl.Recv == nil && decl.Name != nil && decl.Name.Name == "init"
 }
 
 func hasDocumentedPanicContract(stack []ast.Node) bool {
