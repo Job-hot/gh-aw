@@ -1,7 +1,7 @@
 // @ts-check
 /// <reference types="@actions/github-script" />
 
-const { createEngineLogParser, truncateString, estimateTokens, formatToolCallAsDetails } = require("./log_parser_shared.cjs");
+const { createEngineLogParser, generateConversationMarkdown, generateInformationSection, formatInitializationSummary, formatToolUse, AWF_INFRA_LINE_RE } = require("./log_parser_shared.cjs");
 
 const main = createEngineLogParser({
   parserName: "Codex",
@@ -10,738 +10,531 @@ const main = createEngineLogParser({
 });
 
 /**
- * Extract MCP server initialization information from Codex logs
- * @param {string[]} lines - Array of log lines
- * @returns {{hasInfo: boolean, markdown: string, servers: Array<{name: string, status: string, error?: string}>}} MCP initialization info
- */
-function extractMCPInitialization(lines) {
-  const mcpServers = new Map(); // Map server name to status/error info
-  let serverCount = 0;
-  let connectedCount = 0;
-  let availableTools = [];
-
-  for (const line of lines) {
-    // Match: Initializing MCP servers from config
-    if (line.includes("Initializing MCP servers") || (line.includes("mcp") && line.includes("init"))) {
-      // Continue to next patterns
-    }
-
-    // Match: Found N MCP servers in configuration
-    const countMatch = line.match(/Found (\d+) MCP servers? in configuration/i);
-    if (countMatch) {
-      serverCount = parseInt(countMatch[1]);
-    }
-
-    // Match: Connecting to MCP server: <name>
-    const connectingMatch = line.match(/Connecting to MCP server[:\s]+['"]?(\w+)['"]?/i);
-    if (connectingMatch) {
-      const serverName = connectingMatch[1];
-      if (!mcpServers.has(serverName)) {
-        mcpServers.set(serverName, { name: serverName, status: "connecting" });
-      }
-    }
-
-    // Match: MCP server '<name>' connected successfully
-    const connectedMatch = line.match(/MCP server ['"](\w+)['"] connected successfully/i);
-    if (connectedMatch) {
-      const serverName = connectedMatch[1];
-      mcpServers.set(serverName, { name: serverName, status: "connected" });
-      connectedCount++;
-    }
-
-    // Match: Failed to connect to MCP server '<name>': <error>
-    const failedMatch = line.match(/Failed to connect to MCP server ['"](\w+)['"][:]\s*(.+)/i);
-    if (failedMatch) {
-      const serverName = failedMatch[1];
-      const error = failedMatch[2].trim();
-      mcpServers.set(serverName, { name: serverName, status: "failed", error });
-    }
-
-    // Match: MCP server '<name>' initialization failed
-    const initFailedMatch = line.match(/MCP server ['"](\w+)['"] initialization failed/i);
-    if (initFailedMatch) {
-      const serverName = initFailedMatch[1];
-      const existing = mcpServers.get(serverName);
-      if (existing && existing.status !== "failed") {
-        mcpServers.set(serverName, { name: serverName, status: "failed", error: "Initialization failed" });
-      }
-    }
-
-    // Match: Available tools: tool1, tool2, tool3
-    const toolsMatch = line.match(/Available tools:\s*(.+)/i);
-    if (toolsMatch) {
-      const toolsStr = toolsMatch[1];
-      availableTools = toolsStr
-        .split(",")
-        .map(t => t.trim())
-        .filter(t => t.length > 0);
-    }
-  }
-
-  // Build markdown output
-  let markdown = "";
-  const hasInfo = mcpServers.size > 0 || availableTools.length > 0;
-
-  if (mcpServers.size > 0) {
-    markdown += "**MCP Servers:**\n";
-
-    // Count by status
-    const servers = Array.from(mcpServers.values());
-    const connected = servers.filter(s => s.status === "connected");
-    const failed = servers.filter(s => s.status === "failed");
-
-    markdown += `- Total: ${servers.length}${serverCount > 0 && servers.length !== serverCount ? ` (configured: ${serverCount})` : ""}\n`;
-    markdown += `- Connected: ${connected.length}\n`;
-    if (failed.length > 0) {
-      markdown += `- Failed: ${failed.length}\n`;
-    }
-    markdown += "\n";
-
-    // List each server with status
-    for (const server of servers) {
-      const statusIcon = server.status === "connected" ? "✅" : server.status === "failed" ? "❌" : "⏳";
-      markdown += `- ${statusIcon} **${server.name}** (${server.status})`;
-      if (server.error) {
-        markdown += `\n  - Error: ${server.error}`;
-      }
-      markdown += "\n";
-    }
-    markdown += "\n";
-  }
-
-  if (availableTools.length > 0) {
-    markdown += "**Available MCP Tools:**\n";
-    markdown += `- Total: ${availableTools.length} tools\n`;
-    markdown += `- Tools: ${availableTools.slice(0, 10).join(", ")}${availableTools.length > 10 ? ", ..." : ""}\n\n`;
-  }
-
-  return {
-    hasInfo,
-    markdown,
-    servers: Array.from(mcpServers.values()),
-  };
-}
-
-/**
- * Extract error messages from Codex logs (e.g., model access blocked, cyber_policy_violation)
- * @param {string[]} lines - Array of log lines
- * @returns {{hasErrors: boolean, messages: string[], reconnectCount: number, maxReconnects: number}} Error info
- */
-function extractCodexErrorMessages(lines) {
-  const messages = new Set();
-  let reconnectCount = 0;
-  let maxReconnects = 0;
-
-  for (const line of lines) {
-    // Match: ERROR: <message> (final error after all retries exhausted)
-    const errorMatch = line.match(/^ERROR:\s*(.+)$/);
-    if (errorMatch) {
-      messages.add(errorMatch[1].trim());
-    }
-
-    // Match: Reconnecting... N/M (error message) - reconnect attempts with error details
-    const reconnectMatch = line.match(/^Reconnecting\.\.\.\s+(\d+)\/(\d+)\s*\((.+)\)$/);
-    if (reconnectMatch) {
-      const attempt = parseInt(reconnectMatch[1]);
-      const total = parseInt(reconnectMatch[2]);
-      if (attempt > reconnectCount) reconnectCount = attempt;
-      if (total > maxReconnects) maxReconnects = total;
-      messages.add(reconnectMatch[3].trim());
-    }
-  }
-
-  return {
-    hasErrors: messages.size > 0,
-    messages: Array.from(messages),
-    reconnectCount,
-    maxReconnects,
-  };
-}
-
-/**
- * Convert parsed Codex data to logEntries format for plain text rendering
- * @param {Array<{type: string, content?: string, toolName?: string, params?: string, response?: string, statusIcon?: string}>} parsedData - Parsed Codex log data
- * @returns {Array} logEntries array in the format expected by generatePlainTextSummary
- */
-function convertToLogEntries(parsedData) {
-  const logEntries = [];
-
-  for (const item of parsedData) {
-    if (item.type === "thinking") {
-      // Add thinking as assistant reasoning content (distinct from regular text)
-      logEntries.push({
-        type: "assistant",
-        message: {
-          content: [
-            {
-              type: "thinking",
-              thinking: item.content,
-            },
-          ],
-        },
-      });
-    } else if (item.type === "tool") {
-      // Add tool use as assistant content
-      const toolUseId = `tool_${logEntries.length}`;
-
-      // Parse params - it might be a plain JSON string or need parsing
-      let inputObj = {};
-      if (item.params) {
-        try {
-          inputObj = JSON.parse(item.params);
-        } catch (e) {
-          // If parsing fails, wrap it as a string
-          inputObj = { params: item.params };
-        }
-      }
-
-      logEntries.push({
-        type: "assistant",
-        message: {
-          content: [
-            {
-              type: "tool_use",
-              id: toolUseId,
-              name: item.toolName, // Already in server__method format
-              input: inputObj,
-            },
-          ],
-        },
-      });
-
-      // Add tool result as user content
-      logEntries.push({
-        type: "user",
-        message: {
-          content: [
-            {
-              type: "tool_result",
-              tool_use_id: toolUseId,
-              content: item.response || "",
-              is_error: item.statusIcon === "❌",
-            },
-          ],
-        },
-      });
-    } else if (item.type === "bash") {
-      // Add bash command as tool use
-      const toolUseId = `bash_${logEntries.length}`;
-      logEntries.push({
-        type: "assistant",
-        message: {
-          content: [
-            {
-              type: "tool_use",
-              id: toolUseId,
-              name: "Bash",
-              input: { command: item.content },
-            },
-          ],
-        },
-      });
-
-      // Add bash result as user content
-      logEntries.push({
-        type: "user",
-        message: {
-          content: [
-            {
-              type: "tool_result",
-              tool_use_id: toolUseId,
-              content: item.response || "",
-              is_error: item.statusIcon === "❌",
-            },
-          ],
-        },
-      });
-    }
-  }
-
-  return logEntries;
-}
-
-/**
- * Extract the model name from Codex log header lines.
- * Codex logs include a line like "model: o4-mini" near the top.
- * @param {string} logContent - The raw log content
- * @returns {string|null} The model name, or null if not found
- */
-function extractCodexModel(logContent) {
-  const match = logContent.match(/^model:\s*(.+)$/m);
-  return match ? match[1].trim() : null;
-}
-
-/**
- * Parse codex log content and format as markdown
- * @param {string} logContent - The raw log content to parse
- * @returns {{markdown: string, logEntries: Array, mcpFailures: Array<string>, maxTurnsHit: boolean}} Parsed log data
+ * Parses Codex `codex exec --json` output (JSONL) from the agent log.
+ *
+ * The Codex CLI prints one JSON object per line. The exact schema varies across
+ * releases, so we defensively normalize any JSON lines that look like:
+ * - Canonical gh-aw entries (type: system/assistant/user/result)
+ * - OpenAI chat-like messages (role + content/tool_calls)
+ * - Tool events (tool_name/tool_id/parameters/output)
+ * - Streaming delta events (type ends with ".delta")
+ *
+ * The output is normalized into the canonical `logEntries` format consumed by
+ * `generateConversationMarkdown` and the Copilot CLI-style renderer.
+ *
+ * @param {string} logContent
+ * @returns {{markdown: string, logEntries: Array<any>, mcpFailures: Array<string>, maxTurnsHit: boolean}}
  */
 function parseCodexLog(logContent) {
   if (!logContent) {
     return {
-      markdown: "## 🤖 Commands and Tools\n\nNo log content provided.\n\n## 🤖 Reasoning\n\nUnable to parse reasoning from log.\n\n",
+      markdown: "## Agent Log Summary\n\nNo log content provided.\n",
       logEntries: [],
       mcpFailures: [],
       maxTurnsHit: false,
     };
   }
 
-  const lines = logContent.split("\n");
-  const parsedData = []; // Array to collect structured data for logEntries conversion
-
-  // Look-ahead window size for finding tool results
-  // New format has verbose debug logs, so requires larger window
-  const LOOKAHEAD_WINDOW = 50;
-
-  let markdown = "";
-
-  // Extract MCP initialization information
-  const mcpInfo = extractMCPInitialization(lines);
-  if (mcpInfo.hasInfo) {
-    markdown += "## 🚀 Initialization\n\n";
-    markdown += mcpInfo.markdown;
+  const rawEntries = extractJsonLines(logContent);
+  if (rawEntries.length === 0) {
+    return {
+      markdown: "## Agent Log Summary\n\nLog format not recognized as Codex `--json` output.\n",
+      logEntries: [],
+      mcpFailures: [],
+      maxTurnsHit: false,
+    };
   }
 
-  // Extract error messages (e.g., model access blocked, cyber_policy_violation)
-  const errorInfo = extractCodexErrorMessages(lines);
-  if (errorInfo.hasErrors) {
-    markdown += "## ⚠️ Errors\n\n";
-    for (const message of errorInfo.messages) {
-      markdown += `> ${message}\n\n`;
-    }
-    if (errorInfo.reconnectCount > 0) {
-      markdown += `> Reconnect attempts: ${errorInfo.reconnectCount}/${errorInfo.maxReconnects}\n\n`;
-    }
-  }
+  const logEntries = transformCodexEntries(rawEntries);
 
-  markdown += "## 🤖 Reasoning\n\n";
-
-  // Second pass: process full conversation flow with interleaved reasoning and tools
-  let inThinkingSection = false;
-  let thinkingContent = []; // Collect thinking content in chunks
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Skip metadata lines (including Rust debug lines)
-    if (
-      line.includes("OpenAI Codex") ||
-      line.startsWith("--------") ||
-      line.includes("workdir:") ||
-      line.includes("model:") ||
-      line.includes("provider:") ||
-      line.includes("approval:") ||
-      line.includes("sandbox:") ||
-      line.includes("reasoning effort:") ||
-      line.includes("reasoning summaries:") ||
-      line.includes("tokens used:") ||
-      line.includes("DEBUG codex") ||
-      line.includes("INFO codex") ||
-      line.match(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z\s+(DEBUG|INFO|WARN|ERROR)/)
-    ) {
-      continue;
-    }
-
-    // Thinking section starts with standalone "thinking" line
-    if (line.trim() === "thinking") {
-      // Save previous thinking content if any
-      if (thinkingContent.length > 0) {
-        parsedData.push({
-          type: "thinking",
-          content: thinkingContent.join("\n"),
-        });
-        thinkingContent = [];
-      }
-      inThinkingSection = true;
-      continue;
-    }
-
-    // Tool call line "tool github.list_pull_requests(...)" (new Codex format without timestamp prefix)
-    const toolMatch = line.match(/^tool\s+(\w+)\.(\w+)\((.*)\)$/);
-    if (toolMatch) {
-      // Save previous thinking content if any
-      if (inThinkingSection && thinkingContent.length > 0) {
-        parsedData.push({
-          type: "thinking",
-          content: thinkingContent.join("\n"),
-        });
-        thinkingContent = [];
-      }
-      inThinkingSection = false;
-
-      const server = toolMatch[1];
-      const toolName = toolMatch[2];
-      const params = toolMatch[3];
-
-      // Look ahead to find the result status and response
-      let statusIcon = "❓"; // Unknown by default
-      let response = "";
-      for (let j = i + 1; j < Math.min(i + LOOKAHEAD_WINDOW, lines.length); j++) {
-        const nextLine = lines[j];
-        if (nextLine.includes(`${server}.${toolName}(`) && (nextLine.includes("success in") || nextLine.includes("failed in"))) {
-          const isError = nextLine.includes("failed in");
-          statusIcon = isError ? "❌" : "✅";
-
-          // Extract response - it's the JSON object following this line
-          let jsonLines = [];
-          let braceCount = 0;
-          let inJson = false;
-
-          for (let k = j + 1; k < Math.min(j + LOOKAHEAD_WINDOW, lines.length); k++) {
-            const respLine = lines[k];
-
-            // Stop if we hit the next tool call or tokens used
-            if (respLine.match(/^tool\s+\w+\.\w+\(/) || respLine.includes("ToolCall:") || respLine.includes("tokens used")) {
-              break;
-            }
-
-            // Count braces to track JSON boundaries
-            for (const char of respLine) {
-              if (char === "{") {
-                braceCount++;
-                inJson = true;
-              } else if (char === "}") {
-                braceCount--;
-              }
-            }
-
-            if (inJson) {
-              jsonLines.push(respLine);
-            }
-
-            if (inJson && braceCount === 0) {
-              break;
-            }
-          }
-
-          response = jsonLines.join("\n");
-          break;
-        }
-      }
-
-      // Add to parsedData so this tool call appears in logEntries for the common renderer
-      parsedData.push({
-        type: "tool",
-        toolName: `${server}__${toolName}`,
-        params,
-        response,
-        statusIcon,
-      });
-
-      markdown += `${statusIcon} ${server}::${toolName}(...)\n\n`;
-      continue;
-    }
-
-    // Process thinking content (filter out timestamp lines and very short lines)
-    if (inThinkingSection && line.trim().length > 20 && !line.match(/^\d{4}-\d{2}-\d{2}T/)) {
-      const trimmed = line.trim();
-      thinkingContent.push(trimmed);
-      // Add thinking content directly to markdown with open circle icon and italic styling
-      markdown += `<sub>◐ <em>${trimmed}</em></sub>\n\n`;
-    }
-  }
-
-  // Save any remaining thinking content
-  if (thinkingContent.length > 0) {
-    parsedData.push({
-      type: "thinking",
-      content: thinkingContent.join("\n"),
-    });
-  }
-
-  markdown += "## 🤖 Commands and Tools\n\n";
-
-  // First pass: collect tool calls with details
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Match: tool server.method(params) or ToolCall: server__method params
-    const toolMatch = line.match(/^\[.*?\]\s+tool\s+(\w+)\.(\w+)\((.+)\)/) || line.match(/ToolCall:\s+(\w+)__(\w+)\s+(\{.+\})/);
-
-    // Also match: exec bash -lc 'command' in /path
-    const bashMatch = line.match(/^\[.*?\]\s+exec\s+bash\s+-lc\s+'([^']+)'/);
-
-    if (toolMatch) {
-      const server = toolMatch[1];
-      const toolName = toolMatch[2];
-      const params = toolMatch[3];
-
-      // Look ahead to find the result
-      let statusIcon = "❓";
-      let response = "";
-      let isError = false;
-
-      for (let j = i + 1; j < Math.min(i + LOOKAHEAD_WINDOW, lines.length); j++) {
-        const nextLine = lines[j];
-
-        // Check for result line: server.method(...) success/failed in Xms:
-        if (nextLine.includes(`${server}.${toolName}(`) && (nextLine.includes("success in") || nextLine.includes("failed in"))) {
-          isError = nextLine.includes("failed in");
-          statusIcon = isError ? "❌" : "✅";
-
-          // Extract response - it's the JSON object following this line
-          let jsonLines = [];
-          let braceCount = 0;
-          let inJson = false;
-
-          for (let k = j + 1; k < Math.min(j + 30, lines.length); k++) {
-            const respLine = lines[k];
-
-            // Stop if we hit the next tool call or tokens used
-            if (respLine.includes("tool ") || respLine.includes("ToolCall:") || respLine.includes("tokens used")) {
-              break;
-            }
-
-            // Count braces to track JSON boundaries
-            for (const char of respLine) {
-              if (char === "{") {
-                braceCount++;
-                inJson = true;
-              } else if (char === "}") {
-                braceCount--;
-              }
-            }
-
-            if (inJson) {
-              jsonLines.push(respLine);
-            }
-
-            if (inJson && braceCount === 0) {
-              break;
-            }
-          }
-
-          response = jsonLines.join("\n");
-          break;
-        }
-      }
-
-      // Collect data for logEntries conversion
-      parsedData.push({
-        type: "tool",
-        toolName: `${server}__${toolName}`,
-        params,
-        response,
-        statusIcon,
-      });
-
-      // Format the tool call with HTML details
-      markdown += formatCodexToolCall(server, toolName, params, response, statusIcon);
-    } else if (bashMatch) {
-      const command = bashMatch[1];
-
-      // Look ahead to find the result
-      let statusIcon = "❓";
-      let response = "";
-      let isError = false;
-
-      for (let j = i + 1; j < Math.min(i + LOOKAHEAD_WINDOW, lines.length); j++) {
-        const nextLine = lines[j];
-
-        // Check for bash result line: bash -lc 'command' succeeded/failed in Xms:
-        if (nextLine.includes("bash -lc") && (nextLine.includes("succeeded in") || nextLine.includes("failed in"))) {
-          isError = nextLine.includes("failed in");
-          statusIcon = isError ? "❌" : "✅";
-
-          // Extract response - it's the plain text following this line
-          let responseLines = [];
-
-          for (let k = j + 1; k < Math.min(j + 20, lines.length); k++) {
-            const respLine = lines[k];
-
-            // Stop if we hit the next tool call, exec, or tokens used
-            if (respLine.includes("tool ") || respLine.includes("exec ") || respLine.includes("ToolCall:") || respLine.includes("tokens used") || respLine.includes("thinking")) {
-              break;
-            }
-
-            responseLines.push(respLine);
-          }
-
-          response = responseLines.join("\n").trim();
-          break;
-        }
-      }
-
-      // Collect data for logEntries conversion
-      parsedData.push({
-        type: "bash",
-        content: command,
-        response,
-        statusIcon,
-      });
-
-      // Format the bash command with HTML details
-      markdown += formatCodexBashCall(command, response, statusIcon);
-    }
-  }
-
-  // Add Information section
-  markdown += "\n## 📊 Information\n\n";
-
-  // Extract metadata from Codex logs
-  let totalTokens = 0;
-
-  // TokenCount(TokenCountEvent { ... total_tokens: 13281 ...
-  const tokenCountMatches = logContent.matchAll(/total_tokens:\s*(\d+)/g);
-  for (const match of tokenCountMatches) {
-    const tokens = parseInt(match[1]);
-    totalTokens = Math.max(totalTokens, tokens); // Use the highest value (final total)
-  }
-
-  // Also check for "tokens used\n<number>" at the end (number may have commas)
-  const finalTokensMatch = logContent.match(/tokens used\n([\d,]+)/);
-  if (finalTokensMatch) {
-    // Remove commas before parsing
-    totalTokens = parseInt(finalTokensMatch[1].replace(/,/g, ""));
-  }
-
-  if (totalTokens > 0) {
-    markdown += `**Total Tokens Used:** ${totalTokens.toLocaleString()}\n\n`;
-  }
-
-  // Count tool calls
-  const toolCalls = (logContent.match(/ToolCall:\s+\w+__\w+/g) || []).length;
-
-  if (toolCalls > 0) {
-    markdown += `**Tool Calls:** ${toolCalls}\n\n`;
-  }
-
-  // Convert parsed data to logEntries format
-  const logEntries = convertToLogEntries(parsedData);
-
-  // Always prepend a system init entry so the session preview is shown even for
-  // failed or sparse runs (matches behaviour of Claude, Copilot, and Gemini parsers).
-  const model = extractCodexModel(logContent);
-  logEntries.unshift({
-    type: "system",
-    subtype: "init",
-    model: model || undefined,
+  const conversationResult = generateConversationMarkdown(logEntries, {
+    formatToolCallback: (toolUse, toolResult) => formatToolUse(toolUse, toolResult, { includeDetailedParameters: true }),
+    formatInitCallback: initEntry => formatInitializationSummary(initEntry, { includeSlashCommands: false }),
   });
 
-  // When there are no tool calls or thinking entries, surface error messages in the
-  // preview so users can see why the session failed.
-  const hasConversationEntries = logEntries.some(e => e.type !== "system");
-  if (!hasConversationEntries && errorInfo.hasErrors) {
-    for (const message of errorInfo.messages) {
-      logEntries.push({
-        type: "assistant",
-        message: {
-          content: [{ type: "text", text: message }],
-        },
-      });
-    }
-    if (errorInfo.reconnectCount > 0) {
-      logEntries.push({
-        type: "assistant",
-        message: {
-          content: [{ type: "text", text: `Reconnect attempts: ${errorInfo.reconnectCount}/${errorInfo.maxReconnects}` }],
-        },
-      });
-    }
-  }
+  // Prefer a trailing result entry for stats, else fall back to the last raw entry.
+  const lastEntry = findLastStatsEntry(logEntries) || null;
 
-  // Check for MCP failures
-  const mcpFailures = mcpInfo.servers.filter(server => server.status === "failed").map(server => server.name);
+  let markdown = conversationResult.markdown;
+  markdown += generateInformationSection(lastEntry);
 
   return {
     markdown,
     logEntries,
-    mcpFailures,
-    maxTurnsHit: false, // Codex doesn't have max-turns concept in logs
+    mcpFailures: [],
+    maxTurnsHit: false,
   };
 }
 
 /**
- * Format a Codex tool call with HTML details
- * Uses the shared formatToolCallAsDetails helper for consistent rendering across all engines.
- * @param {string} server - The server name (e.g., "github", "time")
- * @param {string} toolName - The tool name (e.g., "list_pull_requests")
- * @param {string} params - The parameters as JSON string
- * @param {string} response - The response as JSON string
- * @param {string} statusIcon - The status icon (✅, ❌, or ❓)
- * @returns {string} Formatted HTML details string
+ * Extract JSON objects from log content, treating each JSON line as a candidate entry.
+ * @param {string} logContent
+ * @returns {Array<any>}
  */
-function formatCodexToolCall(server, toolName, params, response, statusIcon) {
-  // Calculate token estimate from params + response
-  const totalTokens = estimateTokens(params) + estimateTokens(response);
+function extractJsonLines(logContent) {
+  /** @type {Array<any>} */
+  const entries = [];
+  const lines = logContent.split("\n");
 
-  // Format metadata
-  let metadata = "";
-  if (totalTokens > 0) {
-    metadata = `<code>~${totalTokens}t</code>`;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    if (AWF_INFRA_LINE_RE.test(trimmed)) continue;
+
+    // Most Codex `--json` output is one object per line.
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+      continue;
+    }
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        entries.push(...parsed);
+      } else if (parsed && typeof parsed === "object") {
+        entries.push(parsed);
+      }
+    } catch (_e) {
+      // Ignore non-JSON lines (or truncated JSON).
+    }
   }
 
-  const summary = `<code>${server}::${toolName}</code>`;
-
-  // Build sections array
-  const sections = [];
-
-  if (params && params.trim()) {
-    sections.push({
-      label: "Parameters",
-      content: params,
-      language: "json",
-    });
-  }
-
-  if (response && response.trim()) {
-    sections.push({
-      label: "Response",
-      content: response,
-      language: "json",
-    });
-  }
-
-  return formatToolCallAsDetails({
-    summary,
-    statusIcon,
-    metadata,
-    sections,
-  });
+  return entries;
 }
 
 /**
- * Format a Codex bash call with HTML details
- * Uses the shared formatToolCallAsDetails helper for consistent rendering across all engines.
- * @param {string} command - The bash command
- * @param {string} response - The response as plain text
- * @param {string} statusIcon - The status icon (✅, ❌, or ❓)
- * @returns {string} Formatted HTML details string
+ * Convert Codex JSON entries into canonical log entries for the shared renderer.
+ * @param {Array<any>} rawEntries
+ * @returns {Array<any>}
  */
-function formatCodexBashCall(command, response, statusIcon) {
-  // Calculate token estimate from command + response
-  const totalTokens = estimateTokens(command) + estimateTokens(response);
+function transformCodexEntries(rawEntries) {
+  /** @type {Array<any>} */
+  const logEntries = [];
 
-  // Format metadata
-  let metadata = "";
-  if (totalTokens > 0) {
-    metadata = `<code>~${totalTokens}t</code>`;
+  for (const raw of rawEntries) {
+    const normalized = normalizeCodexEntry(raw, logEntries);
+    if (!normalized) continue;
+    if (Array.isArray(normalized)) {
+      logEntries.push(...normalized);
+    } else {
+      logEntries.push(normalized);
+    }
   }
 
-  const summary = `<code>bash: ${truncateString(command, 60)}</code>`;
+  // Ensure we have a trailing stats entry when Codex provides usage in a non-canonical shape.
+  const trailingStats = findTrailingUsage(rawEntries);
+  if (trailingStats && !findLastStatsEntry(logEntries)) {
+    logEntries.push(trailingStats);
+  }
 
-  // Build sections array
-  const sections = [];
+  return logEntries;
+}
 
-  sections.push({
-    label: "Command",
-    content: command,
-    language: "bash",
-  });
+/**
+ * Normalize a single Codex JSON entry.
+ * @param {any} raw
+ * @param {Array<any>} existingEntries - Used for delta merging.
+ * @returns {any|Array<any>|null}
+ */
+function normalizeCodexEntry(raw, existingEntries) {
+  if (!raw || typeof raw !== "object") return null;
 
-  if (response && response.trim()) {
-    sections.push({
-      label: "Output",
-      content: response,
+  // 1) Already canonical gh-aw log entries (Claude/Copilot style).
+  if (typeof raw.type === "string" && ["system", "assistant", "user", "result"].includes(raw.type)) {
+    return raw;
+  }
+
+  // 2) Pi-style JSONL entries (tool_use/tool_result/init/result/assistant).
+  if (typeof raw.type === "string" && ["init", "assistant", "tool_use", "tool_result", "result"].includes(raw.type)) {
+    return normalizePiLikeEntry(raw, existingEntries);
+  }
+
+  // 3) OpenAI chat-like message objects (role + content/tool_calls).
+  const message = extractMessageEnvelope(raw);
+  if (message) {
+    return normalizeChatLikeMessage(message, existingEntries);
+  }
+
+  // 4) Streaming delta events (best-effort).
+  if (typeof raw.type === "string" && raw.type.endsWith(".delta")) {
+    return normalizeDeltaEvent(raw, existingEntries);
+  }
+
+  return null;
+}
+
+/**
+ * @param {any} raw
+ * @param {Array<any>} existingEntries
+ * @returns {any|null}
+ */
+function normalizePiLikeEntry(raw, existingEntries) {
+  if (raw.type === "init") {
+    return {
+      type: "system",
+      subtype: "init",
+      model: raw.model,
+      session_id: raw.session_id,
+      tools: raw.tools,
+      cwd: raw.cwd,
+      mcp_servers: raw.mcp_servers,
+    };
+  }
+
+  if (raw.type === "assistant") {
+    const text = typeof raw.content === "string" ? raw.content : typeof raw.text === "string" ? raw.text : "";
+    if (!text.trim()) return null;
+    return appendAssistantText(existingEntries, text, raw.delta === true);
+  }
+
+  if (raw.type === "tool_use") {
+    return {
+      type: "assistant",
+      message: {
+        content: [
+          {
+            type: "tool_use",
+            id: raw.tool_id || raw.id,
+            name: raw.tool_name || raw.name,
+            input: raw.parameters || raw.input || {},
+          },
+        ],
+      },
+    };
+  }
+
+  if (raw.type === "tool_result") {
+    const toolUseID = raw.tool_id || raw.tool_use_id || raw.tool_call_id;
+    const content = typeof raw.output === "string" ? raw.output : typeof raw.content === "string" ? raw.content : JSON.stringify(raw.output ?? raw.content ?? "");
+    return {
+      type: "user",
+      message: {
+        content: [
+          {
+            type: "tool_result",
+            tool_use_id: toolUseID,
+            content,
+            is_error: raw.status != null && raw.status !== "success" && raw.status !== "ok",
+          },
+        ],
+      },
+    };
+  }
+
+  if (raw.type === "result") {
+    // Permit both Codex-like and Pi-like stats shapes.
+    const stats = raw.stats && typeof raw.stats === "object" ? raw.stats : raw;
+    const usage = normalizeUsage(stats.usage || stats);
+    if (!usage) return null;
+    return {
+      type: "result",
+      usage,
+      duration_ms: stats.duration_ms || stats.durationMs || undefined,
+      num_turns: stats.num_turns || stats.turns || undefined,
+      total_cost_usd: stats.total_cost_usd || stats.totalCostUsd || undefined,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Extract an OpenAI chat-like message object from a variety of Codex envelopes.
+ * @param {any} raw
+ * @returns {any|null}
+ */
+function extractMessageEnvelope(raw) {
+  // Some Codex builds wrap messages in { message: { role, content, ... } }.
+  if (raw.message && typeof raw.message === "object" && typeof raw.message.role === "string") {
+    return raw.message;
+  }
+  // Other variants use { data: { role, content, ... } }.
+  if (raw.data && typeof raw.data === "object" && typeof raw.data.role === "string") {
+    return raw.data;
+  }
+  // Some emit role at top-level.
+  if (typeof raw.role === "string") {
+    return raw;
+  }
+  return null;
+}
+
+/**
+ * Normalize an OpenAI chat-like message into canonical entries.
+ * @param {any} msg
+ * @param {Array<any>} existingEntries
+ * @returns {any|Array<any>|null}
+ */
+function normalizeChatLikeMessage(msg, existingEntries) {
+  const role = typeof msg.role === "string" ? msg.role : "";
+
+  if (role === "tool") {
+    const toolUseID = msg.tool_call_id || msg.tool_use_id || msg.tool_call?.id;
+    const content = typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content ?? "");
+    return {
+      type: "user",
+      message: {
+        content: [
+          {
+            type: "tool_result",
+            tool_use_id: toolUseID,
+            content,
+            is_error: false,
+          },
+        ],
+      },
+    };
+  }
+
+  /** @type {Array<any>} */
+  const assistantContent = [];
+
+  const thinking = extractThinkingText(msg);
+  if (thinking) {
+    assistantContent.push({ type: "thinking", thinking });
+  }
+
+  const text = extractTextContent(msg);
+  if (text) {
+    assistantContent.push({ type: "text", text });
+  }
+
+  const toolUses = extractToolUses(msg);
+  if (toolUses.length > 0) {
+    assistantContent.push(...toolUses);
+  }
+
+  if (assistantContent.length === 0) {
+    return null;
+  }
+
+  // If this message is purely a streaming delta text chunk, merge it.
+  if (assistantContent.length === 1 && assistantContent[0].type === "text" && msg.delta === true) {
+    return appendAssistantText(existingEntries, assistantContent[0].text, true);
+  }
+
+  // For tool-only messages, keep a single assistant entry with tool_use blocks.
+  return {
+    type: role === "system" ? "system" : "assistant",
+    ...(role === "system" ? { subtype: "init" } : {}),
+    message: role === "system" ? undefined : { content: assistantContent },
+  };
+}
+
+/**
+ * Best-effort normalization of streaming delta events.
+ * @param {any} raw
+ * @param {Array<any>} existingEntries
+ * @returns {any|null}
+ */
+function normalizeDeltaEvent(raw, existingEntries) {
+  const deltaText = typeof raw.delta === "string" ? raw.delta : typeof raw.text === "string" ? raw.text : null;
+  if (!deltaText) return null;
+  return appendAssistantText(existingEntries, deltaText, true);
+}
+
+/**
+ * Append or merge assistant text into the canonical log entry list.
+ * @param {Array<any>} existingEntries
+ * @param {string} text
+ * @param {boolean} merge
+ * @returns {any|null}
+ */
+function appendAssistantText(existingEntries, text, merge) {
+  const trimmed = text;
+  if (!trimmed || !trimmed.trim()) return null;
+
+  const last = existingEntries[existingEntries.length - 1];
+  if (merge && isMergeableAssistantTextEntry(last)) {
+    last.message.content[0].text += trimmed;
+    return null;
+  }
+
+  return {
+    type: "assistant",
+    message: {
+      content: [{ type: "text", text: trimmed }],
+    },
+  };
+}
+
+/**
+ * @param {any} entry
+ * @returns {boolean}
+ */
+function isMergeableAssistantTextEntry(entry) {
+  return entry && entry.type === "assistant" && entry.message && Array.isArray(entry.message.content) && entry.message.content.length === 1 && entry.message.content[0].type === "text";
+}
+
+/**
+ * @param {any} msg
+ * @returns {string}
+ */
+function extractThinkingText(msg) {
+  if (typeof msg.thinking === "string") return msg.thinking;
+  if (typeof msg.reasoning === "string") return msg.reasoning;
+  if (Array.isArray(msg.content)) {
+    const parts = msg.content
+      .map(part => {
+        if (!part || typeof part !== "object") return "";
+        if (part.type === "thinking" && typeof part.thinking === "string") return part.thinking;
+        if (part.type === "reasoning" && typeof part.text === "string") return part.text;
+        return "";
+      })
+      .filter(Boolean);
+    return parts.join("");
+  }
+  return "";
+}
+
+/**
+ * @param {any} msg
+ * @returns {string}
+ */
+function extractTextContent(msg) {
+  if (typeof msg.content === "string") return msg.content;
+  if (typeof msg.text === "string") return msg.text;
+  if (Array.isArray(msg.content)) {
+    const parts = msg.content
+      .map(part => {
+        if (!part || typeof part !== "object") return "";
+        if (typeof part.text === "string") return part.text;
+        if (typeof part.content === "string") return part.content;
+        return "";
+      })
+      .filter(Boolean);
+    return parts.join("");
+  }
+  return "";
+}
+
+/**
+ * Extract tool calls from message-like shapes.
+ * @param {any} msg
+ * @returns {Array<any>}
+ */
+function extractToolUses(msg) {
+  /** @type {Array<any>} */
+  const toolUses = [];
+
+  const toolCalls = Array.isArray(msg.tool_calls) ? msg.tool_calls : [];
+  for (const toolCall of toolCalls) {
+    if (!toolCall || typeof toolCall !== "object") continue;
+    const id = toolCall.id || toolCall.tool_call_id;
+    const fn = toolCall.function && typeof toolCall.function === "object" ? toolCall.function : null;
+    const name = fn && typeof fn.name === "string" ? fn.name : typeof toolCall.name === "string" ? toolCall.name : null;
+    const args = fn && typeof fn.arguments === "string" ? fn.arguments : typeof toolCall.arguments === "string" ? toolCall.arguments : null;
+    if (!name) continue;
+    toolUses.push({
+      type: "tool_use",
+      id: id || `tool_${toolUses.length}`,
+      name,
+      input: parseMaybeJSON(args) || {},
     });
   }
 
-  return formatToolCallAsDetails({
-    summary,
-    statusIcon,
-    metadata,
-    sections,
-  });
+  // Older "function_call" shape.
+  if (msg.function_call && typeof msg.function_call === "object" && typeof msg.function_call.name === "string") {
+    toolUses.push({
+      type: "tool_use",
+      id: msg.function_call.id || `tool_${toolUses.length}`,
+      name: msg.function_call.name,
+      input: parseMaybeJSON(msg.function_call.arguments) || {},
+    });
+  }
+
+  return toolUses;
+}
+
+/**
+ * @param {any} value
+ * @returns {Record<string, any>|null}
+ */
+function parseMaybeJSON(value) {
+  if (typeof value !== "string" || !value.trim()) return null;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
+  } catch (_e) {
+    return null;
+  }
+}
+
+/**
+ * Find the last canonical stats entry to feed into generateInformationSection.
+ * @param {Array<any>} entries
+ * @returns {any|null}
+ */
+function findLastStatsEntry(entries) {
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const entry = entries[i];
+    if (!entry || typeof entry !== "object") continue;
+    if (entry.type === "result") return entry;
+    if (entry.usage || entry.duration_ms || entry.num_turns) return entry;
+  }
+  return null;
+}
+
+/**
+ * Attempt to build a trailing canonical result entry from raw usage-like entries.
+ * @param {Array<any>} rawEntries
+ * @returns {any|null}
+ */
+function findTrailingUsage(rawEntries) {
+  for (let i = rawEntries.length - 1; i >= 0; i--) {
+    const raw = rawEntries[i];
+    if (!raw || typeof raw !== "object") continue;
+    const usage = normalizeUsage(raw.usage || raw.stats || raw);
+    if (!usage) continue;
+    return {
+      type: "result",
+      usage,
+      duration_ms: raw.duration_ms || raw.durationMs || raw.stats?.duration_ms || undefined,
+      num_turns: raw.num_turns || raw.turns || raw.stats?.turns || undefined,
+      total_cost_usd: raw.total_cost_usd || raw.totalCostUsd || undefined,
+    };
+  }
+  return null;
+}
+
+/**
+ * Normalize multiple common token usage shapes into the canonical {input_tokens, output_tokens}.
+ * @param {any} usage
+ * @returns {any|null}
+ */
+function normalizeUsage(usage) {
+  if (!usage || typeof usage !== "object") return null;
+
+  // Canonical shape already.
+  if (typeof usage.input_tokens === "number" || typeof usage.output_tokens === "number") {
+    return {
+      input_tokens: usage.input_tokens || 0,
+      output_tokens: usage.output_tokens || 0,
+      cache_creation_input_tokens: usage.cache_creation_input_tokens || 0,
+      cache_read_input_tokens: usage.cache_read_input_tokens || 0,
+    };
+  }
+
+  // OpenAI chat completions / responses-like shapes.
+  const hasPromptTokens = typeof usage.prompt_tokens === "number" || typeof usage.inputTokens === "number";
+  const hasCompletionTokens = typeof usage.completion_tokens === "number" || typeof usage.outputTokens === "number";
+  if (hasPromptTokens || hasCompletionTokens) {
+    const promptTokens = typeof usage.prompt_tokens === "number" ? usage.prompt_tokens : typeof usage.inputTokens === "number" ? usage.inputTokens : 0;
+    const completionTokens = typeof usage.completion_tokens === "number" ? usage.completion_tokens : typeof usage.outputTokens === "number" ? usage.outputTokens : 0;
+    return {
+      input_tokens: typeof promptTokens === "number" ? promptTokens : 0,
+      output_tokens: typeof completionTokens === "number" ? completionTokens : 0,
+    };
+  }
+
+  // Aggregate totals.
+  if (typeof usage.total_tokens === "number") {
+    return {
+      input_tokens: 0,
+      output_tokens: usage.total_tokens,
+    };
+  }
+
+  return null;
 }
 
 // Export for testing
@@ -749,10 +542,8 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     main,
     parseCodexLog,
-    formatCodexToolCall,
-    formatCodexBashCall,
-    extractMCPInitialization,
-    extractCodexErrorMessages,
-    extractCodexModel,
+    extractJsonLines,
+    transformCodexEntries,
+    normalizeUsage,
   };
 }
