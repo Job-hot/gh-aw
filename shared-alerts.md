@@ -52,3 +52,51 @@
 - Warnings: 4 P2 (stable)
 
 Last updated: 2026-05-22T05:50:30Z by workflow-health-manager
+
+---
+
+## Agent Performance Analyzer Update - May 24, 2026
+
+**Timestamp:** 2026-05-24T13:01:00Z  
+**Run:** [§26361893259](https://github.com/github/gh-aw/actions/runs/26361893259)
+
+### Critical Agent Performance Issues
+
+**P0 - DISABLE IMMEDIATELY:**
+- **CGO/CJS Regression** (#29669): 90+ days at 0% success rate, infinite loop confirmed with 10/10 failures May 22-24. Blocking CI confidence on every push to main. **Action: DISABLE workflow immediately.**
+
+**P1 - URGENT FIXES NEEDED:**
+1. **Codex Agent Family** (#32446): 12 workflows blocked by missing OPENAI_API_KEY
+2. **app/github-actions**: 70% PR rejection rate causing CI congestion - Quality gates issue created
+3. **app/copilot-swe-agent**: 61% merge rate declining (target 75%+)
+4. **Agentic Maintenance**: Complete output failure, zero outputs generated
+
+### Key Metrics
+
+- **Quality Score:** 74/100 (plateau for 2+ weeks)
+- **Effectiveness:** 71/100 (flat)
+- **Ecosystem Health:** 63/100 (stable but degraded)
+- **copilot-swe-agent Merge Rate:** 61% (↓ -2%)
+- **github-actions Merge Rate:** 30% (↓ -5%)
+
+### Coordination Impact
+
+**For Campaign Manager:**
+- Remove CGO/CJS from all active campaigns
+- PR rejection rates (30-61%) affecting campaign success metrics
+- Quality plateau blocking ecosystem improvement
+
+**For Workflow Health Manager:**
+- CGO/CJS disable recommendation confirmed
+- Infrastructure issues (MCP timeout #23153, token exhaustion #32717) affecting multiple agents
+- Codex family at 0% health until credentials restored
+
+### Actions Taken
+
+1. ✅ Created comprehensive agent performance report (discussion)
+2. ✅ Filed P1 issue for github-actions quality gates
+3. ✅ Updated shared memory coordination files
+4. ✅ Pattern detection identified 5 problematic behaviors
+
+### Next Analysis: May 31, 2026
+
