@@ -1,28 +1,14 @@
-Daily CLI Performance Report - 2026-05-23
-==========================================
+Date: 2026-05-24
+Status: All benchmarks stable (no regressions)
+Improvements: CompileComplexWorkflow -9.8%, CompileMCPWorkflow -34.8%
 
-Status: 1 regression detected, 1 warning, 1 improvement
-
-Key Findings:
--------------
-- CompileSimpleWorkflow: 2.02ms (+12.8% slower) - REGRESSION
-- CompileComplexWorkflow: 3.68ms (+8.8% slower) - WARNING  
-- CompileMCPWorkflow: 449.39µs (-24.3% faster) - IMPROVEMENT
-
-All benchmarks remain well within performance targets:
-- Simple workflows: <100ms target (currently 2.02ms)
-- Complex workflows: <500ms target (currently 3.68ms)
-- MCP workflows: <1s target (currently 0.45ms)
-
-Stable Benchmarks:
-- CompileMemoryUsage: 2.64ms (+0.4%)
-- ParseWorkflow: 263.09µs (-4.7%)
-- Validation: 25.26µs (+1.8%)
-- YAMLGeneration: 2.25ms (-1.6%)
-
-Note: Limited history (only 2 data points: 2026-05-21 baseline, 2026-05-23 current)
-The regression may be normal variance - monitoring tomorrow's run is recommended.
-
-Issue Created: [performance] Regression in CompileSimpleWorkflow: 12.8% slower
-
-Workflow Run: https://github.com/github/gh-aw/actions/runs/26336193754
+Benchmarks (ns/op):
+  CompileSimpleWorkflow:      1,938,274 ns/op (stable +1.6%)
+  CompileComplexWorkflow:     3,183,109 ns/op (improvement -9.8%)
+  CompileMCPWorkflow:           340,350 ns/op (improvement -34.8%)
+  CompileMemoryUsage:         2,735,120 ns/op (stable +3.6%)
+  ParseWorkflow:                281,441 ns/op (stable +4.4%)
+  Validation:                    25,451 ns/op (stable +1.7%)
+  YAMLGeneration:             2,241,232 ns/op (stable -1.2%)
+  ExtractWorkflowNameFromFile:    8,163 ns/op (baseline)
+  FindIncludesInContent:          3,322 ns/op (baseline)
