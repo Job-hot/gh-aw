@@ -127,67 +127,28 @@ safe-outputs:
           with:
             script: |
               const fs = require('fs');
-              const notionToken = process.env.NOTION_TOKEN;
-              const outputFile = process.env.GH_AW_AGENT_OUTPUT;
-              
-              if (!notionToken) {
-                core.setFailed('NOTION_TOKEN secret is not configured');
-                return;
-              }
-              
-              if (!outputFile) {
-                core.info('No GH_AW_AGENT_OUTPUT environment variable found');
-                return;
-              }
-              
-              // Read and parse agent output
-              const fileContent = fs.readFileSync(outputFile, 'utf8');
-              const agentOutput = JSON.parse(fileContent);
-              
-              // Filter for notion-add-comment items (job name with dashes → underscores)
-              const items = agentOutput.items.filter(item => item.type === 'notion_add_comment');
-              
-              for (const item of items) {
-                const pageId = item.page_id;
-                const comment = item.comment;
-                
-                core.info(`Adding comment to Notion page: ${pageId}`);
-                
-                try {
-                  const response = await fetch('https://api.notion.com/v1/comments', {
-                    method: 'POST',
-                    headers: {
-                      'Authorization': `Bearer ${notionToken}`,
-                      'Notion-Version': '2022-06-28',
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                      parent: { page_id: pageId },
-                      rich_text: [{
-                        type: 'text',
-                        text: { content: comment }
-                      }]
-                    })
-                  });
-                  
-                  if (!response.ok) {
-                    const errorData = await response.text();
-                    core.setFailed(`Notion API error (${response.status}): ${errorData}`);
-                    return;
-                  }
-                  
-                  const data = await response.json();
-                  core.info('Comment added successfully');
-                  core.info(`Comment ID: ${data.id}`);
-                } catch (error) {
-                  core.setFailed(`Failed to add comment: ${error.message}`);
-                  return;
-                }
+              const agentOutput = JSON.parse(fs.readFileSync(process.env.GH_AW_AGENT_OUTPUT, 'utf8'));
+              const items = agentOutput.items.filter(i => i.type === 'notion_add_comment');
+
+              for (const { page_id, comment } of items) {
+                const res = await fetch('https://api.notion.com/v1/comments', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${process.env.NOTION_TOKEN}`,
+                    'Notion-Version': '2022-06-28',
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    parent: { page_id },
+                    rich_text: [{ type: 'text', text: { content: comment } }],
+                  }),
+                });
+                if (!res.ok) core.setFailed(`Notion API error (${res.status}): ${await res.text()}`);
               }
 ---
 ```
 
-Use `container:` for Docker servers or `command:`/`args:` for npx. List only read-only tools in `allowed`. All jobs require `description` and `inputs`. Use `output` for success messages and `actions/github-script@v8` for API calls with `core.setFailed()` error handling.
+Use `container:` for Docker servers or `command:`/`args:` for npx. List only read-only tools in `allowed`. Jobs require `description` and `inputs`; use `output` for success messages and `actions/github-script@v8` with `core.setFailed()` for API calls.
 
 ### Step 2: Use in Workflow
 
@@ -334,18 +295,20 @@ steps:
 
 The `inputs:` schema serves as both the MCP tool definition visible to the agent and validation for the output fields written to `GH_AW_AGENT_OUTPUT`.
 
+## Handler Variants: Scripts, Actions, and Jobs
+
+Beyond custom `jobs:`, safe-outputs supports two lighter handler variants. All three register as MCP tools (dashes in names normalized to underscores — e.g. `add-smoked-label` → `add_smoked_label`).
+
+| | Scripts | Actions | Jobs |
+|---|---|---|---|
+| Execution | In-process, consolidated safe-outputs job | Step in consolidated safe-outputs job | Separate GitHub Actions job |
+| Reuse | Custom inline JavaScript | Any public GitHub Action | Custom inline YAML job |
+| Secrets | Not directly available | Full access via `env:` | Full access to repository secrets |
+| Use case | Lightweight logic, logging | Reuse marketplace actions | Complex multi-step workflows requiring secrets |
+
 ## Inline Script Handlers (`safe-outputs.scripts`)
 
-Use `safe-outputs.scripts` to define lightweight inline JavaScript handlers that execute inside the consolidated safe-outputs job handler loop. Unlike `jobs` (which create a separate GitHub Actions job for each tool call), scripts run in-process alongside the built-in safe-output handlers — there is no extra job allocation or startup overhead.
-
-**When to use scripts vs jobs:**
-
-| | Scripts | Jobs |
-|---|---|---|
-| Execution | In-process, in the consolidated safe-outputs job | Separate GitHub Actions job |
-| Startup | Fast (no job scheduling) | Slower (new job per call) |
-| Secrets | Not directly available — use for lightweight logic | Full access to repository secrets |
-| Use case | Lightweight processing, logging, notifications without secrets | External API calls requiring secrets |
+Use `safe-outputs.scripts` to define lightweight inline JavaScript handlers that execute inside the consolidated safe-outputs job handler loop, with no extra job allocation overhead.
 
 ### Defining a Script
 
@@ -374,7 +337,7 @@ safe-outputs:
 ---
 ```
 
-The agent calls `post_slack_message` (dashes normalized to underscores) and the script runs synchronously in the handler loop.
+The agent calls `post_slack_message` and the script runs synchronously in the handler loop.
 
 ### Script Body Context
 
@@ -396,9 +359,6 @@ core.info(`Sending to ${channel}: ${message}`);
 return { sent: true };
 ```
 
-> [!NOTE]
-> Script names with dashes are normalized to underscores when registered as MCP tools (e.g., `post-slack-message` becomes `post_slack_message`). The normalized name is what the agent uses to call the tool.
-
 ### Script Reference
 
 | Property | Type | Required | Description |
@@ -412,15 +372,6 @@ Scripts support the same `inputs` types as custom jobs: `string`, `boolean`, and
 ## GitHub Action Wrappers (`safe-outputs.actions`)
 
 Use `safe-outputs.actions` to mount any public GitHub Action as a once-callable MCP tool. At compile time, `gh aw compile` fetches the action's `action.yml` to resolve its inputs and pins the action reference to a specific SHA. The agent can call the tool once per workflow run; the action executes inside the consolidated safe-outputs job.
-
-**When to use actions vs scripts vs jobs:**
-
-| | Actions | Scripts | Jobs |
-|---|---|---|---|
-| Execution | In the consolidated safe-outputs job, as a step | In-process, in the consolidated safe-outputs job | Separate GitHub Actions job |
-| Reuse | Any public GitHub Action | Custom inline JavaScript | Custom inline YAML job |
-| Secrets | Full access via `env:` | Not directly available | Full access to repository secrets |
-| Use case | Reuse existing marketplace actions | Lightweight logic | Complex multi-step workflows |
 
 ### Defining an Action
 
@@ -438,7 +389,7 @@ safe-outputs:
 ---
 ```
 
-The agent calls `add_smoked_label` (dashes normalized to underscores). The action's declared inputs become the tool's parameters — values are passed as step inputs at runtime.
+The agent calls `add_smoked_label`. The action's declared inputs become the tool's parameters — values are passed as step inputs at runtime.
 
 ### Action Reference
 
@@ -447,9 +398,6 @@ The agent calls `add_smoked_label` (dashes normalized to underscores). The actio
 | `uses` | string | Yes | Action reference (`owner/repo@ref` or `./path/to/local-action`) |
 | `description` | string | No | Tool description shown to the agent (overrides the action's own description) |
 | `env` | object | No | Additional environment variables injected into the action step |
-
-> [!NOTE]
-> Action names with dashes are normalized to underscores when registered as MCP tools (e.g., `add-smoked-label` becomes `add_smoked_label`). The normalized name is what the agent uses to call the tool.
 
 > [!TIP]
 > Action references are pinned to a SHA at compile time for reproducibility. Run `gh aw compile` again to update pinned SHAs after an upstream action release.
@@ -477,31 +425,9 @@ Handle the issue and notify via Slack and Jira.
 
 Jobs with duplicate names cause compilation errors - rename to resolve conflicts.
 
-## Error Handling
+## Error Handling and Security
 
-Use `core.setFailed()` for errors and validate required inputs:
-
-```javascript
-if (!process.env.API_KEY) {
-  core.setFailed('API_KEY secret is not configured');
-  return;
-}
-
-try {
-  const response = await fetch(url);
-  if (!response.ok) {
-    core.setFailed(`API error (${response.status}): ${await response.text()}`);
-    return;
-  }
-  core.info('Operation completed successfully');
-} catch (error) {
-  core.setFailed(`Request failed: ${error.message}`);
-}
-```
-
-## Security
-
-Store secrets in GitHub Secrets and pass via environment variables. Limit job permissions to minimum required and validate all inputs.
+Call `core.setFailed()` on failure (missing secrets, non-OK HTTP responses, caught exceptions) — the job fails fast and the agent sees the error. Store secrets in GitHub Secrets, pass via `env:`, and grant each job only the minimum required `permissions`.
 
 ## Staged Mode Support
 
