@@ -1,14 +1,5 @@
 [
   {
-    "date": "2026-04-17",
-    "workflow_name": "Daily Compiler Quality Check",
-    "workflow_file": "",
-    "runs_audited": 7,
-    "total_tokens_analyzed": 23050690,
-    "estimated_savings_per_run": 350000,
-    "recommendations_count": 5
-  },
-  {
     "date": "2026-04-18",
     "workflow_name": "Issue Monster",
     "workflow_file": "",
@@ -268,5 +259,15 @@
     "total_tokens_analyzed": 3187554,
     "estimated_savings_per_run": 290000,
     "recommendations_count": 4
+  },
+  {
+    "date": "2026-05-25",
+    "workflow_name": "PR Description Updater",
+    "workflow_file": "pr-description-caveman",
+    "runs_audited": 8,
+    "total_tokens_analyzed": 2628255,
+    "estimated_savings_per_run": 110000,
+    "recommendations_count": 4,
+    "subagent_candidates": 0
   }
 ]
