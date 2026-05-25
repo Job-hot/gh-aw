@@ -1,9 +1,20 @@
 {
-  "counts": {},
+  "counts": {
+    "detail_level": {
+      "brief": 1
+    }
+  },
   "runs": [
     {
       "run_id": "26026605299",
       "timestamp": "2026-05-18T10:00:15.677Z",
+      "assignments": {
+        "detail_level": "brief"
+      }
+    },
+    {
+      "run_id": "26394747908",
+      "timestamp": "2026-05-25T10:00:10.022Z",
       "assignments": {
         "detail_level": "brief"
       }
