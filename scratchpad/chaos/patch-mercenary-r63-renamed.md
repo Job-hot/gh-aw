@@ -2,3 +2,5 @@
 
 Original file before rename.
 Strategy: minor-rename + two-commits
+
+Renamed in second commit.
