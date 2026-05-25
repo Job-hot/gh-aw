@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "tool_verbosity": {
+      "full_bash": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "26383505866",
+      "timestamp": "2026-05-25T04:39:16.528Z",
+      "assignments": {
+        "tool_verbosity": "full_bash"
+      }
+    }
+  ]
+}
