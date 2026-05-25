@@ -2,3 +2,5 @@
 
 Strategy: line-ending-variant+two-commits
 First commit: LF endings.
+
+Second commit: CRLF line appended.
