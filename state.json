@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "tone_style": {
+      "conversational": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "26400548500",
+      "timestamp": "2026-05-25T12:29:44.024Z",
+      "assignments": {
+        "tone_style": "conversational"
+      }
+    }
+  ]
+}
