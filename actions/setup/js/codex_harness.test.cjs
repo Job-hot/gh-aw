@@ -21,6 +21,10 @@ const {
   extractOpenAIProxyBaseURLFromToml,
   getConfiguredOpenAIPortFromReflect,
   validateCodexOpenAIBaseURLFromReflect,
+  extractCodexModelFromArgs,
+  getConfiguredCodexModelEnvVars,
+  normalizeModelID,
+  awfReflectIncludesModel,
 } = require("./codex_harness.cjs");
 
 describe("codex_harness.cjs", () => {
@@ -164,6 +168,94 @@ describe("codex_harness.cjs", () => {
       const result = buildCodexChildEnv({ PATH: "/usr/bin" }, undefined, undefined);
       expect(result.CODEX_API_KEY).toBeUndefined();
       expect(result.OPENAI_API_KEY).toBeUndefined();
+    });
+  });
+
+  describe("model selection diagnostics", () => {
+    describe("extractCodexModelFromArgs", () => {
+      it("extracts the model from --model <id>", () => {
+        expect(extractCodexModelFromArgs(["exec", "--model", "gpt-5.3-codex", "do stuff"])).toBe("gpt-5.3-codex");
+      });
+
+      it("extracts the model from --model=<id>", () => {
+        expect(extractCodexModelFromArgs(["exec", "--model=gpt-5.3-codex"])).toBe("gpt-5.3-codex");
+      });
+
+      it("returns null when --model is present without a value", () => {
+        expect(extractCodexModelFromArgs(["exec", "--model"])).toBeNull();
+        expect(extractCodexModelFromArgs(["exec", "--model", "--json"])).toBeNull();
+      });
+
+      it("returns null when args are empty", () => {
+        expect(extractCodexModelFromArgs([])).toBeNull();
+      });
+    });
+
+    describe("getConfiguredCodexModelEnvVars", () => {
+      it("returns only non-empty Codex model env vars", () => {
+        const env = {
+          GH_AW_MODEL_AGENT_CODEX: "gpt-5.3-codex",
+          GH_AW_MODEL_DETECTION_CODEX: "",
+        };
+        expect(getConfiguredCodexModelEnvVars(env)).toEqual([{ name: "GH_AW_MODEL_AGENT_CODEX", value: "gpt-5.3-codex" }]);
+      });
+
+      it("returns an empty list when no Codex model env vars are set", () => {
+        expect(getConfiguredCodexModelEnvVars({})).toEqual([]);
+      });
+    });
+
+    describe("normalizeModelID", () => {
+      it("strips vendor prefixes", () => {
+        expect(normalizeModelID("openai/gpt-5.3-codex")).toBe("gpt-5.3-codex");
+        expect(normalizeModelID("copilot/gpt-5.3-codex")).toBe("gpt-5.3-codex");
+      });
+
+      it("preserves unscoped model IDs", () => {
+        expect(normalizeModelID("gpt-5.3-codex")).toBe("gpt-5.3-codex");
+      });
+    });
+
+    describe("awfReflectIncludesModel", () => {
+      it("matches exact model IDs", () => {
+        const reflect = {
+          endpoints: [{ provider: "openai", configured: true, models: ["gpt-5.3-codex"] }],
+          models_fetch_complete: true,
+        };
+        expect(awfReflectIncludesModel(reflect, "gpt-5.3-codex")).toBe(true);
+      });
+
+      it("matches preview variants by prefix", () => {
+        const reflect = {
+          endpoints: [{ provider: "openai", configured: true, models: ["gpt-5.3-codex-api-preview"] }],
+          models_fetch_complete: true,
+        };
+        expect(awfReflectIncludesModel(reflect, "gpt-5.3-codex")).toBe(true);
+      });
+
+      it("matches vendor-scoped models", () => {
+        const reflect = {
+          endpoints: [{ provider: "openai", configured: true, models: ["openai/gpt-5.3-codex"] }],
+          models_fetch_complete: true,
+        };
+        expect(awfReflectIncludesModel(reflect, "gpt-5.3-codex")).toBe(true);
+      });
+
+      it("returns false when models are present but do not contain the selection", () => {
+        const reflect = {
+          endpoints: [{ provider: "openai", configured: true, models: ["gpt-5"] }],
+          models_fetch_complete: true,
+        };
+        expect(awfReflectIncludesModel(reflect, "gpt-5.3-codex")).toBe(false);
+      });
+
+      it("returns null when no model list is available", () => {
+        const reflect = {
+          endpoints: [{ provider: "openai", configured: true, models: null }],
+          models_fetch_complete: false,
+        };
+        expect(awfReflectIncludesModel(reflect, "gpt-5.3-codex")).toBeNull();
+      });
     });
   });
 

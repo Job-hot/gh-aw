@@ -71,6 +71,9 @@ const SERVER_ERROR_PATTERN = /InternalServerError|ServiceUnavailableError|500 In
 const PERMISSION_DENIED_PATTERN = /\b(?:permission denied|permissions denied|EACCES|EPERM)\b/gi;
 const NUMEROUS_PERMISSION_DENIED_THRESHOLD = 3;
 
+const CODEX_MODEL_ENV_VARS = ["GH_AW_MODEL_AGENT_CODEX", "GH_AW_MODEL_DETECTION_CODEX"];
+const CODEX_MODEL_INFO_ENV_VAR = "GH_AW_INFO_MODEL";
+
 /**
  * Emit a timestamped diagnostic log line to stderr.
  * All driver messages are prefixed with "[codex-harness]" so they are easy to
@@ -80,6 +83,87 @@ const NUMEROUS_PERMISSION_DENIED_THRESHOLD = 3;
 function log(message) {
   const ts = new Date().toISOString();
   process.stderr.write(`[codex-harness] ${ts} ${message}\n`);
+}
+
+/**
+ * Extract the model passed to the Codex CLI from a resolved args list.
+ * Supports `--model <id>` and `--model=<id>` forms.
+ * @param {string[]} args
+ * @returns {string|null}
+ */
+function extractCodexModelFromArgs(args) {
+  if (!Array.isArray(args)) return null;
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (typeof arg !== "string") continue;
+    if (arg === "--model") {
+      const next = args[i + 1];
+      if (typeof next === "string" && next.trim() && !next.startsWith("-")) return next.trim();
+      return null;
+    }
+    if (arg.startsWith("--model=")) {
+      const value = arg.slice("--model=".length).trim();
+      return value ? value : null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Return the Codex model env vars that are present and non-empty.
+ * gh-aw sets one of these per run (agent vs detection).
+ * @param {NodeJS.ProcessEnv} env
+ * @returns {{ name: string, value: string }[]}
+ */
+function getConfiguredCodexModelEnvVars(env) {
+  const configured = [];
+  for (const name of CODEX_MODEL_ENV_VARS) {
+    const value = env[name];
+    if (typeof value === "string" && value.trim()) {
+      configured.push({ name, value: value.trim() });
+    }
+  }
+  return configured;
+}
+
+/**
+ * Normalize a model identifier for matching against AWF /reflect payloads.
+ * AWF may include vendor prefixes like "openai/<id>" or "copilot/<id>".
+ * @param {string} id
+ * @returns {string}
+ */
+function normalizeModelID(id) {
+  const raw = typeof id === "string" ? id.trim() : "";
+  if (!raw) return "";
+  const idx = raw.indexOf("/");
+  return idx === -1 ? raw : raw.slice(idx + 1);
+}
+
+/**
+ * Determine whether AWF /reflect model lists contain the selected model.
+ * Treat "<model>-*" as a match to handle preview variants like "<model>-api-preview".
+ * @param {object|null} reflectData
+ * @param {string} modelID
+ * @returns {boolean|null} true/false when reflect data contains models, null when unknown
+ */
+function awfReflectIncludesModel(reflectData, modelID) {
+  if (!reflectData || typeof reflectData !== "object") return null;
+  const endpoints = Array.isArray(reflectData.endpoints) ? reflectData.endpoints : [];
+  const selected = normalizeModelID(modelID);
+  if (!selected) return null;
+
+  let hasAnyModelList = false;
+  for (const ep of endpoints) {
+    if (!ep || !Array.isArray(ep.models)) continue;
+    hasAnyModelList = true;
+    for (const model of ep.models) {
+      const candidate = normalizeModelID(String(model || ""));
+      if (!candidate) continue;
+      if (candidate === selected || candidate.startsWith(`${selected}-`)) return true;
+    }
+  }
+
+  return hasAnyModelList ? false : null;
 }
 
 /**
@@ -166,6 +250,23 @@ function countPermissionDeniedIssues(output) {
  */
 function hasNumerousPermissionDeniedIssues(output) {
   return countPermissionDeniedIssues(output) >= NUMEROUS_PERMISSION_DENIED_THRESHOLD;
+}
+
+/**
+ * Best-effort read and parse the AWF /reflect payload written by fetchAWFReflect().
+ * @param {string} reflectPath
+ * @returns {object|null}
+ */
+function readAWFReflectData(reflectPath) {
+  if (!reflectPath) return null;
+  try {
+    if (!fs.existsSync(reflectPath)) return null;
+    const raw = fs.readFileSync(reflectPath, "utf8");
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (_err) {
+    return null;
+  }
 }
 
 /**
@@ -434,6 +535,15 @@ async function main() {
   const hadPromptFile = args.includes("--prompt-file");
   const safeArgs = hadPromptFile && resolvedArgs.length > 0 ? [...resolvedArgs.slice(0, -1), "<prompt omitted>"] : resolvedArgs;
 
+  const argModel = extractCodexModelFromArgs(safeArgs);
+  const configuredModelEnvVars = getConfiguredCodexModelEnvVars(process.env);
+  const infoModel = typeof process.env[CODEX_MODEL_INFO_ENV_VAR] === "string" ? process.env[CODEX_MODEL_INFO_ENV_VAR].trim() : "";
+  const envModelSummary = configuredModelEnvVars.length === 0 ? "none" : configuredModelEnvVars.map(entry => `${entry.name}=${entry.value}`).join(" ");
+  log(`model: arg=${argModel || "none"}` + ` env=${envModelSummary}` + ` info=${infoModel || "unset"}`);
+  if (argModel && configuredModelEnvVars.length === 1 && configuredModelEnvVars[0].value !== argModel) {
+    log(`warning: --model (${argModel}) does not match ${configuredModelEnvVars[0].name} (${configuredModelEnvVars[0].value})`);
+  }
+
   // Inject --json after `exec` to stream structured JSONL events to stdout, making
   // Codex output machine-readable in CI without affecting the stderr progress stream.
   resolvedArgs = injectJsonFlag(resolvedArgs);
@@ -441,6 +551,18 @@ async function main() {
   // Fetch AWF API proxy reflection data before running the agent to capture initial proxy state.
   // This is best-effort: failures are logged but do not affect the agent run.
   await fetchAWFReflect({ logger: log });
+  if (argModel) {
+    const reflectData = readAWFReflectData(AWF_REFLECT_OUTPUT_PATH);
+    const fetchComplete = reflectData && reflectData.models_fetch_complete === true;
+    const modelListed = awfReflectIncludesModel(reflectData, argModel);
+    if (modelListed === true) {
+      log(`awf: selected model is present in /reflect model list: ${argModel}`);
+    } else if (modelListed === false) {
+      log(`awf: selected model not present in /reflect model list: ${argModel}` + (fetchComplete ? "" : " (model fetch incomplete)"));
+    } else {
+      log("awf: reflect model list not available, skipping selected model validation");
+    }
+  }
   const codexHome = process.env.CODEX_HOME || "";
   if (codexHome) {
     const validation = validateCodexOpenAIBaseURLFromReflect({
@@ -558,6 +680,11 @@ if (typeof module !== "undefined" && module.exports) {
     extractOpenAIProxyBaseURLFromToml,
     getConfiguredOpenAIPortFromReflect,
     validateCodexOpenAIBaseURLFromReflect,
+    extractCodexModelFromArgs,
+    getConfiguredCodexModelEnvVars,
+    normalizeModelID,
+    awfReflectIncludesModel,
+    readAWFReflectData,
   };
 }
 
