@@ -1,64 +1,50 @@
-# Workflow Health — 2026-05-22T05:50Z
+# Workflow Health — 2026-05-25T05:55Z
 
-Score: 63/100 (→0 from May 21). ~234 workflows. Run: §26270848573
+Score: 68/100 (↑5 from May 22). ~235 workflows. Run: §26385705325
 
 ## KEY FINDINGS
 
-### Status (May 22)
-- **Compilation:** 234/234 workflows have lock files (100% ✅)
-- **Today's Runs:** 100 runs analyzed (38% success, 13% failure, 20% action_required)
-- **Health Score:** 63/100 (stable but degraded from critical issues)
-- **CGO/CJS critical:** 100% failure rate ongoing (10/10 failures today May 22, 0:00-5:50 UTC)
+### Status (May 25)
+- **Compilation:** 235/235 workflows have lock files (100% ✅)
+- **Today's Runs:** 100 runs analyzed (14% success, 9% actual failure, 74% action_required/pending PRs)
+- **Actual failures (excl. PR approvals):** 9 runs
+- **Health Score:** 68/100 (slight improvement — fewer actual failures, PR approval backlog skewing stats)
+- **CGO/CJS critical:** Ongoing — 6+ failures today (Build gh-aw failures)
 
 ### Persistent Critical Issues (P0/P1) 🚨
-- **CGO/CJS regression** (#29669): **90+ days unresolved, 0% success rate — CRITICAL ESCALATION NEEDED**
-  - Continuous failures May 22: 10/10 failures in past 6 hours (100% failure rate)
-  - Every push to main triggers multiple CGO/CJS failures
-  - Pattern: "action_required" (2x) + "failure" (8x) in last 10 runs
-  - **ACTION:** Needs dedicated engineering escalation (90+ day threshold exceeded)
-- **Codex OPENAI_API_KEY sandbox exclusion** (#32446): 12 workflows blocked
-- **MCP gateway session timeout** (#23153): long-running workflows at risk
-- **Performance Regression** (#30180): 82.1% slower validation
+- **CGO/CJS regression** (#29669, #34574): Build gh-aw failures causing cascading workflow failures
+  - Today: Train Log Pattern Weights, Safe Output Health Monitor, PR Sous Chef, Copilot cloud agent (4x) all failed due to build failure
+  - **Still unresolved — 90+ days critical threshold exceeded**
+- **Step Name Alignment** (#34582): Recurring daily failure — Execute Claude Code CLI
+- **Copilot engine deprecated beta header** (#34556): User-reported — `anthropic-beta: context-1m-2025-08-07` rejected by Anthropic API (400 error)
 
-### Persistent Warnings (P2) ⚠️
-- **ET budget exhaustion** (#32717): multiple daily workflows at risk
-- **Engine-fail-after-completion** (#32736): systemic lifecycle bug
-- **Step Name Alignment recurring** (#32955): daily recurrence, needs structural fix
-- **[aw-compat] Cross-repo warnings** (#32528): compatibility issues
+### Closed/Stable Issues
+- #34587 Safe Output Health Monitor - issued today (build failure / CGO)
+- #34586 PR Sous Chef - issued today (build failure / CGO)
+- #34582 Step Name Alignment - issued today (recurring)
+- Codex OPENAI_API_KEY sandbox (#32446): still tracked
 
-### 🎉 Still Resolved
-- #32755 Sergo ✅ CLOSED
-- #32754 Step Name Alignment ✅ CLOSED (recurred as #32955)
-- PR-review cluster #31724 ✅ RESOLVED (~272 wasted runs/day saved)
-- May 14 mass failure ✅ RESOLVED
-- AWF Firewall v0.25.47 ✅ CONTAINED
-
-### Systemic Patterns
-- **90+ day critical threshold:** CGO/CJS needs immediate dedicated engineering escalation
-- **Token budget pressure:** ET exhaustion affecting multiple daily workflows
-- **Recurring failure cycle:** Step Name Alignment needs structural fix, not patches
-- **CI confidence impact:** CGO/CJS failures on every push to main
+### PR Approval Backlog
+- 74/100 runs were `action_required` — all from PRs needing approval
+- Not actual workflow failures — expected behavior for fork PRs
 
 ### Actions Taken This Run
-- Verified 100% lock file coverage (234/234)
-- Analyzed today's workflow runs (100 runs, 38% success rate)
-- Confirmed CGO/CJS 100% failure rate continues (10/10 failures in 6 hours)
-- Updated shared memory coordination files
-- **No new issues created** - existing issues cover all known problems
-- **No comments added** - issues already well-documented
-
-### Trends
-- Score: 63/100 (→0 stable)
-- CGO/CJS: 0% success rate (10/10 failures today, ongoing)
-- Today's fleet: 38% success, 13% failure, 20% action_required, 21% skipped
-- Critical issues: 4 P0/P1 (stable)
-- Warnings: 4 P2 (stable)
+- Verified 235/235 lock file coverage (100% ✅)
+- Analyzed 100 runs (9 actual failures, all related to CGO/CJS build issue)
+- Confirmed all failures already have open issues
+- **No new issues created** — all problems covered by existing issues
+- Updated shared memory
 
 ### Recommendations for Next Run
 1. **CRITICAL:** Escalate CGO/CJS to dedicated engineering (#29669) — 90+ days threshold
-2. **High:** Fix Codex sandbox OPENAI_API_KEY exclusion (#32446) — 12 workflows blocked
-3. **High:** Resolve MCP gateway session timeout (#23153) — long-running workflows at risk
-4. **Medium:** Structural fix for Step Name Alignment (#32955) — stop daily recurrence
-5. **Medium:** Fleet-wide ET budget audit (#32717) — prevent exhaustion
+2. **High:** Fix Copilot deprecated beta header (#34556)
+3. **Medium:** Structural fix for Step Name Alignment (#34582) — daily recurrence
+4. **Medium:** Reduce PR approval backlog — 74% of runs blocked
 
-Last updated: 2026-05-22T05:50:30Z by workflow-health-manager
+### Trends
+- Score: 68/100 (↑5 from May 22, 63/100)
+- Actual failures: 9 (down from ~13 May 22)
+- PR approval backlog: 74 runs pending
+- CGO/CJS: 0% success rate on impacted workflows (ongoing)
+
+Last updated: 2026-05-25T05:55:59Z by workflow-health-manager
