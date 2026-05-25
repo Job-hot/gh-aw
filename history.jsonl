@@ -4,3 +4,4 @@
 {"date": "2026-05-12", "quality_signal": 5228, "health": {"coupling": 0.03825, "cycles": 2, "god_files": 0, "max_depth": 8, "complex_fn": 855}, "files": 4525, "bottleneck": "complexity", "rules_violations": null}
 {"date": "2026-05-20", "quality_signal": 5223, "health": {"coupling": 0.1954, "cycles": 2, "god_files": 1, "max_depth": 8, "complex_fn": 888}, "files": 4724, "bottleneck": "complexity", "rules_violations": null}
 {"date": "2026-05-22", "quality_signal": 5222, "health": {"coupling": 0.195, "cycles": 2, "god_files": 1, "max_depth": 8, "complex_fn": 900}, "files": 4774, "bottleneck": "coupling", "rules_violations": null}
+{"date": "2026-05-25", "quality_signal": 5233, "health": {"coupling": 0.195, "cycles": 2, "god_files": 1, "max_depth": 8, "complex_fn": 881}, "files": 4819, "bottleneck": "complexity", "rules_violations": 0}
