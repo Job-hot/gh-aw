@@ -1,14 +1,27 @@
-Date: 2026-05-24
-Status: All benchmarks stable (no regressions)
-Improvements: CompileComplexWorkflow -9.8%, CompileMCPWorkflow -34.8%
+Daily CLI Performance Report - 2026-05-25
+==========================================
+Total Benchmarks: 9
+Stable: 2
+Warnings: 1  
+Regressions: 3
+Improvements: 3
 
-Benchmarks (ns/op):
-  CompileSimpleWorkflow:      1,938,274 ns/op (stable +1.6%)
-  CompileComplexWorkflow:     3,183,109 ns/op (improvement -9.8%)
-  CompileMCPWorkflow:           340,350 ns/op (improvement -34.8%)
-  CompileMemoryUsage:         2,735,120 ns/op (stable +3.6%)
-  ParseWorkflow:                281,441 ns/op (stable +4.4%)
-  Validation:                    25,451 ns/op (stable +1.7%)
-  YAMLGeneration:             2,241,232 ns/op (stable -1.2%)
-  ExtractWorkflowNameFromFile:    8,163 ns/op (baseline)
-  FindIncludesInContent:          3,322 ns/op (baseline)
+REGRESSIONS:
+  ParseWorkflow: +34.3% (273µs → 367µs)
+  Validation: +17.9% (25µs → 30µs)
+  ExtractWorkflowNameFromFile: +35.3% (10µs → 14µs)
+
+WARNINGS:
+  YAMLGeneration: +8.8% (2.26ms → 2.46ms)
+
+IMPROVEMENTS:
+  CompileComplexWorkflow: -10.4% (3.41ms → 3.06ms)
+  CompileMCPWorkflow: -22.9% (461µs → 356µs)
+  FindIncludesInContent: -36.1% (3.28µs → 2.10µs)
+
+STABLE:
+  CompileSimpleWorkflow: +0.8%
+  CompileMemoryUsage: +4.7%
+
+Issues opened: 3
+Run ID: 26408596127
