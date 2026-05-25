@@ -2,3 +2,5 @@
 
 Digging through commit history patterns.
 Strategy: staged-subset + amend simulation
+## Addendum
+Added after reviewing staged subset.
