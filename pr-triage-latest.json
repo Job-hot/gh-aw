@@ -1,11 +1,11 @@
 {
-  "run_date": "2026-05-25T01:19:41Z",
-  "run_id": "26378276575",
+  "run_date": "2026-05-25T07:55:19Z",
+  "run_id": "26389856071",
   "fork_prs": 0,
-  "agent_prs_found": 4,
+  "agent_prs_found": 12,
   "authentication_error": false,
-  "notes": "Found 4 open agent PRs (copilot-swe-agent author), all branch-based (isCrossRepository: false). No fork PRs to triage per workflow instructions which require fork PRs only.",
-  "branch_prs_skipped": [34545, 34526, 34525, 33219],
+  "notes": "Found 12 open agent PRs (app/github-actions and app/copilot-swe-agent authors), all branch-based (isCrossRepository: false). No fork PRs to triage per workflow instructions which require fork PRs only.",
+  "branch_prs_skipped": [34594, 34593, 34592, 34591, 34590, 34589, 34585, 34584, 34583, 34578, 34568, 34554, 33219],
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -19,25 +19,18 @@
   },
   "fork_only_policy": true,
   "pr_details": [
-    {
-      "number": 34545,
-      "title": "[WIP] Refactor semantic function clustering in pkg/workflow",
-      "is_cross_repository": false
-    },
-    {
-      "number": 34526,
-      "title": "Add github.com org fallback for add-wizard shorthand on GHE and improve cross-host error guidance",
-      "is_cross_repository": false
-    },
-    {
-      "number": 34525,
-      "title": "Decouple Claude permission mode from bash wildcard and add first-class `engine.permission-mode`",
-      "is_cross_repository": false
-    },
-    {
-      "number": 33219,
-      "title": "Bind Node toolcache into AWF chroot for Copilot-engine workflow startup reliability",
-      "is_cross_repository": false
-    }
+    {"number": 34594, "title": "[chaos-test] [Chaos Run 59] rebase-ritualist: two-commits", "is_cross_repository": false},
+    {"number": 34593, "title": "[chaos-test] [Chaos Run 59] divergence-mapper: diverged-history-reconciliation", "is_cross_repository": false},
+    {"number": 34592, "title": "[chaos-test] [Chaos Run 59] patch-archaeologist: line-ending-variant+two-commits", "is_cross_repository": false},
+    {"number": 34591, "title": "[chaos-test] [Chaos Run 59] entropy-surfer: minor-rename+amend", "is_cross_repository": false},
+    {"number": 34590, "title": "[chaos-test] [Chaos Run 59] log-scrubber: minor-rename+two-commits", "is_cross_repository": false},
+    {"number": 34589, "title": "[spec-review] Update Safe Outputs conformance checker for recent spec changes", "is_cross_repository": false},
+    {"number": 34585, "title": "Update model alias and multiplier inventories for 2026-05-25", "is_cross_repository": false},
+    {"number": 34584, "title": "Break logger\u2194timeutil import cycle causing CGO/fuzz workflow failures", "is_cross_repository": false},
+    {"number": 34583, "title": "fix: defensive type assertion for project ID in RunProjectNew", "is_cross_repository": false},
+    {"number": 34578, "title": "[jsweep] Clean action_setup_otlp.cjs", "is_cross_repository": false},
+    {"number": 34568, "title": "Bump gh-aw-firewall to v0.25.54 and align embedded AWF schema", "is_cross_repository": false},
+    {"number": 34554, "title": "Migrate the Gemini engine to Antigravity CLI", "is_cross_repository": false},
+    {"number": 33219, "title": "Bind Node toolcache into AWF chroot for Copilot-engine workflow startup reliability", "is_cross_repository": false}
   ]
 }
