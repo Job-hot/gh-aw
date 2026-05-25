@@ -6,3 +6,6 @@ Run: 63
 
 ## First commit
 Added initial drift notes.
+
+## Second commit
+Expanded on entropy concepts.
