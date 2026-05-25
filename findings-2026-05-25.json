@@ -1,0 +1,28 @@
+{
+  "date": "2026-05-25",
+  "files_analyzed": {
+    "documentation": ["docs/src/content/docs/reference/frontmatter-full.md"],
+    "cli": [],
+    "messages": [".github/workflows/smoke-agent-all-none.md", ".github/workflows/stale-repo-identifier.md"],
+    "validation": ["pkg/workflow/sandbox_validation.go"]
+  },
+  "overall_quality": "professional-with-minor-issues",
+  "quality_highlights": [
+    "pkg/workflow/sandbox_validation.go - exemplary error messages with examples and doc links",
+    ".github/workflows/smoke-agent-all-none.md - concise, contextual status messages"
+  ],
+  "single_file_improvements": [
+    {
+      "file": "scripts/generate-schema-docs.js",
+      "priority": "high",
+      "issue": "Line 233 emits '# Array items: undefined' when items has no description or type — 8 occurrences in generated doc",
+      "fix": "Guard emission: only emit comment when itemLabel is truthy"
+    },
+    {
+      "file": ".github/workflows/stale-repo-identifier.md",
+      "priority": "medium",
+      "issue": "run-failure message uses 'Analysis interrupted!' — informal and non-actionable",
+      "fix": "Replace with calm message directing user to workflow logs"
+    }
+  ]
+}
