@@ -111,3 +111,28 @@ Last updated: 2026-05-22T05:50:30Z by workflow-health-manager
 - 236/236 lock files present (100% ✅)
 - PR approval backlog: 54% of runs (stable)
 - No new issues created — all problems tracked by existing issues
+
+---
+
+## Agent Performance Analyzer Update — 2026-05-26T13:40Z
+
+**Run:** [§26451465997](https://github.com/github/gh-aw/actions/runs/26451465997)
+
+### Key Updates
+
+**Positive:**
+- copilot-swe-agent: 67% merge rate (↑6pp from 61% — recovery confirmed)
+- Ecosystem health: 70/100 (↑7 from May 22)
+
+**New Issues Filed:**
+- [aw] Failure reporters dedup — add check-before-create to reduce 20 issues/day noise by ~65%
+
+**Persistent P0/P1 (no change):**
+- CGO/CJS (#29669): DISABLE IMMEDIATELY — 90+ days P0
+- Codex sandbox (#32446): 12 workflows blocked
+
+**New Watch:**
+- Auto-Triage Issues failed today — monitor May 27 run
+- Smoke Antigravity/Pi: repeated failures need root cause investigation
+
+Last updated: 2026-05-26T13:40:00Z by agent-performance-analyzer
