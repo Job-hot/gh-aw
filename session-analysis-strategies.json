@@ -1,68 +1,10 @@
 {
   "strategies": [
-    {
-      "name": "Gate Storm Detection",
-      "date_tested": "2026-04-17",
-      "effectiveness": "High",
-      "recommendation": "Keep and automate",
-      "finding": "update-safe-patch: 8 concurrent gates = double-trigger anomaly"
-    },
-    {
-      "name": "Task Category to Copilot Assignment Correlation",
-      "date_tested": "2026-04-24",
-      "effectiveness": "High",
-      "recommendation": "Keep and expand",
-      "finding": "Security/functional tasks get agents; lib version bumps do not"
-    },
-    {
-      "name": "Historical Trend Regression Analysis",
-      "date_tested": "2026-04-28",
-      "effectiveness": "High",
-      "recommendation": "Keep and automate",
-      "finding": "Duration >15min = 100% success; <5min = ~7% success. Agent count >=4/day = 48.8% success"
-    },
-    {
-      "name": "Temporal Analysis",
-      "date_tested": "2026-05-02",
-      "effectiveness": "High",
-      "recommendation": "Keep and automate",
-      "finding": "Duration improving 12min/day. Duration strongest predictor of session health"
-    },
-    {
-      "name": "CI Smoke Test Failure Clustering",
-      "date_tested": "2026-05-03",
-      "effectiveness": "High",
-      "recommendation": "Keep and automate",
-      "finding": "Simultaneous failures at same timestamp = infra incident not code regression. 3+ failures same second = infra rule"
-    },
-    {
-      "name": "Gate Workflow Composition Fingerprinting",
-      "date_tested": "2026-05-05",
-      "effectiveness": "High",
-      "recommendation": "Keep and automate",
-      "finding": "Gate count = complexity proxy: 1 gate = trivial, 4-7 = moderate, 9+ = feature addition. Security Review Agent co-occurrence = high-risk signal. Haiku Printer only = auto-merge candidate."
-    },
-    {
-      "name": "Gate Sweep Branch Concentration",
-      "date_tested": "2026-05-10",
-      "effectiveness": "Medium",
-      "recommendation": "Keep and refine",
-      "finding": "When 1 branch dominates >40% of daily sessions (here 23/50=46%), it is a routine/templated workflow (community contributions update). Branch dominance correlates with low task complexity and tight duration variance."
-    },
-    {
-      "name": "Gate Sweep Burst Sizing",
-      "date_tested": "2026-05-12",
-      "effectiveness": "Medium",
-      "recommendation": "Keep and refine",
-      "finding": "Burst-size distribution per branch reveals iteration shape: one large burst (14 fires at single timestamp) + many small bursts (3-4) = single push triggering full gate-set followed by drip retries. Investigate-otel-connection branch fits this profile: 14-burst at 07:12:15Z = new commit, 5 smaller bursts at 06:39-06:43 = polling/cleanup. Largest single burst size correlates with code-change scope; small-burst frequency correlates with reviewer/auto-retry activity."
-    },
-    {
-      "name": "Inverse Gate-Count to Conclusiveness",
-      "date_tested": "2026-05-21",
-      "effectiveness": "High",
-      "recommendation": "Keep and automate",
-      "finding": "Per-branch gate-firing count is strongly inversely correlated with the rate of conclusive (success/failure) outcomes within the sampling window. On 2026-05-21: 3-session branch (refactor-oversized-functions-parser-workflow) = 100% conclusive (2 success + 1 failure); 5-session branch = 20%; 7-session = 14.3%; 10-session = 10%; 25-session (fix-duplicate-regex-patterns) = 4%. Hypothesis: branches with low gate count have either narrow scope (gates run once and resolve) or recent agent intervention (sweep already cleared); branches with high gate count are caught in a retry loop. Predictive use: branches above ~15 gates in a 1-hour window are likely waiting on agent action, not on green CI. Combine with Gate Sweep Branch Concentration (low diversity day) and Gate Workflow Composition Fingerprinting (gate-set complexity proxy) for a 3-axis branch-health classifier."
-    }
+    {"name":"Historical Trend Regression","tested":"2026-04-28","effectiveness":"High","finding":"Duration >15min = 100% success; <5min = ~7% success. Agent count >=4/day = 48.8% success"},
+    {"name":"CI Smoke Test Failure Clustering","tested":"2026-05-03","effectiveness":"High","finding":"3+ failures at same second = infra incident, not code regression"},
+    {"name":"Gate Workflow Composition Fingerprinting","tested":"2026-05-05","effectiveness":"High","finding":"1 gate=trivial, 4-7=moderate, 9+=feature. Security Review Agent co-occurrence=high-risk. Haiku-Printer-only=auto-merge candidate"},
+    {"name":"Gate Sweep Branch Concentration","tested":"2026-05-10","effectiveness":"Medium","finding":"Branch dominating >40% of daily sessions = routine/templated workflow with tight duration variance"},
+    {"name":"Inverse Gate-Count to Conclusiveness","tested":"2026-05-21","effectiveness":"High","finding":"Per-branch gate count strongly inversely correlated with conclusive rate. >15 gates/hour = waiting on agent action, not green CI"}
   ],
-  "last_updated": "2026-05-21"
+  "last_updated":"2026-05-21"
 }
