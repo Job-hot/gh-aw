@@ -1,14 +1,5 @@
 [
   {
-    "date": "2026-04-21",
-    "workflow_name": "Dead Code Removal Agent",
-    "workflow_file": "dead-code-remover",
-    "runs_audited": 1,
-    "total_tokens_analyzed": 4472171,
-    "estimated_savings_per_run": 1265000,
-    "recommendations_count": 4
-  },
-  {
     "date": "2026-04-22",
     "workflow_name": "Smoke CI",
     "workflow_file": "smoke-ci",
@@ -270,5 +261,15 @@
     "estimated_savings_per_run": 1250000,
     "recommendations_count": 4,
     "subagent_candidates": 1
+  },
+  {
+    "date": "2026-05-26",
+    "workflow_name": "Dead Code Removal Agent",
+    "workflow_file": "dead-code-remover",
+    "total_tokens_analyzed": 4030505,
+    "runs_audited": 1,
+    "recommendations_count": 4,
+    "subagent_candidates": 1,
+    "estimated_savings_per_run": 850000
   }
 ]
