@@ -1,2 +1,3 @@
 # EOL Wanderer
-Line with CRLF endings.
+Line with LF endings.
+Second line LF.
