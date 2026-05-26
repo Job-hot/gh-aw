@@ -123,7 +123,7 @@ func TestGenerateSetupStepIncludesVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := NewCompiler()
-			lines := c.generateSetupStep(tt.data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "")
+			lines := c.generateSetupStep(tt.data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "", false)
 			combined := strings.Join(lines, "")
 
 			if tt.noVersionLine {
@@ -208,7 +208,7 @@ func TestGenerateSetupStepIncludesAWFVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := NewCompiler()
-			lines := c.generateSetupStep(tt.data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "")
+			lines := c.generateSetupStep(tt.data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "", false)
 			combined := strings.Join(lines, "")
 
 			if tt.expectNoAWFLine {
@@ -231,7 +231,7 @@ func TestGenerateSetupStepIncludesParentSpanID(t *testing.T) {
 	data := &WorkflowData{Name: "my-workflow"}
 	parentExpr := "${{ needs.activation.outputs.setup-span-id }}"
 
-	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", parentExpr)
+	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", parentExpr, false)
 	combined := strings.Join(lines, "")
 
 	if !strings.Contains(combined, "parent-span-id: "+parentExpr) {
@@ -246,7 +246,7 @@ func TestGenerateSetupStepIncludesEngineID(t *testing.T) {
 		EngineConfig: &EngineConfig{ID: "copilot"},
 	}
 
-	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "")
+	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "", false)
 	combined := strings.Join(lines, "")
 
 	if !strings.Contains(combined, `GH_AW_INFO_ENGINE_ID: "copilot"`) {
@@ -262,7 +262,7 @@ func TestGenerateSetupStepIncludesEngineIDInScriptModeFromAIField(t *testing.T) 
 		AI:   "claude",
 	}
 
-	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "")
+	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "", false)
 	combined := strings.Join(lines, "")
 
 	if !strings.Contains(combined, `GH_AW_INFO_ENGINE_ID: "claude"`) {

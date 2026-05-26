@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "_comment": "Bundled fallback compatibility matrix for the Copilot CLI resolver. Used when install_copilot_cli.cjs cannot fetch the upstream matrix from github/gh-aw-actions. Each entry in agent-compat-v1.copilot describes a range of cached agent versions known to work with a range of gh-aw compiler versions. Resolver picks the highest agent version in [min-agent, max-agent] whose row matches the current gh-aw version. See actions/setup/js/install_copilot_cli.cjs for selection logic.",
+  "agent-compat-v1": {
+    "copilot": [
+      {
+        "max-gh-aw": "*",
+        "min-agent": "1.0.50",
+        "max-agent": "1.0.54"
+      }
+    ]
+  }
+}

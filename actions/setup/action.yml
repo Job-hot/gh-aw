@@ -32,6 +32,10 @@ outputs:
     description: 'The OTLP span ID used for the gh-aw.<job-name>.setup span. Pass this to subsequent job setup steps via the parent-span-id input so setup spans are properly parented.'
   parent-span-id:
     description: 'The OTLP parent span ID used for the gh-aw.<job-name>.setup span. Pass this through downstream jobs so all setup spans share the same global parent span.'
+  copilot-cached:
+    description: 'Set to "true" when the Copilot CLI resolver found a cached, gh-aw-compatible version in the runner tool cache and added it to PATH. Set to "false" (or unset) when no cached version was usable. Compiler-emitted installer steps gate themselves on this output. Only populated when the workflow opts in via the setup-copilot-resolver feature flag.'
+  copilot-path:
+    description: 'Absolute path to the directory added to PATH when copilot-cached=true. Empty otherwise. Useful for diagnostics.'
 
 runs:
   using: 'node24'

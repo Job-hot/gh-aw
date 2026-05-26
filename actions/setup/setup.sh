@@ -434,6 +434,22 @@ else
   debug_log "Artifact client not enabled - skipping @actions/artifact installation"
 fi
 
+# Resolve a cached, gh-aw-compatible Copilot CLI from the runner tool cache when
+# requested by the compiler. The resolver writes the `copilot-cached` step output
+# and, on a cache hit, appends its tool-cache bin directory to $GITHUB_PATH.
+# This runs *before* the OTLP span so that the resolver's outcome is visible in
+# the same step. The resolver never throws: any error is logged and treated as a
+# cache miss, allowing the workflow's existing bash installer step to run.
+if [ "${INPUT_INSTALL_COPILOT:-false}" = "true" ]; then
+  if command -v node &>/dev/null && [ -f "${SCRIPT_DIR}/js/install_copilot_cli.cjs" ]; then
+    debug_log "Running Copilot CLI resolver (gh-aw-version=${INPUT_GH_AW_VERSION:-unknown})..."
+    INPUT_GH_AW_VERSION="${INPUT_GH_AW_VERSION:-}" node "${SCRIPT_DIR}/js/install_copilot_cli.cjs" || true
+    debug_log "Copilot CLI resolver step complete"
+  else
+    debug_log "Copilot CLI resolver skipped: node or resolver script unavailable"
+  fi
+fi
+
 # Send OTLP job setup span when configured (non-fatal).
 # Delegates to action_setup_otlp.cjs (same file used by actions/setup/index.js)
 # to keep dev/release and script mode behavior in sync.

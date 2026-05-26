@@ -103,7 +103,7 @@ func (c *Compiler) newActivationJobBuildContext(
 		activationSetupTraceID = fmt.Sprintf("${{ needs.%s.outputs.setup-trace-id }}", constants.PreActivationJobName)
 		activationSetupParentSpanID = setupParentSpanNeedsExpr(constants.PreActivationJobName)
 	}
-	ctx.steps = append(ctx.steps, c.generateSetupStep(ctx.data, setupActionRef, SetupActionDestination, false, activationSetupTraceID, activationSetupParentSpanID)...)
+	ctx.steps = append(ctx.steps, c.generateSetupStep(ctx.data, setupActionRef, SetupActionDestination, false, activationSetupTraceID, activationSetupParentSpanID, false)...)
 	ctx.outputs["setup-trace-id"] = "${{ steps.setup.outputs.trace-id }}"
 	ctx.outputs["setup-span-id"] = "${{ steps.setup.outputs.span-id }}"
 	ctx.outputs["setup-parent-span-id"] = "${{ steps.setup.outputs.parent-span-id || steps.setup.outputs.span-id }}"

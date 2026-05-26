@@ -17,6 +17,8 @@
 package workflow
 
 import (
+	"strings"
+
 	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
 )
@@ -93,7 +95,70 @@ func (e *CopilotEngine) GetInstallationSteps(workflowData *WorkflowData) []GitHu
 	// Use the installer script for global installation
 	copilotInstallLog.Print("Using new installer script for Copilot installation")
 	npmSteps := GenerateCopilotInstallerSteps(copilotVersion, "Install GitHub Copilot CLI")
+
+	// When the setup-copilot-resolver feature is enabled, gate the bash installer
+	// step on the setup action's `copilot-cached` output. On cache hit, the setup
+	// action already added the cached CLI to PATH and this step is skipped.
+	// On cache miss, the installer runs as before.
+	if shouldUseCopilotResolver(workflowData) {
+		copilotInstallLog.Print("setup-copilot-resolver enabled: gating installer step on steps.setup.outputs.copilot-cached")
+		npmSteps = gateStepsOnCopilotCached(npmSteps)
+	}
+
 	return BuildNpmEngineInstallStepsWithAWF(npmSteps, workflowData)
+}
+
+// shouldUseCopilotResolver reports whether the setup action's Copilot CLI
+// resolver should be activated for this workflow. It requires both:
+//   - the workflow's engine to be Copilot (only Copilot uses the toolcache bake), and
+//   - the SetupCopilotResolverFeatureFlag to be enabled (default off until validated).
+//
+// Used by:
+//   - GetInstallationSteps (this file): gate the bash installer step
+//   - compiler_main_job.go: pass installCopilot=true to generateSetupStep
+//   - threat_detection.go: pass installCopilot=true to generateSetupStep
+func shouldUseCopilotResolver(workflowData *WorkflowData) bool {
+	if workflowData == nil {
+		return false
+	}
+	engineID := ""
+	if workflowData.EngineConfig != nil && workflowData.EngineConfig.ID != "" {
+		engineID = workflowData.EngineConfig.ID
+	} else if workflowData.AI != "" {
+		engineID = workflowData.AI
+	}
+	if engineID != "copilot" {
+		return false
+	}
+	return isFeatureEnabled(constants.SetupCopilotResolverFeatureFlag, workflowData)
+}
+
+// gateStepsOnCopilotCached injects `if: steps.setup.outputs.copilot-cached != 'true'`
+// into each step's YAML so the bash installer is skipped when the resolver hit
+// the toolcache. The `if:` line is inserted directly after the `- name:` line
+// (which is conventionally the first line of each step emitted by
+// GenerateCopilotInstallerSteps).
+//
+// Steps without a recognisable `      - name:` opener are returned unmodified;
+// any future refactor of the installer step shape should re-verify this here.
+func gateStepsOnCopilotCached(steps []GitHubActionStep) []GitHubActionStep {
+	const condition = "        if: steps.setup.outputs.copilot-cached != 'true'"
+	out := make([]GitHubActionStep, 0, len(steps))
+	for _, step := range steps {
+		if len(step) == 0 {
+			out = append(out, step)
+			continue
+		}
+		if !strings.HasPrefix(step[0], "      - name:") {
+			out = append(out, step)
+			continue
+		}
+		gated := make([]string, 0, len(step)+1)
+		gated = append(gated, step[0], condition)
+		gated = append(gated, step[1:]...)
+		out = append(out, GitHubActionStep(gated))
+	}
+	return out
 }
 
 // generateAWFInstallationStep creates a GitHub Actions step to install the AWF binary

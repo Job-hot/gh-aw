@@ -37,7 +37,7 @@ func (c *Compiler) buildMainJob(data *WorkflowData, activationJobCreated bool) (
 		// Pass activation's trace ID so all agent spans share the same OTLP trace
 		agentTraceID := fmt.Sprintf("${{ needs.%s.outputs.setup-trace-id }}", constants.ActivationJobName)
 		agentParentSpanID := setupParentSpanNeedsExpr(constants.ActivationJobName)
-		steps = append(steps, c.generateSetupStep(data, setupActionRef, SetupActionDestination, false, agentTraceID, agentParentSpanID)...)
+		steps = append(steps, c.generateSetupStep(data, setupActionRef, SetupActionDestination, false, agentTraceID, agentParentSpanID, shouldUseCopilotResolver(data))...)
 	}
 
 	// Set runtime paths that depend on RUNNER_TEMP via $GITHUB_ENV.
