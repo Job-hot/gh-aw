@@ -20,7 +20,6 @@
 
 const fs = require("fs");
 const path = require("path");
-const https = require("https");
 
 const COMPAT_URL = "https://raw.githubusercontent.com/github/gh-aw-actions/main/.github/aw/compat.json";
 const FETCH_TIMEOUT_MS = 5000;
@@ -68,58 +67,18 @@ function rowMatchesGhAw(row, ghAwSemver) {
 
 // Fetch the live matrix from gh-aw-actions. Resolves to parsed JSON or null
 // on any error (network, timeout, non-200, malformed JSON). Never throws.
-function fetchLiveMatrix() {
-  return new Promise(resolve => {
-    let settled = false;
-    const done = val => {
-      if (settled) return;
-      settled = true;
-      resolve(val);
-    };
-    let req;
-    try {
-      req = https.get(COMPAT_URL, { timeout: FETCH_TIMEOUT_MS }, res => {
-        if (res.statusCode !== 200) {
-          res.resume();
-          logErr(`live matrix fetch returned HTTP ${res.statusCode}`);
-          return done(null);
-        }
-        let body = "";
-        res.setEncoding("utf8");
-        res.on("data", chunk => {
-          body += chunk;
-          if (body.length > 1_000_000) {
-            req.destroy();
-            done(null);
-          }
-        });
-        res.on("end", () => {
-          try {
-            done(JSON.parse(body));
-          } catch (e) {
-            logErr(`live matrix parse failed: ${e.message}`);
-            done(null);
-          }
-        });
-        res.on("error", e => {
-          logErr(`live matrix stream error: ${e.message}`);
-          done(null);
-        });
-      });
-      req.on("timeout", () => {
-        req.destroy();
-        logErr("live matrix fetch timed out");
-        done(null);
-      });
-      req.on("error", e => {
-        logErr(`live matrix request error: ${e.message}`);
-        done(null);
-      });
-    } catch (e) {
-      logErr(`live matrix request setup failed: ${e.message}`);
-      done(null);
+async function fetchLiveMatrix() {
+  try {
+    const res = await fetch(COMPAT_URL, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    if (!res.ok) {
+      logErr(`live matrix fetch returned HTTP ${res.status}`);
+      return null;
     }
-  });
+    return JSON.parse(await res.text());
+  } catch (e) {
+    logErr(`live matrix fetch failed: ${e.message}`);
+    return null;
+  }
 }
 
 // Load the bundled fallback matrix from disk, resolved via __dirname so script
