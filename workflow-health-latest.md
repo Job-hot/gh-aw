@@ -1,50 +1,39 @@
-# Workflow Health — 2026-05-25T05:55Z
+# Workflow Health — 2026-05-26T05:50Z
 
-Score: 68/100 (↑5 from May 22). ~235 workflows. Run: §26385705325
+Score: 70/100 (↑2 from May 25). ~236 workflows. Run: §26434802866
 
 ## KEY FINDINGS
 
-### Status (May 25)
-- **Compilation:** 235/235 workflows have lock files (100% ✅)
-- **Today's Runs:** 100 runs analyzed (14% success, 9% actual failure, 74% action_required/pending PRs)
-- **Actual failures (excl. PR approvals):** 9 runs
-- **Health Score:** 68/100 (slight improvement — fewer actual failures, PR approval backlog skewing stats)
-- **CGO/CJS critical:** Ongoing — 6+ failures today (Build gh-aw failures)
+### Status (May 26)
+- **Compilation:** 236/236 workflows have lock files (100% ✅)
+- **Last 48h Runs:** 100 runs analyzed (28% success, 4% failure, 54% action_required PR approvals)
+- **Actual failures (excl. PR approvals):** 4 runs (CGO failure, CGO/CJS cancelled, Copilot cloud agent cancelled)
+- **Health Score:** 70/100 (slight improvement — fewer failures, PR approval backlog stable)
 
 ### Persistent Critical Issues (P0/P1) 🚨
-- **CGO/CJS regression** (#29669, #34574): Build gh-aw failures causing cascading workflow failures
-  - Today: Train Log Pattern Weights, Safe Output Health Monitor, PR Sous Chef, Copilot cloud agent (4x) all failed due to build failure
+- **CGO/CJS regression** (#29669): Build gh-aw failures still occurring — 2 CGO/1 CJS runs failed/cancelled today
   - **Still unresolved — 90+ days critical threshold exceeded**
-- **Step Name Alignment** (#34582): Recurring daily failure — Execute Claude Code CLI
-- **Copilot engine deprecated beta header** (#34556): User-reported — `anthropic-beta: context-1m-2025-08-07` rejected by Anthropic API (400 error)
+  - Impact: cancels dependent workflows, degrades CI confidence
+- **Copilot cloud agent cancellation**: 1 cancelled run (likely cascading from CGO build failure)
 
-### Closed/Stable Issues
-- #34587 Safe Output Health Monitor - issued today (build failure / CGO)
-- #34586 PR Sous Chef - issued today (build failure / CGO)
-- #34582 Step Name Alignment - issued today (recurring)
-- Codex OPENAI_API_KEY sandbox (#32446): still tracked
+### Stable/No Change
+- #34582 Step Name Alignment — still open, recurring
+- #34556 Copilot deprecated beta header — still open
+- Codex OPENAI_API_KEY sandbox (#32446) — still tracked
 
 ### PR Approval Backlog
-- 74/100 runs were `action_required` — all from PRs needing approval
-- Not actual workflow failures — expected behavior for fork PRs
+- 54/100 runs were `action_required` — PRs needing approval
+- Not actual failures — expected behavior for fork PRs
 
 ### Actions Taken This Run
-- Verified 235/235 lock file coverage (100% ✅)
-- Analyzed 100 runs (9 actual failures, all related to CGO/CJS build issue)
-- Confirmed all failures already have open issues
-- **No new issues created** — all problems covered by existing issues
-- Updated shared memory
-
-### Recommendations for Next Run
-1. **CRITICAL:** Escalate CGO/CJS to dedicated engineering (#29669) — 90+ days threshold
-2. **High:** Fix Copilot deprecated beta header (#34556)
-3. **Medium:** Structural fix for Step Name Alignment (#34582) — daily recurrence
-4. **Medium:** Reduce PR approval backlog — 74% of runs blocked
+- Verified 236/236 lock file coverage (100% ✅)
+- Analyzed 100 runs (4 actual failures, all related to CGO/CJS build issue)
+- All problems covered by existing open issues
+- **No new issues created** — all problems already tracked
 
 ### Trends
-- Score: 68/100 (↑5 from May 22, 63/100)
-- Actual failures: 9 (down from ~13 May 22)
-- PR approval backlog: 74 runs pending
-- CGO/CJS: 0% success rate on impacted workflows (ongoing)
+- Score: 70/100 (↑2 from May 25, ↑7 from May 22)
+- Actual failures: 4 (down from 9 May 25)
+- CGO/CJS: ongoing (P0 #29669, unresolved 90+ days)
 
-Last updated: 2026-05-25T05:55:59Z by workflow-health-manager
+Last updated: 2026-05-26T05:50:00Z by workflow-health-manager

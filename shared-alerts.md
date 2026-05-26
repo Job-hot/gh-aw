@@ -100,3 +100,14 @@ Last updated: 2026-05-22T05:50:30Z by workflow-health-manager
 
 ### Next Analysis: May 31, 2026
 
+
+---
+
+## Workflow Health Update - May 26, 2026
+
+**Timestamp:** 2026-05-26T05:50Z
+- Score: 70/100 (↑2 from yesterday)
+- Actual failures: 4 (CGO/CJS ongoing, #29669 still open 90+ days)
+- 236/236 lock files present (100% ✅)
+- PR approval backlog: 54% of runs (stable)
+- No new issues created — all problems tracked by existing issues
