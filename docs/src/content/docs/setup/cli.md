@@ -567,6 +567,33 @@ gh aw health issue-monster --days 90  # 90-day metrics for workflow
 
 Shows success/failure rates, trend indicators (↑ improving, → stable, ↓ degrading), execution duration, token usage, costs, and warnings when success rate drops below threshold.
 
+#### `forecast`
+
+> [!NOTE]
+> Experimental. Output shape and flags may change.
+
+Project effective token usage for agentic workflows by sampling recent run history and forecasting forward. Without arguments, forecasts every agentic workflow in the repository side-by-side; with one or more workflow IDs, narrows the report to those workflows.
+
+```bash wrap
+gh aw forecast                          # Forecast all workflows (monthly)
+gh aw forecast ci-doctor                # Forecast a specific workflow
+gh aw forecast ci-doctor daily-planner  # Compare two workflows
+gh aw forecast --period week            # Weekly projections (default: month)
+gh aw forecast --days 7                 # Use a 7-day history window (default: 30; allowed: 7, 30)
+gh aw forecast --sample 50              # Sample up to 50 completed runs per workflow (default: 100)
+gh aw forecast --json                   # Machine-readable JSON output
+gh aw forecast --repo owner/repo        # Forecast workflows in a remote repository
+gh aw forecast --eval                   # Backtest: evaluate forecast quality against past data
+```
+
+**Options:** `--days`, `--period`, `--sample`, `--eval`, `--repo/-r`, `--json/-j`
+
+The forecaster downloads a sample of completed runs and derives per-run metrics (effective tokens, duration, success rate). When `gh aw logs` has already cached a run, its token-usage data is reused. The observed run frequency is then projected to the target period using a Monte Carlo simulation that models three sources of uncertainty: run count (Poisson), per-run token usage (bootstrap resampling), and per-run success (Bernoulli). Results include P10/P50/P90 effective-token ranges. Runs with `conclusion=skipped` are excluded from both the model and the eval-window actuals. When A/B experiment variants are present, results are split per variant.
+
+**`--eval` (backtesting):** Shifts the training window back by one projection period, rebuilds the forecast, then compares against the actual runs observed in that period to compute P50 absolute/percentage error and whether the actual value fell inside the P10–P90 confidence interval. Use this to validate model quality before relying on forward projections.
+
+See [Forecast Specification](/gh-aw/reference/forecast-specification/) for the full command interface and projection algorithm, and [Effective Tokens](/gh-aw/reference/effective-tokens-specification/) for how the underlying metric is computed.
+
 #### `checks`
 
 Classify CI check state for a pull request and emit a normalized result.
