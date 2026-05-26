@@ -291,7 +291,7 @@ function encodeExportTraceServiceRequest(payload) {
                         : {}),
                     }))
                   : [],
-                ...(resourceSpan.schemaUrl ? { schemaUrl: resourceSpan.schemaUrl } : {}),
+                ...(scopeSpan.schemaUrl ? { schemaUrl: scopeSpan.schemaUrl } : {}),
               }))
             : [],
           ...(resourceSpan.schemaUrl ? { schemaUrl: resourceSpan.schemaUrl } : {}),
