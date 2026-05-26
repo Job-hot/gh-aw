@@ -33,7 +33,7 @@ outputs:
   parent-span-id:
     description: 'The OTLP parent span ID used for the gh-aw.<job-name>.setup span. Pass this through downstream jobs so all setup spans share the same global parent span.'
   copilot-cached:
-    description: 'Set to "true" when the Copilot CLI resolver found a cached, gh-aw-compatible version in the runner tool cache and added it to PATH. Set to "false" (or unset) when no cached version was usable. Compiler-emitted installer steps gate themselves on this output. Only populated for Copilot-engine workflows.'
+    description: 'Set to "true" when the Copilot CLI resolver found a cached, gh-aw-compatible version in the runner tool cache and added it to PATH. Set to "false" (or unset) when no cached version was usable. Compiler-emitted installer steps gate themselves on this output. Only populated when the compiler opts the step in by setting INPUT_INSTALL_COPILOT=true (the main agent and threat-detection jobs of Copilot-engine workflows).'
   copilot-path:
     description: 'Absolute path to the directory added to PATH when copilot-cached=true. Empty otherwise. Useful for diagnostics.'
 

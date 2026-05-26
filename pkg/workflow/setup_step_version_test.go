@@ -123,7 +123,7 @@ func TestGenerateSetupStepIncludesVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := NewCompiler()
-			lines := c.generateSetupStep(tt.data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "")
+			lines := c.generateSetupStep(tt.data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "", false)
 			combined := strings.Join(lines, "")
 
 			if tt.noVersionLine {
@@ -208,7 +208,7 @@ func TestGenerateSetupStepIncludesAWFVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := NewCompiler()
-			lines := c.generateSetupStep(tt.data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "")
+			lines := c.generateSetupStep(tt.data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "", false)
 			combined := strings.Join(lines, "")
 
 			if tt.expectNoAWFLine {
@@ -231,7 +231,7 @@ func TestGenerateSetupStepIncludesParentSpanID(t *testing.T) {
 	data := &WorkflowData{Name: "my-workflow"}
 	parentExpr := "${{ needs.activation.outputs.setup-span-id }}"
 
-	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", parentExpr)
+	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", parentExpr, false)
 	combined := strings.Join(lines, "")
 
 	if !strings.Contains(combined, "parent-span-id: "+parentExpr) {
@@ -246,7 +246,7 @@ func TestGenerateSetupStepIncludesEngineID(t *testing.T) {
 		EngineConfig: &EngineConfig{ID: "copilot"},
 	}
 
-	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "")
+	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "", false)
 	combined := strings.Join(lines, "")
 
 	if !strings.Contains(combined, `GH_AW_INFO_ENGINE_ID: "copilot"`) {
@@ -262,10 +262,66 @@ func TestGenerateSetupStepIncludesEngineIDInScriptModeFromAIField(t *testing.T) 
 		AI:   "claude",
 	}
 
-	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "")
+	lines := c.generateSetupStep(data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "", false)
 	combined := strings.Join(lines, "")
 
 	if !strings.Contains(combined, `GH_AW_INFO_ENGINE_ID: "claude"`) {
 		t.Fatalf("expected setup script step to include GH_AW_INFO_ENGINE_ID from AI field, got:\n%s", combined)
+	}
+}
+
+// TestGenerateSetupStepEmitsInstallCopilotGate verifies the compiler-controlled
+// resolver gate: INPUT_INSTALL_COPILOT='true' and INPUT_GH_AW_VERSION must be
+// emitted on the setup step env block when (and only when) the workflow uses
+// the Copilot engine AND the caller opts in via installCopilot=true. Other
+// jobs that share the setup step but do not invoke the Copilot CLI must not
+// emit either env var, so the toolcache resolver in setup.sh stays a no-op
+// outside the agent and threat-detection jobs.
+func TestGenerateSetupStepEmitsInstallCopilotGate(t *testing.T) {
+	c := NewCompiler()
+
+	copilotData := &WorkflowData{
+		Name:         "copilot-workflow",
+		AI:           "copilot",
+		EngineConfig: &EngineConfig{ID: "copilot"},
+	}
+	claudeData := &WorkflowData{
+		Name: "claude-workflow",
+		AI:   "claude",
+	}
+
+	tests := []struct {
+		name           string
+		data           *WorkflowData
+		installCopilot bool
+		wantEmit       bool
+	}{
+		{name: "copilot engine + opt-in emits both env vars", data: copilotData, installCopilot: true, wantEmit: true},
+		{name: "copilot engine without opt-in suppresses env vars", data: copilotData, installCopilot: false, wantEmit: false},
+		{name: "non-copilot engine ignores opt-in", data: claudeData, installCopilot: true, wantEmit: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			lines := c.generateSetupStep(tt.data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "", tt.installCopilot)
+			combined := strings.Join(lines, "")
+			hasGate := strings.Contains(combined, "INPUT_INSTALL_COPILOT: 'true'")
+			hasVersion := strings.Contains(combined, "INPUT_GH_AW_VERSION:")
+			if tt.wantEmit {
+				if !hasGate {
+					t.Errorf("expected INPUT_INSTALL_COPILOT='true' to be emitted, got:\n%s", combined)
+				}
+				if !hasVersion {
+					t.Errorf("expected INPUT_GH_AW_VERSION to be emitted, got:\n%s", combined)
+				}
+			} else {
+				if hasGate {
+					t.Errorf("did not expect INPUT_INSTALL_COPILOT to be emitted, got:\n%s", combined)
+				}
+				if hasVersion {
+					t.Errorf("did not expect INPUT_GH_AW_VERSION to be emitted, got:\n%s", combined)
+				}
+			}
+		})
 	}
 }
