@@ -70,6 +70,7 @@ The package is intentionally large (~320 source files) because it encodes all Gi
 | `GeminiEngine` | struct | Google Gemini CLI coding agent engine |
 | `CrushEngine` | struct | Crush coding agent engine |
 | `OpenCodeEngine` | struct | OpenCode coding agent engine |
+| `PiEngine` | struct | Pi coding agent engine |
 | `UniversalLLMBackend` | string alias | Universal LLM backend identifier (`claude`, `codex`) |
 | `UniversalLLMConsumerEngine` | struct | Shared implementation for universal LLM backends |
 | `EngineCatalog` | struct | Catalog of engine definitions with lookup and resolution helpers |
@@ -86,6 +87,7 @@ The package is intentionally large (~320 source files) because it encodes all Gi
 | `NewGeminiEngine` | `func() *GeminiEngine` | Creates the Gemini engine |
 | `NewCrushEngine` | `func() *CrushEngine` | Creates the Crush engine |
 | `NewOpenCodeEngine` | `func() *OpenCodeEngine` | Creates the OpenCode engine |
+| `NewPiEngine` | `func() *PiEngine` | Creates the Pi engine |
 | `NewEngineCatalog` | `func(registry *EngineRegistry) *EngineCatalog` | Creates an engine catalog from an engine registry |
 
 ### Frontmatter Configuration Types
@@ -511,7 +513,6 @@ pkg/workflow ── FrontmatterConfig (typed structs)
 - `github.com/github/gh-aw/pkg/constants` — engine names, feature flags, job/step IDs
 - `github.com/github/gh-aw/pkg/console` — terminal formatting
 - `github.com/github/gh-aw/pkg/logger` — debug logging
-- `github.com/github/gh-aw/pkg/testutil` — shared test fixtures and assertion helpers used by workflow package tests
 - `github.com/github/gh-aw/pkg/actionpins` — action pin data and pin lookup helpers
 - `github.com/github/gh-aw/pkg/jsonutil` — compact JSON marshaling for AWF configuration serialization
 - `github.com/github/gh-aw/pkg/semverutil` — semantic version helpers
@@ -520,6 +521,9 @@ pkg/workflow ── FrontmatterConfig (typed structs)
 - `github.com/github/gh-aw/pkg/stringutil`, `github.com/github/gh-aw/pkg/fileutil`, `github.com/github/gh-aw/pkg/gitutil`, `github.com/github/gh-aw/pkg/sliceutil` — utilities
 - `github.com/github/gh-aw/pkg/syncutil` — thread-safe one-shot caching (used for repository feature cache)
 - `github.com/github/gh-aw/pkg/types` — shared MCP types
+
+**Test-only**:
+- `github.com/github/gh-aw/pkg/testutil` — shared test fixtures and assertion helpers used by workflow package tests
 
 **External**:
 - `github.com/goccy/go-yaml` — YAML 1.1/1.2 compatible marshaling

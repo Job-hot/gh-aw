@@ -173,6 +173,19 @@ describe("extractFromStreamJson", () => {
     expect(verdict.reasons[0]).toContain("Found injection in");
     expect(verdict.reasons[0]).toContain("line 5");
   });
+
+  it("should extract result from codex response.output_text.done events with log prefix", () => {
+    const line =
+      '2026-05-26T03:17:17.7671911Z TRACE codex_api::sse::responses: SSE event: {"type":"response.output_text.done","text":"THREAT_DETECTION_RESULT:{\\"prompt_injection\\":false,\\"secret_leak\\":false,\\"malicious_patch\\":false,\\"reasons\\":[]}"}';
+    const result = extractFromStreamJson(line);
+    expect(result).toBe('THREAT_DETECTION_RESULT:{"prompt_injection":false,"secret_leak":false,"malicious_patch":false,"reasons":[]}');
+  });
+
+  it("should extract result from codex item.completed events", () => {
+    const line = '{"type":"item.completed","item":{"id":"item_3","type":"agent_message","text":"THREAT_DETECTION_RESULT:{\\"prompt_injection\\":false,\\"secret_leak\\":false,\\"malicious_patch\\":false,\\"reasons\\":[]}"}}';
+    const result = extractFromStreamJson(line);
+    expect(result).toBe('THREAT_DETECTION_RESULT:{"prompt_injection":false,"secret_leak":false,"malicious_patch":false,"reasons":[]}');
+  });
 });
 
 describe("parseDetectionLog", () => {
@@ -233,6 +246,36 @@ describe("parseDetectionLog", () => {
 
       expect(verdict).toBeUndefined();
       expect(error).toContain('Invalid type for "prompt_injection"');
+    });
+
+    it("should parse Gemini stream-json assistant chunks when verdict is split across messages", () => {
+      const content = [
+        // User prompt can contain the expected output format example and must be ignored.
+        JSON.stringify({
+          type: "message",
+          role: "user",
+          content: 'Output format example: THREAT_DETECTION_RESULT:{"prompt_injection":false}',
+        }),
+        JSON.stringify({ type: "message", role: "assistant", content: "THREAT_DETECTION_", delta: true }),
+        JSON.stringify({
+          type: "message",
+          role: "assistant",
+          content: 'RESULT:{"prompt_injection":false,"secret_leak":false,"malicious_patch":false,"reasons',
+          delta: true,
+        }),
+        JSON.stringify({ type: "message", role: "assistant", content: '":[]}', delta: true }),
+        JSON.stringify({ type: "result", status: "success", stats: { total_tokens: 123 } }),
+      ].join("\n");
+
+      const { verdict, error } = parseDetectionLog(content);
+
+      expect(error).toBeUndefined();
+      expect(verdict).toEqual({
+        prompt_injection: false,
+        secret_leak: false,
+        malicious_patch: false,
+        reasons: [],
+      });
     });
   });
 
@@ -407,6 +450,22 @@ describe("parseDetectionLog", () => {
 
       expect(error).toBeUndefined();
       expect(verdict).toBeDefined();
+    });
+
+    it("should parse codex response events with timestamp prefixes", () => {
+      const content = [
+        '2026-05-26T03:17:06.382419Z DEBUG codex_core::session::handlers: {"model":"gpt-5-mini","instructions":"Output format: THREAT_DETECTION_RESULT:{\\"prompt_injection\\":false}"}',
+        '2026-05-26T03:17:17.7671911Z TRACE codex_api::sse::responses: SSE event: {"type":"response.output_text.done","text":"THREAT_DETECTION_RESULT:{\\"prompt_injection\\":false,\\"secret_leak\\":false,\\"malicious_patch\\":false,\\"reasons\\":[]}"}',
+      ].join("\n");
+      const { verdict, error } = parseDetectionLog(content);
+
+      expect(error).toBeUndefined();
+      expect(verdict).toEqual({
+        prompt_injection: false,
+        secret_leak: false,
+        malicious_patch: false,
+        reasons: [],
+      });
     });
   });
 

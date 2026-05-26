@@ -27,12 +27,12 @@ const { getBaseBranch } = require("./get_base_branch.cjs");
 const { createAuthenticatedGitHubClient } = require("./handler_auth.cjs");
 const { buildWorkflowRunUrl } = require("./workflow_metadata_helpers.cjs");
 const { checkFileProtection } = require("./manifest_file_helpers.cjs");
-const { renderTemplateFromFile, buildProtectedFileList, getPromptPath } = require("./messages_core.cjs");
+const { renderTemplateFromFile, renderFilesList, buildProtectedFileList, getPromptPath } = require("./messages_core.cjs");
 const { COPILOT_REVIEWER_BOT, FAQ_CREATE_PR_PERMISSIONS_URL } = require("./constants.cjs");
 const { isStagedMode } = require("./safe_output_helpers.cjs");
 const { withRetry, RATE_LIMIT_RETRY_CONFIG } = require("./error_recovery.cjs");
 const { findAgent, getIssueDetails, assignAgentToIssue } = require("./assign_agent_helpers.cjs");
-const { ensureFullHistoryForBundle, extractBundlePrerequisiteCommits } = require("./git_helpers.cjs");
+const { ensureFullHistoryForBundle, extractBundlePrerequisiteCommits, linearizeRangeAsCommit } = require("./git_helpers.cjs");
 const { parseDiffGitHeader: parseDiffGitHeaderPaths, extractDiffGitHeaderEntries } = require("./patch_path_helpers.cjs");
 const { resolveAllowedMentionsFromPayload } = require("./resolve_mentions_from_payload.cjs");
 const {
@@ -268,11 +268,6 @@ async function applyBundleToBranch(bundleFilePath, branchName, originalAgentBran
  */
 async function rewriteBundleBranchAsSingleCommit(baseBranch, execApi) {
   const baseRef = `origin/${baseBranch}`;
-  const { stdout: originalHeadOut } = await execApi.getExecOutput("git", ["rev-parse", "HEAD"]);
-  const originalHead = originalHeadOut.trim();
-  if (!originalHead) {
-    throw new Error("Could not resolve current HEAD before bundle rewrite");
-  }
 
   let commitHeadline = "Apply bundled create_pull_request changes";
   try {
@@ -285,27 +280,8 @@ async function rewriteBundleBranchAsSingleCommit(baseBranch, execApi) {
   }
 
   core.warning(`Rewriting bundled commits to a single linear commit for signed push compatibility (base: ${baseRef})`);
-  try {
-    await execApi.exec("git", ["reset", "--soft", baseRef]);
-    const { stdout: stagedFilesOut } = await execApi.getExecOutput("git", ["diff", "--cached", "--name-only"]);
-    if (!stagedFilesOut.trim()) {
-      throw new Error(`No staged changes found after soft reset to ${baseRef}`);
-    }
-    await execApi.exec("git", ["commit", "-m", commitHeadline]);
-    const { stdout: rewrittenHeadOut } = await execApi.getExecOutput("git", ["rev-parse", "HEAD"]);
-    const rewrittenHead = rewrittenHeadOut.trim();
-    core.info(`Bundle rewrite completed (old HEAD: ${originalHead}, new HEAD: ${rewrittenHead})`);
-  } catch (rewriteError) {
-    try {
-      await execApi.exec("git", ["reset", "--hard", originalHead]);
-      core.warning(`Bundle rewrite failed; restored original HEAD ${originalHead}`);
-    } catch (restoreError) {
-      core.warning(`Bundle rewrite rollback failed: ${restoreError instanceof Error ? restoreError.message : String(restoreError)}`);
-    }
-    throw new Error(`Failed to rewrite bundled commits for signed push retry: ${rewriteError instanceof Error ? rewriteError.message : String(rewriteError)}`, {
-      cause: rewriteError,
-    });
-  }
+  const newHead = await linearizeRangeAsCommit(baseRef, commitHeadline, execApi);
+  core.info(`Bundle rewrite completed (new HEAD: ${newHead})`);
 }
 
 // NOTE: isLabelTransientError, LABEL_MAX_RETRIES, LABEL_INITIAL_DELAY_MS, LABEL_MAX_DELAY_MS,
@@ -1061,10 +1037,15 @@ async function main(config = {}) {
     // Check file protection: allowlist (strict) or protected-files policy.
     /** @type {string[] | null} Protected files that trigger fallback-to-issue handling */
     let manifestProtectionFallback = null;
+    /** @type {string[] | null} Protected files that trigger request-review handling */
+    let manifestProtectionRequestReview = null;
     /** @type {unknown} */
     let manifestProtectionPushFailedError = null;
     if (!isEmpty) {
-      const protection = checkFileProtection(patchContent, config);
+      const protection = checkFileProtection(patchContent, {
+        ...config,
+        protected_files_policy: config.protected_files_policy ?? "request_review",
+      });
       if (protection.action === "deny") {
         const filesStr = protection.files.join(", ");
         const message =
@@ -1077,6 +1058,10 @@ async function main(config = {}) {
       if (protection.action === "fallback") {
         manifestProtectionFallback = protection.files;
         core.warning(`Protected file protection triggered (fallback-to-issue): ${protection.files.join(", ")}. Will create review issue instead of pull request.`);
+      }
+      if (protection.action === "request_review") {
+        manifestProtectionRequestReview = protection.files;
+        core.warning(`Protected file protection triggered (request_review): ${protection.files.join(", ")}. Will create pull request with caution and request-changes review.`);
       }
     }
 
@@ -1229,6 +1214,15 @@ async function main(config = {}) {
       bodyLines.unshift(...bodyHeader.split("\n"), "");
     }
 
+    // Keep the protected-files notice directly under detection caution:
+    // this block runs first, then detectionCaution below unshifts to index 0.
+    if (manifestProtectionRequestReview && manifestProtectionRequestReview.length > 0) {
+      const protectedFilesNoticeTemplatePath = getPromptPath("manifest_protection_request_review.md");
+      const protectedFilesNotice = renderTemplateFromFile(protectedFilesNoticeTemplatePath, {
+        files: renderFilesList(manifestProtectionRequestReview.join(", ")),
+      });
+      bodyLines.unshift(protectedFilesNotice, "", "");
+    }
     // Inject CAUTION at top of body (unshifted after header so it appears first in the final output)
     const detectionCaution = getDetectionCautionAlert(workflowName, runUrl);
     if (detectionCaution) {
@@ -2028,6 +2022,60 @@ ${patchPreview}`;
             core.info(`Requested copilot as reviewer for pull request #${pullRequest.number}`);
           } catch (copilotError) {
             core.warning(`Failed to request copilot as reviewer for PR #${pullRequest.number}: ${copilotError instanceof Error ? copilotError.message : String(copilotError)}`);
+          }
+        }
+      }
+
+      const requestChangesSections = [];
+      if (manifestProtectionRequestReview && manifestProtectionRequestReview.length > 0) {
+        const protectedFilesReviewTemplatePath = getPromptPath("manifest_protection_request_changes_review.md");
+        requestChangesSections.push(
+          renderTemplateFromFile(protectedFilesReviewTemplatePath, {
+            files: renderFilesList(manifestProtectionRequestReview),
+          })
+        );
+      }
+      if (detectionCaution) {
+        const detectionReason = process.env.GH_AW_DETECTION_REASON || "unknown";
+        const detectionWarningReviewTemplatePath = getPromptPath("threat_warning_request_changes_review.md");
+        requestChangesSections.push(
+          renderTemplateFromFile(detectionWarningReviewTemplatePath, {
+            detectionReason,
+            runUrl,
+          })
+        );
+      }
+      if (requestChangesSections.length > 0) {
+        const requestChangesBody = requestChangesSections.join("\n\n---\n\n");
+        /** @type {{ owner: string, repo: string, pull_number: number, event: "REQUEST_CHANGES" | "COMMENT", body: string, commit_id?: string }} */
+        const requestChangesParams = {
+          owner: repoParts.owner,
+          repo: repoParts.repo,
+          pull_number: pullRequest.number,
+          event: "REQUEST_CHANGES",
+          body: requestChangesBody,
+        };
+        if (pullRequest.head && pullRequest.head.sha) {
+          requestChangesParams.commit_id = pullRequest.head.sha;
+        }
+        core.info(`Creating REQUEST_CHANGES review for PR #${pullRequest.number} due to protected files`);
+        try {
+          await withRetry(() => githubClient.rest.pulls.createReview(requestChangesParams), RATE_LIMIT_RETRY_CONFIG, `create REQUEST_CHANGES review for PR #${pullRequest.number}`);
+          core.info(`Created REQUEST_CHANGES review for PR #${pullRequest.number}`);
+        } catch (requestChangesError) {
+          const requestChangesErrorMessage = getErrorMessage(requestChangesError);
+          const ownPrMessages = ["Can not request changes on your own pull request"];
+          if (ownPrMessages.some(msg => requestChangesErrorMessage.includes(msg))) {
+            core.warning(`Cannot submit REQUEST_CHANGES on own PR #${pullRequest.number}. Retrying with COMMENT.`);
+            try {
+              const commentReviewParams = { ...requestChangesParams, event: "COMMENT" };
+              await withRetry(() => githubClient.rest.pulls.createReview(commentReviewParams), RATE_LIMIT_RETRY_CONFIG, `create COMMENT review fallback for PR #${pullRequest.number}`);
+              core.info(`Created COMMENT review fallback for PR #${pullRequest.number}`);
+            } catch (commentReviewError) {
+              core.warning(`Failed to create COMMENT review fallback for PR #${pullRequest.number}: ${commentReviewError instanceof Error ? commentReviewError.message : String(commentReviewError)}`);
+            }
+          } else {
+            core.warning(`Failed to create REQUEST_CHANGES review for PR #${pullRequest.number}: ${requestChangesErrorMessage}`);
           }
         }
       }

@@ -361,8 +361,39 @@ When sub-agents are not fully observable, implementations MUST still report aggr
 
 ### 8.5 Safeguards
 
-Implementations must prevent unbounded ET accumulation from producing non-finite or
-non-interoperable outputs.
+Implementations MUST apply the following safeguards to prevent unbounded ET accumulation from
+producing non-finite or non-interoperable outputs.
+
+#### S-1: Overflow and Capping
+
+**Threat**: Unbounded multi-invocation ET aggregation can exceed numeric interoperability limits and
+produce values that cannot be represented safely across systems.
+
+**Mitigation**: Implementations MUST enforce the JavaScript-safe numeric ceiling and record
+deterministic overflow state when capping occurs, including the ceiling value in the emitted
+flag/error payload.
+
+Normative requirements: **R-SAFE-002**, **R-SAFE-003**, **R-SAFE-003A**, **R-SAFE-004**
+
+#### S-2: Non-Finite Numeric Rejection
+
+**Threat**: `NaN`, `+Inf`, and `-Inf` values in multipliers or token class weights can silently
+corrupt ET outputs and break downstream serialization/aggregation.
+
+**Mitigation**: Implementations MUST reject non-finite or invalid numeric registry values before ET
+computation begins.
+
+Normative requirements: **R-SAFE-007**, **R-SAFE-008**
+
+#### S-3: Registry Validation Failure Handling
+
+**Threat**: Continuing ET computation after registry validation failure can produce inconsistent,
+partially parsed, or non-reproducible outputs.
+
+**Mitigation**: Implementations MUST fail deterministically with field-level diagnostics and MUST NOT
+continue with partially parsed registry data.
+
+Normative requirements: **R-SAFE-009**, **R-SAFE-010**
 
 **R-SAFE-001**: ET aggregation logic **MUST** detect overflow and non-finite arithmetic states
 (`NaN`, `+Inf`, `-Inf`) before serializing output.
@@ -422,6 +453,14 @@ Implementations MAY:
 - Support streaming or partial progress updates
 
 Extensions MUST NOT alter the core ET definition or the default weight values without disclosure.
+
+**ET-EXT-01**: Extensions MUST NOT redefine the default weight values (`w_in`, `w_cache`, `w_out`, `w_reason`) without incrementing the specification version. Any implementation that ships with non-default weight values MUST declare a version bump and MUST update the Compliance Checklist in §10.2 to reflect the changed defaults.
+
+**ET-EXT-02**: Extensions MUST NOT introduce new mandatory fields into the invocation node schema (§6.1) without a corresponding revision to the conformance requirements in §2.3. New fields MAY be added as optional extensions, but implementations MUST NOT reject conforming payloads that omit optional extension fields.
+
+**ET-EXT-03**: Extensions that add new token classes MUST assign unique, non-conflicting class names and MUST NOT reuse the reserved names `input`, `cached_input`, `output`, or `reasoning`. Extension token classes MUST NOT be included in the default `base_weighted_tokens` formula unless a new specification version explicitly incorporates them.
+
+For implementation files that exercise extensibility paths, see the Sync Notes section.
 
 ---
 
@@ -630,6 +669,42 @@ ET_total = Σ [ m_i × (max(I_i - C_i, 0) + 0.1 C_i + 4 O_i + 4 R_i) ]
 
 ET values are derived from token usage metadata. Implementations SHOULD treat per-invocation token data as potentially sensitive since usage patterns may reveal information about system prompts, model configurations, or user behavior. Aggregate ET values suitable for observability dashboards SHOULD be separated from detailed per-invocation data in access-controlled reporting systems.
 
+### Appendix D: ET Test Vectors
+
+#### ET-TV-001 (Single Invocation Baseline)
+
+Input:
+
+- `model multiplier m = 1.0`
+- `input_tokens = 200`
+- `cached_input_tokens = 50`
+- `output_tokens = 10`
+- `reasoning_tokens = 0`
+
+Expected ET:
+
+```
+base_weighted_tokens = max(200-50,0) + 0.1×50 + 4×10 + 4×0 = 150 + 5 + 40 + 0 = 195
+effective_tokens = 1.0 × 195 = 195
+```
+
+#### ET-TV-002 (Three-Node Graph, Mixed Cached/Output Tokens)
+
+Input invocation set:
+
+1. Root: `m=2.0`, `I=500`, `C=200`, `O=120`, `R=0`
+2. Sub-agent A: `m=1.0`, `I=300`, `C=0`, `O=90`, `R=10`
+3. Sub-agent B: `m=2.0`, `I=150`, `C=50`, `O=80`, `R=0`
+
+Expected ET:
+
+```
+Root:      base = max(500-200,0) + 0.1×200 + 4×120 + 4×0  = 300 + 20 + 480 + 0 = 800;  ET = 2.0×800 = 1600
+Sub-agent: base = max(300-0,0)   + 0.1×0   + 4×90  + 4×10 = 300 + 0  + 360 + 40 = 700;  ET = 1.0×700 = 700
+Sub-agent: base = max(150-50,0)  + 0.1×50  + 4×80  + 4×0  = 100 + 5  + 320 + 0  = 425;  ET = 2.0×425 = 850
+ET_total = 1600 + 700 + 850 = 3150
+```
+
 ---
 
 ## Model Multiplier Registry
@@ -684,7 +759,7 @@ This file is embedded at compile time into the `gh-aw` binary using a Go `//go:e
 
 **R-REG-008**: When adding support for a new model, maintainers MUST register the model in `pkg/cli/data/model_multipliers.json` with a concrete numeric multiplier before release. If calibration is incomplete, the model MUST be omitted from the registry and the implementation fallback behavior in R-REG-005 applies.
 
-**R-REG-009**: When a model is scheduled for removal from the registry, it MUST remain in `pkg/cli/data/model_multipliers.json` with a `deprecated` marker in a comment or companion metadata field for at least one minor version before it is deleted. Implementations SHOULD emit a warning when a `deprecated` model is encountered at runtime, advising callers to migrate to a supported model. A model entry MUST NOT be silently removed between consecutive minor versions; removal without the one-version deprecation notice is a breaking change and MUST be accompanied by a major version bump of the registry `version` field.
+**R-REG-009**: The registry MUST preserve complete model history. Models that are no longer returned by current provider inventories MUST remain in `pkg/cli/data/model_multipliers.json` unless maintainers manually delete them in an explicit change.
 
 ### Registry Versioning
 
@@ -694,13 +769,52 @@ The `version` field in `model_multipliers.json` corresponds to the registry sche
 
 ## Sync Notes
 
+### §4–§8 Implementation File Mapping
+
+The table below maps the normative sections of this specification to the implementation files that realize each requirement. Use this mapping to identify which files must be updated when specification sections change.
+
+| Spec Section | Description | Implementation File(s) |
+|---|---|---|
+| §4 Token Accounting Model | Per-invocation ET computation (`base_weighted_tokens`, ET formula) | `pkg/cli/effective_tokens.go` (`populateEffectiveTokens`, `computeBaseWeightedTokens`) |
+| §5 Multi-Invocation Aggregation | `ET_total`, `raw_total_tokens`, `total_invocations` | `pkg/cli/effective_tokens.go` (`AggregateEffectiveTokens`) |
+| §6 Execution Graph Requirements | Node schema, root/sub-agent linkage, graph traversal | `pkg/cli/logs_models.go`, `pkg/cli/logs_episode.go`, `pkg/cli/logs_orchestrator.go` |
+| §7 Reporting | Console and JSON output of ET summaries and per-model breakdowns | `pkg/cli/audit_report.go`, `pkg/cli/audit_report_render_tools.go`, `pkg/cli/audit_diff.go`, `pkg/cli/logs_report.go` |
+| §7.1 OTel Attribute Requirements | OpenTelemetry span attribute emission for ET metrics | `pkg/cli/token_usage.go`, `pkg/cli/logs_run_processor.go` |
+| §8 Implementation Requirements | Completeness, determinism, versioning, partial visibility safeguards | `pkg/cli/effective_tokens.go`, `pkg/cli/forecast_montecarlo.go` |
+
+### §7.1 OTel Attribute Row-to-Code Mapping
+
+| §7.1 Attribute Key | Implementation Mapping |
+|---|---|
+| `llm.token.effective_total` | `pkg/cli/token_usage.go` → `TokenUsageSummary.TotalEffectiveTokens`, populated by `populateEffectiveTokensWithCustomWeights` |
+| `llm.token.input` | `pkg/cli/token_usage.go` → `TokenUsageEntry.InputTokens` and `ModelTokenUsage.InputTokens`, aggregated in `parseTokenUsageFile` |
+| `llm.token.output` | `pkg/cli/token_usage.go` → `TokenUsageEntry.OutputTokens` and `ModelTokenUsage.OutputTokens`, aggregated in `parseTokenUsageFile` |
+| `llm.token.cached_input` | `pkg/cli/token_usage.go` → `TokenUsageEntry.CacheReadTokens` and `ModelTokenUsage.CacheReadTokens`, aggregated in `parseTokenUsageFile` |
+| `llm.token.base_weighted` | `pkg/cli/effective_tokens.go` → base token weighting in `computeModelEffectiveTokensWithWeights` (pre-multiplier term) |
+| `llm.model.multiplier` | `pkg/cli/effective_tokens.go` → multiplier resolution in `computeModelEffectiveTokensWithWeights` (`mult` selection by model key/prefix) |
+
+### §4–§8 Sync Procedure
+
+To keep the specification and implementation synchronized:
+
+1. When changing the ET formula or token class weights (§4), update `pkg/cli/effective_tokens.go` and update the Compliance Checklist in §10.2.
+2. When changing aggregation semantics (§5), update `pkg/cli/effective_tokens.go` and rerun tests `T-ET-010–T-ET-012` and `T-ET-006`.
+3. When changing the execution graph node schema (§6), update `pkg/cli/logs_models.go` and `pkg/cli/logs_episode.go` in the same change.
+4. When changing reporting format or field names (§7), update the affected render files in `pkg/cli/` and run `go test ./pkg/cli/ -run TestAudit`.
+5. When changing OTel attribute names (§7.1), update `pkg/cli/token_usage.go` and verify attribute names with `grep -r "effective_tokens" pkg/`.
+6. After any §8 change affecting determinism or partial visibility, re-run `go test ./pkg/cli/ -run TestEffectiveTokens` and `go test ./pkg/cli/ -run TestRunMonteCarlo`.
+
+Run `grep -r "effective_tokens" pkg/` to confirm all implementation files are captured in the table above.
+
+### Model Multiplier Registry Sync
+
 The Effective Tokens registry is maintained in `pkg/cli/data/model_multipliers.json` and loaded by `pkg/cli/effective_tokens.go`.
 
 To keep specification and implementation synchronized:
 
 1. Update this specification's registry requirements when adding, removing, or re-scaling model multipliers.
 2. Update `pkg/cli/data/model_multipliers.json` in the same change.
-3. When deprecating a model, add a `deprecated` comment alongside the entry and keep it in the registry for at least one minor version before removal (R-REG-009). Update the registry `version` field on removal.
+3. Keep historical model entries in the registry by default. Only remove entries via explicit manual deletion when needed (R-REG-009), and update the registry `version` field on removal.
 4. Verify loading and fallback behavior in `pkg/cli/effective_tokens_test.go` (`TestModelMultipliersJSONEmbedded`, `TestResolveEffectiveWeightsDefault`, and inventory checks).
 5. Run `make build` so the embedded registry is rebuilt into the `gh-aw` binary.
 6. Re-run registry validation coverage after any registry edit so malformed multiplier entries fail
@@ -728,7 +842,7 @@ Conforming releases SHOULD include a test assertion for newly added model multip
 ### Version 0.3.0 (Draft)
 
 - **Added**: Model Multiplier Registry section with normative requirements R-REG-001 through R-REG-009
-- **Added**: R-REG-009: model deprecation/sunset lifecycle norm (models must carry a `deprecated` marker for one minor version before removal)
+- **Updated**: R-REG-009 to require complete model history retention and explicit manual deletion instead of deprecated-model lifecycle markers
 - **Added**: Compliance test skeleton file `pkg/cli/effective_tokens_compliance_test.go` with Go test stubs for T-ET-001..T-ET-031
 - **Added**: T-ET-032 requirement for deterministic post-order aggregation in deep (3+ level) partially observed execution graphs
 - **Updated**: Compliance checklist §10.2 status column from "Required" to "Implemented" for all test IDs T-ET-001–T-ET-031 (all tests now implemented and passing)

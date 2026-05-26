@@ -103,6 +103,11 @@ func (c *Compiler) ParseWorkflowFile(markdownPath string) (*WorkflowData, error)
 		return nil, fmt.Errorf("%s: %w", cleanPath, err)
 	}
 
+	// Warn when the deprecated Gemini engine is used.
+	if err := c.validateGeminiDeprecation(workflowData); err != nil {
+		return nil, fmt.Errorf("%s: %w", cleanPath, err)
+	}
+
 	// Validate playwright tool mode: warn when MCP mode is used (deprecated in favour of CLI mode)
 	if err := c.validatePlaywrightMode(workflowData); err != nil {
 		return nil, fmt.Errorf("%s: %w", cleanPath, err)
@@ -367,11 +372,11 @@ func (c *Compiler) extractAdditionalConfigurations(
 	}
 
 	workflowData.Roles = c.extractRoles(frontmatter)
-	workflowData.Bots = c.mergeBots(c.extractBots(frontmatter), importsResult.MergedBots)
+	workflowData.Bots = expandBotNames(c.mergeBots(c.extractBots(frontmatter), importsResult.MergedBots))
 	workflowData.LabelNames = c.extractLabelNames(frontmatter)
 	workflowData.RateLimit = c.extractRateLimitConfig(frontmatter)
 	workflowData.SkipRoles = c.mergeSkipRoles(c.extractSkipRoles(frontmatter), importsResult.MergedSkipRoles)
-	workflowData.SkipBots = c.mergeSkipBots(c.extractSkipBots(frontmatter), importsResult.MergedSkipBots)
+	workflowData.SkipBots = expandBotNames(c.mergeSkipBots(c.extractSkipBots(frontmatter), importsResult.MergedSkipBots))
 	workflowData.SkipAuthorAssociations = c.extractSkipAuthorAssociations(frontmatter)
 	workflowData.AllowBotAuthoredTriggerComment = c.extractAllowBotAuthoredTriggerComment(frontmatter)
 	workflowData.ActivationGitHubToken = c.resolveActivationGitHubToken(frontmatter, importsResult)

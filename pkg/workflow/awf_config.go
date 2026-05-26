@@ -25,7 +25,7 @@
 //	      "openai":    { "host": "api.openai.com" },
 //	      "anthropic": { "host": "api.anthropic.com" },
 //	      "copilot":   { "host": "api.githubcopilot.com" },
-//	      "gemini":    { "host": "generativelanguage.googleapis.com" }
+//	      "antigravity":    { "host": "generativelanguage.googleapis.com" }
 //	    },
 //	    "models": {
 //	      "sonnet": ["mygateway/*sonnet*"],
@@ -167,6 +167,7 @@ type AWFAPIProxyConfig struct {
 
 	// Targets holds per-provider API target overrides.
 	// Supported keys: "openai", "anthropic", "copilot", "gemini"
+	// The "gemini" target is also used for Antigravity engine routing.
 	Targets map[string]*AWFAPITargetConfig `json:"targets,omitempty"`
 
 	// Models contains model alias and fallback policy definitions.
@@ -300,9 +301,18 @@ func BuildAWFConfigJSON(config AWFCommandConfig) (string, error) {
 		targets["copilot"] = &AWFAPITargetConfig{Host: copilotTarget}
 		awfConfigLog.Printf("API proxy: custom copilot target=%s", copilotTarget)
 	}
-	if geminiTarget := GetGeminiAPITarget(config.WorkflowData, config.EngineName); geminiTarget != "" {
-		targets["gemini"] = &AWFAPITargetConfig{Host: geminiTarget}
+	if antigravityTarget := GetAntigravityAPITarget(config.WorkflowData, config.EngineName); antigravityTarget != "" {
+		// Route the Antigravity-resolved API target through the "gemini" provider key
+		// to match AWF's supported target providers.
+		geminiTarget := GetGeminiAPITarget(config.WorkflowData, config.EngineName)
+		if geminiTarget != "" && geminiTarget != antigravityTarget {
+			awfConfigLog.Printf("API proxy: overriding gemini target %s with antigravity target %s; configure only one of GEMINI_API_BASE_URL or ANTIGRAVITY_API_BASE_URL to avoid ambiguity", geminiTarget, antigravityTarget)
+		}
+		awfConfigLog.Printf("API proxy: mapped antigravity target to gemini provider target=%s", antigravityTarget)
+		targets["gemini"] = &AWFAPITargetConfig{Host: antigravityTarget}
+	} else if geminiTarget := GetGeminiAPITarget(config.WorkflowData, config.EngineName); geminiTarget != "" {
 		awfConfigLog.Printf("API proxy: custom gemini target=%s", geminiTarget)
+		targets["gemini"] = &AWFAPITargetConfig{Host: geminiTarget}
 	}
 
 	if len(targets) > 0 {

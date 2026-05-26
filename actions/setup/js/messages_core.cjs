@@ -16,7 +16,7 @@
  * - {triggering_number} - Issue/PR/Discussion number that triggered this workflow
  * - {effective_tokens} - Raw total effective token count for the run (e.g. 1200), only present when > 0
  * - {effective_tokens_formatted} - Compact formatted effective tokens (e.g. "1.2K", "3M"), only present when > 0
- * - {effective_tokens_suffix} - Pre-formatted suffix including the ● symbol (e.g. " · ● 1.2K"), or "" when not available
+ * - {effective_tokens_suffix} - Pre-formatted suffix (e.g. " · 1.2K"), or "" when not available
  * - {operation} - Operation name (for staged mode titles/descriptions)
  * - {event_type} - Event type description (for run-started messages)
  * - {status} - Workflow status text (for run-failure messages)
@@ -81,8 +81,37 @@ function getMessages() {
 function renderTemplate(template, context) {
   return template.replace(/\{(\w+)\}/g, (match, key) => {
     const value = context[key];
-    return value !== undefined && value !== null ? String(value) : match;
+    if (value === undefined || value === null) {
+      return match;
+    }
+    return String(value);
   });
+}
+
+/**
+ * Render a comma-separated files list into markdown inline code spans.
+ * - Trims each entry and drops empty segments
+ * - Accepts filenames already wrapped in backticks
+ * - Redacts unsafe/invalid entries as `redacted`
+ * @param {string[]|string|number|boolean} value
+ * @returns {string}
+ */
+function renderFilesList(value) {
+  const files = Array.isArray(value) ? value : String(value).split(",");
+  const normalizedFiles = files.map(file => String(file).trim()).filter(Boolean);
+
+  return normalizedFiles
+    .map(file => {
+      let normalized = file;
+      if (normalized.startsWith("`") && normalized.endsWith("`")) {
+        normalized = normalized.slice(1, -1).trim();
+      }
+      if (!normalized || normalized.includes("`")) {
+        normalized = "redacted";
+      }
+      return `\`${normalized}\``;
+    })
+    .join(", ");
 }
 
 /**
@@ -188,6 +217,7 @@ module.exports = {
   getMessages,
   getPromptPath,
   renderTemplate,
+  renderFilesList,
   renderTemplateFromFile,
   toSnakeCase,
   encodePathSegments,

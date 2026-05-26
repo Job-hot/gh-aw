@@ -1,19 +1,22 @@
 package cli
 
 // This file implements the `forecast` command, which samples a workflow's recent
-// GitHub Actions run history and projects forward effective token usage and yield
-// on a per-week or per-month basis.
+// GitHub Actions run history and projects forward effective token usage (including
+// Monte Carlo probability distributions) on a per-week or per-month basis.
 //
 // Workflow metadata (trigger types, concurrency, experiments) is read from the
 // workflow's Markdown frontmatter so that projections account for how often the
 // workflow is actually expected to fire and how many concurrent runs it supports.
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"math/rand"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -44,29 +47,18 @@ const (
 var (
 	forecastFetchGitHubWorkflows      = fetchGitHubWorkflows
 	forecastListWorkflowRunsPaginated = listWorkflowRunsWithPagination
-	forecastRateLimitSleep            = time.Sleep
-)
+	forecastRateLimitSleep            = func(ctx context.Context, delay time.Duration) error {
+		timer := time.NewTimer(delay)
+		defer timer.Stop()
 
-// ForecastEpisodeSummary contains episode-level aggregate metrics derived from
-// run history without downloading artifacts.  Episodes are reconstructed from the
-// fields available in the GitHub Actions run list (event type, head SHA, branch).
-// Dispatch and workflow_call linkages that require aw_info.json are not available
-// in this lightweight analysis, so the episode count is a lower-bound estimate.
-type ForecastEpisodeSummary struct {
-	// SampledEpisodes is the number of distinct episodes detected in the sampled
-	// run history.  Each "episode" represents one logical task execution, which may
-	// span multiple runs when a workflow dispatches sub-workflows.
-	SampledEpisodes int `json:"sampled_episodes"`
-	// RunsPerEpisode is the average number of runs per episode (SampledRuns /
-	// SampledEpisodes).  Values > 1 indicate orchestrator-style workflows that
-	// dispatch multiple sub-workflows per task.
-	RunsPerEpisode float64 `json:"runs_per_episode"`
-	// AvgEffectiveTokensPerEpisode is the mean effective-token count per episode.
-	AvgEffectiveTokensPerEpisode int `json:"avg_effective_tokens_per_episode"`
-	// ObservedEpisodesPerPeriod is the projected number of episodes in the forecast
-	// period, scaled from the observed episode frequency.
-	ObservedEpisodesPerPeriod float64 `json:"observed_episodes_per_period"`
-}
+		select {
+		case <-timer.C:
+			return nil
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+)
 
 // ForecastWorkflowResult contains the projected metrics for a single workflow.
 type ForecastWorkflowResult struct {
@@ -84,8 +76,6 @@ type ForecastWorkflowResult struct {
 
 	// SuccessRate is the fraction of sampled runs that completed successfully (0–1).
 	SuccessRate float64 `json:"success_rate"`
-	// Yield is the effective throughput: success rate × observed runs per period.
-	Yield float64 `json:"yield"`
 
 	// Average per-run metrics (from completed runs).
 	AvgEffectiveTokens int     `json:"avg_effective_tokens"`
@@ -93,10 +83,6 @@ type ForecastWorkflowResult struct {
 
 	// Projected totals for the period.
 	ProjectedEffectiveTokens int `json:"projected_effective_tokens"`
-
-	// EpisodeAnalysis contains episode-level metrics derived from the sampled runs.
-	// Nil when no completed runs were available to analyze.
-	EpisodeAnalysis *ForecastEpisodeSummary `json:"episode_analysis,omitempty"`
 
 	// MonteCarlo contains the probability distribution of projected effective-token
 	// counts derived from a Monte Carlo simulation (10 000 trials).
@@ -165,6 +151,8 @@ type ForecastResult struct {
 // RunForecast is the entry point for the forecast command.
 func RunForecast(config ForecastConfig) error {
 	forecastRunLog.Printf("Running forecast: workflows=%v, days=%d, period=%s, eval=%v", config.WorkflowIDs, config.Days, config.Period, config.EvalMode)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
 
 	// Emit experimental warning so users know this command is not yet stable.
 	fmt.Fprintln(os.Stderr, console.FormatWarningMessage("forecast is an experimental command and may change without notice"))
@@ -182,7 +170,7 @@ func RunForecast(config ForecastConfig) error {
 	}
 
 	// Resolve the list of workflow IDs to forecast.
-	workflowIDs, err := resolveForecastWorkflows(config)
+	workflowIDs, err := resolveForecastWorkflows(ctx, config)
 	if err != nil {
 		return err
 	}
@@ -232,14 +220,26 @@ func RunForecast(config ForecastConfig) error {
 
 	results := make([]ForecastWorkflowResult, 0, len(workflowIDs))
 	for _, wfID := range workflowIDs {
+		if err := ctx.Err(); err != nil {
+			if !config.Verbose {
+				spinner.Stop()
+			}
+			return err
+		}
 		if !config.Verbose {
 			spinner.UpdateMessage(fmt.Sprintf("Sampling %s…", wfID))
 		}
 
 		// forecastWorkflow uses the shifted startDate; in eval mode we also pass the
 		// anchor so the function knows where the training window ends.
-		result, err := forecastWorkflow(wfID, startDate, config, periodDays)
+		result, err := forecastWorkflow(ctx, wfID, startDate, config, periodDays)
 		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				if !config.Verbose {
+					spinner.Stop()
+				}
+				return err
+			}
 			if !config.Verbose {
 				spinner.Stop()
 			}
@@ -253,7 +253,7 @@ func RunForecast(config ForecastConfig) error {
 
 		// In eval mode, fetch the validation-window runs and attach evaluation metrics.
 		if config.EvalMode {
-			result.Evaluation = evaluateForecast(wfID, result, validationStartDate, validationEndDate, config)
+			result.Evaluation = evaluateForecast(ctx, wfID, result, validationStartDate, validationEndDate, config)
 		}
 
 		results = append(results, result)
@@ -292,9 +292,9 @@ func RunForecast(config ForecastConfig) error {
 // resolveForecastWorkflows returns the ordered list of workflow IDs to forecast.
 // When WorkflowIDs is empty, all agentic workflow IDs in the repository are returned.
 // When RepoOverride is set, workflows are discovered via the GitHub API instead of local files.
-func resolveForecastWorkflows(config ForecastConfig) ([]string, error) {
+func resolveForecastWorkflows(ctx context.Context, config ForecastConfig) ([]string, error) {
 	if config.RepoOverride != "" {
-		return resolveForecastWorkflowsFromRemote(config.WorkflowIDs, config.RepoOverride, config.Verbose)
+		return resolveForecastWorkflowsFromRemote(ctx, config.WorkflowIDs, config.RepoOverride, config.Verbose)
 	}
 
 	if len(config.WorkflowIDs) > 0 {
@@ -322,8 +322,8 @@ func resolveForecastWorkflows(config ForecastConfig) ([]string, error) {
 // the GitHub API. When ids is empty, all workflows in the remote repository are returned.
 // When ids are provided, each is matched (case-insensitively) against remote workflow names
 // and file-path basenames.
-func resolveForecastWorkflowsFromRemote(ids []string, repoOverride string, verbose bool) ([]string, error) {
-	githubWorkflows, err := fetchWorkflowsWithBackoff(ids, repoOverride, verbose)
+func resolveForecastWorkflowsFromRemote(ctx context.Context, ids []string, repoOverride string, verbose bool) ([]string, error) {
+	githubWorkflows, err := fetchWorkflowsWithBackoff(ctx, ids, repoOverride, verbose)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list workflows in %s: %w", repoOverride, err)
 	}
@@ -357,7 +357,7 @@ func forecastRateLimitBackoffDuration(attempt int) time.Duration {
 	return time.Duration(attempt) * forecastRateLimitBaseBackoff
 }
 
-func fetchWorkflowsWithBackoff(ids []string, repoOverride string, verbose bool) (map[string]*GitHubWorkflow, error) {
+func fetchWorkflowsWithBackoff(ctx context.Context, ids []string, repoOverride string, verbose bool) (map[string]*GitHubWorkflow, error) {
 	var lastErr error
 
 	for attempt := 1; attempt <= forecastRateLimitMaxAttempts; attempt++ {
@@ -378,7 +378,9 @@ func fetchWorkflowsWithBackoff(ids []string, repoOverride string, verbose bool) 
 		fmt.Fprintln(os.Stderr, console.FormatWarningMessage(
 			fmt.Sprintf("GitHub API rate limit hit while discovering workflows in %s; backing off for %s before retry %d/%d",
 				repoOverride, backoff, attempt+1, forecastRateLimitMaxAttempts)))
-		forecastRateLimitSleep(backoff)
+		if err := forecastRateLimitSleep(ctx, backoff); err != nil {
+			return nil, err
+		}
 	}
 
 	if len(ids) > 0 {
@@ -396,8 +398,9 @@ func fetchWorkflowsWithBackoff(ids []string, repoOverride string, verbose bool) 
 	return nil, fmt.Errorf("GitHub API rate limit exhausted after %d attempts: %w", forecastRateLimitMaxAttempts, lastErr)
 }
 
-func listRunsWithBackoff(opts ListWorkflowRunsOptions, workflowID string) ([]WorkflowRun, int, error) {
+func listRunsWithBackoff(ctx context.Context, opts ListWorkflowRunsOptions, workflowID string) ([]WorkflowRun, int, error) {
 	var lastErr error
+	opts.Context = ctx
 
 	for attempt := 1; attempt <= forecastRateLimitMaxAttempts; attempt++ {
 		runs, total, err := forecastListWorkflowRunsPaginated(opts)
@@ -417,7 +420,9 @@ func listRunsWithBackoff(opts ListWorkflowRunsOptions, workflowID string) ([]Wor
 		fmt.Fprintln(os.Stderr, console.FormatWarningMessage(
 			fmt.Sprintf("GitHub API rate limit hit while sampling %s; backing off for %s before retry %d/%d",
 				workflowID, backoff, attempt+1, forecastRateLimitMaxAttempts)))
-		forecastRateLimitSleep(backoff)
+		if err := forecastRateLimitSleep(ctx, backoff); err != nil {
+			return nil, 0, err
+		}
 	}
 
 	return nil, 0, lastErr
@@ -437,7 +442,7 @@ func matchRemoteWorkflowName(id string, workflows map[string]*GitHubWorkflow) st
 }
 
 // forecastWorkflow computes a ForecastWorkflowResult for a single workflow.
-func forecastWorkflow(workflowName, startDate string, config ForecastConfig, periodDays int) (ForecastWorkflowResult, error) {
+func forecastWorkflow(ctx context.Context, workflowName, startDate string, config ForecastConfig, periodDays int) (ForecastWorkflowResult, error) {
 	result := ForecastWorkflowResult{
 		WorkflowID:  extractWorkflowIDFromName(workflowName),
 		Period:      config.Period,
@@ -461,11 +466,12 @@ func forecastWorkflow(workflowName, startDate string, config ForecastConfig, per
 		WorkflowName: apiName,
 		StartDate:    startDate,
 		Limit:        config.SampleSize,
+		TargetCount:  config.SampleSize,
 		RepoOverride: config.RepoOverride,
 		Verbose:      config.Verbose,
 	}
 
-	runs, _, err := listRunsWithBackoff(opts, result.WorkflowID)
+	runs, _, err := listRunsWithBackoff(ctx, opts, result.WorkflowID)
 	if err != nil {
 		if gitutil.IsRateLimitError(err.Error()) {
 			fmt.Fprintln(os.Stderr, console.FormatWarningMessage(
@@ -478,7 +484,7 @@ func forecastWorkflow(workflowName, startDate string, config ForecastConfig, per
 	// Only use completed runs for metric computation.
 	completed := make([]WorkflowRun, 0, len(runs))
 	for _, r := range runs {
-		if r.Status == "completed" {
+		if isCompletedNonSkippedRun(r) {
 			// Compute Duration from StartedAt/UpdatedAt when not already set (gh run list
 			// does not populate the Duration field; health_command uses the same approach).
 			if r.Duration == 0 && !r.StartedAt.IsZero() && !r.UpdatedAt.IsZero() {
@@ -526,9 +532,6 @@ func forecastWorkflow(workflowName, startDate string, config ForecastConfig, per
 	// scaled to the projection period.
 	result.ObservedRunsPerPeriod = float64(n) / float64(config.Days) * float64(periodDays)
 
-	// Effective throughput (yield) accounts for the success rate.
-	result.Yield = result.ObservedRunsPerPeriod * result.SuccessRate
-
 	// Projected token usage (point estimate using simple means).
 	result.ProjectedEffectiveTokens = int(math.Round(result.ObservedRunsPerPeriod * float64(result.AvgEffectiveTokens)))
 
@@ -539,10 +542,6 @@ func forecastWorkflow(workflowName, startDate string, config ForecastConfig, per
 
 	// Populate experiment variant fractions from run history when metadata has variants.
 	result.ExperimentVariants = computeVariantFractions(result.ExperimentVariants, completed)
-
-	// Build lightweight episode analysis from the completed runs using the fields
-	// available in the GitHub Actions run list (no artifact download required).
-	result.EpisodeAnalysis = buildForecastEpisodeSummary(completed, config.Days, periodDays)
 
 	return result, nil
 }
@@ -720,75 +719,6 @@ func extractWorkflowIDFromName(name string) string {
 	return name
 }
 
-// workflowRunToRunData converts a WorkflowRun (sourced from the GitHub Actions API)
-// to a RunData using the fields available without artifact downloads.  Fields that
-// require aw_info.json (AwContext, Repository, Ref, SHA, Actor, RunAttempt, …) are
-// left as zero values; the episode engine degrades gracefully when they are absent.
-func workflowRunToRunData(r WorkflowRun) RunData {
-	return RunData{
-		RunID:           r.DatabaseID,
-		Number:          r.Number,
-		WorkflowName:    r.WorkflowName,
-		WorkflowPath:    r.WorkflowPath,
-		Status:          r.Status,
-		Conclusion:      r.Conclusion,
-		URL:             r.URL,
-		Event:           r.Event,
-		Branch:          r.HeadBranch,
-		HeadSHA:         r.HeadSha,
-		DisplayTitle:    r.DisplayTitle,
-		CreatedAt:       r.CreatedAt,
-		StartedAt:       r.StartedAt,
-		UpdatedAt:       r.UpdatedAt,
-		TokenUsage:      r.TokenUsage,
-		EffectiveTokens: r.EffectiveTokens,
-		EstimatedCost:   r.EstimatedCost,
-	}
-}
-
-// buildForecastEpisodeSummary derives episode-level metrics from a slice of
-// completed WorkflowRun objects using the lightweight episode engine.  Returns nil
-// when no runs are provided.
-//
-// Because only GitHub API fields are available (no aw_info.json artifacts), the
-// episode engine can link runs via workflow_run event SHA/branch matching but
-// cannot detect dispatch or workflow_call lineage.  The resulting episode count is
-// therefore a lower-bound estimate for orchestrator-style workflows.
-func buildForecastEpisodeSummary(runs []WorkflowRun, historyDays, periodDays int) *ForecastEpisodeSummary {
-	if len(runs) == 0 {
-		return nil
-	}
-
-	runData := make([]RunData, 0, len(runs))
-	for _, r := range runs {
-		runData = append(runData, workflowRunToRunData(r))
-	}
-
-	// buildEpisodeData returns (episodes, edges); edges are not needed for
-	// the lightweight forecast summary so they are intentionally discarded.
-	episodes, _ := buildEpisodeData(runData, nil)
-	numEpisodes := len(episodes)
-	if numEpisodes == 0 {
-		return nil
-	}
-
-	var totalEpisodeET int
-	for _, ep := range episodes {
-		totalEpisodeET += ep.TotalEffectiveTokens
-	}
-
-	avgETPerEpisode := totalEpisodeET / numEpisodes
-	runsPerEpisode := float64(len(runs)) / float64(numEpisodes)
-	observedEpisodesPerPeriod := float64(numEpisodes) / float64(historyDays) * float64(periodDays)
-
-	return &ForecastEpisodeSummary{
-		SampledEpisodes:              numEpisodes,
-		RunsPerEpisode:               runsPerEpisode,
-		AvgEffectiveTokensPerEpisode: avgETPerEpisode,
-		ObservedEpisodesPerPeriod:    observedEpisodesPerPeriod,
-	}
-}
-
 // loadCachedEffectiveTokens looks up a locally-cached RunSummary for the given
 // run ID and returns the TotalEffectiveTokens from its TokenUsage summary.
 // Returns 0 when no cache exists or the cache does not contain token data.
@@ -814,6 +744,10 @@ func loadCachedEffectiveTokens(runID int64, verbose bool) int {
 	return 0
 }
 
+func isCompletedNonSkippedRun(r WorkflowRun) bool {
+	return r.Status == "completed" && r.Conclusion != "skipped"
+}
+
 // evaluateForecast fetches actual completed runs in the validation window and
 // returns a ForecastEvaluation comparing them against the Monte Carlo forecast.
 //
@@ -821,7 +755,7 @@ func loadCachedEffectiveTokens(runID int64, verbose bool) int {
 // period that was forecast (= one projection period immediately before now).
 // Actual runs are fetched with the same pagination helper used for training,
 // but with the validation date range.
-func evaluateForecast(workflowName string, forecast ForecastWorkflowResult, validationStartDate, validationEndDate string, config ForecastConfig) *ForecastEvaluation {
+func evaluateForecast(ctx context.Context, workflowName string, forecast ForecastWorkflowResult, validationStartDate, validationEndDate string, config ForecastConfig) *ForecastEvaluation {
 	// Compute the actual ISO-8601 training start date by subtracting HistoryDays
 	// from the validation start (= anchor).
 	var trainingStartDate string
@@ -847,9 +781,11 @@ func evaluateForecast(workflowName string, forecast ForecastWorkflowResult, vali
 		WorkflowName: apiName,
 		StartDate:    validationStartDate,
 		Limit:        config.SampleSize,
+		TargetCount:  config.SampleSize,
 		RepoOverride: config.RepoOverride,
 		Verbose:      config.Verbose,
 	}
+	opts.Context = ctx
 	runs, _, err := listWorkflowRunsWithPagination(opts)
 	if err != nil {
 		forecastRunLog.Printf("Eval: failed to fetch validation runs for %s: %v", workflowName, err)
@@ -860,7 +796,7 @@ func evaluateForecast(workflowName string, forecast ForecastWorkflowResult, vali
 	validationEnd := time.Now()
 	validationStart, _ := time.Parse("2006-01-02", validationStartDate)
 	for _, r := range runs {
-		if r.Status != "completed" {
+		if !isCompletedNonSkippedRun(r) {
 			continue
 		}
 		// Skip runs with no timestamp — we cannot verify they belong to the
@@ -914,7 +850,6 @@ type forecastTableRow struct {
 	Workflow           string `json:"workflow"                console:"header:Workflow"`
 	Runs               int    `json:"runs"                    console:"header:Sampled Runs"`
 	SuccessRate        string `json:"success_rate"            console:"header:Success Rate"`
-	Yield              string `json:"yield"                   console:"header:Yield/Period"`
 	AvgEffectiveTokens string `json:"avg_effective_tokens"    console:"header:Avg ET"`
 	ProjectedTokens    string `json:"projected_tokens"        console:"header:Proj. ET (P50)"`
 	ETRange            string `json:"et_range"                console:"header:80% CI (P10–P90)"`
@@ -937,9 +872,13 @@ func renderForecastTable(output ForecastResult, config ForecastConfig) error {
 		unreliableMark := ""
 		if mc := wf.MonteCarlo; mc != nil {
 			projETStr = formatForecastTokens(mc.P50ProjectedEffectiveTokens)
-			etRangeStr = fmt.Sprintf("%s–%s",
-				formatForecastTokens(mc.P10ProjectedEffectiveTokens),
-				formatForecastTokens(mc.P90ProjectedEffectiveTokens))
+			if mc.P10ProjectedEffectiveTokens == 0 && mc.P90ProjectedEffectiveTokens == 0 {
+				etRangeStr = "-"
+			} else {
+				etRangeStr = fmt.Sprintf("%s–%s",
+					formatForecastTokens(mc.P10ProjectedEffectiveTokens),
+					formatForecastTokens(mc.P90ProjectedEffectiveTokens))
+			}
 			if !mc.IsReliable {
 				anyUnreliable = true
 				unreliableMark = "*"
@@ -949,7 +888,6 @@ func renderForecastTable(output ForecastResult, config ForecastConfig) error {
 			Workflow:           wf.WorkflowID + unreliableMark,
 			Runs:               wf.SampledRuns,
 			SuccessRate:        formatForecastPercent(wf.SuccessRate, wf.SampledRuns > 0),
-			Yield:              fmt.Sprintf("%.1f", wf.Yield),
 			AvgEffectiveTokens: formatForecastTokens(wf.AvgEffectiveTokens),
 			ProjectedTokens:    projETStr,
 			ETRange:            etRangeStr,
@@ -960,18 +898,6 @@ func renderForecastTable(output ForecastResult, config ForecastConfig) error {
 
 	fmt.Fprint(os.Stderr, console.RenderStruct(rows))
 	fmt.Fprintln(os.Stderr, "")
-
-	// Show episode analysis when any workflow has multi-run episodes.
-	anyMultiRunEpisodes := false
-	for _, wf := range output.Workflows {
-		if wf.EpisodeAnalysis != nil && wf.EpisodeAnalysis.RunsPerEpisode > 1.0 {
-			anyMultiRunEpisodes = true
-			break
-		}
-	}
-	if anyMultiRunEpisodes {
-		printEpisodeBreakdown(output.Workflows)
-	}
 
 	// Show experiment variant details when present.
 	for _, wf := range output.Workflows {
@@ -994,36 +920,6 @@ func renderForecastTable(output ForecastResult, config ForecastConfig) error {
 	fmt.Fprintln(os.Stderr, console.FormatInfoMessage(
 		fmt.Sprintf("Run '%s forecast --json' for full output.", string(constants.CLIExtensionPrefix))))
 	return nil
-}
-
-// printEpisodeBreakdown renders per-episode ET metrics for workflows that have
-// multi-run episodes (i.e. orchestrator-style workflows dispatching sub-workflows).
-func printEpisodeBreakdown(workflows []ForecastWorkflowResult) {
-	type episodeRow struct {
-		Workflow          string `json:"workflow"               console:"header:Workflow"`
-		Episodes          int    `json:"episodes"               console:"header:Episodes"`
-		RunsPerEpisode    string `json:"runs_per_episode"       console:"header:Runs/Episode"`
-		AvgETPerEpisode   string `json:"avg_et_per_episode"     console:"header:Avg ET/Episode"`
-		EpisodesPerPeriod string `json:"episodes_per_period"    console:"header:Episodes/Period"`
-	}
-
-	fmt.Fprintln(os.Stderr, console.FormatInfoMessage("Episode analysis (runs grouped by logical task):"))
-	epRows := make([]episodeRow, 0, len(workflows))
-	for _, wf := range workflows {
-		ep := wf.EpisodeAnalysis
-		if ep == nil {
-			continue
-		}
-		epRows = append(epRows, episodeRow{
-			Workflow:          wf.WorkflowID,
-			Episodes:          ep.SampledEpisodes,
-			RunsPerEpisode:    fmt.Sprintf("%.1f", ep.RunsPerEpisode),
-			AvgETPerEpisode:   formatForecastTokens(ep.AvgEffectiveTokensPerEpisode),
-			EpisodesPerPeriod: fmt.Sprintf("%.1f", ep.ObservedEpisodesPerPeriod),
-		})
-	}
-	fmt.Fprint(os.Stderr, console.RenderStruct(epRows))
-	fmt.Fprintln(os.Stderr, "")
 }
 
 // printEvalBreakdown renders the backtesting comparison table.

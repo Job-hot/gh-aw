@@ -26,7 +26,7 @@ func TestJSONOutputNotCorruptedByStderr(t *testing.T) {
 	os.Stdout = stdoutW
 
 	// Render JSON
-	err := renderLogsJSON(logsData)
+	err := renderLogsJSON(logsData, true)
 	if err != nil {
 		t.Fatalf("Failed to render JSON: %v", err)
 	}
@@ -114,7 +114,7 @@ func TestStderrMessagesAfterJSON(t *testing.T) {
 	}()
 
 	// Step 3: Output JSON FIRST (as our fix does)
-	renderLogsJSON(logsData)
+	renderLogsJSON(logsData, true)
 
 	// Step 4: Then output stderr message (as our fix does)
 	// Using os.Stderr here, but it's redirected to the same pipe as stdout

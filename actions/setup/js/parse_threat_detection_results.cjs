@@ -92,10 +92,26 @@ function extractResultFromText(text) {
  */
 function extractFromStreamJson(line) {
   const trimmed = line.trim();
-  if (!trimmed.startsWith("{")) return null;
+
+  // Support log lines prefixed with runner/codex tracing metadata, e.g.:
+  //   2026-... TRACE ...: {"type":"response.output_text.done",...}
+  // Assumes the first JSON object on the line is the event payload.
+  const jsonStart = trimmed.indexOf("{");
+  if (jsonStart === -1) return null;
+  const jsonText = trimmed.slice(jsonStart);
+
+  /**
+   * @param {string} text
+   * @returns {string|null}
+   */
+  function extractPrefixedResult(text) {
+    const prefixIdx = text.indexOf(RESULT_PREFIX);
+    if (prefixIdx === -1) return null;
+    return extractResultFromText(text.slice(prefixIdx));
+  }
 
   try {
-    const obj = JSON.parse(trimmed);
+    const obj = JSON.parse(jsonText);
     // Only extract from the authoritative "result" summary, not "assistant" messages.
     // In stream-json mode, the same content appears in both; using only "result"
     // avoids double-counting.
@@ -125,6 +141,17 @@ function extractFromStreamJson(line) {
 
       // Extract the complete JSON object using brace-counting.
       return extractResultFromText(joined);
+    }
+
+    // Codex responses API emits final output text in response events.
+    if (obj.type === "response.output_text.done" && typeof obj.text === "string") {
+      return extractPrefixedResult(obj.text);
+    }
+    if (obj.type === "response.content_part.done" && obj.part && typeof obj.part.text === "string") {
+      return extractPrefixedResult(obj.part.text);
+    }
+    if (obj.type === "item.completed" && obj.item && typeof obj.item.text === "string") {
+      return extractPrefixedResult(obj.item.text);
     }
   } catch {
     // Not valid JSON — not a stream-json line
@@ -161,11 +188,45 @@ function parseDetectionLog(content) {
     }
   }
 
-  // Phase 2: If no stream-json results, try raw line matching.
+  // Phase 2: If no stream-json result field matches, try assistant stream chunk matching.
+  // Gemini stream-json output may emit assistant text in multiple "type":"message"
+  // entries (with role=assistant) where the verdict is split across chunks:
+  //   "THREAT_DETECTION_"
+  //   "RESULT:{...}"
+  // Reassemble assistant chunks and parse the first complete verdict object.
+  const assistantMatches = [];
+  if (streamMatches.length === 0) {
+    const assistantChunks = [];
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith("{")) continue;
+      try {
+        const obj = JSON.parse(trimmed);
+        if (obj.type === "message" && obj.role === "assistant" && typeof obj.content === "string") {
+          assistantChunks.push(obj.content);
+        }
+      } catch {
+        // Not valid JSON — ignore
+      }
+    }
+
+    if (assistantChunks.length > 0) {
+      const combinedAssistantText = assistantChunks.join("");
+      const prefixIdx = combinedAssistantText.indexOf(RESULT_PREFIX);
+      if (prefixIdx !== -1) {
+        const extracted = extractResultFromText(combinedAssistantText.slice(prefixIdx));
+        if (extracted !== null) {
+          assistantMatches.push(extracted);
+        }
+      }
+    }
+  }
+
+  // Phase 3: If no stream-json or assistant chunk results, try raw line matching.
   // Apply the same join-and-brace-count approach to handle cases where the
   // reasons values contain actual newlines that split the JSON across lines.
   const rawMatches = [];
-  if (streamMatches.length === 0) {
+  if (streamMatches.length === 0 && assistantMatches.length === 0) {
     let i = 0;
     while (i < lines.length) {
       if (lines[i].trim().startsWith(RESULT_PREFIX)) {
@@ -191,7 +252,7 @@ function parseDetectionLog(content) {
     }
   }
 
-  const matches = streamMatches.length > 0 ? streamMatches : rawMatches;
+  const matches = streamMatches.length > 0 ? streamMatches : assistantMatches.length > 0 ? assistantMatches : rawMatches;
 
   if (matches.length === 0) {
     return { error: "No THREAT_DETECTION_RESULT found in detection log. The detection model may have failed to follow the output format." };

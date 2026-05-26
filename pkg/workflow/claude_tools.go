@@ -15,35 +15,6 @@ var claudeToolsLog = logger.New("workflow:claude_tools")
 
 const defaultClaudeTmpWritePath = "/tmp"
 
-// hasBashWildcardInTools returns true when the neutral tools map grants unrestricted
-// bash access — either because bash is not a list (e.g. bash: true) or because the
-// list contains a "*" or ":*" wildcard entry.
-//
-// When bash is unrestricted the agent can already reach any tool via the shell, so
-// --permission-mode bypassPermissions is safe and produces a smoother headless
-// experience than acceptEdits (which can stall on some non-file-edit permission
-// requests that do not match the acceptEdits auto-approval pattern).
-func hasBashWildcardInTools(tools map[string]any) bool {
-	if tools == nil {
-		return false
-	}
-	bashVal, hasBash := tools["bash"]
-	if !hasBash {
-		return false
-	}
-	// bash: true (non-list value) means unrestricted bash
-	bashCommands, ok := bashVal.([]any)
-	if !ok {
-		return true
-	}
-	for _, cmd := range bashCommands {
-		if cmdStr, ok := cmd.(string); ok && (cmdStr == "*" || cmdStr == ":*") {
-			return true
-		}
-	}
-	return false
-}
-
 // expandNeutralToolsToClaudeTools converts neutral tool names to Claude-specific tool configurations
 func (e *ClaudeEngine) expandNeutralToolsToClaudeTools(tools map[string]any) map[string]any {
 	claudeToolsLog.Printf("Starting neutral tools expansion: input_tools=%d", len(tools))
@@ -118,7 +89,7 @@ func (e *ClaudeEngine) expandNeutralToolsToClaudeTools(tools map[string]any) map
 		claudeAllowed["WebSearch"] = nil
 	}
 
-	if editTool, hasEdit := tools["edit"]; hasEdit {
+	if editTool, hasEdit := tools["edit"]; hasEdit && !isExplicitlyDisabledTool(editTool) {
 		// edit -> Edit, MultiEdit, NotebookEdit, Write
 		claudeAllowed["Edit"] = nil
 		claudeAllowed["MultiEdit"] = nil
@@ -147,6 +118,11 @@ func (e *ClaudeEngine) expandNeutralToolsToClaudeTools(tools map[string]any) map
 	return result
 }
 
+func isExplicitlyDisabledTool(tool any) bool {
+	enabled, ok := tool.(bool)
+	return ok && !enabled
+}
+
 // computeAllowedClaudeToolsString generates the tool specification string for Claude's --allowed-tools flag.
 //
 // Why --allowed-tools instead of --tools (introduced in v2.0.31)?
@@ -165,6 +141,7 @@ func (e *ClaudeEngine) expandNeutralToolsToClaudeTools(tools map[string]any) map
 // user-visible tools map but must be explicitly added to --allowed-tools when
 // --permission-mode acceptEdits is in use, because acceptEdits actually enforces the
 // allowlist (unlike bypassPermissions which silently ignores it).
+// Panics if callers pass a Claude-specific tools section instead of neutral tools.
 func (e *ClaudeEngine) computeAllowedClaudeToolsString(tools map[string]any, safeOutputs *SafeOutputsConfig, cacheMemoryConfig *CacheMemoryConfig, mcpScripts *MCPScriptsConfig, sandboxConfig *SandboxConfig) string {
 	claudeToolsLog.Print("Computing allowed Claude tools string")
 
@@ -176,7 +153,7 @@ func (e *ClaudeEngine) computeAllowedClaudeToolsString(tools map[string]any, saf
 	// Enforce that only neutral tools are provided - fail if claude section is present
 	if _, hasClaudeSection := tools["claude"]; hasClaudeSection {
 		claudeToolsLog.Print("ERROR: Claude section found in input tools, should only contain neutral tools")
-		panic("computeAllowedClaudeToolsString should only receive neutral tools, not claude section tools")
+		panic("BUG: computeAllowedClaudeToolsString should only receive neutral tools, not claude section tools")
 	}
 
 	// Convert neutral tools to Claude-specific tools

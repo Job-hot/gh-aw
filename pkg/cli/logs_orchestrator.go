@@ -556,7 +556,7 @@ func DownloadWorkflowLogs(ctx context.Context, opts LogsDownloadOptions) error {
 		// This prevents stderr messages from corrupting JSON when both streams are redirected together
 		if jsonOutput {
 			logsData := buildLogsData([]ProcessedRun{}, outputDir, nil)
-			if err := renderLogsJSON(logsData); err != nil {
+			if err := renderLogsJSON(logsData, verbose); err != nil {
 				return fmt.Errorf("failed to render JSON output: %w", err)
 			}
 		}
@@ -652,9 +652,16 @@ func renderLogsOutput(processedRuns []ProcessedRun, opts renderLogsOutputOptions
 	}
 
 	// Render output based on format preference.
-	// When --format markdown or --format pretty is specified, generate a cross-run audit report
-	// instead of the default metrics table.
-	if opts.format == "markdown" || opts.format == "pretty" {
+	switch opts.format {
+	case "tsv":
+		if opts.verbose {
+			renderLogsTSVVerbose(logsData)
+		} else {
+			renderLogsTSV(logsData)
+		}
+		return nil
+
+	case "markdown", "pretty":
 		inputs := make([]crossRunInput, 0, len(processedRuns))
 		for _, pr := range processedRuns {
 			inputs = append(inputs, crossRunInput{
@@ -683,21 +690,34 @@ func renderLogsOutput(processedRuns []ProcessedRun, opts renderLogsOutputOptions
 		}
 		renderCrossRunReportMarkdown(report)
 		return nil
+
+	case "console":
+		// Explicit console format: decorated tables for human reading
+		if opts.jsonOutput {
+			if err := renderLogsJSON(logsData, opts.verbose); err != nil {
+				return fmt.Errorf("failed to render JSON output: %w", err)
+			}
+		} else {
+			renderLogsConsole(logsData)
+			displayAggregatedGatewayMetrics(processedRuns, opts.outputDir, opts.verbose)
+			displayUnifiedTimeline(processedRuns, opts.verbose)
+			if opts.toolGraph {
+				generateToolGraph(processedRuns, opts.verbose)
+			}
+		}
+		return nil
 	}
 
+	// Default: compact format optimized for agentic consumption
 	if opts.jsonOutput {
-		if err := renderLogsJSON(logsData); err != nil {
+		if err := renderLogsJSON(logsData, opts.verbose); err != nil {
 			return fmt.Errorf("failed to render JSON output: %w", err)
 		}
 	} else {
-		renderLogsConsole(logsData)
-
-		// Display aggregated gateway metrics if any runs have gateway.jsonl files
-		displayAggregatedGatewayMetrics(processedRuns, opts.outputDir, opts.verbose)
-
-		// Generate tool sequence graph if requested (console output only)
-		if opts.toolGraph {
-			generateToolGraph(processedRuns, opts.verbose)
+		if opts.verbose {
+			renderLogsCompactVerbose(logsData)
+		} else {
+			renderLogsCompact(logsData)
 		}
 	}
 
@@ -845,7 +865,7 @@ func DownloadWorkflowLogsFromStdin(ctx context.Context, opts StdinLogsOptions) e
 	if len(runs) == 0 {
 		if opts.JSONOutput {
 			logsData := buildLogsData([]ProcessedRun{}, opts.OutputDir, nil)
-			if err := renderLogsJSON(logsData); err != nil {
+			if err := renderLogsJSON(logsData, opts.Verbose); err != nil {
 				return fmt.Errorf("failed to render JSON output: %w", err)
 			}
 		}
@@ -1026,7 +1046,7 @@ func DownloadWorkflowLogsFromStdin(ctx context.Context, opts StdinLogsOptions) e
 	if len(processedRuns) == 0 {
 		if opts.JSONOutput {
 			logsData := buildLogsData([]ProcessedRun{}, opts.OutputDir, nil)
-			if err := renderLogsJSON(logsData); err != nil {
+			if err := renderLogsJSON(logsData, opts.Verbose); err != nil {
 				return fmt.Errorf("failed to render JSON output: %w", err)
 			}
 		}

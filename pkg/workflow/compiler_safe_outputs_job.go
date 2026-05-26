@@ -216,6 +216,7 @@ func (c *Compiler) buildSafeOutputsHandlerOutputsAndActionSteps(data *WorkflowDa
 		data.SafeOutputs.CallWorkflow != nil ||
 		data.SafeOutputs.CreateCodeScanningAlerts != nil ||
 		data.SafeOutputs.AutofixCodeScanningAlert != nil ||
+		data.SafeOutputs.CreateCheckRun != nil ||
 		data.SafeOutputs.MissingTool != nil ||
 		data.SafeOutputs.MissingData != nil ||
 		data.SafeOutputs.AssignToAgent != nil || // assign_to_agent is now handled by the handler manager
@@ -637,6 +638,10 @@ func (c *Compiler) buildJobLevelSafeOutputEnvVars(data *WorkflowData, workflowID
 		if sourceURL != "" {
 			envVars["GH_AW_WORKFLOW_SOURCE_URL"] = fmt.Sprintf("%q", sourceURL)
 		}
+	} else if localURL := buildLocalWorkflowSourceURL(c.markdownPath); localURL != "" {
+		// For local workflows (no external source), point to the markdown file in the repo
+		// so that failure issue links resolve to the workflow source rather than "#".
+		envVars["GH_AW_WORKFLOW_SOURCE_URL"] = fmt.Sprintf("%q", localURL)
 	}
 
 	if data.TrackerID != "" {

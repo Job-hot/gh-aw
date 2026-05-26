@@ -1,7 +1,6 @@
 package workflow
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/github/gh-aw/pkg/logger"
@@ -10,7 +9,7 @@ import (
 var tokenLog = logger.New("workflow:github_token")
 
 func wrapGitHubExpression(expression string) string {
-	return fmt.Sprintf("${{ %s }}", strings.TrimSpace(expression))
+	return "${{ " + strings.TrimSpace(expression) + " }}"
 }
 
 func combineTokenExpressions(primaryExpression, fallbackExpression string) string {
@@ -44,6 +43,22 @@ func getEffectiveSafeOutputGitHubToken(customToken string) string {
 	}
 	tokenLog.Print("Using default safe output GitHub token (GH_AW_GITHUB_TOKEN || GITHUB_TOKEN)")
 	return "${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}"
+}
+
+// getEffectiveMaintenanceGitHubToken returns the configured GitHub token secret
+// expression to use for maintenance compile-workflows operations.
+//
+// No fallback chain is applied here. Maintenance compile PR mode must use the
+// explicitly configured secret so the generated workflow does not silently fall
+// back to a token without permission to write workflow files.
+func getEffectiveMaintenanceGitHubToken(secretName string) string {
+	secretName = strings.TrimSpace(secretName)
+	if secretName == "" {
+		tokenLog.Print("No maintenance compile GitHub token secret configured")
+		return ""
+	}
+	tokenLog.Printf("Using configured maintenance compile GitHub token secret %q", secretName)
+	return wrapGitHubExpression("secrets." + secretName)
 }
 
 // getEffectiveCopilotRequestsToken returns the GitHub token to use for Copilot-related operations,

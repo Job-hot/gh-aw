@@ -229,6 +229,18 @@ var safeOutputHandlers = []safeOutputHandlerDescriptor{
 		},
 	},
 	{
+		Key:         "create-check-run",
+		StructField: "CreateCheckRun",
+		ToolName:    "create_check_run",
+		NewConfig:   func() any { return &CreateCheckRunConfig{} },
+		PermissionBuilder: func(safeOutputs *SafeOutputsConfig) *Permissions {
+			if !isSafeOutputHandlerEnabledAndUnstaged(safeOutputs, "CreateCheckRun") {
+				return nil
+			}
+			return NewPermissionsContentsReadChecksWrite()
+		},
+	},
+	{
 		Key:         "add-labels",
 		StructField: "AddLabels",
 		ToolName:    "add_labels",
@@ -550,7 +562,7 @@ var safeOutputHandlers = []safeOutputHandlerDescriptor{
 var safeOutputHandlersByKey = buildSafeOutputHandlersByKey()
 
 func buildSafeOutputHandlersByKey() map[string]safeOutputHandlerDescriptor {
-	result := make(map[string]safeOutputHandlerDescriptor, len(safeOutputHandlers)+1)
+	result := make(map[string]safeOutputHandlerDescriptor, safeAllocationCapacity(len(safeOutputHandlers), 1))
 	for _, handler := range safeOutputHandlers {
 		if handler.Key != "" {
 			result[handler.Key] = handler
@@ -584,12 +596,12 @@ func safeOutputPointerFieldValue(config *SafeOutputsConfig, fieldName string) (r
 	}
 
 	value := reflect.ValueOf(config)
-	if value.Kind() != reflect.Ptr || value.IsNil() {
+	if value.Kind() != reflect.Pointer || value.IsNil() {
 		return reflect.Value{}, false
 	}
 
 	field := value.Elem().FieldByName(fieldName)
-	if !field.IsValid() || field.Kind() != reflect.Ptr {
+	if !field.IsValid() || field.Kind() != reflect.Pointer {
 		return reflect.Value{}, false
 	}
 

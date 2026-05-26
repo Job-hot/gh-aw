@@ -2293,24 +2293,7 @@
             "description": "Name of the job"
           },
           "runs-on": {
-            "oneOf": [
-              {
-                "type": "string",
-                "description": "Runner type as string"
-              },
-              {
-                "type": "array",
-                "description": "Runner type as array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              {
-                "type": "object",
-                "description": "Runner type as object",
-                "additionalProperties": false
-              }
-            ],
+            "$ref": "#/$defs/github_actions_runs_on",
             "description": "Runner label or environment where the job executes. Can be a string (single runner) or array (multiple runner requirements)."
           },
           "steps": {
@@ -2623,38 +2606,7 @@
       }
     },
     "runs-on": {
-      "description": "Runner type for workflow execution (GitHub Actions standard field). Supports multiple forms: simple string for single runner label (e.g., 'ubuntu-latest'), array for runner selection with fallbacks, or object for GitHub-hosted runner groups with specific labels. For agentic workflows, runner selection matters when AI workloads require specific compute resources or when using self-hosted runners with specialized capabilities. Typically configured at the job level instead. See https://docs.github.com/en/actions/using-jobs/choosing-the-runner-for-a-job",
-      "oneOf": [
-        {
-          "type": "string",
-          "description": "Simple runner label string. Use for standard GitHub-hosted runners (e.g., 'ubuntu-latest', 'windows-latest', 'macos-latest') or self-hosted runner labels. Most common form for agentic workflows."
-        },
-        {
-          "type": "array",
-          "description": "Array of runner labels for selection with fallbacks. GitHub Actions will use the first available runner that matches any label in the array. Useful for high-availability setups or when multiple runner types are acceptable.",
-          "items": {
-            "type": "string"
-          }
-        },
-        {
-          "type": "object",
-          "description": "Runner group configuration for GitHub-hosted runners. Use this form to target specific runner groups (e.g., larger runners with more CPU/memory) or self-hosted runner pools with specific label requirements. Agentic workflows may benefit from larger runners for complex AI processing tasks.",
-          "additionalProperties": false,
-          "properties": {
-            "group": {
-              "type": "string",
-              "description": "Runner group name for self-hosted runners or GitHub-hosted runner groups"
-            },
-            "labels": {
-              "type": "array",
-              "description": "List of runner labels for self-hosted runners or GitHub-hosted runner selection",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      ],
+      "$ref": "#/$defs/github_actions_runs_on",
       "examples": [
         "ubuntu-latest",
         ["ubuntu-latest", "self-hosted"],
@@ -4175,6 +4127,10 @@
               "description": "Enable edit tool"
             },
             {
+              "type": "boolean",
+              "description": "Boolean to explicitly enable (true) or disable (false) the edit tool."
+            },
+            {
               "type": "object",
               "description": "Edit tool configuration object",
               "additionalProperties": false
@@ -4834,7 +4790,7 @@
     },
     "safe-outputs": {
       "type": "object",
-      "$comment": "Required if workflow creates or modifies GitHub resources. Operations requiring safe-outputs: autofix-code-scanning-alert, add-comment, add-labels, add-reviewer, assign-milestone, assign-to-agent, assign-to-user, close-discussion, close-issue, close-pull-request, create-agent-session, create-agent-task (deprecated, use create-agent-session), create-code-scanning-alert, create-discussion, create-issue, create-project, create-project-status-update, create-pull-request, create-pull-request-review-comment, dispatch-workflow, hide-comment, link-sub-issue, mark-pull-request-as-ready-for-review, merge-pull-request, missing-data, missing-tool, noop, push-to-pull-request-branch, remove-labels, reply-to-pull-request-review-comment, resolve-pull-request-review-thread, set-issue-field, set-issue-type, submit-pull-request-review, threat-detection, unassign-from-user, update-discussion, update-issue, update-project, update-pull-request, update-release, upload-artifact, upload-asset. See documentation for complete details.",
+      "$comment": "Required if workflow creates or modifies GitHub resources. Operations requiring safe-outputs: autofix-code-scanning-alert, add-comment, add-labels, add-reviewer, assign-milestone, assign-to-agent, assign-to-user, close-discussion, close-issue, close-pull-request, create-agent-session, create-agent-task (deprecated, use create-agent-session), create-check-run, create-code-scanning-alert, create-discussion, create-issue, create-project, create-project-status-update, create-pull-request, create-pull-request-review-comment, dispatch-workflow, hide-comment, link-sub-issue, mark-pull-request-as-ready-for-review, merge-pull-request, missing-data, missing-tool, noop, push-to-pull-request-branch, remove-labels, reply-to-pull-request-review-comment, resolve-pull-request-review-thread, set-issue-field, set-issue-type, submit-pull-request-review, threat-detection, unassign-from-user, update-discussion, update-issue, update-project, update-pull-request, update-release, upload-artifact, upload-asset. See documentation for complete details.",
       "description": "Safe output processing configuration that automatically creates GitHub issues, comments, and pull requests from AI workflow output without requiring write permissions in the main job",
       "examples": [
         {
@@ -6363,14 +6319,14 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["blocked", "allowed", "fallback-to-issue"],
-                      "description": "Controls protected-file protection. blocked (default): hard-block any patch that modifies package manifests (e.g. package.json, go.mod), engine instruction files (e.g. AGENTS.md, CLAUDE.md) or .github/ files. allowed: allow all changes. fallback-to-issue: push the branch but create a review issue instead of a PR, so a human can review the manifest changes before merging.",
-                      "default": "blocked"
+                      "enum": ["blocked", "allowed", "fallback-to-issue", "request_review"],
+                      "description": "Controls protected-file protection. request_review (default): create the PR but prepend a caution block and submit a REQUEST_CHANGES review for manual scrutiny. blocked: hard-block any patch that modifies package manifests (e.g. package.json, go.mod), engine instruction files (e.g. AGENTS.md, CLAUDE.md) or .github/ files. allowed: allow all changes. fallback-to-issue: push the branch but create a review issue instead of a PR, so a human can review the manifest changes before merging.",
+                      "default": "request_review"
                     },
                     {
                       "type": "string",
                       "pattern": "^\\$\\{\\{.*\\}\\}$",
-                      "description": "GitHub Actions expression that resolves to 'blocked', 'allowed', or 'fallback-to-issue' at runtime. Use in reusable workflow_call workflows to parameterise the policy per caller."
+                      "description": "GitHub Actions expression that resolves to 'blocked', 'allowed', 'fallback-to-issue', or 'request_review' at runtime. Use in reusable workflow_call workflows to parameterise the policy per caller."
                     },
                     {
                       "type": "object",
@@ -6379,14 +6335,14 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["blocked", "allowed", "fallback-to-issue"],
-                              "description": "Protection policy. blocked (default): hard-block any patch that modifies protected files. allowed: allow all changes. fallback-to-issue: push the branch but create a review issue instead of a PR.",
-                              "default": "blocked"
+                              "enum": ["blocked", "allowed", "fallback-to-issue", "request_review"],
+                              "description": "Protection policy. request_review (default): create the PR but prepend a caution block and submit a REQUEST_CHANGES review. blocked: hard-block any patch that modifies protected files. allowed: allow all changes. fallback-to-issue: push the branch but create a review issue instead of a PR.",
+                              "default": "request_review"
                             },
                             {
                               "type": "string",
                               "pattern": "^\\$\\{\\{.*\\}\\}$",
-                              "description": "GitHub Actions expression that resolves to 'blocked', 'allowed', or 'fallback-to-issue' at runtime."
+                              "description": "GitHub Actions expression that resolves to 'blocked', 'allowed', 'fallback-to-issue', or 'request_review' at runtime."
                             }
                           ]
                         },
@@ -6403,7 +6359,7 @@
                       "description": "Object form for granular control over the protected-file set. Use the exclude list to remove specific files from the default protection while keeping the rest."
                     }
                   ],
-                  "description": "Controls protected-file protection. String form: blocked (default), allowed, or fallback-to-issue \u2014 or a GitHub Actions expression for reusable workflows. Object form: { policy, exclude } to customise the protected-file set."
+                  "description": "Controls protected-file protection. String form: request_review (default), blocked, allowed, or fallback-to-issue \u2014 or a GitHub Actions expression for reusable workflows. Object form: { policy, exclude } to customise the protected-file set."
                 },
                 "allowed-files": {
                   "type": "array",
@@ -6862,6 +6818,70 @@
             }
           ],
           "description": "Enable AI agents to create autofixes for code scanning alerts using the GitHub REST API."
+        },
+        "create-check-run": {
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Configuration for creating GitHub Check Runs to surface agent analysis results on commits and pull requests",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Check run name shown in the GitHub Checks UI (e.g., 'Security Analysis'). If omitted, defaults to the workflow name."
+                },
+                "max": {
+                  "description": "Maximum number of check runs to create per workflow run (default: 1). Supports integer or GitHub Actions expression (e.g. '${{ inputs.max }}').",
+                  "oneOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^\\$\\{\\{.*\\}\\}$",
+                      "description": "GitHub Actions expression that resolves to an integer at runtime"
+                    }
+                  ]
+                },
+                "github-token": {
+                  "$ref": "#/$defs/github_token",
+                  "description": "GitHub token to use for this specific output type. Overrides global github-token if specified."
+                },
+                "staged": {
+                  "type": "boolean",
+                  "description": "If true, emit step summary messages instead of making GitHub API calls for this specific output type (preview mode)",
+                  "examples": [true, false]
+                },
+                "github-app": {
+                  "$ref": "#/$defs/github_app",
+                  "description": "GitHub App credentials for minting an installation access token scoped to checks:write for this handler. When set, a short-lived token is minted before the handler runs and revoked afterwards."
+                },
+                "output": {
+                  "type": "object",
+                  "description": "Optional static fallback values for the check run output fields. Used when the agent does not provide the corresponding field.",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "maxLength": 256,
+                      "description": "Fallback title for the check run output (max 256 characters). Used when the agent does not supply a title."
+                    },
+                    "summary": {
+                      "type": "string",
+                      "maxLength": 65535,
+                      "description": "Fallback summary for the check run output (max 65535 characters, GitHub API limit). Used when the agent does not supply a summary."
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "null",
+              "description": "Enable check run creation with default configuration (max: 1)"
+            }
+          ],
+          "description": "Enable AI agents to create GitHub Check Runs that surface analysis results in the PR checks UI. Requires checks: write permission."
         },
         "add-labels": {
           "oneOf": [
@@ -10283,6 +10303,40 @@
     }
   ],
   "$defs": {
+    "github_actions_runs_on": {
+      "description": "Runner type for workflow execution (GitHub Actions standard field). Supports multiple forms: simple string for single runner label (e.g., 'ubuntu-latest'), array for runner selection with fallbacks, or object for GitHub-hosted runner groups with specific labels. For agentic workflows, runner selection matters when AI workloads require specific compute resources or when using self-hosted runners with specialized capabilities. Typically configured at the job level instead. See https://docs.github.com/en/actions/using-jobs/choosing-the-runner-for-a-job",
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Simple runner label string. Use for standard GitHub-hosted runners (e.g., 'ubuntu-latest', 'windows-latest', 'macos-latest') or self-hosted runner labels. Most common form for agentic workflows."
+        },
+        {
+          "type": "array",
+          "description": "Array of runner labels for selection with fallbacks. GitHub Actions will use the first available runner that matches any label in the array. Useful for high-availability setups or when multiple runner types are acceptable.",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "type": "object",
+          "description": "Runner group configuration for GitHub-hosted runners. Use this form to target specific runner groups (e.g., larger runners with more CPU/memory) or self-hosted runner pools with specific label requirements. Agentic workflows may benefit from larger runners for complex AI processing tasks.",
+          "additionalProperties": false,
+          "properties": {
+            "group": {
+              "type": "string",
+              "description": "Runner group name for self-hosted runners or GitHub-hosted runner groups"
+            },
+            "labels": {
+              "type": "array",
+              "description": "List of runner labels for self-hosted runners or GitHub-hosted runner selection",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
     "github_toolset_name": {
       "type": "string",
       "description": "A GitHub MCP server toolset name that enables a specific group of GitHub API functionalities.",
@@ -10453,6 +10507,11 @@
             "model": {
               "type": "string",
               "description": "Optional specific LLM model to use (e.g., 'claude-3-5-sonnet-20241022', 'gpt-4'). Has sensible defaults and can typically be omitted."
+            },
+            "permission-mode": {
+              "type": "string",
+              "enum": ["auto", "acceptEdits", "plan", "bypassPermissions"],
+              "description": "Claude permission mode override. Defaults to acceptEdits (or auto when tools.edit is false)."
             },
             "max-turns": {
               "oneOf": [

@@ -262,6 +262,13 @@ func TestClaudeEngineComputeAllowedTools(t *testing.T) {
 			expected: "Edit,ExitPlanMode,Glob,Grep,LS,MultiEdit,NotebookEdit,NotebookRead,Read,Task,TodoWrite,Write",
 		},
 		{
+			name: "neutral edit tool explicitly disabled",
+			tools: map[string]any{
+				"edit": false,
+			},
+			expected: "ExitPlanMode,Glob,Grep,LS,NotebookRead,Read,Task,TodoWrite",
+		},
+		{
 			name: "mixed neutral and MCP tools",
 			tools: map[string]any{
 				"web-fetch": nil,
@@ -537,84 +544,6 @@ func TestClaudeEngineAddsTmpByDefault(t *testing.T) {
 	want := "Edit(/tmp/*),ExitPlanMode,Glob,Grep,LS,MultiEdit(/tmp/*),NotebookRead,Read,Read(/tmp/*),Task,TodoWrite,Write(/tmp/*)"
 	if got != want {
 		t.Fatalf("unexpected allowed tools\nwant: %s\ngot:  %s", want, got)
-	}
-}
-
-func TestHasBashWildcardInTools(t *testing.T) {
-	tests := []struct {
-		name     string
-		tools    map[string]any
-		expected bool
-	}{
-		{
-			name:     "nil tools",
-			tools:    nil,
-			expected: false,
-		},
-		{
-			name:     "empty tools (no bash key)",
-			tools:    map[string]any{},
-			expected: false,
-		},
-		{
-			name: "bash with specific commands only",
-			tools: map[string]any{
-				"bash": []any{"git", "echo"},
-			},
-			expected: false,
-		},
-		{
-			name: "bash with wildcard *",
-			tools: map[string]any{
-				"bash": []any{"*"},
-			},
-			expected: true,
-		},
-		{
-			name: "bash with colon-wildcard :*",
-			tools: map[string]any{
-				"bash": []any{":*"},
-			},
-			expected: true,
-		},
-		{
-			name: "bash with wildcard mixed with other commands",
-			tools: map[string]any{
-				"bash": []any{"git", "*", "echo"},
-			},
-			expected: true,
-		},
-		{
-			name: "bash with nil value (non-list — unrestricted)",
-			tools: map[string]any{
-				"bash": nil,
-			},
-			expected: true,
-		},
-		{
-			name: "bash with true value (non-list — unrestricted)",
-			tools: map[string]any{
-				"bash": true,
-			},
-			expected: true,
-		},
-		{
-			name: "no bash key at all",
-			tools: map[string]any{
-				"edit":   nil,
-				"github": map[string]any{},
-			},
-			expected: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := hasBashWildcardInTools(tt.tools)
-			if result != tt.expected {
-				t.Errorf("hasBashWildcardInTools(%v): expected %v, got %v", tt.tools, tt.expected, result)
-			}
-		})
 	}
 }
 

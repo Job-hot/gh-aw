@@ -260,7 +260,7 @@ func TestRenderLogsJSON(t *testing.T) {
 	os.Stdout = w
 
 	// Render JSON
-	err := renderLogsJSON(logsData)
+	err := renderLogsJSON(logsData, true)
 	if err != nil {
 		t.Fatalf("Failed to render JSON: %v", err)
 	}

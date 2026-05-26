@@ -10,6 +10,7 @@
 package cli
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -166,6 +167,7 @@ func fetchJobDetails(runID int64, verbose bool) ([]JobInfoWithDuration, error) {
 
 // ListWorkflowRunsOptions holds the options for listWorkflowRunsWithPagination
 type ListWorkflowRunsOptions struct {
+	Context        context.Context
 	WorkflowName   string // filter by specific workflow (if empty, fetches all agentic workflows)
 	Limit          int    // maximum number of runs to fetch in this API call (batch size)
 	StartDate      string // filter by creation date (>=); combined with EndDate/BeforeDate into a single --created range
@@ -230,13 +232,17 @@ func listWorkflowRunsWithPagination(opts ListWorkflowRunsOptions) ([]WorkflowRun
 	}
 
 	// Start spinner for network operation
-	spinnerMsg := fmt.Sprintf("Fetching workflow runs from GitHub... (%d / %d)", opts.ProcessedCount, opts.TargetCount)
+	spinnerMsg := workflowRunsSpinnerMessage(opts)
 	spinner := console.NewSpinner(spinnerMsg)
 	if !opts.Verbose {
 		spinner.Start()
 	}
 
-	cmd := workflow.ExecGH(args...)
+	cmdCtx := opts.Context
+	if cmdCtx == nil {
+		cmdCtx = context.Background()
+	}
+	cmd := workflow.ExecGHContext(cmdCtx, args...)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -348,5 +354,25 @@ func listWorkflowRunsWithPagination(opts ListWorkflowRunsOptions) ([]WorkflowRun
 		agenticRuns = filteredRuns
 	}
 
+	// Filter out skipped and cancelled runs — they carry no useful agentic data
+	// and should not count toward the requested run count.
+	{
+		filtered := agenticRuns[:0]
+		for _, run := range agenticRuns {
+			if run.Conclusion == "skipped" || run.Conclusion == "cancelled" {
+				continue
+			}
+			filtered = append(filtered, run)
+		}
+		agenticRuns = filtered
+	}
+
 	return agenticRuns, totalFetched, nil
+}
+
+func workflowRunsSpinnerMessage(opts ListWorkflowRunsOptions) string {
+	if opts.TargetCount > 0 {
+		return fmt.Sprintf("Fetching workflow runs from GitHub... (%d / %d)", opts.ProcessedCount, opts.TargetCount)
+	}
+	return "Fetching workflow runs from GitHub..."
 }

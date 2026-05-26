@@ -113,10 +113,10 @@ type RunData struct {
 	AmbientContext             *AmbientContextMetrics `json:"ambient_context,omitempty" console:"-"`
 	EstimatedCost              float64                `json:"estimated_cost,omitempty" console:"header:Cost ($),format:cost,omitempty"`
 	Turns                      int                    `json:"turns,omitempty" console:"header:Turns,omitempty"`
-	ErrorCount                 int                    `json:"error_count" console:"header:Errors"`
-	WarningCount               int                    `json:"warning_count" console:"header:Warnings"`
-	MissingToolCount           int                    `json:"missing_tool_count" console:"header:Missing Tools"`
-	MissingDataCount           int                    `json:"missing_data_count" console:"header:Missing Data"`
+	ErrorCount                 int                    `json:"error_count,omitempty" console:"header:Errors"`
+	WarningCount               int                    `json:"warning_count,omitempty" console:"header:Warnings"`
+	MissingToolCount           int                    `json:"missing_tool_count,omitempty" console:"header:Missing Tools"`
+	MissingDataCount           int                    `json:"missing_data_count,omitempty" console:"header:Missing Data"`
 	SafeItemsCount             int                    `json:"safe_items_count,omitempty" console:"header:Safe Items,omitempty"`
 	ManifestEntryCount         int                    `json:"manifest_entry_count,omitempty" console:"-"`
 	TemporaryIDMapStatus       string                 `json:"temporary_id_map_status,omitempty" console:"-"`
@@ -451,12 +451,51 @@ func deriveRunClassification(comparison *AuditComparisonData) string {
 	return "normal"
 }
 
-// renderLogsJSON outputs the logs data as JSON
-func renderLogsJSON(data LogsData) error {
-	reportLog.Printf("Rendering logs data as JSON: %d runs", data.Summary.TotalRuns)
+// renderLogsJSON outputs the logs data as JSON.
+// When verbose is false, audit-heavy fields are stripped for compact agentic consumption.
+func renderLogsJSON(data LogsData, verbose bool) error {
+	reportLog.Printf("Rendering logs data as JSON: %d runs, verbose=%v", data.Summary.TotalRuns, verbose)
+
+	if !verbose {
+		data = compactLogsData(data)
+	}
+
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(data)
+}
+
+// compactLogsData strips audit-heavy fields from LogsData for token-efficient agentic output.
+// Removes: comparison, behavior_fingerprint, task_domain, agentic_assessments,
+// token_usage_summary, experiments, ambient_context from each run.
+// Omits episodes when all are standalone (single-run episodes add no information).
+func compactLogsData(data LogsData) LogsData {
+	// Strip audit-heavy fields from runs
+	for i := range data.Runs {
+		data.Runs[i].Comparison = nil
+		data.Runs[i].BehaviorFingerprint = nil
+		data.Runs[i].TaskDomain = nil
+		data.Runs[i].AgenticAssessments = nil
+		data.Runs[i].TokenUsageSummary = nil
+		data.Runs[i].Experiments = nil
+		data.Runs[i].AmbientContext = nil
+		data.Runs[i].AwContext = nil
+	}
+
+	// Omit episodes when all are standalone (no multi-run episodes)
+	allStandalone := true
+	for _, ep := range data.Episodes {
+		if ep.TotalRuns > 1 {
+			allStandalone = false
+			break
+		}
+	}
+	if allStandalone {
+		data.Episodes = nil
+		data.Edges = nil
+	}
+
+	return data
 }
 
 // writeSummaryFile writes the logs data to a JSON file

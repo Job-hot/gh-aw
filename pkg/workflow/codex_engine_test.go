@@ -52,6 +52,9 @@ func TestCodexEngine(t *testing.T) {
 		if !strings.Contains(steps[1][0], "Install Codex CLI") {
 			t.Errorf("Expected second step to contain 'Install Codex CLI', got '%s'", steps[1][0])
 		}
+		if strings.Contains(strings.Join([]string(steps[1]), "\n"), "NPM_CONFIG_MIN_RELEASE_AGE") {
+			t.Errorf("Expected no npm release-age cooldown env for Codex install, got '%s'", strings.Join([]string(steps[1]), "\n"))
+		}
 	}
 
 	// Test execution steps
@@ -102,6 +105,12 @@ func TestCodexEngine(t *testing.T) {
 	// Check environment variables
 	if !strings.Contains(stepContent, "CODEX_API_KEY: ${{ secrets.CODEX_API_KEY || secrets.OPENAI_API_KEY }}") {
 		t.Errorf("Expected CODEX_API_KEY environment variable in step content:\n%s", stepContent)
+	}
+	if strings.Contains(stepContent, "--exclude-env OPENAI_API_KEY") {
+		t.Errorf("OPENAI_API_KEY must remain available to Codex runtime, got:\n%s", stepContent)
+	}
+	if strings.Contains(stepContent, "--exclude-env CODEX_API_KEY") {
+		t.Errorf("CODEX_API_KEY must remain available to Codex runtime, got:\n%s", stepContent)
 	}
 }
 
@@ -220,7 +229,7 @@ func TestCodexEngineRenderMCPConfig(t *testing.T) {
 				"",
 				"[shell_environment_policy]",
 				"inherit = \"core\"",
-				"include_only = [\"CODEX_API_KEY\", \"GITHUB_PERSONAL_ACCESS_TOKEN\", \"HOME\", \"OPENAI_API_KEY\", \"PATH\"]",
+				"include_only = [\"^CODEX_API_KEY$\", \"^GITHUB_PERSONAL_ACCESS_TOKEN$\", \"^HOME$\", \"^OPENAI_API_KEY$\", \"^PATH$\"]",
 				"",
 				"[mcp_servers.github]",
 				"user_agent = \"test-workflow\"",
@@ -266,7 +275,7 @@ func TestCodexEngineRenderMCPConfig(t *testing.T) {
 				"cat > \"/tmp/gh-aw/mcp-config/config.toml\" << GH_AW_CODEX_SHELL_POLICY_NORM_EOF",
 				"[shell_environment_policy]",
 				"inherit = \"core\"",
-				"include_only = [\"CODEX_API_KEY\", \"GITHUB_PERSONAL_ACCESS_TOKEN\", \"HOME\", \"OPENAI_API_KEY\", \"PATH\"]",
+				"include_only = [\"^CODEX_API_KEY$\", \"^GITHUB_PERSONAL_ACCESS_TOKEN$\", \"^HOME$\", \"^OPENAI_API_KEY$\", \"^PATH$\"]",
 				"GH_AW_CODEX_SHELL_POLICY_NORM_EOF",
 				"cat \"${RUNNER_TEMP}/gh-aw/mcp-config/config.toml\" >> \"/tmp/gh-aw/mcp-config/config.toml\"",
 				"chmod 600 \"/tmp/gh-aw/mcp-config/config.toml\"",
@@ -444,6 +453,67 @@ func TestCodexEngineExecutionAddsMountedMCPCLIPathSetup(t *testing.T) {
 	stepContent := strings.Join([]string(steps[0]), "\n")
 	if !strings.Contains(stepContent, "export PATH=\"${RUNNER_TEMP}/gh-aw/mcp-cli/bin:$PATH\"") {
 		t.Errorf("Expected mounted MCP CLI bin directory in AWF command, got:\n%s", stepContent)
+	}
+	if !strings.Contains(stepContent, "--exclude-env CODEX_API_KEY") {
+		t.Errorf("Expected CODEX_API_KEY to be excluded from AWF container env, got:\n%s", stepContent)
+	}
+	if !strings.Contains(stepContent, "--exclude-env OPENAI_API_KEY") {
+		t.Errorf("Expected OPENAI_API_KEY to be excluded from AWF container env, got:\n%s", stepContent)
+	}
+}
+
+func TestCodexEngineExecutionPassesModelEnvVarIntoAWFStep(t *testing.T) {
+	engine := NewCodexEngine()
+
+	tests := []struct {
+		name             string
+		safeOutputs      *SafeOutputsConfig
+		expectedModelEnv string
+	}{
+		{
+			name:             "agent job uses agent model env var",
+			safeOutputs:      &SafeOutputsConfig{},
+			expectedModelEnv: constants.EnvVarModelAgentCodex,
+		},
+		{
+			name:             "detection job uses detection model env var",
+			safeOutputs:      nil,
+			expectedModelEnv: constants.EnvVarModelDetectionCodex,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			workflowData := &WorkflowData{
+				Name: "test-workflow",
+				NetworkPermissions: &NetworkPermissions{
+					Allowed: []string{"defaults"},
+					Firewall: &FirewallConfig{
+						Enabled: true,
+					},
+				},
+				Tools: map[string]any{
+					"bash": []any{"echo"},
+				},
+				SafeOutputs: tt.safeOutputs,
+			}
+
+			steps := engine.GetExecutionSteps(workflowData, "/tmp/test.log")
+			if len(steps) == 0 {
+				t.Fatal("Expected execution step")
+			}
+
+			stepContent := strings.Join([]string(steps[0]), "\n")
+			expectedEnvLine := tt.expectedModelEnv + ": ${{ vars." + tt.expectedModelEnv + " || '" + constants.CodexDefaultModel + "' }}"
+			if !strings.Contains(stepContent, expectedEnvLine) {
+				t.Errorf("Expected model env var to be included in AWF step env:\n%s", stepContent)
+			}
+
+			expectedModelFlag := fmt.Sprintf("${%s:+ --model \"$%s\"}", tt.expectedModelEnv, tt.expectedModelEnv)
+			if !strings.Contains(stepContent, expectedModelFlag) {
+				t.Errorf("Expected AWF command to use %s for --model shell expansion:\n%s", tt.expectedModelEnv, stepContent)
+			}
+		})
 	}
 }
 
@@ -940,7 +1010,7 @@ func TestCodexEngineWebSearch(t *testing.T) {
 func TestCodexEngineWebFetch(t *testing.T) {
 	engine := NewCodexEngine()
 
-	t.Run("fetch tool disabled by default when tool not specified", func(t *testing.T) {
+	t.Run("disables fetch by default when web-fetch tool not specified", func(t *testing.T) {
 		workflowData := &WorkflowData{
 			Name: "test-workflow",
 		}

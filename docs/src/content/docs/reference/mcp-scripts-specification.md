@@ -351,6 +351,12 @@ Implementations SHOULD validate:
 4. **Description Length**: Tool descriptions are clear and concise (recommended 10-200 characters)
 5. **Timeout Reasonableness**: Timeout values are reasonable for tool purpose (warn if >600 seconds)
 
+**Sync note (2026-05-25)**: SM-IS-01 enforcement was reviewed against the current runtime path.
+`actions/setup/js/mcp_scripts_mcp_server_http.cjs` calls
+`validateRequiredFields` in `actions/setup/js/mcp_scripts_validation.cjs`, which validates required
+presence but does not yet enforce a per-string 10KB limit. A follow-up implementation issue SHOULD
+be opened before treating SM-IS-01 as fully implemented.
+
 ---
 
 ## 5. Tool Execution
@@ -759,11 +765,13 @@ Implementations MUST provide:
 3. **Resource Limits**: Containers enforce CPU, memory, and filesystem limits
 4. **Network Restrictions**: Network access controlled by workflow configuration
 
-JavaScript tools SHOULD provide:
+JavaScript tools MUST provide:
 
 1. **Module Isolation**: Tools execute in isolated module scope
 2. **Limited Execution**: Use V8 isolates or similar for CPU/memory limits
 3. **No Server Access**: Tools cannot access server internals or other tools
+
+**SM-JS-01**: JavaScript tools MUST execute in a sandboxed V8 context with restricted global scope. Implementations MUST NOT expose Node.js global objects (e.g., `process`, `require`, `__dirname`) to tool scripts unless explicitly permitted by the tool configuration.
 
 ### 7.3 Input Sanitization
 
@@ -772,7 +780,9 @@ Implementations MUST:
 1. Validate input types against schema before execution
 2. Reject inputs that do not conform to schema
 3. Prevent code injection via input validation
-4. Apply length limits to string inputs (SHOULD be at least 10KB)
+4. Apply length limits to string inputs (MUST enforce a maximum input string length of at least 10KB)
+
+**SM-IS-01**: Implementations MUST enforce a maximum input string length of at least 10KB for each string-typed input parameter. Inputs exceeding the configured maximum MUST be rejected with a validation error before the tool script is invoked. Implementations MUST NOT silently truncate oversized inputs.
 
 ### 7.4 Output Sanitization
 
@@ -1481,6 +1491,14 @@ and run `go test ./pkg/workflow/...` to verify conformance.
 | §7 | Security Model | `pkg/workflow/mcp_scripts_renderer.go` (`collectMCPScriptsSecrets`, `renderMCPScriptsMCPConfigWithOptions`), `pkg/workflow/mcp_scripts_parser.go` (env/secret field parsing) |
 | §8 | Large Output Handling | `pkg/workflow/mcp_scripts_generator.go` (output truncation logic), `actions/setup/js/mcp_scripts_mcp_server_http.cjs` (HTTP transport output streaming) |
 | §9 | Integration with MCP Gateway | `pkg/workflow/mcp_scripts_renderer.go` (`renderMCPScriptsMCPConfigWithOptions`), `pkg/workflow/mcp_scripts_generator.go` (`GenerateMCPScriptsMCPServerScript`, `GenerateMCPScriptsToolsConfig`) |
+
+### Security Marker Sync Map
+
+| Marker | Implementation File(s) | Enforcement Path |
+|---|---|---|
+| SM-JS-01 | `pkg/workflow/mcp_scripts_generator.go`, `actions/setup/js/mcp_server_core.cjs` | `GenerateMCPScriptJavaScriptToolScript` emits per-tool JS handlers; `loadToolHandlers` in `mcp_server_core.cjs` executes handlers in isolated subprocesses |
+| SM-IS-01 | `actions/setup/js/mcp_scripts_mcp_server_http.cjs`, `actions/setup/js/mcp_scripts_validation.cjs` | `createMCPServer` → `validateRequiredFields` (presence checks only; 10KB string-length enforcement not currently implemented) |
+| SM-03 | `actions/setup/js/mcp_server_core.cjs`, `actions/setup/js/mcp_scripts_mcp_server_http.cjs` | Tool-call response path serializes handler output before returning MCP `content`; raw passthrough handling is centralized in server transport/handler pipeline |
 
 ### Implementation Notes
 

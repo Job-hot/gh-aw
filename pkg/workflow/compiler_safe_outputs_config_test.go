@@ -113,9 +113,9 @@ func TestAddHandlerManagerConfigEnvVar(t *testing.T) {
 							Max: strPtr("5"),
 						},
 					},
-					Status: testBoolPtr(true),
-					Title:  testBoolPtr(true),
-					Body:   testBoolPtr(true),
+					Status: new(true),
+					Title:  new(true),
+					Body:   new(true),
 				},
 			},
 			checkContains: []string{
@@ -1666,14 +1666,10 @@ func TestHandlerConfigPushToPullRequestBranchPatchSizeOverridesGlobal(t *testing
 }
 
 // testBoolPtr is a helper function for bool pointers in config tests
-func testBoolPtr(b bool) *bool {
-	return &b
-}
+func testBoolPtr(b bool) *bool { return new(b) }
 
 // testStringPtr is a helper function for string pointers in config tests
-func testStringPtr(s string) *string {
-	return &s
-}
+func testStringPtr(s string) *string { return new(s) }
 
 // TestAutoEnabledHandlers tests that missing_tool and missing_data
 // are automatically enabled even when not explicitly configured.
@@ -3051,6 +3047,42 @@ func TestPRPolicyFieldsExpressionsPassThrough(t *testing.T) {
 			assert.Equal(t, tt.wantFormat, patchFmt, "patch_format should contain the expression")
 		})
 	}
+}
+
+func TestCreatePullRequestProtectedFilesPolicyDefault(t *testing.T) {
+	t.Parallel()
+
+	compiler := NewCompiler()
+	workflowData := &WorkflowData{
+		Name: "Test Workflow",
+		SafeOutputs: &SafeOutputsConfig{
+			CreatePullRequests: &CreatePullRequestsConfig{
+				BaseSafeOutputConfig: BaseSafeOutputConfig{Max: strPtr("1")},
+			},
+		},
+	}
+	var steps []string
+	compiler.addHandlerManagerConfigEnvVar(&steps, workflowData)
+	require.NotEmpty(t, steps, "should produce config steps")
+
+	var configJSON string
+	for _, step := range steps {
+		if strings.Contains(step, "GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG") {
+			parts := strings.Split(step, "GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: ")
+			require.Len(t, parts, 2, "should split env var line")
+			configJSON = strings.TrimSpace(parts[1])
+			configJSON = strings.Trim(configJSON, "\"")
+			configJSON = strings.ReplaceAll(configJSON, "\\\"", "\"")
+		}
+	}
+	require.NotEmpty(t, configJSON, "should have extracted JSON")
+
+	var config map[string]map[string]any
+	require.NoError(t, json.Unmarshal([]byte(configJSON), &config), "config JSON should be valid")
+
+	handlerCfg, ok := config["create_pull_request"]
+	require.True(t, ok, "create_pull_request handler config should be present")
+	assert.Equal(t, "request_review", handlerCfg["protected_files_policy"], "default protected-files mode should be request_review")
 }
 
 // TestDispatchWorkflowRelayInjectsDispatchCompatibleRef verifies that when a workflow_call

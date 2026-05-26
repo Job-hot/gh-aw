@@ -138,10 +138,20 @@
       "version": "v4.1.0",
       "sha": "4907a6ddec9925e35a0a9e82d7399ccc52663121"
     },
+    "docker/metadata-action@v6": {
+      "repo": "docker/metadata-action",
+      "version": "v6",
+      "sha": "80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9"
+    },
     "docker/metadata-action@v6.0.0": {
       "repo": "docker/metadata-action",
       "version": "v6.0.0",
       "sha": "030e881283bb7a6894de51c315a6bfe6a94e05cf"
+    },
+    "docker/setup-buildx-action@v4": {
+      "repo": "docker/setup-buildx-action",
+      "version": "v4",
+      "sha": "d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5"
     },
     "docker/setup-buildx-action@v4.0.0": {
       "repo": "docker/setup-buildx-action",
@@ -187,6 +197,11 @@
       "repo": "ruby/setup-ruby",
       "version": "v1.308.0",
       "sha": "97ecb7b512899eb71ab1bf2310a624c6f1589ac6"
+    },
+    "safedep/pmg@v1": {
+      "repo": "safedep/pmg",
+      "version": "v1",
+      "sha": "46cc70db535107183c9e752bb55d1d5c5f1a9290"
     },
     "super-linter/super-linter@v8.6.0": {
       "repo": "super-linter/super-linter",
@@ -375,6 +390,11 @@
       "digest": "sha256:2ac27ef03461ef2b877031b838a7d1fd7f12b12d4ace7796d8cad91446d55959",
       "pinned_image": "ghcr.io/github/github-mcp-server:v1.0.3@sha256:2ac27ef03461ef2b877031b838a7d1fd7f12b12d4ace7796d8cad91446d55959"
     },
+    "ghcr.io/github/github-mcp-server:v1.0.4": {
+      "image": "ghcr.io/github/github-mcp-server:v1.0.4",
+      "digest": "sha256:e3816a476a977cfb836e7d221510011436c654d11861db66ecfd826601aba6a4",
+      "pinned_image": "ghcr.io/github/github-mcp-server:v1.0.4@sha256:e3816a476a977cfb836e7d221510011436c654d11861db66ecfd826601aba6a4"
+    },
     "ghcr.io/github/serena-mcp-server:latest": {
       "image": "ghcr.io/github/serena-mcp-server:latest",
       "digest": "sha256:bf343399e3725c45528f531a230f3a04521d4cdef29f9a5af6282ff0d3c393c5",
@@ -422,8 +442,8 @@
     },
     "node:lts-alpine": {
       "image": "node:lts-alpine",
-      "digest": "sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f",
-      "pinned_image": "node:lts-alpine@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f"
+      "digest": "sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14",
+      "pinned_image": "node:lts-alpine@sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14"
     },
     "python:alpine": {
       "image": "python:alpine",

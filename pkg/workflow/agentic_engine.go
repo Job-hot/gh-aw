@@ -189,6 +189,12 @@ type LogParser interface {
 	// GetLogFileForParsing returns the log file path to use for JavaScript parsing in the workflow
 	// This may be different from the stdout/stderr log file if the engine produces separate detailed logs
 	GetLogFileForParsing() string
+
+	// GetErrorDetectionScriptId returns the name of the JavaScript script used to detect engine
+	// errors from the agent stdio log after execution. The script runs on the host runner (outside
+	// the AWF sandbox container) so it can write to GITHUB_OUTPUT. Returns empty string if the
+	// engine does not provide a post-execution error detection step.
+	GetErrorDetectionScriptId() string
 }
 
 // SecurityProvider handles security-related configuration
@@ -209,7 +215,7 @@ type SecurityProvider interface {
 // The default implementation in BaseEngine returns "" (no native env var).
 type ModelEnvVarProvider interface {
 	// GetModelEnvVarName returns the name of the native environment variable the CLI
-	// uses for model selection (e.g., "COPILOT_MODEL", "ANTHROPIC_MODEL", "GEMINI_MODEL").
+	// uses for model selection (e.g., "COPILOT_MODEL", "ANTHROPIC_MODEL", "ANTIGRAVITY_MODEL").
 	// Returns an empty string if the engine does not support a native model env var.
 	GetModelEnvVarName() string
 }
@@ -387,6 +393,13 @@ func (e *BaseEngine) GetLogParserScriptId() string {
 	return ""
 }
 
+// GetErrorDetectionScriptId returns empty string by default (no post-execution error detection)
+// Engines can override this to provide a host-runner script that detects errors in the agent
+// stdio log and writes them as GITHUB_OUTPUT values after the AWF container exits.
+func (e *BaseEngine) GetErrorDetectionScriptId() string {
+	return ""
+}
+
 // RenderMCPConfig provides a default no-op implementation for MCP configuration
 // Engines can override this to provide custom MCP server configuration
 func (e *BaseEngine) RenderMCPConfig(yaml *strings.Builder, tools map[string]any, mcpTools []string, workflowData *WorkflowData) error {
@@ -427,7 +440,8 @@ var (
 	registryInitOnce sync.Once
 )
 
-// NewEngineRegistry creates a new engine registry with built-in engines
+// NewEngineRegistry creates a new engine registry with built-in engines.
+// Panics on invalid built-in engine registration.
 func NewEngineRegistry() *EngineRegistry {
 	agenticEngineLog.Print("Creating new engine registry")
 
@@ -441,13 +455,14 @@ func NewEngineRegistry() *EngineRegistry {
 		NewCodexEngine(),
 		NewCopilotEngine(),
 		NewGeminiEngine(),
+		NewAntigravityEngine(),
 		NewOpenCodeEngine(),
 		NewCrushEngine(),
 		NewPiEngine(),
 	}
 	for _, engine := range builtins {
 		if err := registry.Register(engine); err != nil {
-			panic(fmt.Sprintf("failed to register built-in engine: %v", err))
+			panic(fmt.Sprintf("BUG: failed to register built-in engine: %v", err))
 		}
 	}
 

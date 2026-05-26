@@ -1316,6 +1316,52 @@ index 0000000..abc1234
       }
     });
 
+    it("should use sanitized branch name (not agent-supplied message.branch) in bundle fetch refspec", async () => {
+      // The agent may supply a message.branch value; the bundle fetch must use the
+      // sanitized branchName from the GitHub API — never the raw agent input.
+      const bundlePath = path.join(tempDir, "sanitized-branch.bundle");
+      const patchPath = createPatchFile("small patch content");
+      fs.writeFileSync(bundlePath, "bundle content");
+
+      const pushSignedCommitsModule = require("./push_signed_commits.cjs");
+      const pushSignedSpy = vi.spyOn(pushSignedCommitsModule, "pushSignedCommits").mockResolvedValue("bundle-tip");
+
+      try {
+        mockExec.getExecOutput.mockImplementation((cmd, args, options) => {
+          if (cmd === "git" && args[0] === "ls-remote") {
+            return Promise.resolve({ exitCode: 0, stdout: "remote-head\trefs/heads/feature-branch\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-parse" && args[1] === "HEAD") {
+            return Promise.resolve({ exitCode: 0, stdout: "remote-head\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-parse" && args[1] === "--is-shallow-repository") {
+            return Promise.resolve({ exitCode: 0, stdout: "false\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-list") {
+            return Promise.resolve({ exitCode: 0, stdout: "2\n", stderr: "" });
+          }
+          return Promise.resolve({ exitCode: 0, stdout: "", stderr: "" });
+        });
+
+        const module = await loadModule();
+        const handler = await module.main({});
+        // message.branch contains shell metacharacters; branchName from the GitHub API is "feature-branch"
+        const result = await handler({ branch: "feature-branch; rm -rf /", patch_path: patchPath, bundle_path: bundlePath, diff_size: 5 * 1024 }, {});
+
+        expect(result.success).toBe(true);
+
+        // Bundle fetch must use the sanitized API branch name, not the agent-supplied message.branch
+        const bundleFetchCall = mockExec.getExecOutput.mock.calls.find(([, args, opts]) => Array.isArray(args) && args[0] === "fetch" && args[1] === bundlePath && opts && opts.ignoreReturnCode);
+        expect(bundleFetchCall).toBeDefined();
+        // Refspec must use the sanitized name "feature-branch", not "feature-branch; rm -rf /"
+        expect(bundleFetchCall[1][2]).toMatch(/^refs\/heads\/feature-branch:/);
+        expect(bundleFetchCall[1][2]).not.toContain(";");
+        expect(bundleFetchCall[1][2]).not.toContain("rm");
+      } finally {
+        pushSignedSpy.mockRestore();
+      }
+    });
+
     it("should fetch prerequisite commits and retry bundle fetch when bundle lacks prerequisites", async () => {
       const bundlePath = path.join(tempDir, "test.bundle");
       const patchPath = createPatchFile("small patch content");
@@ -1356,6 +1402,239 @@ index 0000000..abc1234
         expect(bundleRetryFetch[1]).toEqual(["fetch", bundlePath, "refs/heads/feature-branch:refs/bundles/push-feature-branch"]);
       } finally {
         pushSignedSpy.mockRestore();
+      }
+    });
+
+    it("should squash merge commits into a single regular commit before pushSignedCommits", async () => {
+      // Scenario: agent ran `git merge origin/main` producing a merge commit.
+      // The handler must detect the merge commit in the range and perform a
+      // soft-reset + recommit to linearize it, then call pushSignedCommits with
+      // the linearized history.
+      const bundlePath = path.join(tempDir, "merge-test.bundle");
+      const patchPath = createPatchFile("small patch content");
+      fs.writeFileSync(bundlePath, "bundle content");
+
+      const pushSignedCommitsModule = require("./push_signed_commits.cjs");
+      const pushSignedSpy = vi.spyOn(pushSignedCommitsModule, "pushSignedCommits").mockResolvedValue("linearized-tip");
+
+      try {
+        mockExec.getExecOutput.mockImplementation((cmd, args, options) => {
+          if (cmd === "git" && args[0] === "ls-remote") {
+            return Promise.resolve({ exitCode: 0, stdout: "remote-head\trefs/heads/feature-branch\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-parse" && args[1] === "HEAD") {
+            return Promise.resolve({ exitCode: 0, stdout: "remote-head\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-parse" && args[1] === "--is-shallow-repository") {
+            return Promise.resolve({ exitCode: 0, stdout: "false\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-list" && args[1] === "--merges" && args[2] === "--count") {
+            // Report 1 merge commit in the range
+            return Promise.resolve({ exitCode: 0, stdout: "1\n", stderr: "" });
+          }
+          // First non-merge commit message lookup (--no-merges --format=%B --reverse <base>..HEAD)
+          if (cmd === "git" && args[0] === "log" && args.includes("--no-merges")) {
+            return Promise.resolve({ exitCode: 0, stdout: "Fix typo in README\n", stderr: "" });
+          }
+          // Staged-changes validation after soft reset
+          if (cmd === "git" && args[0] === "diff" && args[1] === "--cached" && args[2] === "--name-only") {
+            return Promise.resolve({ exitCode: 0, stdout: "README.md\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-list") {
+            return Promise.resolve({ exitCode: 0, stdout: "2\n", stderr: "" });
+          }
+          return Promise.resolve({ exitCode: 0, stdout: "", stderr: "" });
+        });
+
+        const module = await loadModule();
+        const handler = await module.main({});
+        const result = await handler({ branch: "feature-branch", patch_path: patchPath, bundle_path: bundlePath, diff_size: 5 * 1024 }, {});
+
+        expect(result.success).toBe(true);
+
+        // Should have detected the merge commit count with the correct range
+        const mergeCountCall = mockExec.getExecOutput.mock.calls.find(([, args]) => Array.isArray(args) && args[0] === "rev-list" && args[1] === "--merges" && args[2] === "--count");
+        expect(mergeCountCall).toBeDefined();
+        // Verify the range parameter: squashBase (= remoteHeadBeforePatch = "remote-head") to HEAD
+        expect(mergeCountCall[1]).toEqual(["rev-list", "--merges", "--count", "remote-head..HEAD"]);
+
+        // Verify only the first non-merge commit message is fetched (--max-count=1)
+        const firstNonMergeCall = mockExec.getExecOutput.mock.calls.find(([, args]) => Array.isArray(args) && args[0] === "log" && args.includes("--no-merges"));
+        expect(firstNonMergeCall).toBeDefined();
+        expect(firstNonMergeCall[1]).toContain("--max-count=1");
+
+        // Should have performed the soft-reset to squash the merge commit
+        expect(mockExec.exec).toHaveBeenCalledWith("git", ["reset", "--soft", "remote-head"], expect.any(Object));
+
+        // Should have used the first non-merge commit's message for the squash commit
+        expect(mockExec.exec).toHaveBeenCalledWith("git", ["commit", "--allow-empty", "--no-verify", "-m", "Fix typo in README"], expect.any(Object));
+
+        // pushSignedCommits should still be called after linearization
+        expect(pushSignedSpy).toHaveBeenCalled();
+      } finally {
+        pushSignedSpy.mockRestore();
+      }
+    });
+
+    it("should fall back to merge commit message when no non-merge commits exist in range", async () => {
+      // Scenario: the only commit in the range is the merge commit itself (agent only ran
+      // `git merge origin/main`, no additional work commits).
+      const bundlePath = path.join(tempDir, "only-merge.bundle");
+      const patchPath = createPatchFile("small patch content");
+      fs.writeFileSync(bundlePath, "bundle content");
+
+      const pushSignedCommitsModule = require("./push_signed_commits.cjs");
+      const pushSignedSpy = vi.spyOn(pushSignedCommitsModule, "pushSignedCommits").mockResolvedValue("linearized-tip");
+
+      try {
+        mockExec.getExecOutput.mockImplementation((cmd, args, options) => {
+          if (cmd === "git" && args[0] === "ls-remote") {
+            return Promise.resolve({ exitCode: 0, stdout: "remote-head\trefs/heads/feature-branch\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-parse" && args[1] === "HEAD") {
+            return Promise.resolve({ exitCode: 0, stdout: "remote-head\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-parse" && args[1] === "--is-shallow-repository") {
+            return Promise.resolve({ exitCode: 0, stdout: "false\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-list" && args[1] === "--merges" && args[2] === "--count") {
+            return Promise.resolve({ exitCode: 0, stdout: "1\n", stderr: "" });
+          }
+          // No non-merge commits exist → return empty string
+          if (cmd === "git" && args[0] === "log" && args.includes("--no-merges")) {
+            return Promise.resolve({ exitCode: 0, stdout: "", stderr: "" });
+          }
+          // Fall back: last commit message is the merge commit's message
+          if (cmd === "git" && args[0] === "log" && args[1] === "-1" && args[2] === "--format=%B") {
+            return Promise.resolve({ exitCode: 0, stdout: "Merge branch 'main' into feature-branch\n", stderr: "" });
+          }
+          // Staged-changes validation after soft reset
+          if (cmd === "git" && args[0] === "diff" && args[1] === "--cached" && args[2] === "--name-only") {
+            return Promise.resolve({ exitCode: 0, stdout: "src/index.js\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-list") {
+            return Promise.resolve({ exitCode: 0, stdout: "2\n", stderr: "" });
+          }
+          return Promise.resolve({ exitCode: 0, stdout: "", stderr: "" });
+        });
+
+        const module = await loadModule();
+        const handler = await module.main({});
+        const result = await handler({ branch: "feature-branch", patch_path: patchPath, bundle_path: bundlePath, diff_size: 5 * 1024 }, {});
+
+        expect(result.success).toBe(true);
+
+        // Should have fallen back to the merge commit's message
+        expect(mockExec.exec).toHaveBeenCalledWith("git", ["commit", "--allow-empty", "--no-verify", "-m", "Merge branch 'main' into feature-branch"], expect.any(Object));
+      } finally {
+        pushSignedSpy.mockRestore();
+      }
+    });
+
+    it("should skip linearization when no merge commits are present", async () => {
+      const bundlePath = path.join(tempDir, "no-merge.bundle");
+      const patchPath = createPatchFile("small patch content");
+      fs.writeFileSync(bundlePath, "bundle content");
+
+      const pushSignedCommitsModule = require("./push_signed_commits.cjs");
+      const pushSignedSpy = vi.spyOn(pushSignedCommitsModule, "pushSignedCommits").mockResolvedValue("tip-sha");
+
+      try {
+        mockExec.getExecOutput.mockImplementation((cmd, args, options) => {
+          if (cmd === "git" && args[0] === "ls-remote") {
+            return Promise.resolve({ exitCode: 0, stdout: "remote-head\trefs/heads/feature-branch\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-parse" && args[1] === "HEAD") {
+            return Promise.resolve({ exitCode: 0, stdout: "remote-head\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-parse" && args[1] === "--is-shallow-repository") {
+            return Promise.resolve({ exitCode: 0, stdout: "false\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-list" && args[1] === "--merges" && args[2] === "--count") {
+            // No merge commits in range
+            return Promise.resolve({ exitCode: 0, stdout: "0\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-list") {
+            return Promise.resolve({ exitCode: 0, stdout: "2\n", stderr: "" });
+          }
+          return Promise.resolve({ exitCode: 0, stdout: "", stderr: "" });
+        });
+
+        const module = await loadModule();
+        const handler = await module.main({});
+        const result = await handler({ branch: "feature-branch", patch_path: patchPath, bundle_path: bundlePath, diff_size: 5 * 1024 }, {});
+
+        expect(result.success).toBe(true);
+
+        // soft-reset should NOT have been called (no merge commits to squash)
+        expect(mockExec.exec).not.toHaveBeenCalledWith("git", ["reset", "--soft", expect.any(String)], expect.any(Object));
+
+        // pushSignedCommits should still be called
+        expect(pushSignedSpy).toHaveBeenCalled();
+      } finally {
+        pushSignedSpy.mockRestore();
+      }
+    });
+
+    it("should roll back to original HEAD and emit warning when staged-changes validation fails after soft reset", async () => {
+      // Scenario: merge commit detected, soft reset succeeds, but no staged changes are
+      // found afterwards (e.g. the range was already empty / only no-op commits).
+      // The handler should roll back to the originalHead and warn, then let
+      // pushSignedCommits proceed (and potentially surface its own error).
+      const bundlePath = path.join(tempDir, "empty-range.bundle");
+      const patchPath = createPatchFile("small patch content");
+      fs.writeFileSync(bundlePath, "bundle content");
+
+      const pushSignedCommitsModule = require("./push_signed_commits.cjs");
+      const pushSignedSpy = vi.spyOn(pushSignedCommitsModule, "pushSignedCommits").mockResolvedValue("tip-sha");
+      const warningSpy = vi.spyOn(core, "warning");
+
+      try {
+        mockExec.getExecOutput.mockImplementation((cmd, args, options) => {
+          if (cmd === "git" && args[0] === "ls-remote") {
+            return Promise.resolve({ exitCode: 0, stdout: "remote-head\trefs/heads/feature-branch\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-parse" && args[1] === "HEAD") {
+            return Promise.resolve({ exitCode: 0, stdout: "original-sha\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-parse" && args[1] === "--is-shallow-repository") {
+            return Promise.resolve({ exitCode: 0, stdout: "false\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-list" && args[1] === "--merges" && args[2] === "--count") {
+            return Promise.resolve({ exitCode: 0, stdout: "1\n", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "log" && args.includes("--no-merges")) {
+            return Promise.resolve({ exitCode: 0, stdout: "Fix something\n", stderr: "" });
+          }
+          // No staged changes after soft reset → triggers validation error
+          if (cmd === "git" && args[0] === "diff" && args[1] === "--cached" && args[2] === "--name-only") {
+            return Promise.resolve({ exitCode: 0, stdout: "", stderr: "" });
+          }
+          if (cmd === "git" && args[0] === "rev-list") {
+            return Promise.resolve({ exitCode: 0, stdout: "2\n", stderr: "" });
+          }
+          return Promise.resolve({ exitCode: 0, stdout: "", stderr: "" });
+        });
+
+        const module = await loadModule();
+        const handler = await module.main({});
+        const result = await handler({ branch: "feature-branch", patch_path: patchPath, bundle_path: bundlePath, diff_size: 5 * 1024 }, {});
+
+        // The overall push should still succeed (warning path, not fatal error)
+        expect(result.success).toBe(true);
+
+        // Should have attempted rollback to originalHead
+        expect(mockExec.exec).toHaveBeenCalledWith("git", ["reset", "--hard", "original-sha"], expect.any(Object));
+
+        // Should have emitted the outer warning mentioning linearization failure
+        const outerWarning = warningSpy.mock.calls.find(([msg]) => typeof msg === "string" && msg.includes("failed to linearize merge commits"));
+        expect(outerWarning).toBeDefined();
+
+        // pushSignedCommits should still be called after the failed linearization
+        expect(pushSignedSpy).toHaveBeenCalled();
+      } finally {
+        pushSignedSpy.mockRestore();
+        warningSpy.mockRestore();
       }
     });
   });

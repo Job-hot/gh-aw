@@ -2105,6 +2105,8 @@ describe("sendJobSetupSpan", () => {
     const body = JSON.parse(mockFetch.mock.calls[0][1].body);
     const resourceAttrs = body.resourceSpans[0].resource.attributes;
     expect(resourceAttrs).toContainEqual({ key: "service.version", value: { stringValue: "v1.2.3" } });
+    const spanAttrs = body.resourceSpans[0].scopeSpans[0].spans[0].attributes;
+    expect(spanAttrs).toContainEqual({ key: "gh-aw.cli.version", value: { stringValue: "v1.2.3" } });
   });
 
   it("falls back to GH_AW_INFO_CLI_VERSION for service.version when GH_AW_INFO_VERSION is absent (custom engines)", async () => {
@@ -4037,6 +4039,8 @@ describe("sendJobConclusionSpan", () => {
     expect(body.resourceSpans[0].scopeSpans[0].scope.version).toBe("v3.1.0");
     const resourceAttrs = body.resourceSpans[0].resource.attributes;
     expect(resourceAttrs).toContainEqual({ key: "service.version", value: { stringValue: "v3.1.0" } });
+    const spanAttrs = body.resourceSpans[0].scopeSpans[0].spans[0].attributes;
+    expect(spanAttrs).toContainEqual({ key: "gh-aw.cli.version", value: { stringValue: "v3.1.0" } });
   });
 
   it("prefers agent_version from aw_info.json over cli_version for scope version", async () => {
@@ -4048,7 +4052,7 @@ describe("sendJobConclusionSpan", () => {
 
     const readFileSpy = vi.spyOn(fs, "readFileSync").mockImplementation(filePath => {
       if (filePath === "/tmp/gh-aw/aw_info.json") {
-        return JSON.stringify({ agent_version: "2.1.142" });
+        return JSON.stringify({ agent_version: "2.1.150" });
       }
       throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
     });
@@ -4058,7 +4062,7 @@ describe("sendJobConclusionSpan", () => {
     readFileSpy.mockRestore();
 
     const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-    expect(body.resourceSpans[0].scopeSpans[0].scope.version).toBe("2.1.142");
+    expect(body.resourceSpans[0].scopeSpans[0].scope.version).toBe("2.1.150");
   });
 
   it("uses GITHUB_AW_OTEL_TRACE_ID from env as trace ID (1 trace per run)", async () => {
@@ -5582,6 +5586,69 @@ describe("sendJobConclusionSpan", () => {
       const attrs = Object.fromEntries(body.resourceSpans[0].scopeSpans[0].spans[0].attributes.map(a => [a.key, a.value.intValue ?? a.value.stringValue]));
       expect(attrs["gen_ai.usage.input_tokens"]).toBe(3000);
       expect(attrs["gen_ai.usage.output_tokens"]).toBe(150);
+      expect(attrs["gen_ai.usage.total_tokens"]).toBe(3150);
+    });
+
+    it("falls back to agent-stdio.log usage when agent_usage.json is absent", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" });
+      vi.stubGlobal("fetch", mockFetch);
+
+      process.env.INPUT_JOB_NAME = "agent";
+      process.env.GH_AW_AGENT_CONCLUSION = "failure";
+      statSpy.mockImplementation(() => {
+        throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+      });
+      process.env.GH_AW_OTLP_ENDPOINTS = JSON.stringify([{ url: "https://traces.example.com" }]);
+
+      readFileSpy.mockImplementation(filePath => {
+        if (filePath === "/tmp/gh-aw/agent-stdio.log") {
+          return '{"type":"result","num_turns":3,"usage":{"input_tokens":48200,"output_tokens":1350,"cache_read_input_tokens":41000,"cache_creation_input_tokens":3100}}\n';
+        }
+        throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+      });
+
+      await sendJobConclusionSpan("gh-aw.agent.conclusion");
+
+      expect(mockFetch.mock.calls.length).toBe(1);
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const attrs = Object.fromEntries(body.resourceSpans[0].scopeSpans[0].spans[0].attributes.map(a => [a.key, a.value.intValue ?? a.value.stringValue]));
+      expect(attrs["gen_ai.usage.input_tokens"]).toBe(48200);
+      expect(attrs["gen_ai.usage.output_tokens"]).toBe(1350);
+      expect(attrs["gen_ai.usage.cache_read.input_tokens"]).toBe(41000);
+      expect(attrs["gen_ai.usage.cache_creation.input_tokens"]).toBe(3100);
+      expect(attrs["gen_ai.usage.total_tokens"]).toBe(48200 + 1350);
+    });
+
+    it("prefers agent_usage.json over agent-stdio.log usage when both are present", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" });
+      vi.stubGlobal("fetch", mockFetch);
+
+      process.env.INPUT_JOB_NAME = "agent";
+      process.env.GH_AW_AGENT_CONCLUSION = "failure";
+      statSpy.mockImplementation(() => {
+        throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+      });
+      process.env.GH_AW_OTLP_ENDPOINTS = JSON.stringify([{ url: "https://traces.example.com" }]);
+
+      readFileSpy.mockImplementation(filePath => {
+        if (filePath === "/tmp/gh-aw/agent_usage.json") {
+          return JSON.stringify({ input_tokens: 3000, output_tokens: 150, cache_read_tokens: 200, cache_write_tokens: 75 });
+        }
+        if (filePath === "/tmp/gh-aw/agent-stdio.log") {
+          return '{"type":"result","usage":{"input_tokens":9999,"output_tokens":888,"cache_read_input_tokens":777,"cache_creation_input_tokens":66}}\n';
+        }
+        throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+      });
+
+      await sendJobConclusionSpan("gh-aw.agent.conclusion");
+
+      expect(mockFetch.mock.calls.length).toBe(1);
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const attrs = Object.fromEntries(body.resourceSpans[0].scopeSpans[0].spans[0].attributes.map(a => [a.key, a.value.intValue ?? a.value.stringValue]));
+      expect(attrs["gen_ai.usage.input_tokens"]).toBe(3000);
+      expect(attrs["gen_ai.usage.output_tokens"]).toBe(150);
+      expect(attrs["gen_ai.usage.cache_read.input_tokens"]).toBe(200);
+      expect(attrs["gen_ai.usage.cache_creation.input_tokens"]).toBe(75);
       expect(attrs["gen_ai.usage.total_tokens"]).toBe(3150);
     });
 
