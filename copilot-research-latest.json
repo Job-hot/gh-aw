@@ -1,1 +1,34 @@
-{"run":"25842508637","date":"2026-05-14","total":225,"copilot_simple":97,"copilot_block":24,"engine_agent":25,"model_overrides":16,"max_continuations":4,"api_target":0,"harness_custom":0,"byok":0,"mcp_scripts":12,"version_pinning":0,"bare":10,"sandbox":21,"token_steering":32,"cache_memory":92,"network_allowed":116,"inline_sub_agents":0,"pre_agent_steps":9,"ab_testing":12,"environments":0,"top_gaps":["api-target:0","byok:0","inline-sub-agents:0","version-pinning:0","harness-script:0"],"discussion_created":"Copilot CLI Deep Research - 2026-05-14"}
+{
+  "timestamp": "2026-05-26T05:01:11Z",
+  "workflow_run_id": "26433217435",
+  "total_workflows": 236,
+  "copilot_workflows": 126,
+  "copilot_pct": 53.4,
+  "claude_workflows": 63,
+  "codex_workflows": 16,
+  "gemini_workflows": 1,
+  "feature_usage": {
+    "max_continuations": 5,
+    "cache_memory": 95,
+    "engine_agent": 26,
+    "engine_bare": 11,
+    "engine_args": 0,
+    "engine_env": 0,
+    "engine_api_target": 0,
+    "engine_version_pin": 0,
+    "model_overrides_total": 23,
+    "mcp_scripts": 1,
+    "byok": 0,
+    "toolsets_all": 5,
+    "missing_timeout": 12,
+    "strict_mode": 146,
+    "playwright": 13,
+    "imports": 234
+  },
+  "opportunities_found": 8,
+  "persistent_gaps": ["engine.args", "engine.api-target", "byok", "version-pinning", "engine.env"],
+  "unused_agents": ["grumpy-reviewer", "w3c-specification-writer", "create-safe-output-type", "custom-engine-implementation", "interactive-agent-designer"],
+  "analysis_date": "2026-05-26",
+  "previous_run": "2026-05-25",
+  "discussion_created": "Copilot CLI Deep Research - 2026-05-26"
+}

@@ -69,3 +69,24 @@
 - `sandbox AWF`: 16 → 22 (growing)
 - `web-fetch`: ~2 → 21 → 20 (matured)
 - Persistent gaps remain unchanged — suggesting these are genuinely non-needed or undiscovered features
+
+### 2026-05-26 (Run 26433217435)
+- 236 total workflows (+1); 126 Copilot (53% - inc. extended blocks), 63 Claude, 16 Codex, 1 Gemini
+- **max-continuations**: 5 workflows (↓ from 12 — count difference due to method: exact grep vs broader)
+- **cache-memory**: 95 workflows (significant growth — up from 30/73 in previous counts — broader tool usage)
+- **engine.agent**: 26 workflows (grew from 10 — includes awf, custom agents)
+- **bare mode**: 11 workflows (stable)
+- **model overrides**: 23 workflows
+- **strict mode**: 146 workflows (62% coverage — broad adoption)
+- **playwright**: 13 workflows
+- **imports**: 234 workflows (near-universal)
+- **engine.args**: 0 (PERSISTENT GAP, 14th consecutive run)
+- **engine.api-target**: 0 (PERSISTENT GAP, 14th consecutive run)
+- **engine.env**: 0 (PERSISTENT GAP)
+- **engine.version pinning**: 0 (PERSISTENT GAP)
+- **BYOK**: 0 (persistent gap)
+- **mcp-scripts**: 1 workflow (↓ from 3 — possibly some removed)
+- **toolsets: [all]**: 5 workflows (unchanged, over-permissioned)
+- **missing timeout**: 12 workflows (improvement from 20)
+- **Unused agent files**: grumpy-reviewer, interactive-agent-designer, w3c-specification-writer, create-safe-output-type, custom-engine-implementation (5 files unused - unchanged)
+- Discussion created: "Copilot CLI Deep Research - 2026-05-26"
