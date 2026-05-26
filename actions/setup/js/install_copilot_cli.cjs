@@ -1,3 +1,4 @@
+// @ts-check
 // install_copilot_cli.cjs — zero-dependency Copilot CLI resolver
 //
 // Runs from actions/setup/setup.sh for Copilot-engine workflows.
@@ -18,22 +19,49 @@
 // Matrix entry format (see actions/setup/compat.json):
 //   { "max-gh-aw": "*"|<semver>, "min-agent": <semver>, "max-agent": <semver> }
 
+require("./shim.cjs");
+
 const fs = require("fs");
 const path = require("path");
 
 const COMPAT_URL = "https://raw.githubusercontent.com/github/gh-aw-actions/main/.github/aw/compat.json";
 const FETCH_TIMEOUT_MS = 5000;
 
+/**
+ * @param {string} msg
+ */
 function log(msg) {
-  console.log(`[install_copilot_cli] ${msg}`);
+  core.info(`[install_copilot_cli] ${msg}`);
 }
 
+/**
+ * @param {string} msg
+ */
 function logErr(msg) {
-  console.error(`[install_copilot_cli] ${msg}`);
+  core.warning(`[install_copilot_cli] ${msg}`);
 }
 
-// Parse a SemVer string into a comparable tuple. Returns null on malformed
-// input so callers can skip the entry rather than crash.
+/**
+ * Parsed semantic version: `[major, minor, patch, prerelease]`.
+ * `prerelease` is `""` when absent.
+ * @typedef {[number, number, number, string]} ParsedSemver
+ */
+
+/**
+ * Compat matrix row.
+ * @typedef {{
+ *   "max-gh-aw": string,
+ *   "min-agent": string,
+ *   "max-agent": string,
+ * }} CompatRow
+ */
+
+/**
+ * Parse a SemVer string into a comparable tuple. Returns null on malformed
+ * input so callers can skip the entry rather than crash.
+ * @param {unknown} v
+ * @returns {ParsedSemver | null}
+ */
 function parseSemver(v) {
   if (typeof v !== "string") return null;
   const m = v.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/);
@@ -41,8 +69,13 @@ function parseSemver(v) {
   return [Number(m[1]), Number(m[2]), Number(m[3]), m[4] || ""];
 }
 
-// Compare two parsed SemVers. Returns -1/0/1. Treats any pre-release as lower
-// than its release counterpart (sufficient for our pinning use case).
+/**
+ * Compare two parsed SemVers. Returns -1/0/1. Treats any pre-release as lower
+ * than its release counterpart (sufficient for our pinning use case).
+ * @param {ParsedSemver} a
+ * @param {ParsedSemver} b
+ * @returns {-1 | 0 | 1}
+ */
 function cmpSemver(a, b) {
   for (let i = 0; i < 3; i++) {
     if (a[i] !== b[i]) return a[i] < b[i] ? -1 : 1;
@@ -53,11 +86,16 @@ function cmpSemver(a, b) {
   return a[3] < b[3] ? -1 : 1;
 }
 
-// Does the matrix row's `max-gh-aw` cover the current gh-aw compiler version?
-// "*" always matches. Otherwise the compiler version must be <= max-gh-aw.
-// Unparseable compiler versions (e.g., "dev") are treated as matching only "*".
+/**
+ * Does the matrix row's `max-gh-aw` cover the current gh-aw compiler version?
+ * "*" always matches. Otherwise the compiler version must be <= max-gh-aw.
+ * Unparseable compiler versions (e.g., "dev") are treated as matching only "*".
+ * @param {unknown} row
+ * @param {ParsedSemver | null} ghAwSemver
+ * @returns {boolean}
+ */
 function rowMatchesGhAw(row, ghAwSemver) {
-  const maxGhAw = row && row["max-gh-aw"];
+  const maxGhAw = row && typeof row === "object" ? /** @type {Record<string, unknown>} */ (row)["max-gh-aw"] : undefined;
   if (maxGhAw === "*") return true;
   if (!ghAwSemver) return false;
   const max = parseSemver(maxGhAw);
@@ -65,8 +103,11 @@ function rowMatchesGhAw(row, ghAwSemver) {
   return cmpSemver(ghAwSemver, max) <= 0;
 }
 
-// Fetch the live matrix from gh-aw-actions. Resolves to parsed JSON or null
-// on any error (network, timeout, non-200, malformed JSON). Never throws.
+/**
+ * Fetch the live matrix from gh-aw-actions. Resolves to parsed JSON or null
+ * on any error (network, timeout, non-200, malformed JSON). Never throws.
+ * @returns {Promise<unknown>}
+ */
 async function fetchLiveMatrix() {
   try {
     const res = await fetch(COMPAT_URL, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
@@ -76,36 +117,48 @@ async function fetchLiveMatrix() {
     }
     return JSON.parse(await res.text());
   } catch (e) {
-    logErr(`live matrix fetch failed: ${e.message}`);
+    logErr(`live matrix fetch failed: ${e instanceof Error ? e.message : String(e)}`);
     return null;
   }
 }
 
-// Load the bundled fallback matrix from disk, resolved via __dirname so script
-// mode (running from /tmp/gh-aw/actions-source/...) and dev/release mode both
-// find it next to the setup action.
+/**
+ * Load the bundled fallback matrix from disk, resolved via __dirname so script
+ * mode (running from /tmp/gh-aw/actions-source/...) and dev/release mode both
+ * find it next to the setup action.
+ * @returns {unknown}
+ */
 function loadBundledMatrix() {
   try {
     const p = path.join(__dirname, "..", "compat.json");
     return JSON.parse(fs.readFileSync(p, "utf8"));
   } catch (e) {
-    logErr(`bundled matrix load failed: ${e.message}`);
+    logErr(`bundled matrix load failed: ${e instanceof Error ? e.message : String(e)}`);
     return null;
   }
 }
 
-// Extract the copilot row list from a matrix document. Returns [] if the
-// document is malformed (treated as "no compatible versions").
+/**
+ * Extract the copilot row list from a matrix document. Returns [] if the
+ * document is malformed (treated as "no compatible versions").
+ * @param {unknown} matrix
+ * @returns {CompatRow[]}
+ */
 function copilotRows(matrix) {
   if (!matrix || typeof matrix !== "object") return [];
-  const v1 = matrix["agent-compat-v1"];
+  const v1 = /** @type {Record<string, unknown>} */ (matrix)["agent-compat-v1"];
   if (!v1 || typeof v1 !== "object") return [];
-  const rows = v1["copilot"];
+  const rows = /** @type {Record<string, unknown>} */ (v1)["copilot"];
   return Array.isArray(rows) ? rows : [];
 }
 
-// Pick the resolution range [min, max] from the first row whose max-gh-aw
-// covers the current compiler version. Returns null when no row matches.
+/**
+ * Pick the resolution range [min, max] from the first row whose max-gh-aw
+ * covers the current compiler version. Returns null when no row matches.
+ * @param {CompatRow[]} rows
+ * @param {ParsedSemver | null} ghAwSemver
+ * @returns {{min: ParsedSemver, max: ParsedSemver} | null}
+ */
 function pickRange(rows, ghAwSemver) {
   for (const row of rows) {
     if (!rowMatchesGhAw(row, ghAwSemver)) continue;
@@ -117,7 +170,10 @@ function pickRange(rows, ghAwSemver) {
   return null;
 }
 
-// Map process.arch to the runner-images tool-cache arch directory name.
+/**
+ * Map process.arch to the runner-images tool-cache arch directory name.
+ * @returns {string}
+ */
 function detectArch() {
   switch (process.arch) {
     case "x64":
@@ -129,19 +185,29 @@ function detectArch() {
   }
 }
 
-// Find the highest cached Copilot CLI version in [min, max] under the runner
-// tool cache. Returns { version, dir, binDir } on hit, null on miss. Only
-// considers entries with a sibling .complete marker (matches @actions/tool-cache).
+/**
+ * Find the highest cached Copilot CLI version in [min, max] under the runner
+ * tool cache. Returns { version, dir, binDir } on hit, null on miss. Only
+ * considers entries with a sibling .complete marker (matches @actions/tool-cache).
+ * @param {string} toolCacheRoot
+ * @param {string} arch
+ * @param {{min: ParsedSemver, max: ParsedSemver}} range
+ * @returns {{version: string, dir: string, binDir: string} | null}
+ */
 function findCachedCopilot(toolCacheRoot, arch, range) {
   const baseDir = path.join(toolCacheRoot, "copilot-cli");
+  /** @type {string[]} */
   let entries;
   try {
     entries = fs.readdirSync(baseDir);
   } catch (e) {
-    if (e.code !== "ENOENT") logErr(`tool cache scan failed: ${e.message}`);
+    if (/** @type {NodeJS.ErrnoException} */ (e).code !== "ENOENT") {
+      logErr(`tool cache scan failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
     return null;
   }
 
+  /** @type {{parsed: ParsedSemver, version: string, dir: string, binDir: string} | null} */
   let best = null;
   for (const entry of entries) {
     const v = parseSemver(entry);
@@ -166,27 +232,41 @@ function findCachedCopilot(toolCacheRoot, arch, range) {
   return { version: best.version, dir: best.dir, binDir: best.binDir };
 }
 
-// Append a line to a GitHub Actions runner file (e.g., $GITHUB_PATH or
-// $GITHUB_OUTPUT). No-ops when the path env var is unset so the resolver runs
-// in local tests without polluting the workflow.
+/**
+ * Append a line to a GitHub Actions runner file (e.g., $GITHUB_PATH or
+ * $GITHUB_OUTPUT). No-ops when the path env var is unset so the resolver runs
+ * in local tests without polluting the workflow.
+ * @param {string} envVar
+ * @param {string} line
+ */
 function appendRunnerFile(envVar, line) {
   const p = process.env[envVar];
   if (!p) return;
   try {
     fs.appendFileSync(p, line.endsWith("\n") ? line : line + "\n", "utf8");
   } catch (e) {
-    logErr(`failed to append to ${envVar}: ${e.message}`);
+    logErr(`failed to append to ${envVar}: ${e instanceof Error ? e.message : String(e)}`);
   }
 }
 
+/**
+ * @param {string} name
+ * @param {string} value
+ */
 function writeOutput(name, value) {
   appendRunnerFile("GITHUB_OUTPUT", `${name}=${value}`);
 }
 
+/**
+ * @param {string} dir
+ */
 function addToPath(dir) {
   appendRunnerFile("GITHUB_PATH", dir);
 }
 
+/**
+ * @returns {Promise<void>}
+ */
 async function resolve() {
   const ghAwVersionRaw = process.env.INPUT_GH_AW_VERSION || "";
   const ghAwSemver = parseSemver(ghAwVersionRaw);
