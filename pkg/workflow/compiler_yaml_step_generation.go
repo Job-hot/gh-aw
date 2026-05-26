@@ -115,7 +115,9 @@ func (c *Compiler) generateRestoreActionsSetupStep() string {
 //   - enableArtifactClient: Whether to install @actions/artifact so upload_artifact.cjs can upload via REST API directly
 //   - traceID: Optional OTLP trace ID expression for cross-job span correlation (e.g., "${{ needs.activation.outputs.setup-trace-id }}"). Empty string means a new trace ID is generated.
 //   - parentSpanID: Optional OTLP parent span ID expression for setup-span nesting (e.g., setupParentSpanNeedsExpr(constants.ActivationJobName)). Empty string means setup span is emitted as root.
-//   - installCopilot: Whether the setup action should run its Copilot CLI resolver (toolcache hit → add-path + set copilot-cached=true; miss → no-op). Only set true for jobs that actually run the Copilot engine.
+//
+// For Copilot-engine workflows, the setup step receives INPUT_GH_AW_VERSION,
+// which triggers setup.sh to invoke the Copilot CLI toolcache resolver.
 //
 // Returns a slice of strings representing the YAML lines for the setup step.
 func buildSetupWorkflowRefExpr(data *WorkflowData) string {
@@ -129,7 +131,7 @@ func setupParentSpanNeedsExpr(upstreamJob constants.JobName) string {
 	return fmt.Sprintf("${{ needs.%s.outputs.setup-parent-span-id || needs.%s.outputs.setup-span-id }}", upstreamJob, upstreamJob)
 }
 
-func (c *Compiler) generateSetupStep(data *WorkflowData, setupActionRef string, destination string, enableArtifactClient bool, traceID string, parentSpanID string, installCopilot bool) []string {
+func (c *Compiler) generateSetupStep(data *WorkflowData, setupActionRef string, destination string, enableArtifactClient bool, traceID string, parentSpanID string) []string {
 	setupEngineID := ""
 	if data != nil {
 		if data.EngineConfig != nil && data.EngineConfig.ID != "" {
@@ -177,9 +179,8 @@ func (c *Compiler) generateSetupStep(data *WorkflowData, setupActionRef string, 
 		if enableArtifactClient {
 			lines = append(lines, "          INPUT_SAFE_OUTPUT_ARTIFACT_CLIENT: 'true'\n")
 		}
-		if installCopilot {
+		if setupEngineID == "copilot" {
 			lines = append(lines,
-				"          INPUT_INSTALL_COPILOT: 'true'\n",
 				fmt.Sprintf("          INPUT_GH_AW_VERSION: %q\n", GetVersion()),
 			)
 		}
@@ -187,7 +188,7 @@ func (c *Compiler) generateSetupStep(data *WorkflowData, setupActionRef string, 
 	}
 
 	// Dev/Release mode: use the setup action
-	compilerYamlStepGenerationLog.Printf("Generating setup step: ref=%s, destination=%s, artifactClient=%t, traceID=%q, parentSpanID=%q, installCopilot=%t", setupActionRef, destination, enableArtifactClient, traceID, parentSpanID, installCopilot)
+	compilerYamlStepGenerationLog.Printf("Generating setup step: ref=%s, destination=%s, artifactClient=%t, traceID=%q, parentSpanID=%q, engineID=%q", setupActionRef, destination, enableArtifactClient, traceID, parentSpanID, setupEngineID)
 	lines := []string{
 		"      - name: Setup Scripts\n",
 		"        id: setup\n",
@@ -225,12 +226,11 @@ func (c *Compiler) generateSetupStep(data *WorkflowData, setupActionRef string, 
 	if hasWorkflowCallTrigger(data.On) {
 		lines = append(lines, "          GH_AW_SETUP_AW_CONTEXT: ${{ inputs.aw_context }}\n")
 	}
-	if installCopilot {
-		// The resolver reads INPUT_INSTALL_COPILOT directly from the step env, so
-		// no action.yml input declaration is required. This keeps the action's
-		// input surface unchanged.
+	if setupEngineID == "copilot" {
+		// The resolver reads INPUT_GH_AW_VERSION directly from the step env,
+		// so no action.yml input declaration is required. This keeps the
+		// action's input surface unchanged.
 		lines = append(lines,
-			"          INPUT_INSTALL_COPILOT: 'true'\n",
 			fmt.Sprintf("          INPUT_GH_AW_VERSION: %q\n", GetVersion()),
 		)
 	}

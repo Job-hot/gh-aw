@@ -1,6 +1,6 @@
 // install_copilot_cli.cjs — zero-dependency Copilot CLI resolver
 //
-// Runs from actions/setup/setup.sh when the compiler emits INPUT_INSTALL_COPILOT=true.
+// Runs from actions/setup/setup.sh for Copilot-engine workflows.
 // Looks for a cached, gh-aw-compatible build of @github/copilot in the runner
 // tool cache. On a hit, appends the bin directory to $GITHUB_PATH and writes
 // `copilot-cached=true` / `copilot-path=<dir>` to $GITHUB_OUTPUT so the

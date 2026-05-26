@@ -887,7 +887,7 @@ func (c *Compiler) buildDetectionJob(data *WorkflowData) (*Job, error) {
 		// Detection job depends on agent job; reuse the agent's trace ID so all jobs share one OTLP trace
 		detectionTraceID := fmt.Sprintf("${{ needs.%s.outputs.setup-trace-id }}", constants.ActivationJobName)
 		detectionParentSpanID := setupParentSpanNeedsExpr(constants.ActivationJobName)
-		steps = append(steps, c.generateSetupStep(data, setupActionRef, SetupActionDestination, false, detectionTraceID, detectionParentSpanID, shouldUseCopilotResolver(data))...)
+		steps = append(steps, c.generateSetupStep(data, setupActionRef, SetupActionDestination, false, detectionTraceID, detectionParentSpanID)...)
 	}
 
 	// Download agent output artifact to access output files (prompt.txt, agent_output.json, patches).

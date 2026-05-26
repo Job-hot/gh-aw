@@ -96,41 +96,14 @@ func (e *CopilotEngine) GetInstallationSteps(workflowData *WorkflowData) []GitHu
 	copilotInstallLog.Print("Using new installer script for Copilot installation")
 	npmSteps := GenerateCopilotInstallerSteps(copilotVersion, "Install GitHub Copilot CLI")
 
-	// When the setup-copilot-resolver feature is enabled, gate the bash installer
-	// step on the setup action's `copilot-cached` output. On cache hit, the setup
-	// action already added the cached CLI to PATH and this step is skipped.
-	// On cache miss, the installer runs as before.
-	if shouldUseCopilotResolver(workflowData) {
-		copilotInstallLog.Print("setup-copilot-resolver enabled: gating installer step on steps.setup.outputs.copilot-cached")
-		npmSteps = gateStepsOnCopilotCached(npmSteps)
-	}
+	// Gate the bash installer step on the setup action's `copilot-cached`
+	// output. On cache hit, the setup action already added the cached CLI to
+	// PATH and this step is skipped. On cache miss, the installer runs as
+	// before.
+	copilotInstallLog.Print("Gating installer step on steps.setup.outputs.copilot-cached")
+	npmSteps = gateStepsOnCopilotCached(npmSteps)
 
 	return BuildNpmEngineInstallStepsWithAWF(npmSteps, workflowData)
-}
-
-// shouldUseCopilotResolver reports whether the setup action's Copilot CLI
-// resolver should be activated for this workflow. It requires both:
-//   - the workflow's engine to be Copilot (only Copilot uses the toolcache bake), and
-//   - the SetupCopilotResolverFeatureFlag to be enabled (default off until validated).
-//
-// Used by:
-//   - GetInstallationSteps (this file): gate the bash installer step
-//   - compiler_main_job.go: pass installCopilot=true to generateSetupStep
-//   - threat_detection.go: pass installCopilot=true to generateSetupStep
-func shouldUseCopilotResolver(workflowData *WorkflowData) bool {
-	if workflowData == nil {
-		return false
-	}
-	engineID := ""
-	if workflowData.EngineConfig != nil && workflowData.EngineConfig.ID != "" {
-		engineID = workflowData.EngineConfig.ID
-	} else if workflowData.AI != "" {
-		engineID = workflowData.AI
-	}
-	if engineID != "copilot" {
-		return false
-	}
-	return isFeatureEnabled(constants.SetupCopilotResolverFeatureFlag, workflowData)
 }
 
 // gateStepsOnCopilotCached injects `if: steps.setup.outputs.copilot-cached != 'true'`

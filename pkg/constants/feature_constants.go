@@ -80,18 +80,4 @@ const (
 	//	features:
 	//	  group-concurrency-queue: false
 	GroupConcurrencyQueueFeatureFlag FeatureFlag = "group-concurrency-queue"
-	// SetupCopilotResolverFeatureFlag enables the setup action's Copilot CLI
-	// resolver. When enabled for a Copilot-engine workflow, the setup action
-	// inspects the runner toolcache (populated by runner-images bake) and, on
-	// a hit, prepends the cached CLI's bin directory to PATH and sets the
-	// "copilot-cached" output to "true". The compiler-emitted bash installer
-	// step is then skipped via `if: steps.setup.outputs.copilot-cached != 'true'`.
-	// On a miss the bash installer runs as before, so flag-on is strictly
-	// backward compatible.
-	//
-	// Workflow frontmatter usage:
-	//
-	//	features:
-	//	  setup-copilot-resolver: true
-	SetupCopilotResolverFeatureFlag FeatureFlag = "setup-copilot-resolver"
 )
