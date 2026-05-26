@@ -5,6 +5,7 @@ const childProcess = require("child_process");
 const { randomBytes } = require("crypto");
 const fs = require("fs");
 const { buildWorkflowCallId } = require("./aw_context.cjs");
+const { OTLP_HTTP_PROTOCOL_JSON, OTLP_HTTP_PROTOCOL_PROTOBUF, encodeExportTraceServiceRequest } = require("./otlp_wire_format.cjs");
 const path = require("path");
 const { nowMs } = require("./performance_now.cjs");
 const { buildWorkflowRunUrl } = require("./workflow_metadata_helpers.cjs");
@@ -14,13 +15,13 @@ const { readExperimentAssignments, EXPERIMENT_ASSIGNMENTS_PATH } = require("./ex
  * send_otlp_span.cjs
  *
  * Sends a single OTLP (OpenTelemetry Protocol) trace span to the configured
- * HTTP/JSON endpoint.  Used by actions/setup to instrument each job execution
+ * HTTP endpoint. Used by actions/setup to instrument each job execution
  * with basic telemetry.
  *
  * Design constraints:
  * - No-op when OTEL_EXPORTER_OTLP_ENDPOINT is not set (zero overhead).
  * - Errors are non-fatal: export failures must never break the workflow.
- * - No third-party dependencies: uses only Node built-ins + native fetch.
+ * - Wire format defaults to OTLP/HTTP protobuf, with http/json opt-in via env.
  */
 
 // ---------------------------------------------------------------------------
@@ -667,12 +668,13 @@ function hasProxyConfigured(endpoint) {
  *
  * @param {string} url
  * @param {Record<string, string>} headers
- * @param {string} body
+ * @param {string | Buffer} body
+ * @param {number} timeoutMs
  * @returns {{ ok: boolean, status: number, statusText: string }}
  */
-function sendOTLPViaCurl(url, headers, body) {
+function sendOTLPViaCurl(url, headers, body, timeoutMs) {
   /** @type {string[]} */
-  const args = ["--silent", "--show-error", "--location", "--output", "/dev/null", "--write-out", "%{http_code}", "--request", "POST", "--data-binary", "@-"];
+  const args = ["--silent", "--show-error", "--location", "--output", "/dev/null", "--write-out", "%{http_code}", "--request", "POST", "--max-time", String(Math.max(timeoutMs, 1) / 1000), "--data-binary", "@-"];
 
   for (const [key, value] of Object.entries(headers)) {
     args.push("--header", `${key}: ${value}`);
@@ -680,29 +682,31 @@ function sendOTLPViaCurl(url, headers, body) {
   args.push(url);
 
   const result = childProcess.spawnSync("curl", args, {
-    encoding: "utf8",
     input: body,
     maxBuffer: 1024 * 1024,
-    timeout: 15_000,
+    timeout: timeoutMs,
   });
 
   if (result.error) {
     throw result.error;
   }
 
-  const status = Number.parseInt((result.stdout || "").trim(), 10);
+  const stdout = Buffer.isBuffer(result.stdout) ? result.stdout.toString("utf8") : result.stdout || "";
+  const stderr = Buffer.isBuffer(result.stderr) ? result.stderr.toString("utf8") : result.stderr || "";
+
+  const status = Number.parseInt(stdout.trim(), 10);
   if (Number.isInteger(status)) {
     return {
       ok: status >= 200 && status < 300,
       status,
-      statusText: result.status === 0 ? "OK" : (result.stderr || "curl failed").trim() || "curl failed",
+      statusText: result.status === 0 ? "OK" : stderr.trim() || "curl failed",
     };
   }
 
   return {
     ok: false,
     status: 0,
-    statusText: (result.stderr || "curl failed").trim() || "curl failed",
+    statusText: stderr.trim() || "curl failed",
   };
 }
 
@@ -845,6 +849,7 @@ function formatOTLPExportFailureMessage(response, reason) {
  * @typedef {Object} OTLPEndpointEntry
  * @property {string} url      - OTLP base URL (e.g. https://traces.example.com:4317)
  * @property {string} [headers] - Per-endpoint headers in "key=value,key=value" format
+ * @property {boolean} [appendTracesPath] - Append /v1/traces when true or omitted
  */
 
 /**
@@ -866,23 +871,130 @@ function formatOTLPExportFailureMessage(response, reason) {
  */
 function parseOTLPEndpoints() {
   const raw = process.env.GH_AW_OTLP_ENDPOINTS || "";
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      /** @type {OTLPEndpointEntry[]} */
-      const valid = parsed
-        .filter(e => e && typeof e.url === "string" && e.url.trim() !== "")
-        .map(e => ({
-          url: e.url,
-          ...(typeof e.headers === "string" && e.headers ? { headers: e.headers } : {}),
-        }));
-      return valid;
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        /** @type {OTLPEndpointEntry[]} */
+        const valid = parsed
+          .filter(e => e && typeof e.url === "string" && e.url.trim() !== "")
+          .map(e => ({
+            url: e.url,
+            ...(typeof e.headers === "string" && e.headers ? { headers: e.headers } : {}),
+            ...(e.appendTracesPath === false ? { appendTracesPath: false } : {}),
+          }));
+        if (valid.length > 0) {
+          return valid;
+        }
+      }
+    } catch {
+      // Invalid GH_AW_OTLP_ENDPOINTS JSON — fall back to standard OTEL env vars.
     }
-  } catch {
-    // Invalid JSON — no endpoints available.
   }
+
+  const tracesEndpoint = (process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || "").trim();
+  const genericEndpoint = (process.env.OTEL_EXPORTER_OTLP_ENDPOINT || "").trim();
+  const rawHeaders = process.env.OTEL_EXPORTER_OTLP_TRACES_HEADERS || process.env.OTEL_EXPORTER_OTLP_HEADERS || "";
+
+  if (tracesEndpoint) {
+    return [
+      {
+        url: tracesEndpoint,
+        ...(rawHeaders ? { headers: rawHeaders } : {}),
+        appendTracesPath: false,
+      },
+    ];
+  }
+
+  if (genericEndpoint) {
+    return [
+      {
+        url: genericEndpoint,
+        ...(rawHeaders ? { headers: rawHeaders } : {}),
+      },
+    ];
+  }
+
   return [];
+}
+
+/**
+ * @returns {string}
+ */
+function resolveOTLPProtocol() {
+  const raw = (process.env.OTEL_EXPORTER_OTLP_TRACES_PROTOCOL || process.env.OTEL_EXPORTER_OTLP_PROTOCOL || "").trim().toLowerCase();
+  if (!raw) {
+    return OTLP_HTTP_PROTOCOL_PROTOBUF;
+  }
+  if (raw === OTLP_HTTP_PROTOCOL_PROTOBUF || raw === OTLP_HTTP_PROTOCOL_JSON) {
+    return raw;
+  }
+  console.warn(`Invalid OTLP protocol ${JSON.stringify(raw)}; falling back to ${OTLP_HTTP_PROTOCOL_PROTOBUF}`);
+  return OTLP_HTTP_PROTOCOL_PROTOBUF;
+}
+
+/**
+ * @returns {number}
+ */
+function resolveOTLPTimeoutMs() {
+  const raw = (process.env.OTEL_EXPORTER_OTLP_TRACES_TIMEOUT || process.env.OTEL_EXPORTER_OTLP_TIMEOUT || "").trim();
+  if (!raw) {
+    return 15_000;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 15_000;
+}
+
+/**
+ * @param {string} endpoint
+ * @param {boolean} [appendTracesPath=true]
+ * @returns {string}
+ */
+function buildOTLPTracesURL(endpoint, appendTracesPath = true) {
+  const trimmed = endpoint.trim().replace(/\/$/, "");
+  if (!appendTracesPath || /\/v1\/traces$/i.test(trimmed)) {
+    return trimmed;
+  }
+  return `${trimmed}/v1/traces`;
+}
+
+/**
+ * @param {number} status
+ * @returns {boolean}
+ */
+function isRetryableOTLPStatus(status) {
+  return status === 408 || status === 429 || (status >= 500 && status < 600);
+}
+
+/**
+ * @param {string} url
+ * @param {RequestInit} init
+ * @param {number} timeoutMs
+ * @returns {Promise<Response>}
+ */
+async function fetchWithTimeout(url, init, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort(new Error(`timeout after ${timeoutMs}ms`));
+  }, timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * @param {object} payload
+ * @param {string} protocol
+ * @returns {Buffer | string}
+ */
+function buildOTLPRequestBody(payload, protocol) {
+  const sanitizedPayload = sanitizeOTLPPayload(payload);
+  if (protocol === OTLP_HTTP_PROTOCOL_JSON) {
+    return JSON.stringify(sanitizedPayload);
+  }
+  return Buffer.from(encodeExportTraceServiceRequest(sanitizedPayload));
 }
 
 /**
@@ -906,29 +1018,28 @@ async function sendOTLPToAllEndpoints(endpoints, payload, opts = {}) {
         // Pass per-endpoint headers so each collector receives only its own
         // credentials (not the merged set from a different endpoint).
         headersOverride: ep.headers !== undefined ? ep.headers : "",
+        appendTracesPath: ep.appendTracesPath !== false,
       })
     )
   );
 }
 
 /**
- * POST an OTLP traces payload to `{endpoint}/v1/traces` with automatic retries.
+ * POST an OTLP traces payload to an OTLP/HTTP endpoint with automatic retries.
  *
  * Failures are surfaced as `console.warn` messages and never thrown; OTLP
  * export failures must not break the workflow.  Uses exponential back-off
  * between attempts (100 ms, 200 ms) so the three total attempts finish in
  * well under a second in the typical success case.
  *
- * Reads `OTEL_EXPORTER_OTLP_HEADERS` from the environment and merges any
- * configured headers into every request, unless `headersOverride` is provided
- * (used for per-endpoint headers in the multi-endpoint case).
+ * Reads protocol, timeout, and header overrides from the standard OTEL env vars.
  *
- * @param {string} endpoint  - OTLP base URL (e.g. https://traces.example.com:4317)
+ * @param {string} endpoint  - OTLP base URL or exact traces URL
  * @param {object} payload   - Serialisable OTLP JSON object
- * @param {{ maxRetries?: number, baseDelayMs?: number, skipJSONL?: boolean, headersOverride?: string }} [opts]
+ * @param {{ maxRetries?: number, baseDelayMs?: number, skipJSONL?: boolean, headersOverride?: string, appendTracesPath?: boolean }} [opts]
  * @returns {Promise<void>}
  */
-async function sendOTLPSpan(endpoint, payload, { maxRetries = 2, baseDelayMs = 100, skipJSONL = false, headersOverride = undefined } = {}) {
+async function sendOTLPSpan(endpoint, payload, { maxRetries = 2, baseDelayMs = 100, skipJSONL = false, headersOverride = undefined, appendTracesPath = true } = {}) {
   // Mirror payload locally so it survives even when the collector is unreachable.
   // Callers that already wrote the JSONL mirror pass skipJSONL: true to avoid a
   // duplicate line.
@@ -936,33 +1047,39 @@ async function sendOTLPSpan(endpoint, payload, { maxRetries = 2, baseDelayMs = 1
     appendToOTLPJSONL(payload);
   }
 
-  const url = endpoint.replace(/\/$/, "") + "/v1/traces";
+  const url = buildOTLPTracesURL(endpoint, appendTracesPath);
   // Use headersOverride when explicitly provided (including empty string, which means
   // "this endpoint has no configured headers" in the multi-endpoint fan-out path).
   // Fall back to OTEL_EXPORTER_OTLP_HEADERS only when headersOverride is absent
   // (undefined), which is the legacy single-endpoint case.
-  const rawHeaders = headersOverride !== undefined ? headersOverride : process.env.OTEL_EXPORTER_OTLP_HEADERS || "";
+  const rawHeaders = headersOverride !== undefined ? headersOverride : process.env.OTEL_EXPORTER_OTLP_TRACES_HEADERS || process.env.OTEL_EXPORTER_OTLP_HEADERS || "";
   const extraHeaders = parseOTLPHeaders(rawHeaders);
-  const headers = { "Content-Type": "application/json", ...extraHeaders };
-  const sanitizedBody = JSON.stringify(sanitizeOTLPPayload(payload));
+  const protocol = resolveOTLPProtocol();
+  const timeoutMs = resolveOTLPTimeoutMs();
+  const headers = { "Content-Type": protocol === OTLP_HTTP_PROTOCOL_JSON ? "application/json" : "application/x-protobuf", ...extraHeaders };
+  const requestBody = buildOTLPRequestBody(payload, protocol);
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     if (attempt > 0) {
       await new Promise(resolve => setTimeout(resolve, baseDelayMs * 2 ** (attempt - 1)));
     }
     try {
-      const response = hasProxyConfigured(endpoint)
-        ? sendOTLPViaCurl(url, headers, sanitizedBody)
-        : await fetch(url, {
-            method: "POST",
-            headers,
-            body: sanitizedBody,
-          });
+      const response = hasProxyConfigured(url)
+        ? sendOTLPViaCurl(url, headers, requestBody, timeoutMs)
+        : await fetchWithTimeout(
+            url,
+            {
+              method: "POST",
+              headers,
+              body: requestBody,
+            },
+            timeoutMs
+          );
       if (response.ok) {
         return;
       }
       const reason = getOTLPExportFailureReason(response);
       const msg = formatOTLPExportFailureMessage(response, reason);
-      if (attempt < maxRetries) {
+      if (attempt < maxRetries && isRetryableOTLPStatus(response.status)) {
         console.warn(`OTLP export attempt ${attempt + 1}/${maxRetries + 1} failed: ${msg}, retrying…`);
       } else {
         console.warn(`OTLP export failed after ${maxRetries + 1} attempts: ${msg}`);
@@ -971,6 +1088,7 @@ async function sendOTLPSpan(endpoint, payload, { maxRetries = 2, baseDelayMs = 1
           ...(Number.isInteger(response.status) && response.status > 0 ? { status: response.status } : {}),
           reason,
         });
+        return;
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

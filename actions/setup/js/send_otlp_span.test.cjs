@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import childProcess from "child_process";
 import fs from "fs";
+import http from "http";
+
+const realFetch = globalThis.fetch?.bind(globalThis);
 
 // ---------------------------------------------------------------------------
 // Module import
@@ -40,6 +43,160 @@ const {
 } = await import("./send_otlp_span.cjs");
 
 const { readExperimentAssignments, EXPERIMENT_ASSIGNMENTS_PATH } = await import("./experiment_helpers.cjs");
+const { decodeExportTraceServiceRequest, OTLP_HTTP_PROTOCOL_JSON, OTLP_HTTP_PROTOCOL_PROTOBUF } = await import("./otlp_wire_format.cjs");
+
+/**
+ * Start a local fake OTLP/HTTP receiver that records requests for assertions.
+ *
+ * @param {number | { expectedRequestCount?: number, responses?: Array<{ status?: number, headers?: Record<string, string>, body?: string, delayMs?: number }> }} [options]
+ * @returns {Promise<{
+ *   endpoint: string,
+ *   requests: Array<{ method: string, url: string, headers: http.IncomingHttpHeaders, body: Buffer }>,
+ *   waitForRequests: () => Promise<Array<{ method: string, url: string, headers: http.IncomingHttpHeaders, body: Buffer }>>,
+ *   close: () => Promise<void>,
+ * }>}
+ */
+async function startFakeOTLPReceiver(options = 1) {
+  const resolvedOptions = typeof options === "number" ? { expectedRequestCount: options } : options;
+  const expectedRequestCount = resolvedOptions.expectedRequestCount ?? 1;
+  const responses = resolvedOptions.responses ?? [];
+
+  /** @type {Array<{ method: string, url: string, headers: http.IncomingHttpHeaders, body: Buffer }> } */
+  const requests = [];
+  let resolveRequests;
+  const requestsReady = new Promise(resolve => {
+    resolveRequests = resolve;
+  });
+
+  const server = http.createServer((req, res) => {
+    const chunks = [];
+    req.on("data", chunk => {
+      chunks.push(Buffer.from(chunk));
+    });
+    req.on("end", () => {
+      const body = Buffer.concat(chunks);
+      requests.push({
+        method: req.method || "",
+        url: req.url || "",
+        headers: req.headers,
+        body,
+      });
+      if (requests.length >= expectedRequestCount) {
+        resolveRequests(requests);
+      }
+      const response = responses[requests.length - 1] || {};
+      const sendResponse = () => {
+        res.writeHead(response.status ?? 200, { "Content-Type": "text/plain", ...(response.headers || {}) });
+        res.end(response.body ?? "ok");
+      };
+      if (response.delayMs && response.delayMs > 0) {
+        setTimeout(sendResponse, response.delayMs);
+        return;
+      }
+      sendResponse();
+    });
+  });
+
+  await new Promise((resolve, reject) => {
+    server.listen(0, "127.0.0.1", err => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(undefined);
+    });
+  });
+
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    throw new Error("Fake OTLP receiver did not return a TCP address");
+  }
+
+  return {
+    endpoint: `http://127.0.0.1:${address.port}`,
+    requests,
+    async waitForRequests() {
+      if (requests.length >= expectedRequestCount) {
+        return requests;
+      }
+      return requestsReady;
+    },
+    async close() {
+      await new Promise((resolve, reject) => {
+        server.close(err => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(undefined);
+        });
+      });
+    },
+  };
+}
+
+/**
+ * @param {http.IncomingHttpHeaders | Record<string, string> | undefined} headers
+ * @returns {string}
+ */
+function getContentType(headers) {
+  if (!headers) return "";
+  const raw = headers["content-type"] || headers["Content-Type"];
+  return Array.isArray(raw) ? raw[0] || "" : raw || "";
+}
+
+/**
+ * @param {Buffer | string} body
+ * @param {string} contentType
+ * @returns {any}
+ */
+function decodeOTLPRequestBody(body, contentType) {
+  const normalizedType = contentType.split(";")[0].trim().toLowerCase();
+  const buffer = Buffer.isBuffer(body) ? body : Buffer.from(body, "utf8");
+  if (normalizedType === "application/json") {
+    return JSON.parse(buffer.toString("utf8"));
+  }
+  if (normalizedType === "application/x-protobuf") {
+    return decodeExportTraceServiceRequest(buffer);
+  }
+  throw new Error(`Unsupported OTLP content type in test: ${contentType}`);
+}
+
+/**
+ * @param {object} payload
+ * @returns {{
+ *   resourceAttrs: Record<string, string | number | boolean>,
+ *   scope: { name?: string, version?: string },
+ *   span: any,
+ *   spanAttrs: Record<string, string | number | boolean>,
+ * }}
+ */
+function extractPrimarySpanEnvelope(payload) {
+  const resourceSpan = payload.resourceSpans[0];
+  const scopeSpan = resourceSpan.scopeSpans[0];
+  const span = scopeSpan.spans[0];
+  return {
+    resourceAttrs: Object.fromEntries(resourceSpan.resource.attributes.map(attr => [attr.key, attrValue(attr)])),
+    scope: scopeSpan.scope || {},
+    span,
+    spanAttrs: Object.fromEntries(span.attributes.map(attr => [attr.key, attrValue(attr)])),
+  };
+}
+
+/**
+ * Extract the scalar value from an OTLP attribute's `value` union, covering all
+ * known OTLP value types used in these tests.
+ *
+ * @param {{ key: string, value: { stringValue?: string, intValue?: number, boolValue?: boolean, doubleValue?: number } }} attr
+ * @returns {string | number | boolean | undefined}
+ */
+function attrValue(attr) {
+  if (attr.value.stringValue !== undefined) return attr.value.stringValue;
+  if (attr.value.intValue !== undefined) return attr.value.intValue;
+  if (attr.value.boolValue !== undefined) return attr.value.boolValue;
+  if (attr.value.doubleValue !== undefined) return attr.value.doubleValue;
+  return undefined;
+}
 
 // ---------------------------------------------------------------------------
 // isValidTraceId
@@ -707,6 +864,12 @@ describe("sendOTLPSpan", () => {
     mkdirSpy.mockRestore();
     appendSpy.mockRestore();
     spawnSyncSpy.mockRestore();
+    delete process.env.OTEL_EXPORTER_OTLP_PROTOCOL;
+    delete process.env.OTEL_EXPORTER_OTLP_TRACES_PROTOCOL;
+    delete process.env.OTEL_EXPORTER_OTLP_TIMEOUT;
+    delete process.env.OTEL_EXPORTER_OTLP_TRACES_TIMEOUT;
+    delete process.env.OTEL_EXPORTER_OTLP_HEADERS;
+    delete process.env.OTEL_EXPORTER_OTLP_TRACES_HEADERS;
     delete process.env.HTTPS_PROXY;
     delete process.env.https_proxy;
     delete process.env.HTTP_PROXY;
@@ -715,19 +878,28 @@ describe("sendOTLPSpan", () => {
     delete process.env.all_proxy;
   });
 
-  it("POSTs JSON payload to endpoint/v1/traces", async () => {
+  it("POSTs protobuf payload to endpoint/v1/traces by default", async () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" });
     vi.stubGlobal("fetch", mockFetch);
 
-    const payload = { resourceSpans: [] };
+    const payload = buildOTLPPayload({
+      traceId: "a".repeat(32),
+      spanId: "b".repeat(16),
+      spanName: "gh-aw.job.setup",
+      startMs: 1000,
+      endMs: 1001,
+      serviceName: "gh-aw",
+      attributes: [buildAttr("gh-aw.job.name", "job")],
+    });
     await sendOTLPSpan("https://traces.example.com:4317", payload);
 
     expect(mockFetch).toHaveBeenCalledOnce();
     const [url, init] = mockFetch.mock.calls[0];
     expect(url).toBe("https://traces.example.com:4317/v1/traces");
     expect(init.method).toBe("POST");
-    expect(init.headers["Content-Type"]).toBe("application/json");
-    expect(JSON.parse(init.body)).toEqual(payload);
+    expect(init.headers["Content-Type"]).toBe("application/x-protobuf");
+    const decoded = decodeOTLPRequestBody(init.body, getContentType(init.headers));
+    expect(decoded).toEqual(payload);
   });
 
   it("strips trailing slash from endpoint before appending /v1/traces", async () => {
@@ -743,30 +915,36 @@ describe("sendOTLPSpan", () => {
     process.env.HTTPS_PROXY = "http://proxy.internal:3128";
     spawnSyncSpy.mockReturnValue({ error: undefined, status: 0, stdout: "200", stderr: "" });
 
-    await sendOTLPSpan("https://traces.example.com", { resourceSpans: [] });
+    const payload = buildOTLPPayload({
+      traceId: "a".repeat(32),
+      spanId: "b".repeat(16),
+      spanName: "test.span",
+      startMs: 1000,
+      endMs: 1001,
+      serviceName: "gh-aw",
+      attributes: [],
+    });
+    await sendOTLPSpan("https://traces.example.com", payload);
 
     expect(fetch).not.toHaveBeenCalled();
     expect(spawnSyncSpy).toHaveBeenCalledOnce();
     const [command, args, options] = spawnSyncSpy.mock.calls[0];
     expect(command).toBe("curl");
     expect(args).toContain("https://traces.example.com/v1/traces");
-    expect(options.input).toBe(JSON.stringify({ resourceSpans: [] }));
+    expect(Buffer.isBuffer(options.input)).toBe(true);
   });
 
-  it("warns (does not throw) when server returns non-2xx status on all retries", async () => {
+  it("does not retry non-retryable 400 responses", async () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: false, status: 400, statusText: "Bad Request" });
     vi.stubGlobal("fetch", mockFetch);
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
 
-    // Should not throw
     await expect(sendOTLPSpan("https://traces.example.com", {}, { maxRetries: 1, baseDelayMs: 1 })).resolves.toBeUndefined();
 
-    // Two attempts (1 initial + 1 retry)
-    expect(mockFetch).toHaveBeenCalledTimes(2);
-    expect(warnSpy).toHaveBeenCalledTimes(2);
-    expect(warnSpy.mock.calls[0][0]).toContain("attempt 1/2 failed");
-    expect(warnSpy.mock.calls[1][0]).toContain("failed after 2 attempts");
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toContain("failed after 2 attempts");
     expect(writeSpy).toHaveBeenCalled();
 
     writeSpy.mockRestore();
@@ -821,6 +999,139 @@ describe("sendOTLPSpan", () => {
     expect(warnSpy.mock.calls[0][0]).toContain("attempt 1/3 failed");
 
     warnSpy.mockRestore();
+  });
+
+  it("supports explicit http/json transport via env", async () => {
+    process.env.OTEL_EXPORTER_OTLP_PROTOCOL = OTLP_HTTP_PROTOCOL_JSON;
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" });
+    vi.stubGlobal("fetch", mockFetch);
+
+    const payload = { resourceSpans: [] };
+    await sendOTLPSpan("https://traces.example.com", payload, { skipJSONL: true });
+
+    const [, init] = mockFetch.mock.calls[0];
+    expect(init.headers["Content-Type"]).toBe("application/json");
+    expect(JSON.parse(init.body)).toEqual(payload);
+  });
+
+  it("honors OTEL_EXPORTER_OTLP_TIMEOUT", async () => {
+    expect(realFetch).toBeTypeOf("function");
+    vi.stubGlobal("fetch", realFetch);
+    process.env.OTEL_EXPORTER_OTLP_TIMEOUT = "25";
+
+    const receiver = await startFakeOTLPReceiver({ expectedRequestCount: 1, responses: [{ delayMs: 100 }] });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      await expect(sendOTLPSpan(receiver.endpoint, { resourceSpans: [] }, { maxRetries: 0, skipJSONL: true })).resolves.toBeUndefined();
+      await receiver.waitForRequests();
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("timeout"));
+    } finally {
+      warnSpy.mockRestore();
+      await receiver.close();
+    }
+  });
+
+  it("does not retry a 400 returned by a real OTLP receiver", async () => {
+    expect(realFetch).toBeTypeOf("function");
+    vi.stubGlobal("fetch", realFetch);
+
+    const receiver = await startFakeOTLPReceiver({ expectedRequestCount: 1, responses: [{ status: 400, body: "bad request" }] });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      await expect(sendOTLPSpan(receiver.endpoint, { resourceSpans: [] }, { maxRetries: 2, baseDelayMs: 1, skipJSONL: true })).resolves.toBeUndefined();
+      const requests = await receiver.waitForRequests();
+      expect(requests).toHaveLength(1);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("HTTP 400 Bad Request"));
+    } finally {
+      warnSpy.mockRestore();
+      await receiver.close();
+    }
+  });
+
+  it("retries a 503 from a real OTLP receiver and succeeds on the next attempt", async () => {
+    expect(realFetch).toBeTypeOf("function");
+    vi.stubGlobal("fetch", realFetch);
+
+    const receiver = await startFakeOTLPReceiver({
+      expectedRequestCount: 2,
+      responses: [
+        { status: 503, body: "unavailable" },
+        { status: 200, body: "ok" },
+      ],
+    });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      await sendOTLPSpan(receiver.endpoint, { resourceSpans: [] }, { maxRetries: 2, baseDelayMs: 1, skipJSONL: true });
+      const requests = await receiver.waitForRequests();
+      expect(requests).toHaveLength(2);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("HTTP 503 Service Unavailable"));
+    } finally {
+      warnSpy.mockRestore();
+      await receiver.close();
+    }
+  });
+
+  it("sends a decodable OTLP HTTP request to a fake receiver with the expected path, headers, and payload", async () => {
+    expect(realFetch).toBeTypeOf("function");
+    vi.stubGlobal("fetch", realFetch);
+
+    const receiver = await startFakeOTLPReceiver();
+    const previousHeaders = process.env.OTEL_EXPORTER_OTLP_HEADERS;
+    process.env.OTEL_EXPORTER_OTLP_HEADERS = "Authorization=Bearer test-token,X-Tenant=acme";
+
+    const payload = buildOTLPPayload({
+      traceId: "a".repeat(32),
+      spanId: "b".repeat(16),
+      parentSpanId: "c".repeat(16),
+      spanName: "gh-aw.agent.setup",
+      startMs: 1000,
+      endMs: 1005,
+      serviceName: "gh-aw",
+      scopeVersion: "v1.2.3",
+      attributes: [buildAttr("gh-aw.job.name", "agent"), buildAttr("gh-aw.test.count", 200), buildAttr("gh-aw.test.ok", true)],
+      resourceAttributes: [buildAttr("github.repository", "owner/repo"), buildAttr("github.run_id", "123456")],
+    });
+
+    try {
+      await sendOTLPSpan(receiver.endpoint, payload, { skipJSONL: true, maxRetries: 0 });
+
+      const [request] = await receiver.waitForRequests();
+      expect(request.method).toBe("POST");
+      expect(request.url).toBe("/v1/traces");
+      expect(request.headers["content-type"]).toBe("application/x-protobuf");
+      expect(request.headers["authorization"]).toBe("Bearer test-token");
+      expect(request.headers["x-tenant"]).toBe("acme");
+
+      const decoded = decodeOTLPRequestBody(request.body, getContentType(request.headers));
+      const { resourceAttrs, scope, span, spanAttrs } = extractPrimarySpanEnvelope(decoded);
+      expect(decoded.resourceSpans).toHaveLength(1);
+      expect(scope.name).toBe("gh-aw");
+      expect(scope.version).toBe("v1.2.3");
+      expect(span.traceId).toBe("a".repeat(32));
+      expect(span.spanId).toBe("b".repeat(16));
+      expect(span.parentSpanId).toBe("c".repeat(16));
+      expect(span.name).toBe("gh-aw.agent.setup");
+      expect(span.kind).toBe(SPAN_KIND_INTERNAL);
+      expect(span.startTimeUnixNano).toBe("1000000000");
+      expect(span.endTimeUnixNano).toBe("1005000000");
+      expect(resourceAttrs["service.name"]).toBe("gh-aw");
+      expect(resourceAttrs["service.version"]).toBe("v1.2.3");
+      expect(resourceAttrs["github.repository"]).toBe("owner/repo");
+      expect(resourceAttrs["github.run_id"]).toBe("123456");
+      expect(spanAttrs["gh-aw.job.name"]).toBe("agent");
+      expect(spanAttrs["gh-aw.test.count"]).toBe(200);
+      expect(spanAttrs["gh-aw.test.ok"]).toBe(true);
+    } finally {
+      if (previousHeaders === undefined) {
+        delete process.env.OTEL_EXPORTER_OTLP_HEADERS;
+      } else {
+        process.env.OTEL_EXPORTER_OTLP_HEADERS = previousHeaders;
+      }
+      await receiver.close();
+    }
   });
 
   it("warns (does not throw) when fetch rejects on all retries", async () => {
@@ -1101,6 +1412,7 @@ describe("sendOTLPSpan with OTEL_EXPORTER_OTLP_HEADERS", () => {
     vi.unstubAllGlobals();
     mkdirSpy.mockRestore();
     appendSpy.mockRestore();
+    delete process.env.OTEL_EXPORTER_OTLP_PROTOCOL;
     if (savedHeaders !== undefined) {
       process.env.OTEL_EXPORTER_OTLP_HEADERS = savedHeaders;
     } else {
@@ -1118,7 +1430,7 @@ describe("sendOTLPSpan with OTEL_EXPORTER_OTLP_HEADERS", () => {
     const [, init] = mockFetch.mock.calls[0];
     expect(init.headers["Authorization"]).toBe("Bearer mytoken");
     expect(init.headers["X-Tenant"]).toBe("acme");
-    expect(init.headers["Content-Type"]).toBe("application/json");
+    expect(init.headers["Content-Type"]).toBe("application/x-protobuf");
   });
 
   it("does not add extra headers when OTEL_EXPORTER_OTLP_HEADERS is absent", async () => {
@@ -1141,6 +1453,7 @@ describe("sendJobSetupSpan", () => {
   const savedEnv = {};
   const envKeys = [
     "GH_AW_OTLP_ENDPOINTS",
+    "OTEL_EXPORTER_OTLP_PROTOCOL",
     "OTEL_SERVICE_NAME",
     "INPUT_JOB_NAME",
     "INPUT_TRACE_ID",
@@ -1177,6 +1490,7 @@ describe("sendJobSetupSpan", () => {
       savedEnv[k] = process.env[k];
       delete process.env[k];
     }
+    process.env.OTEL_EXPORTER_OTLP_PROTOCOL = OTLP_HTTP_PROTOCOL_JSON;
     mkdirSpy = vi.spyOn(fs, "mkdirSync").mockImplementation(() => {});
     appendSpy = vi.spyOn(fs, "appendFileSync").mockImplementation(() => {});
   });
@@ -1193,20 +1507,6 @@ describe("sendJobSetupSpan", () => {
     mkdirSpy.mockRestore();
     appendSpy.mockRestore();
   });
-
-  /**
-   * Extract the scalar value from an OTLP attribute's `value` union, covering all
-   * known OTLP value types (stringValue, intValue, boolValue).
-   *
-   * @param {{ key: string, value: { stringValue?: string, intValue?: number, boolValue?: boolean } }} attr
-   * @returns {string | number | boolean | undefined}
-   */
-  function attrValue(attr) {
-    if (attr.value.stringValue !== undefined) return attr.value.stringValue;
-    if (attr.value.intValue !== undefined) return attr.value.intValue;
-    if (attr.value.boolValue !== undefined) return attr.value.boolValue;
-    return undefined;
-  }
 
   it("returns a trace ID and span ID even when GH_AW_OTLP_ENDPOINTS is not set", async () => {
     const { traceId, spanId } = await sendJobSetupSpan();
@@ -2324,6 +2624,145 @@ describe("sendJobSetupSpan", () => {
   });
 });
 
+describe("fake OTLP receiver integration", () => {
+  /** @type {Record<string, string | undefined>} */
+  const savedEnv = {};
+  const envKeys = [
+    "GH_AW_OTLP_ENDPOINTS",
+    "OTEL_EXPORTER_OTLP_PROTOCOL",
+    "OTEL_SERVICE_NAME",
+    "INPUT_JOB_NAME",
+    "GITHUB_RUN_ID",
+    "GITHUB_RUN_ATTEMPT",
+    "GITHUB_ACTOR",
+    "GITHUB_REPOSITORY",
+    "GITHUB_EVENT_NAME",
+    "GITHUB_REF",
+    "GITHUB_REF_NAME",
+    "GITHUB_HEAD_REF",
+    "GITHUB_SHA",
+    "GITHUB_JOB",
+    "GITHUB_ACTOR_ID",
+    "RUNNER_OS",
+    "RUNNER_ARCH",
+    "RUNNER_NAME",
+    "RUNNER_ENVIRONMENT",
+    "GITHUB_WORKFLOW_REF",
+    "GH_AW_CURRENT_WORKFLOW_REF",
+    "GH_AW_INFO_VERSION",
+    "GITHUB_AW_OTEL_TRACE_ID",
+    "GITHUB_AW_OTEL_PARENT_SPAN_ID",
+    "GH_AW_AGENT_CONCLUSION",
+  ];
+  let mkdirSpy, appendSpy;
+
+  beforeEach(() => {
+    for (const key of envKeys) {
+      savedEnv[key] = process.env[key];
+      delete process.env[key];
+    }
+    mkdirSpy = vi.spyOn(fs, "mkdirSync").mockImplementation(() => {});
+    appendSpy = vi.spyOn(fs, "appendFileSync").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    for (const key of envKeys) {
+      if (savedEnv[key] === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = savedEnv[key];
+      }
+    }
+    mkdirSpy.mockRestore();
+    appendSpy.mockRestore();
+  });
+
+  it("exports setup and conclusion spans with a shared trace, correct parentage, and required resource metadata", async () => {
+    const receiver = await startFakeOTLPReceiver(2);
+    try {
+      process.env.GH_AW_OTLP_ENDPOINTS = JSON.stringify([{ url: receiver.endpoint, headers: "Authorization=Bearer test-token" }]);
+      process.env.OTEL_SERVICE_NAME = "gh-aw.test-suite";
+      process.env.INPUT_JOB_NAME = "agent";
+      process.env.GITHUB_RUN_ID = "123456789";
+      process.env.GITHUB_RUN_ATTEMPT = "2";
+      process.env.GITHUB_ACTOR = "octocat";
+      process.env.GITHUB_REPOSITORY = "owner/repo";
+      process.env.GITHUB_EVENT_NAME = "workflow_dispatch";
+      process.env.GITHUB_REF = "refs/heads/main";
+      process.env.GITHUB_REF_NAME = "main";
+      process.env.GITHUB_SHA = "abcdef1234567890abcdef1234567890abcdef12";
+      process.env.GITHUB_JOB = "agent";
+      process.env.GITHUB_ACTOR_ID = "42";
+      process.env.RUNNER_OS = "Linux";
+      process.env.RUNNER_ARCH = "X64";
+      process.env.RUNNER_NAME = "runner-1";
+      process.env.RUNNER_ENVIRONMENT = "github-hosted";
+      process.env.GITHUB_WORKFLOW_REF = "owner/repo/.github/workflows/test.yml@refs/heads/main";
+      process.env.GH_AW_CURRENT_WORKFLOW_REF = "owner/repo/.github/workflows/test.yml@refs/heads/main";
+      process.env.GH_AW_INFO_VERSION = "v1.2.3";
+      process.env.GH_AW_AGENT_CONCLUSION = "success";
+
+      const { traceId, spanId } = await sendJobSetupSpan({
+        traceId: "a".repeat(32),
+        parentSpanId: "f".repeat(16),
+        startMs: 1000,
+      });
+      process.env.GITHUB_AW_OTEL_TRACE_ID = traceId;
+      process.env.GITHUB_AW_OTEL_PARENT_SPAN_ID = spanId;
+
+      await sendJobConclusionSpan("gh-aw.agent.conclusion", { startMs: 1002 });
+
+      const requests = await receiver.waitForRequests();
+      expect(requests).toHaveLength(2);
+      for (const request of requests) {
+        expect(request.method).toBe("POST");
+        expect(request.url).toBe("/v1/traces");
+        expect(request.headers["content-type"]).toBe("application/x-protobuf");
+        expect(request.headers["authorization"]).toBe("Bearer test-token");
+      }
+
+      const setupPayload = decodeOTLPRequestBody(requests[0].body, getContentType(requests[0].headers));
+      const conclusionPayload = decodeOTLPRequestBody(requests[1].body, getContentType(requests[1].headers));
+      const setupEnvelope = extractPrimarySpanEnvelope(setupPayload);
+      const conclusionEnvelope = extractPrimarySpanEnvelope(conclusionPayload);
+
+      expect(setupEnvelope.scope.name).toBe("gh-aw");
+      expect(setupEnvelope.scope.version).toBe("v1.2.3");
+      expect(conclusionEnvelope.scope.name).toBe("gh-aw");
+      expect(conclusionEnvelope.scope.version).toBe("v1.2.3");
+
+      expect(setupEnvelope.span.name).toBe("gh-aw.agent.setup");
+      expect(conclusionEnvelope.span.name).toBe("gh-aw.agent.conclusion");
+      expect(setupEnvelope.span.traceId).toBe(traceId);
+      expect(conclusionEnvelope.span.traceId).toBe(traceId);
+      expect(setupEnvelope.span.parentSpanId).toBe("f".repeat(16));
+      expect(conclusionEnvelope.span.parentSpanId).toBe(spanId);
+      expect(setupEnvelope.span.spanId).toBe(spanId);
+      expect(setupEnvelope.span.startTimeUnixNano).toBe("1000000000");
+      expect(Number(setupEnvelope.span.endTimeUnixNano)).toBeGreaterThanOrEqual(Number(setupEnvelope.span.startTimeUnixNano));
+      expect(Number(conclusionEnvelope.span.endTimeUnixNano)).toBeGreaterThanOrEqual(Number(conclusionEnvelope.span.startTimeUnixNano));
+
+      expect(setupEnvelope.resourceAttrs["service.name"]).toBe("gh-aw.test-suite");
+      expect(setupEnvelope.resourceAttrs["service.version"]).toBe("v1.2.3");
+      expect(setupEnvelope.resourceAttrs["github.repository"]).toBe("owner/repo");
+      expect(setupEnvelope.resourceAttrs["github.run_id"]).toBe("123456789");
+      expect(setupEnvelope.resourceAttrs["github.run_attempt"]).toBe("2");
+      expect(setupEnvelope.resourceAttrs["github.job"]).toBe("agent");
+      expect(setupEnvelope.resourceAttrs["github.event_name"]).toBe("workflow_dispatch");
+      expect(setupEnvelope.resourceAttrs["github.sha"]).toBe("abcdef1234567890abcdef1234567890abcdef12");
+      expect(setupEnvelope.resourceAttrs["github.ref"]).toBe("refs/heads/main");
+
+      expect(setupEnvelope.spanAttrs["gh-aw.job.name"]).toBe("agent");
+      expect(setupEnvelope.spanAttrs["gh-aw.run.id"]).toBe("123456789");
+      expect(setupEnvelope.spanAttrs["gh-aw.run.attempt"]).toBe("2");
+      expect(setupEnvelope.spanAttrs["gh-aw.repository"]).toBe("owner/repo");
+      expect(conclusionEnvelope.spanAttrs["gh-aw.run.status"]).toBe("success");
+    } finally {
+      await receiver.close();
+    }
+  });
+});
+
 // ---------------------------------------------------------------------------
 // readExperimentAssignments / buildExperimentAttributes
 // ---------------------------------------------------------------------------
@@ -2475,6 +2914,7 @@ describe("sendJobConclusionSpan", () => {
       savedEnv[k] = process.env[k];
       delete process.env[k];
     }
+    process.env.OTEL_EXPORTER_OTLP_PROTOCOL = OTLP_HTTP_PROTOCOL_JSON;
     mkdirSpy = vi.spyOn(fs, "mkdirSync").mockImplementation(() => {});
     appendSpy = vi.spyOn(fs, "appendFileSync").mockImplementation(() => {});
   });
@@ -5560,7 +6000,9 @@ describe("parseOTLPEndpoints", () => {
   afterEach(() => {
     delete process.env.GH_AW_OTLP_ENDPOINTS;
     delete process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+    delete process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT;
     delete process.env.OTEL_EXPORTER_OTLP_HEADERS;
+    delete process.env.OTEL_EXPORTER_OTLP_TRACES_HEADERS;
   });
 
   it("returns empty array when no env vars are set", () => {
@@ -5568,10 +6010,20 @@ describe("parseOTLPEndpoints", () => {
     expect(result).toEqual([]);
   });
 
-  it("returns empty array when only legacy OTEL_EXPORTER_OTLP_ENDPOINT is set (no longer a fallback)", () => {
+  it("falls back to OTEL_EXPORTER_OTLP_ENDPOINT when GH_AW_OTLP_ENDPOINTS is absent", () => {
     process.env.OTEL_EXPORTER_OTLP_ENDPOINT = "https://traces.example.com:4317";
     const result = parseOTLPEndpoints();
-    expect(result).toEqual([]);
+    expect(result).toEqual([{ url: "https://traces.example.com:4317" }]);
+  });
+
+  it("uses OTEL_EXPORTER_OTLP_TRACES_ENDPOINT exactly when set", () => {
+    process.env.OTEL_EXPORTER_OTLP_ENDPOINT = "https://collector.example.com:4318";
+    process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = "https://collector.example.com/custom/path";
+    process.env.OTEL_EXPORTER_OTLP_HEADERS = "Authorization=Bearer generic";
+    process.env.OTEL_EXPORTER_OTLP_TRACES_HEADERS = "Authorization=Bearer traces";
+
+    const result = parseOTLPEndpoints();
+    expect(result).toEqual([{ url: "https://collector.example.com/custom/path", headers: "Authorization=Bearer traces", appendTracesPath: false }]);
   });
 
   it("parses GH_AW_OTLP_ENDPOINTS JSON array with single entry", () => {
@@ -5664,6 +6116,26 @@ describe("sendOTLPToAllEndpoints", () => {
     expect(mockFetch).toHaveBeenCalledTimes(2);
     const urls = mockFetch.mock.calls.map(c => c[0]).sort();
     expect(urls).toEqual(["https://primary.example.com:4317/v1/traces", "https://secondary.example.com:4317/v1/traces"].sort());
+  });
+
+  it("uses an exact traces endpoint without appending /v1/traces when configured", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" });
+    vi.stubGlobal("fetch", mockFetch);
+
+    const payload = buildOTLPPayload({
+      traceId: "a".repeat(32),
+      spanId: "b".repeat(16),
+      spanName: "test.span",
+      startMs: 1000,
+      endMs: 2000,
+      serviceName: "gh-aw",
+      attributes: [],
+    });
+
+    await sendOTLPToAllEndpoints([{ url: "https://collector.example.com/custom/path", appendTracesPath: false }], payload, { skipJSONL: true });
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch.mock.calls[0][0]).toBe("https://collector.example.com/custom/path");
   });
 
   it("uses per-endpoint headers (not global OTEL_EXPORTER_OTLP_HEADERS)", async () => {
@@ -5911,7 +6383,7 @@ describe("buildCustomOTLPAttributes", () => {
 
 describe("sendJobSetupSpan custom attributes", () => {
   const savedEnv = {};
-  const envKeys = ["GH_AW_OTLP_ENDPOINTS", "GH_AW_OTLP_ATTRIBUTES", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_ACTOR", "GITHUB_REPOSITORY", "GH_AW_SETUP_AW_CONTEXT"];
+  const envKeys = ["GH_AW_OTLP_ENDPOINTS", "OTEL_EXPORTER_OTLP_PROTOCOL", "GH_AW_OTLP_ATTRIBUTES", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_ACTOR", "GITHUB_REPOSITORY", "GH_AW_SETUP_AW_CONTEXT"];
   let mkdirSpy, appendSpy;
 
   beforeEach(() => {
@@ -5920,6 +6392,7 @@ describe("sendJobSetupSpan custom attributes", () => {
       savedEnv[k] = process.env[k];
       delete process.env[k];
     }
+    process.env.OTEL_EXPORTER_OTLP_PROTOCOL = OTLP_HTTP_PROTOCOL_JSON;
     mkdirSpy = vi.spyOn(fs, "mkdirSync").mockImplementation(() => {});
     appendSpy = vi.spyOn(fs, "appendFileSync").mockImplementation(() => {});
   });
@@ -5979,7 +6452,18 @@ describe("sendJobSetupSpan custom attributes", () => {
 
 describe("sendJobConclusionSpan custom attributes", () => {
   const savedEnv = {};
-  const envKeys = ["GH_AW_OTLP_ENDPOINTS", "GH_AW_OTLP_ATTRIBUTES", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_ACTOR", "GITHUB_REPOSITORY", "GITHUB_AW_OTEL_TRACE_ID", "GITHUB_AW_OTEL_PARENT_SPAN_ID", "GH_AW_AGENT_CONCLUSION"];
+  const envKeys = [
+    "GH_AW_OTLP_ENDPOINTS",
+    "OTEL_EXPORTER_OTLP_PROTOCOL",
+    "GH_AW_OTLP_ATTRIBUTES",
+    "GITHUB_RUN_ID",
+    "GITHUB_RUN_ATTEMPT",
+    "GITHUB_ACTOR",
+    "GITHUB_REPOSITORY",
+    "GITHUB_AW_OTEL_TRACE_ID",
+    "GITHUB_AW_OTEL_PARENT_SPAN_ID",
+    "GH_AW_AGENT_CONCLUSION",
+  ];
   let mkdirSpy, appendSpy;
 
   beforeEach(() => {
@@ -5988,6 +6472,7 @@ describe("sendJobConclusionSpan custom attributes", () => {
       savedEnv[k] = process.env[k];
       delete process.env[k];
     }
+    process.env.OTEL_EXPORTER_OTLP_PROTOCOL = OTLP_HTTP_PROTOCOL_JSON;
     mkdirSpy = vi.spyOn(fs, "mkdirSync").mockImplementation(() => {});
     appendSpy = vi.spyOn(fs, "appendFileSync").mockImplementation(() => {});
   });

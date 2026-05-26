@@ -31,5 +31,8 @@
     "format:schema": "npx prettier --write ../../../pkg/workflow/schemas/github-workflow.json --ignore-path /dev/null",
     "format:pkg-json": "npx prettier --write '../../../**/*.json' '!../../../pkg/workflow/js/**/*.json' --ignore-path ../../../.prettierignore",
     "check:pkg-json": "npx prettier --check '../../../**/*.json' '!../../../pkg/workflow/js/**/*.json' --ignore-path ../../../.prettierignore"
+  },
+  "dependencies": {
+    "protobufjs": "^7.6.1"
   }
 }

@@ -27,6 +27,7 @@ describe("action_setup_otlp run()", () => {
     originalEnv = { ...process.env };
     // Clear any OTLP endpoint so send_otlp_span.cjs is a no-op
     delete process.env.GH_AW_OTLP_ENDPOINTS;
+    process.env.OTEL_EXPORTER_OTLP_PROTOCOL = "http/json";
     delete process.env.GITHUB_OUTPUT;
     delete process.env.GITHUB_ENV;
     delete process.env.SETUP_START_MS;
@@ -252,6 +253,7 @@ describe("action_conclusion_otlp run()", () => {
   beforeEach(() => {
     originalEnv = { ...process.env };
     delete process.env.GH_AW_OTLP_ENDPOINTS;
+    process.env.OTEL_EXPORTER_OTLP_PROTOCOL = "http/json";
     delete process.env.INPUT_JOB_NAME;
   });
 
