@@ -95,7 +95,7 @@ function cmpSemver(a, b) {
  * @returns {boolean}
  */
 function rowMatchesGhAw(row, ghAwSemver) {
-  const maxGhAw = row && typeof row === "object" ? /** @type {Record<string, unknown>} */ (row)["max-gh-aw"] : undefined;
+  const maxGhAw = row && typeof row === "object" ? /** @type {Record<string, unknown>} */ row["max-gh-aw"] : undefined;
   if (maxGhAw === "*") return true;
   if (!ghAwSemver) return false;
   const max = parseSemver(maxGhAw);
@@ -146,9 +146,9 @@ function loadBundledMatrix() {
  */
 function copilotRows(matrix) {
   if (!matrix || typeof matrix !== "object") return [];
-  const v1 = /** @type {Record<string, unknown>} */ (matrix)["agent-compat-v1"];
+  const v1 = /** @type {Record<string, unknown>} */ matrix["agent-compat-v1"];
   if (!v1 || typeof v1 !== "object") return [];
-  const rows = /** @type {Record<string, unknown>} */ (v1)["copilot"];
+  const rows = /** @type {Record<string, unknown>} */ v1["copilot"];
   return Array.isArray(rows) ? rows : [];
 }
 
@@ -201,7 +201,7 @@ function findCachedCopilot(toolCacheRoot, arch, range) {
   try {
     entries = fs.readdirSync(baseDir);
   } catch (e) {
-    if (/** @type {NodeJS.ErrnoException} */ (e).code !== "ENOENT") {
+    if (/** @type {NodeJS.ErrnoException} */ e.code !== "ENOENT") {
       logErr(`tool cache scan failed: ${e instanceof Error ? e.message : String(e)}`);
     }
     return null;
