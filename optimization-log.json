@@ -1,14 +1,5 @@
 [
   {
-    "date": "2026-04-18",
-    "workflow_name": "Issue Monster",
-    "workflow_file": "",
-    "runs_audited": 10,
-    "total_tokens_analyzed": 1009859,
-    "estimated_savings_per_run": 153000,
-    "recommendations_count": 5
-  },
-  {
     "date": "2026-04-21",
     "workflow_name": "Dead Code Removal Agent",
     "workflow_file": "dead-code-remover",
@@ -269,5 +260,15 @@
     "estimated_savings_per_run": 110000,
     "recommendations_count": 4,
     "subagent_candidates": 0
+  },
+  {
+    "date": "2026-05-26",
+    "workflow_name": "Daily OTel Instrumentation Advisor",
+    "workflow_file": "daily-otel-instrumentation-advisor",
+    "runs_audited": 1,
+    "total_tokens_analyzed": 9272050,
+    "estimated_savings_per_run": 1250000,
+    "recommendations_count": 4,
+    "subagent_candidates": 1
   }
 ]
