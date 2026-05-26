@@ -22,3 +22,4 @@
 ./pkg/workflow/compiler_test.go|2026-05-21
 ./pkg/workflow/resolve_test.go|2026-05-24
 ./pkg/cli/git_test.go|2026-05-25
+./pkg/stringutil/fuzzy_match_test.go|2026-05-26
