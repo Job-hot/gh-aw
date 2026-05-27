@@ -6,8 +6,9 @@
     {"date":"2026-05-23","sessions":50,"completion_pct":44.0,"avg_dur_min":8.543,"median_dur_min":5.383,"loops":9,"notes":"Sharp recovery; 27/50 on copilot/refactor-semantic-clustering"},
     {"date":"2026-05-24","sessions":50,"completion_pct":2.0,"avg_dur_min":0.153,"loops":0,"data_quality":"metadata-only","notes":"Regression to action_required dominance (98%)"},
     {"date":"2026-05-25","sessions":50,"completion_pct":0.0,"avg_dur_min":0.311,"loops":0,"data_quality":"metadata-only","notes":"Worst day in window: 0% success, 96% action_required, 2 cloud-agent failures"},
-    {"date":"2026-05-26","sessions":50,"completion_pct":46.0,"avg_dur_min":6.35,"median_dur_min":3.85,"loops":0,"data_quality":"metadata-only","notes":"New 7-day high; 82% on 2 agent-owned PR branches; bimodal duration; 0 orphans"}
+    {"date":"2026-05-26","sessions":50,"completion_pct":46.0,"avg_dur_min":6.35,"median_dur_min":3.85,"loops":0,"data_quality":"metadata-only","notes":"New 7-day high; 82% on 2 agent-owned PR branches; bimodal duration; 0 orphans"},
+    {"date":"2026-05-27","sessions":50,"completion_pct":22.0,"avg_dur_min":2.853,"median_dur_min":0.0,"loops":0,"data_quality":"metadata-only","notes":"Partial recovery: success drops vs 5/26 (46→22) but stays clear of slump-day baseline (0-2). 70% on copilot/fix-stale-npm-metadata (Copilot-assigned). Top-2 branches=88%. Action_required 70%. 11 success durations all >=1.9m (cluster 9-15m)."}
   ],
-  "last_updated":"2026-05-26",
+  "last_updated":"2026-05-27",
   "version":"1.1"
 }
