@@ -456,7 +456,7 @@ Test that DIFC proxy is injected by default when min-integrity is set with custo
 		"compiled workflow should NOT contain standalone Set GH_REPO step")
 
 	// Verify proxy env vars are injected into the custom step as step-level env.
-	assert.Contains(t, result, "GH_HOST: ${{ env.GH_HOST || 'github.com' }}",
+	assert.Contains(t, result, "GH_HOST: localhost:18443",
 		"custom step should have GH_HOST in step-level env")
 	assert.Contains(t, result, "GH_REPO: ${{ github.repository }}",
 		"custom step should have GH_REPO in step-level env")
@@ -659,8 +659,7 @@ func TestProxyEnvVars(t *testing.T) {
 	vars := proxyEnvVars()
 
 	require.NotEmpty(t, vars, "proxyEnvVars should return a non-empty map")
-	// GH_HOST should use the identity host expression, not the proxy address.
-	assert.Equal(t, "${{ env.GH_HOST || 'github.com' }}", vars["GH_HOST"], "GH_HOST should use the identity host from configure_gh_for_ghe.sh, not the proxy address")
+	assert.Equal(t, "localhost:18443", vars["GH_HOST"], "GH_HOST should be the proxy address")
 	assert.Equal(t, "${{ github.repository }}", vars["GH_REPO"], "GH_REPO should reference github.repository")
 	assert.Equal(t, "https://localhost:18443/api/v3", vars["GITHUB_API_URL"], "GITHUB_API_URL should point to proxy")
 	assert.Equal(t, "https://localhost:18443/api/graphql", vars["GITHUB_GRAPHQL_URL"], "GITHUB_GRAPHQL_URL should point to proxy")
@@ -687,7 +686,7 @@ func TestInjectProxyEnvIntoCustomSteps(t *testing.T) {
 			name:        "step without env gets proxy env block added",
 			customSteps: "steps:\n- name: Step with no env\n  run: echo hello\n",
 			expectedContains: []string{
-				"GH_HOST: ${{ env.GH_HOST || 'github.com' }}",
+				"GH_HOST: localhost:18443",
 				"GH_REPO: ${{ github.repository }}",
 				"GITHUB_API_URL: https://localhost:18443/api/v3",
 				"GITHUB_GRAPHQL_URL: https://localhost:18443/api/graphql",
@@ -700,7 +699,7 @@ func TestInjectProxyEnvIntoCustomSteps(t *testing.T) {
 			customSteps: "steps:\n- name: Step with env\n  env:\n    GH_TOKEN: ${{ github.token }}\n  run: gh issue list\n",
 			expectedContains: []string{
 				"GH_TOKEN: ${{ github.token }}",
-				"GH_HOST: ${{ env.GH_HOST || 'github.com' }}",
+				"GH_HOST: localhost:18443",
 				"GH_REPO: ${{ github.repository }}",
 				"GITHUB_API_URL: https://localhost:18443/api/v3",
 				"GITHUB_GRAPHQL_URL: https://localhost:18443/api/graphql",
@@ -715,7 +714,7 @@ func TestInjectProxyEnvIntoCustomSteps(t *testing.T) {
 				"name: Step 1",
 				"name: Step 2",
 				"MY_VAR: value",
-				"GH_HOST: ${{ env.GH_HOST || 'github.com' }}",
+				"GH_HOST: localhost:18443",
 				"GH_REPO: ${{ github.repository }}",
 			},
 			desc: "all steps should have proxy env injected",
@@ -725,7 +724,7 @@ func TestInjectProxyEnvIntoCustomSteps(t *testing.T) {
 			customSteps: "steps:\n- name: Checkout\n  uses: actions/checkout@v4\n  with:\n    token: ${{ github.token }}\n",
 			expectedContains: []string{
 				"uses: actions/checkout@v4",
-				"GH_HOST: ${{ env.GH_HOST || 'github.com' }}",
+				"GH_HOST: localhost:18443",
 				"GH_REPO: ${{ github.repository }}",
 			},
 			desc: "uses: steps should also get proxy env injected",
@@ -738,7 +737,7 @@ func TestInjectProxyEnvIntoCustomSteps(t *testing.T) {
 				"cmd2",
 				"cmd3",
 				"GH_TOKEN: ${{ github.token }}",
-				"GH_HOST: ${{ env.GH_HOST || 'github.com' }}",
+				"GH_HOST: localhost:18443",
 			},
 			desc: "multiline run content should be preserved after injection",
 		},
@@ -759,7 +758,7 @@ func TestInjectProxyEnvIntoCustomSteps(t *testing.T) {
 				"    path: /tmp/output\n",
 			expectedContains: []string{
 				"uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7",
-				"GH_HOST: ${{ env.GH_HOST || 'github.com' }}",
+				"GH_HOST: localhost:18443",
 				"GH_REPO: ${{ github.repository }}",
 			},
 			expectedAbsent: []string{
@@ -778,7 +777,7 @@ func TestInjectProxyEnvIntoCustomSteps(t *testing.T) {
 				"  run: echo hello\n",
 			expectedContains: []string{
 				"name: Run script",
-				"GH_HOST: ${{ env.GH_HOST || 'github.com' }}",
+				"GH_HOST: localhost:18443",
 			},
 			desc: "name field should appear before env in the output",
 		},
@@ -796,7 +795,7 @@ func TestInjectProxyEnvIntoCustomSteps(t *testing.T) {
 				"  run: gh issue list\n",
 			expectedContains: []string{
 				"GH_TOKEN: ${{ github.token }}",
-				"GH_HOST: ${{ env.GH_HOST || 'github.com' }}",
+				"GH_HOST: localhost:18443",
 				"GITHUB_API_URL: https://localhost:18443/api/v3",
 				"GH_REPO: ${{ github.repository }}",
 				"GITHUB_GRAPHQL_URL: https://localhost:18443/api/graphql",
