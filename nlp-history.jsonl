@@ -1,1 +1,2 @@
 {"date":"2026-05-20","pr_count":52,"message_count":52,"prs_with_discussion":0,"avg_sentiment":0.048,"sentiment_neutral":33,"sentiment_positive":15,"sentiment_negative":4,"top_topic":"command_http_triggering","workflow_run":"26158790413"}
+{"date": "2026-05-27", "pr_count": 33, "avg_sentiment": 0.0178, "positive": 11, "neutral": 14, "negative": 8, "top_keywords": ["workflow", "run", "model", "file", "lock"], "top_cluster": "dependency, validation, cost, spec, weekly"}
