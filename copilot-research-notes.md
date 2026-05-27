@@ -90,3 +90,21 @@
 - **missing timeout**: 12 workflows (improvement from 20)
 - **Unused agent files**: grumpy-reviewer, interactive-agent-designer, w3c-specification-writer, create-safe-output-type, custom-engine-implementation (5 files unused - unchanged)
 - Discussion created: "Copilot CLI Deep Research - 2026-05-26"
+
+### 2026-05-27 (Run 26491933777)
+- 236 total workflows; 125 Copilot (53%) [96 simple + 29 block form], 63 Claude, 16 Codex
+- **max-continuations**: 5 workflows (stable)
+- **cache-memory**: 95 workflows (stable)
+- **engine.agent**: used: adr-writer, ci-cleaner, contribution-checker, developer.instructions, technical-doc-writer, agentic-workflows, awf(x16)
+- **bare mode**: 9 workflows (↓ from 11 - slight decrease)
+- **model overrides**: 6 workflows in engine block + sub-agents
+- **engine.args**: 0 (PERSISTENT GAP, 15th consecutive run)
+- **engine.api-target**: 0 (PERSISTENT GAP, 15th consecutive run)
+- **engine.env**: 0 (PERSISTENT GAP, 15th consecutive run)
+- **engine.version pinning**: 0 (no copilot-specific version pins)
+- **BYOK**: 0 (persistent gap)
+- **harness**: 0 (persistent gap)
+- **network restrictions**: 62 of 125 copilot workflows missing (50%)
+- **sandbox**: 110 of 125 copilot workflows missing (88%)
+- **Unused agent files**: grumpy-reviewer, interactive-agent-designer, w3c-specification-writer, create-safe-output-type, custom-engine-implementation (5 unchanged)
+- Discussion created: "Copilot CLI Deep Research - 2026-05-27"
