@@ -2,6 +2,20 @@
   "last_updated": "2026-05-24",
   "pending_tasks": [
     {
+      "file": ".github/workflows/dev-hawk.md",
+      "created": "2026-05-27",
+      "status": "pending",
+      "priority": "high",
+      "title": "Replace theatrical run-failure message with actionable guidance"
+    },
+    {
+      "file": "docs/src/content/docs/blog/2026-01-13-meet-the-workflows-quality-hygiene.md",
+      "created": "2026-05-27",
+      "status": "pending",
+      "priority": "medium",
+      "title": "Fix missing sentence break on line 80 (working well That's)"
+    },
+    {
       "file": ".github/workflows/smoke-pi.md",
       "created": "2026-05-23",
       "status": "pending",
@@ -32,15 +46,8 @@
   ],
   "completed_tasks": [],
   "quality_trends": {
-    "2026-05-23": {
-      "professional": 4,
-      "needs_minor_work": 2,
-      "needs_significant_work": 0
-    },
-    "2026-05-24": {
-      "professional": 2,
-      "needs_minor_work": 2,
-      "needs_significant_work": 1
-    }
+    "2026-05-23": {"professional": 4, "needs_minor_work": 2, "needs_significant_work": 0},
+    "2026-05-24": {"professional": 2, "needs_minor_work": 2, "needs_significant_work": 1},
+    "2026-05-27": {"professional": 3, "needs_minor_work": 2, "needs_significant_work": 0}
   }
 }

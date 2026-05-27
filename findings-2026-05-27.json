@@ -1,0 +1,33 @@
+{
+  "date": "2026-05-27",
+  "files_analyzed": {
+    "documentation": [
+      "docs/src/content/docs/reference/aw-yml-package-manifest.md",
+      "docs/src/content/docs/blog/2026-01-13-meet-the-workflows-quality-hygiene.md"
+    ],
+    "messages": [
+      ".github/workflows/dev-hawk.md",
+      ".github/workflows/breaking-change-checker.md"
+    ],
+    "validation": ["pkg/workflow/on_needs_validation_test.go"]
+  },
+  "overall_quality": "professional-with-minor-issues",
+  "quality_highlights": [
+    "docs/src/content/docs/reference/aw-yml-package-manifest.md - clean table, complete field reference, realistic YAML example",
+    "pkg/workflow/on_needs_validation_test.go - descriptive test names, correct require/assert usage, covers edge cases"
+  ],
+  "single_file_improvements": [
+    {
+      "file": ".github/workflows/dev-hawk.md",
+      "priority": "high",
+      "issue": "run-failure message 'Hawk down! The skies grow quiet...' is non-actionable dramatic prose; does not direct users to logs or next steps",
+      "lines": "30"
+    },
+    {
+      "file": "docs/src/content/docs/blog/2026-01-13-meet-the-workflows-quality-hygiene.md",
+      "priority": "medium",
+      "issue": "Line 80: missing sentence boundary ('working well That's')",
+      "lines": "80"
+    }
+  ]
+}
