@@ -1,22 +1,17 @@
-Daily CLI Performance Report - 2026-05-26
+Date: 2026-05-27
+Status: All benchmarks stable (6 improvements detected)
+Regressions: 0
+Warnings: 0
+Improvements: 6
+Stable: 3
 
-Run ID: 26460067687
-Status: ⚠️ 2 regressions detected
-
-Benchmarks (9 total):
-  Regressions (2):
-    - Validation: 56658 ns/op (+91.0% vs 29672 ns/op avg)
-    - FindIncludesInContent: 3058 ns/op (+45.8% vs 2097 ns/op avg)
-  Warnings (1):
-    - CompileSimpleWorkflow: 2105839 ns/op (+8.9%)
-  Improvements (2):
-    - ParseWorkflow: 294376 ns/op (-19.9%)
-    - ExtractWorkflowNameFromFile: 13430 ns/op (-6.8%)
-  Stable (4):
-    - CompileComplexWorkflow: 3204085 ns/op (+4.7%)
-    - CompileMCPWorkflow: 360081 ns/op (+1.3%)
-    - CompileMemoryUsage: 2828107 ns/op (+1.1%)
-    - YAMLGeneration: 2413209 ns/op (-1.8%)
-
-Note: Only 1 historical data point available. Regressions may be noise.
-Issues created for Validation and FindIncludesInContent regressions.
+Benchmark Results (ns/op):
+CompileSimpleWorkflow:      1,656,848  (was 2,020,718) -18.0% improvement
+CompileComplexWorkflow:     2,929,658  (was 3,132,140)  -6.5% improvement
+CompileMCPWorkflow:           363,178  (was 357,811)    +1.5% stable
+CompileMemoryUsage:         2,800,298  (was 2,812,245)  -0.4% stable
+ParseWorkflow:                309,622  (was 330,875)    -6.4% improvement
+Validation:                     8,623  (was 43,165)    -80.0% improvement
+YAMLGeneration:             2,109,871  (was 2,435,298) -13.4% improvement
+ExtractWorkflowNameFromFile:   13,594  (was 13,919)     -2.3% stable
+FindIncludesInContent:          2,086  (was 2,578)     -19.1% improvement
