@@ -1,23 +1,12 @@
 {
-  "run_date": "2026-05-27T01:18:54Z",
-  "run_id": "26484829402",
+  "run_date": "2026-05-27T07:45:21Z",
+  "run_id": "26497952995",
   "fork_prs": 0,
-  "agent_prs_found": 10,
+  "agent_prs_found": 18,
   "authentication_error": false,
-  "notes": "Found 10 open PRs, all branch-based (from internal branches like copilot/*, janitor/*, salmanmkc/*). No fork PRs to triage per workflow instructions which require fork PRs only.",
-  "branch_prs_skipped": [35092, 35091, 35090, 35089, 35069, 35040, 34918, 34905, 34837, 33219],
-  "branch_prs_details": [
-    {"number": 35092, "title": "[WIP] Add inline definition for 'frontmatter' in Quick Start docs", "author": "app/copilot-swe-agent", "isDraft": true},
-    {"number": 35091, "title": "[WIP] Refactor misplaced functions in compiler_safe_outputs.go", "author": "app/copilot-swe-agent", "isDraft": true},
-    {"number": 35090, "title": "[WIP] Migrate gopkg.in/yaml.v3 to canonical go.yaml.in/yaml/v3", "author": "app/copilot-swe-agent", "isDraft": true},
-    {"number": 35089, "title": "Add OTLP github-app (github-oidc) pre-setup token minting", "author": "app/copilot-swe-agent", "isDraft": false},
-    {"number": 35069, "title": "Fix proxy container UID/GID mismatch causing MCP log write failures", "author": "app/copilot-swe-agent", "isDraft": false},
-    {"number": 35040, "title": "Normalize safe output outcome evaluation and demote existence-only fallback", "author": "app/copilot-swe-agent", "isDraft": false},
-    {"number": 34918, "title": "feat(setup): add toolcache resolver for Copilot CLI behind feature flag", "author": "salmanmkc", "isDraft": true},
-    {"number": 34905, "title": "[instructions] Sync inline skills instructions with v0.74.8", "author": "app/github-actions", "isDraft": false},
-    {"number": 34837, "title": "Move model alias/multiplier propagation from step env to activation artifact file", "author": "app/copilot-swe-agent", "isDraft": false},
-    {"number": 33219, "title": "Bind Node toolcache into AWF chroot for Copilot-engine workflow startup reliability", "author": "app/copilot-swe-agent", "isDraft": false}
-  ],
+  "notes": "Found 18 open PRs, all branch-based (from internal branches). No fork PRs to triage per workflow instructions which require fork PRs only (head.repo != base.repo).",
+  "branch_prs_skipped": [35148, 35144, 35143, 35142, 35141, 35140, 35134, 35117, 35113, 35111, 35100, 35091, 35089, 35040, 34918, 34905, 34837, 33219],
+  "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
@@ -28,6 +17,5 @@
     "by_risk": {},
     "by_priority": {},
     "by_action": {}
-  },
-  "fork_only_policy": true
+  }
 }
