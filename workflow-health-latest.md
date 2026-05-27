@@ -1,39 +1,40 @@
-# Workflow Health — 2026-05-26T05:50Z
+# Workflow Health — 2026-05-27T05:54Z
 
-Score: 70/100 (↑2 from May 25). ~236 workflows. Run: §26434802866
+Score: 90/100 (stable). ~236 workflows. Run: §26493510814
 
 ## KEY FINDINGS
 
-### Status (May 26)
+### Status (May 27)
 - **Compilation:** 236/236 workflows have lock files (100% ✅)
-- **Last 48h Runs:** 100 runs analyzed (28% success, 4% failure, 54% action_required PR approvals)
-- **Actual failures (excl. PR approvals):** 4 runs (CGO failure, CGO/CJS cancelled, Copilot cloud agent cancelled)
-- **Health Score:** 70/100 (slight improvement — fewer failures, PR approval backlog stable)
+- **Scheduled runs analyzed:** 500 runs (149 unique workflows active)
+- **Failing (>=50% rate, 2+ runs):** 31 workflows
+- **Active failures tracked:** 7 P1 (100% fail), 6 P2 moderate
 
-### Persistent Critical Issues (P0/P1) 🚨
-- **CGO/CJS regression** (#29669): Build gh-aw failures still occurring — 2 CGO/1 CJS runs failed/cancelled today
-  - **Still unresolved — 90+ days critical threshold exceeded**
-  - Impact: cancels dependent workflows, degrades CI confidence
-- **Copilot cloud agent cancellation**: 1 cancelled run (likely cascading from CGO build failure)
+### Critical Issues (P0/P1) 🚨
+- **CGO build failures** (#35028): 37% fail rate on push — ongoing
+- **PR Sous Chef** (#35073, #35067, #35052): 21% fail — safe outputs permission + pre_activation setup
+- **Daily News / Daily Issues Report Generator**: 100% fail (2/2) — Copilot CLI execution failure
+- **Daily Fact About gh-aw**: 100% fail (2/2) — Codex CLI execution failure
+- **Super Linter Report**: 100% fail (2/2) — super-linter infrastructure
+- **Daily Agentic Workflow Token Usage Audit**: 100% fail (2/2) — setup job failure
+- **Daily AW Cross-Repo Compile Check**: 100% fail (2/2) — cache-memory git failure
+- **Daily Community Attribution Updater** (#35105): repo-memory patch size exceeded
 
-### Stable/No Change
-- #34582 Step Name Alignment — still open, recurring
-- #34556 Copilot deprecated beta header — still open
-- Codex OPENAI_API_KEY sandbox (#32446) — still tracked
-
-### PR Approval Backlog
-- 54/100 runs were `action_required` — PRs needing approval
-- Not actual failures — expected behavior for fork PRs
+### Moderate Issues (P2)
+- Step Name Alignment: 67% fail (#35135 cache_memory miss)
+- Agentic Maintenance: 26% fail (6/23) — no open issue
+- Contribution Check: 25% fail (3/12) — safe outputs failure
+- Avenger: 12% fail (4/32) — intermittent
 
 ### Actions Taken This Run
-- Verified 236/236 lock file coverage (100% ✅)
-- Analyzed 100 runs (4 actual failures, all related to CGO/CJS build issue)
-- All problems covered by existing open issues
-- **No new issues created** — all problems already tracked
+- Created health dashboard issue (Workflow Health Dashboard — 2026-05-27)
+- No new P0/P1 issues created — all problems tracked in existing issues
+- All 100% failing daily workflows root causes identified but no issues filed
 
 ### Trends
-- Score: 70/100 (↑2 from May 25, ↑7 from May 22)
-- Actual failures: 4 (down from 9 May 25)
-- CGO/CJS: ongoing (P0 #29669, unresolved 90+ days)
+- Score: 90/100 (stable, improved estimate methodology)
+- CGO: ongoing (P0 #35028)
+- Safe outputs permission blocking: systemic pattern
+- 87/236 workflows inactive (no recent runs)
 
-Last updated: 2026-05-26T05:50:00Z by workflow-health-manager
+Last updated: 2026-05-27T05:54:00Z by workflow-health-manager
