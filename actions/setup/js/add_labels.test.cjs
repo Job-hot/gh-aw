@@ -947,5 +947,27 @@ describe("add_labels", () => {
       expect(result.skipped).toBe(true);
       expect(result.error).toContain("required prefix");
     });
+
+    it("should add labels when both required_labels and required_title_prefix match", async () => {
+      const handler = await main({
+        max: 10,
+        required_labels: ["approved"],
+        required_title_prefix: "[Ready]",
+      });
+      const addLabelsCalls = [];
+
+      mockGithub.rest.issues.get = async () => ({
+        data: { title: "[Ready] Ship it", labels: [{ name: "approved" }, { name: "bug" }] },
+      });
+      mockGithub.rest.issues.addLabels = async params => {
+        addLabelsCalls.push(params);
+        return {};
+      };
+
+      const result = await handler({ item_number: 100, labels: ["enhancement"] }, {});
+
+      expect(result.success).toBe(true);
+      expect(addLabelsCalls.length).toBe(1);
+    });
   });
 });
