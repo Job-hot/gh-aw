@@ -1,17 +1,21 @@
-Date: 2026-05-27
-Status: All benchmarks stable (6 improvements detected)
-Regressions: 0
+Date: 2026-05-28
+Status: ⚠️ 2 regressions detected
+Regressions: 2
 Warnings: 0
-Improvements: 6
-Stable: 3
+Improvements: 3
+Stable: 4
 
 Benchmark Results (ns/op):
-CompileSimpleWorkflow:      1,656,848  (was 2,020,718) -18.0% improvement
-CompileComplexWorkflow:     2,929,658  (was 3,132,140)  -6.5% improvement
-CompileMCPWorkflow:           363,178  (was 357,811)    +1.5% stable
-CompileMemoryUsage:         2,800,298  (was 2,812,245)  -0.4% stable
-ParseWorkflow:                309,622  (was 330,875)    -6.4% improvement
-Validation:                     8,623  (was 43,165)    -80.0% improvement
-YAMLGeneration:             2,109,871  (was 2,435,298) -13.4% improvement
-ExtractWorkflowNameFromFile:   13,594  (was 13,919)     -2.3% stable
-FindIncludesInContent:          2,086  (was 2,578)     -19.1% improvement
+CompileSimpleWorkflow:        1,971,783  (was 1,898,761) +3.9% stable
+CompileComplexWorkflow:       4,198,449  (was 3,064,646) +37.0% REGRESSION ⚠️
+CompileMCPWorkflow:             431,520  (was 359,600)   +20.0% REGRESSION ⚠️
+CompileMemoryUsage:           2,858,585  (was 2,808,262) +1.8% stable
+ParseWorkflow:                  336,276  (was 323,791)   +3.9% stable
+Validation:                      10,286  (was 31,651)   -67.5% improvement
+YAMLGeneration:               2,328,565  (was 2,326,822) +0.1% stable
+ExtractWorkflowNameFromFile:     12,260  (was 13,810)  -11.2% improvement
+FindIncludesInContent:            1,690  (was 2,414)   -30.0% improvement
+
+Issues opened:
+- [performance] Regression in CompileComplexWorkflow: 37.0% slower
+- [performance] Regression in CompileMCPWorkflow: 20.0% slower
