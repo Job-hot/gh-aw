@@ -160,6 +160,30 @@ func TestSpec_PublicAPI_OnceLoader_Override(t *testing.T) {
 	})
 }
 
+// TestSpec_PublicAPI_OnceLoader_Reset flags a documented method that is missing
+// from the implementation.
+//
+// SPEC_MISMATCH: The README.md "Methods on OnceLoader[T]" table documents a
+// Reset method:
+//
+//	Reset | func (o *OnceLoader[T]) Reset() | Clears the cached result and
+//	error so that the next Get call re-invokes loader.
+//
+// The Design Notes section also references Reset ("Reset acquires the same
+// mutex, making it safe to call concurrently with Get") and the usage example
+// shows `cache.Reset()`. However, the implementation at
+// pkg/syncutil/onceloader.go defines only Get and Override — no Reset method
+// exists.
+//
+// Resolution requires either:
+//   - Adding Reset() to onceloader.go to match the documented contract, or
+//   - Removing Reset references from README.md if the omission is intentional.
+//
+// This test is skipped until the mismatch is resolved.
+func TestSpec_PublicAPI_OnceLoader_Reset(t *testing.T) {
+	t.Skip("SPEC_MISMATCH: README.md documents OnceLoader.Reset, but the method is not implemented in pkg/syncutil/onceloader.go")
+}
+
 // TestSpec_ThreadSafety_OnceLoader validates the documented concurrency
 // guarantees of OnceLoader as described in the syncutil README.md.
 //
