@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/github/gh-aw/pkg/console"
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/repoutil"
 	"github.com/github/gh-aw/pkg/workflow"
 	"github.com/github/gh-aw/pkg/workflow/compilerenv"
@@ -23,18 +24,19 @@ const (
 )
 
 type defaultsFile struct {
-	DefaultMaxEffectiveTokens string `yaml:"default_max_effective_tokens"`
-	DefaultMaxTurns           string `yaml:"default_max_turns"`
-	DefaultTimeoutMinutes     string `yaml:"default_timeout_minutes"`
-	DefaultDetectionModel     string `yaml:"default_detection_model"`
-	DefaultModelCopilot       string `yaml:"default_model_copilot"`
-	DefaultModelClaude        string `yaml:"default_model_claude"`
-	DefaultModelCodex         string `yaml:"default_model_codex"`
+	DefaultMaxEffectiveTokens *string `yaml:"default_max_effective_tokens"`
+	DefaultMaxTurns           *string `yaml:"default_max_turns"`
+	DefaultTimeoutMinutes     *string `yaml:"default_timeout_minutes"`
+	DefaultDetectionModel     *string `yaml:"default_detection_model"`
+	DefaultModelCopilot       *string `yaml:"default_model_copilot"`
+	DefaultModelClaude        *string `yaml:"default_model_claude"`
+	DefaultModelCodex         *string `yaml:"default_model_codex"`
 }
 
 type defaultsBinding struct {
-	envName string
-	get     func(*defaultsFile) *string
+	envName   string
+	fieldName string
+	get       func(*defaultsFile) **string
 }
 
 type defaultsTarget struct {
@@ -43,6 +45,26 @@ type defaultsTarget struct {
 	repoName   string
 	org        string
 	enterprise string
+}
+
+type defaultsUpdateChange struct {
+	envName string
+	field   string
+	value   string
+	delete  bool
+}
+
+type defaultsUpdatePreview struct {
+	Scope  string `console:"header:Scope"`
+	Target string `console:"header:Target"`
+	File   string `console:"header:File"`
+	Fields int    `console:"header:Fields"`
+}
+
+type defaultsUpdateRow struct {
+	Field  string `console:"header:Field"`
+	Action string `console:"header:Action"`
+	Value  string `console:"header:Value,omitempty"`
 }
 
 type defaultsGHError struct {
@@ -64,26 +86,27 @@ func (e *defaultsGHError) Unwrap() error {
 }
 
 var defaultsBindings = []defaultsBinding{
-	{envName: compilerenv.DefaultMaxEffectiveTokens, get: func(f *defaultsFile) *string { return &f.DefaultMaxEffectiveTokens }},
-	{envName: compilerenv.DefaultMaxTurns, get: func(f *defaultsFile) *string { return &f.DefaultMaxTurns }},
-	{envName: compilerenv.DefaultTimeoutMinutes, get: func(f *defaultsFile) *string { return &f.DefaultTimeoutMinutes }},
-	{envName: compilerenv.DefaultDetectionModel, get: func(f *defaultsFile) *string { return &f.DefaultDetectionModel }},
-	{envName: compilerenv.DefaultModelCopilot, get: func(f *defaultsFile) *string { return &f.DefaultModelCopilot }},
-	{envName: compilerenv.DefaultModelClaude, get: func(f *defaultsFile) *string { return &f.DefaultModelClaude }},
-	{envName: compilerenv.DefaultModelCodex, get: func(f *defaultsFile) *string { return &f.DefaultModelCodex }},
+	{envName: compilerenv.DefaultMaxEffectiveTokens, fieldName: "default_max_effective_tokens", get: func(f *defaultsFile) **string { return &f.DefaultMaxEffectiveTokens }},
+	{envName: compilerenv.DefaultMaxTurns, fieldName: "default_max_turns", get: func(f *defaultsFile) **string { return &f.DefaultMaxTurns }},
+	{envName: compilerenv.DefaultTimeoutMinutes, fieldName: "default_timeout_minutes", get: func(f *defaultsFile) **string { return &f.DefaultTimeoutMinutes }},
+	{envName: compilerenv.DefaultDetectionModel, fieldName: "default_detection_model", get: func(f *defaultsFile) **string { return &f.DefaultDetectionModel }},
+	{envName: compilerenv.DefaultModelCopilot, fieldName: "default_model_copilot", get: func(f *defaultsFile) **string { return &f.DefaultModelCopilot }},
+	{envName: compilerenv.DefaultModelClaude, fieldName: "default_model_claude", get: func(f *defaultsFile) **string { return &f.DefaultModelClaude }},
+	{envName: compilerenv.DefaultModelCodex, fieldName: "default_model_codex", get: func(f *defaultsFile) **string { return &f.DefaultModelCodex }},
 }
 
 var defaultsExecGH = workflow.ExecGH
 var defaultsGetCurrentRepoSlug = GetCurrentRepoSlug
 
-func NewDefaultsCommand() *cobra.Command {
+func NewEnvCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "defaults",
+		Use:   "env",
 		Short: "Manage compiler defaults as GitHub variables",
 		Long: `Manage compiler default variables in batch for repository, organization, or enterprise scope.
 
-The YAML file is flat and uses lowercase keys without the GH_AW_ prefix.
-Empty values in update mode delete variables from the selected scope.`,
+The YAML file is flat and uses default_-prefixed lowercase keys (e.g. default_max_turns).
+Set a field to null (or omit it) in update mode to delete the variable from the selected scope.
+Any field with a non-null string value will be set or updated.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -123,6 +146,7 @@ func newDefaultsGetCommand() *cobra.Command {
 
 func newDefaultsUpdateCommand() *cobra.Command {
 	var scope, repo, org, enterprise string
+	var yes bool
 
 	cmd := &cobra.Command{
 		Use:   "update [file]",
@@ -137,7 +161,7 @@ func newDefaultsUpdateCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return defaultsUpdateFromFile(target, inputFile)
+			return defaultsUpdateFromFile(target, inputFile, yes)
 		},
 	}
 
@@ -145,6 +169,7 @@ func newDefaultsUpdateCommand() *cobra.Command {
 	cmd.Flags().StringVar(&repo, "repo", "", "Target repository in owner/repo format")
 	cmd.Flags().StringVar(&org, "org", "", "Target organization (required for --scope org unless inferable from --repo/current repo)")
 	cmd.Flags().StringVar(&enterprise, "enterprise", "", "Target enterprise slug (required for --scope ent)")
+	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Skip confirmation prompt")
 	_ = cmd.MarkFlagRequired("scope")
 	return cmd
 }
@@ -157,21 +182,25 @@ func defaultsGetToFile(target defaultsTarget, outputFile string) error {
 		if err != nil {
 			return err
 		}
-		*binding.get(&file) = value
+		if value != "" {
+			v := value
+			*binding.get(&file) = &v
+		}
+		// nil (variable not set) serializes as null in YAML
 	}
 
 	data, err := yaml.Marshal(&file)
 	if err != nil {
 		return fmt.Errorf("failed to serialize defaults YAML: %w", err)
 	}
-	if err := os.WriteFile(outputFile, data, 0o644); err != nil {
+	if err := os.WriteFile(outputFile, data, constants.FilePermPublic); err != nil {
 		return fmt.Errorf("failed to write defaults file %q: %w", outputFile, err)
 	}
-	fmt.Fprintln(os.Stderr, console.FormatSuccessMessage(fmt.Sprintf("Saved defaults to %s", outputFile)))
+	fmt.Fprintln(os.Stderr, console.FormatSuccessMessage("Saved defaults to "+outputFile))
 	return nil
 }
 
-func defaultsUpdateFromFile(target defaultsTarget, inputFile string) error {
+func defaultsUpdateFromFile(target defaultsTarget, inputFile string, skipConfirmation bool) error {
 	data, err := os.ReadFile(inputFile)
 	if err != nil {
 		return fmt.Errorf("failed to read defaults file %q: %w", inputFile, err)
@@ -182,21 +211,101 @@ func defaultsUpdateFromFile(target defaultsTarget, inputFile string) error {
 		return fmt.Errorf("failed to parse defaults file %q: %w", inputFile, err)
 	}
 
-	for _, binding := range defaultsBindings {
-		value := strings.TrimSpace(*binding.get(&file))
-		if value == "" {
-			if err := deleteDefaultsVariable(target, binding.envName); err != nil {
+	changes := defaultsBuildUpdateChanges(&file)
+	if err := confirmDefaultsUpdate(target, inputFile, changes, skipConfirmation, console.ConfirmAction); err != nil {
+		return err
+	}
+
+	for _, change := range changes {
+		if change.delete {
+			if err := deleteDefaultsVariable(target, change.envName); err != nil {
 				return err
 			}
 			continue
 		}
-		if err := upsertDefaultsVariable(target, binding.envName, value); err != nil {
+		if err := upsertDefaultsVariable(target, change.envName, change.value); err != nil {
 			return err
 		}
 	}
 
-	fmt.Fprintln(os.Stderr, console.FormatSuccessMessage(fmt.Sprintf("Updated defaults from %s", inputFile)))
+	fmt.Fprintln(os.Stderr, console.FormatSuccessMessage("Updated defaults from "+inputFile))
 	return nil
+}
+
+func defaultsBuildUpdateChanges(file *defaultsFile) []defaultsUpdateChange {
+	changes := make([]defaultsUpdateChange, 0, len(defaultsBindings))
+	for _, binding := range defaultsBindings {
+		ptr := *binding.get(file)
+		if ptr == nil {
+			changes = append(changes, defaultsUpdateChange{
+				envName: binding.envName,
+				field:   binding.fieldName,
+				delete:  true,
+			})
+		} else {
+			changes = append(changes, defaultsUpdateChange{
+				envName: binding.envName,
+				field:   binding.fieldName,
+				value:   *ptr,
+				delete:  false,
+			})
+		}
+	}
+	return changes
+}
+
+func confirmDefaultsUpdate(
+	target defaultsTarget,
+	inputFile string,
+	changes []defaultsUpdateChange,
+	skipConfirmation bool,
+	confirmAction func(title, affirmative, negative string) (bool, error),
+) error {
+	fmt.Fprintln(os.Stderr, console.FormatInfoMessage("Defaults update preview:"))
+	fmt.Fprint(os.Stderr, console.RenderStruct(defaultsUpdatePreview{
+		Scope:  target.scope,
+		Target: target.displayName(),
+		File:   inputFile,
+		Fields: len(changes),
+	}))
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprint(os.Stderr, console.RenderStruct(defaultsUpdateRows(changes)))
+	fmt.Fprintln(os.Stderr)
+
+	if skipConfirmation {
+		fmt.Fprintln(os.Stderr, console.FormatInfoMessage("Skipping confirmation because --yes was provided."))
+		return nil
+	}
+
+	confirmed, err := confirmAction(
+		"Do you want to update these defaults?",
+		"Yes, update",
+		"No, cancel",
+	)
+	if err != nil {
+		return fmt.Errorf("failed to get confirmation: %w", err)
+	}
+	if !confirmed {
+		return errors.New("defaults update cancelled")
+	}
+	return nil
+}
+
+func defaultsUpdateRows(changes []defaultsUpdateChange) []defaultsUpdateRow {
+	rows := make([]defaultsUpdateRow, 0, len(changes))
+	for _, change := range changes {
+		action := "set"
+		if change.delete {
+			action = "delete"
+		}
+		rows = append(rows, defaultsUpdateRow{
+			Field:  change.field,
+			Action: action,
+			Value:  change.value,
+		})
+	}
+	return rows
 }
 
 func resolveDefaultsTarget(scope, repo, org, enterprise string, scopeRequired bool) (defaultsTarget, error) {
@@ -265,6 +374,17 @@ func (t defaultsTarget) variablesEndpoint() string {
 
 func (t defaultsTarget) variableEndpoint(name string) string {
 	return fmt.Sprintf("%s/%s", t.variablesEndpoint(), url.PathEscape(name))
+}
+
+func (t defaultsTarget) displayName() string {
+	switch t.scope {
+	case defaultsScopeRepo:
+		return t.repoOwner + "/" + t.repoName
+	case defaultsScopeOrg:
+		return t.org
+	default:
+		return t.enterprise
+	}
 }
 
 func runDefaultsGH(args ...string) ([]byte, error) {

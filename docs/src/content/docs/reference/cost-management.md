@@ -214,7 +214,7 @@ once, then let individual workflows override only when needed:
 1. Export current defaults:
 
 ```bash
-gh aw defaults get defaults.yml --scope org --org MY_ORG
+gh aw env get defaults.yml --scope org --org MY_ORG
 ```
 
 2. Update and apply shared defaults in batch:
@@ -227,8 +227,12 @@ default_model_codex: "gpt-5.4-mini"
 ```
 
 ```bash
-gh aw defaults update defaults.yml --scope org --org MY_ORG
+gh aw env update defaults.yml --scope org --org MY_ORG
 ```
+
+`gh aw env update` shows a confirmation preview before applying changes.
+Pass `--yes` to skip the prompt in automation. Set a field to `null` to delete
+the corresponding variable from the target scope.
 
 3. If you compile workflows in CI, pass compiler-read defaults into
 the compiler process environment (for example via `${{ vars.* }}`):
