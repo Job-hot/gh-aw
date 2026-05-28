@@ -2,7 +2,7 @@
   "counts": {
     "output_format": {
       "executive_summary": 8,
-      "full_detail": 4
+      "full_detail": 5
     }
   },
   "runs": [
@@ -88,6 +88,13 @@
       "timestamp": "2026-05-27T19:09:33.689Z",
       "assignments": {
         "output_format": "executive_summary"
+      }
+    },
+    {
+      "run_id": "26596636949",
+      "timestamp": "2026-05-28T19:16:48.936Z",
+      "assignments": {
+        "output_format": "full_detail"
       }
     }
   ]
