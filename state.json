@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "timeout_setting": {
+      "default": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "26584099160",
+      "timestamp": "2026-05-28T15:22:33.419Z",
+      "assignments": {
+        "timeout_setting": "default"
+      }
+    }
+  ]
+}
