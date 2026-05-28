@@ -1,14 +1,14 @@
 {
-  "total_runs": 20,
-  "total_findings": 175,
-  "total_tasks": 43,
-  "avg_success_score": 8.60,
-  "last_run": "2026-05-27",
-  "serena_lsp": "23 tools stable R4-20. activate_project --project ~6.5s cold/~1.3s warm. find_symbol --name_path_pattern (broad 70s+, prefer Grep). find_referencing_symbols --name_path + --relative_path FILE. get_symbols_overview ~100ms. Receiver methods need '(*Type).method'.",
+  "total_runs": 21,
+  "total_findings": 181,
+  "total_tasks": 46,
+  "avg_success_score": 8.62,
+  "last_run": "2026-05-28",
+  "serena_lsp": "23 tools stable R4-21. activate_project --project ~6.5s cold/~1.3s warm. find_symbol --name_path_pattern (broad 70s+, prefer Grep). find_referencing_symbols --name_path + --relative_path FILE. get_symbols_overview ~100ms. Receiver methods need '(*Type).method'.",
   "open_issues": {
-    "sg14a1": "Silent syscall discards #33459 OPEN. 10 sites: 4 os.Setenv (engine_secrets:329,377,430, add_interactive_orchestrator:73) + 6 os.Chdir (deploy:131, update:224, trial_repository:217/236/545, trial_helpers:332).",
-    "sg19a1": "manualmutexunlock unenforced. R20 refiled 16 sites: miner.go:118/137/148, spinner.go:130/143/159/175/195, compile_watch.go:189/197, docker_images.go:104/149, virtual_fs.go:102, coordinator.go:115(NEW), virtual_fs_wasm.go:37(NEW). 11 high-risk + 5 trivial.",
-    "sg20a1": "NEW R20: osexitinlibrary + rawloginlib registered cmd/linters/main.go:46,49, ZERO prod pkg/ violations, but cgo.yml:1041 unenforced. Fix: append flags to LINTER_FLAGS.",
+    "sg14a1_RE-FILE_sg21a1": "Silent syscall discards. #33459 closed-not-planned 7d expiry 2026-05-27. 10 sites pkg/cli UNCHANGED: 4 os.Setenv (engine_secrets:329,377,430, add_interactive_orchestrator:73) + 6 os.Chdir (deploy_command:131, update_command:224, trial_repository:217/236/545, trial_helpers:332). Re-filed sg21a1 R21.",
+    "sg21a2_NEW": "fileclosenotdeferred registered cmd/linters/main.go:24, ZERO prod pkg/ violations confirmed R21 (audit 26 sites; all defer-style). Ready for append to cgo.yml:1040 LINTER_FLAGS.",
+    "sg21a3_NEW": "contextcancelnotdeferred registered cmd/linters/main.go:19, 6 prod violations R21. 4 mcp_inspect_mcp.go:196,208,285,297 clean refactor candidates (sequential cancels). 2 loop-body defensible: action_resolver.go:137 tag-peel loop, safe_outputs_actions.go:291 filename loop. Need refactor mcp sites + //nolint loop sites before enforce.",
     "sgbo1_defensible": "2 filepath.Join shape variants - intentional: cli/git.go:303 trailing-slash for git add, cli/fix_command.go:410 Separator-suffix prefix match."
   },
   "completed_scans": {
@@ -18,7 +18,7 @@
     "workflow_dir_R11": "1 left",
     "ctx_bg_R10_12": "28 prod",
     "init_R11_12": "8 legit",
-    "sync_R12": "5M+6RW+1WG+3Map+8Once. defer mu.Unlock 85% (R20: 16 manual remain)",
+    "sync_R12": "5M+6RW+1WG+3Map+8Once. defer mu.Unlock universal (R21: all manual unlocks refactored)",
     "cache_dup_R13": "syncutil.OnceLoader[T]",
     "errstringmatch_R14": "3 refactor+4 //nolint. ENFORCED.",
     "goroutines_R14": "6 prod all defer recover()",
@@ -32,9 +32,12 @@
     "mutex_copy_R19": "ZERO bugs",
     "deprecated_R19": "ZERO ioutil/strings.Title/rand.Seed",
     "time_after_R19": "4 sites, GC-safe Go 1.26",
-    "os_exit_R20": "ZERO prod #aw_sg20a1",
-    "raw_log_R20": "ZERO prod #aw_sg20a1",
-    "fprintln_sprintf_R20": "ZERO prod"
+    "os_exit_R20_R21": "ZERO prod, ENFORCED R21 cgo.yml:1040 (sg20a1 RESOLVED)",
+    "raw_log_R20_R21": "ZERO prod, ENFORCED R21 cgo.yml:1040 (sg20a1 RESOLVED)",
+    "manual_mutex_R19_R21": "16 sites R20, ENFORCED R21 cgo.yml:1040 (sg19a1 RESOLVED via refactor to defer)",
+    "fprintln_sprintf_R20_R21": "ZERO prod (still unenforced)",
+    "fileclose_not_deferred_R21": "ZERO prod, 26 open sites all defer (sg21a2 ready-enforce)",
+    "context_cancel_R21": "6 prod sites (sg21a3: 4 refactor + 2 //nolint loops)"
   },
   "patterns": {
     "deps_struct": "actionUpdateDeps R17 successor to var X=func",
@@ -50,17 +53,18 @@
     "iife_ok": "var X = func()T{}() trailing-invoke OK",
     "panic_def": "exemptions: sync.Once.Do funcLit, BUG: prefix, top-level init() no-receiver, doc 'panics on/if'. ENFORCED.",
     "named_dur": "Sleep in named time.Duration consts. APICallCooldown.",
-    "ci_enforce": "cgo.yml:1041 POSITIVE selector LINTER_FLAGS=\"-X -test=false\". R20: -errstringmatch -panicinlibrarycode. Zero-violation analyzer: just append. Non-zero: refactor first.",
+    "ci_enforce": "cgo.yml:1040 POSITIVE selector LINTER_FLAGS=\"-X -test=false\". R21: -errstringmatch -panicinlibrarycode -manualmutexunlock -osexitinlibrary -rawloginlib. Append flag for zero-violation analyzers. Refactor first for non-zero.",
     "type_assert_safe": "Safe single-value .(T): sync.Map/Pool cbs, post-literal-ctor, pass.ResultOf, type-switch. Else need ,ok.",
     "fmt_errorf_w": "1404 in pkg/, %w universal. errors.New(fmt.Sprintf) banned.",
-    "manual_unlock_anti": "Lock+manual Unlock leaks on panic. Trivial Lock-read-Unlock only defensible exception. sg19a1 fix: (1)defer+func wrap (2)linter exempt (3)//nolint.",
-    "zero_violation_enforce_R20": "Registered analyzer with zero prod violations = free enforcement. Audit pkg/ excl _test.go, confirm zero, append flag. R20: osexitinlibrary, rawloginlib qualify."
+    "manual_unlock_anti": "Lock+manual Unlock leaks on panic. ENFORCED R21. Loop-body manual unlock would need //nolint.",
+    "zero_violation_enforce_R20_R21": "Registered analyzer with zero prod violations = free enforcement. R21 pattern proven: sg19a1 16-site refactor + sg20a1 zero-vio both ENFORCED via single PR. Next: sg21a2 fileclosenotdeferred zero-vio ready.",
+    "cancel_defer_loop_anti": "Sequential context.WithTimeout+manual cancel (not in loop) is clean refactor target. In-loop manual cancel is defensible to bound per-iter timeout, needs //nolint:contextcancelnotdeferred."
   },
-  "unenforced_linters_R20": {
-    "enforced": "errstringmatch, panicinlibrarycode",
-    "zero_violations_ready": "osexitinlibrary(sg20a1), rawloginlib(sg20a1), fprintlnsprintf",
-    "blocked_by_prod_sites": "ossetenvlibrary(4 sg14a1), manualmutexunlock(16 sg19a1)",
-    "deep_audit_pending": "fileclosenotdeferred, regexpcompileinfunction(85 files), ssljson, ctxbackground, errormessage, excessivefuncparams, largefunc, uncheckedtypeassertion(sg18a1 resolved)"
+  "unenforced_linters_R21": {
+    "enforced": "errstringmatch, panicinlibrarycode, manualmutexunlock, osexitinlibrary, rawloginlib (5 total, cgo.yml:1040)",
+    "zero_violations_ready": "fileclosenotdeferred(sg21a2 R21), fprintlnsprintf",
+    "blocked_by_prod_sites": "ossetenvlibrary(4 sg21a1 silent setenv), contextcancelnotdeferred(6 sg21a3: 4 refactor + 2 loop //nolint)",
+    "deep_audit_pending": "regexpcompileinfunction(83 files, mostly pkg-level vars OK), ssljson, ctxbackground, errormessage, excessivefuncparams, largefunc"
   },
-  "bash_policy": "Sandbox blocks multi-stmt, mkdir/ls/find/wc/cat outside repo. Compound 'mkdir && ls' split-checked. go build blocked. gh CLI v2.83.0 'Malformed version:' on stderr with --json/--state on `gh issue list` — use `gh api search/issues?q=...`. Glob/Read on /tmp WORKS even when bash blocked. safeoutputs JSON stdin via `. < file.json`. R20: create-issue.expires:7d auto-closes sergo trackers."
+  "bash_policy": "Sandbox blocks multi-stmt, mkdir/ls/find/wc/cat outside repo. Compound 'mkdir && ls' split-checked. go build blocked. gh CLI v2.83.0 'Malformed version:' on stderr with --json/--state on `gh issue list` — use `gh api search/issues?q=...`. Glob/Read on /tmp WORKS even when bash blocked. Write tool works to /tmp/gh-aw/repo-memory/. safeoutputs JSON stdin via `. < file.json`. R20: create-issue.expires:7d auto-closes sergo trackers. R21: completed-state-close happens within hours when fix lands (#35130/#35131)."
 }
