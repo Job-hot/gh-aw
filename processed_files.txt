@@ -1,5 +1,5 @@
 ./cmd/gh-aw/main_entry_test.go|2026-05-09
-./pkg/agentdrain/anomaly_test.go|2026-04-18
+./pkg/agentdrain/anomaly_test.go|2026-05-16
 ./pkg/agentdrain/miner_test.go|2026-04-19
 ./pkg/cli/actions_test.go|2026-05-02
 ./pkg/cli/audit_agent_output_test.go|2026-05-08
@@ -16,10 +16,10 @@
 ./pkg/workflow/time_delta_test.go|2026-05-10
 ./pkg/cli/actionlint_test.go|2026-05-13
 ./pkg/stringutil/stringutil_test.go|2026-05-15
-./pkg/agentdrain/anomaly_test.go|2026-05-16
 ./pkg/parser/engine_includes_test.go|2026-05-18
 ./pkg/cli/mcp_server_add_test.go|2026-05-20
 ./pkg/workflow/compiler_test.go|2026-05-21
 ./pkg/workflow/resolve_test.go|2026-05-24
 ./pkg/cli/git_test.go|2026-05-25
 ./pkg/stringutil/fuzzy_match_test.go|2026-05-26
+./pkg/cli/fix_command_test.go|2026-05-28
