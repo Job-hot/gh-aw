@@ -508,6 +508,38 @@ The `private:` field only blocks installation via `gh aw add`. It does not affec
 
 Enable experimental or optional compiler and runtime behaviors as key-value pairs. See [Feature Flags](/gh-aw/reference/feature-flags/) for complete documentation.
 
+### Update Check (`check-for-updates:`)
+
+Controls whether the activation job verifies the workflow was compiled with a supported version of gh-aw.
+
+```yaml wrap
+check-for-updates: true   # default
+```
+
+When `check-for-updates: true` (the default), the activation job downloads `config.json` from the gh-aw repository and verifies the compiled version is not blocked and meets the minimum supported version. Set `check-for-updates: false` to skip this step — for example in air-gapped environments — but the workflow will no longer detect that it was compiled with an outdated or blocked version of gh-aw.
+
+`check-for-updates: false` is not allowed in [strict mode](#strict-mode-strict). In non-strict mode it emits a compile-time warning.
+
+### Install Scripts (`run-install-scripts:`)
+
+Allows npm `pre`/`post` install scripts to execute during package installation.
+
+```yaml wrap
+run-install-scripts: true
+```
+
+By default, the compiler appends `--ignore-scripts` to every generated npm install command to block install-time hooks, which are a common supply-chain attack vector. Setting `run-install-scripts: true` disables this protection globally for every runtime that generates npm install commands (currently `node`). The compiler emits a supply-chain security warning; in [strict mode](#strict-mode-strict) this is a compilation error.
+
+For finer-grained control, set the flag per runtime under [`runtimes:`](#runtimes-runtimes) instead:
+
+```yaml wrap
+runtimes:
+  node:
+    run-install-scripts: true
+```
+
+Only enable this flag when you trust every installed package and its transitive dependencies.
+
 ### Strict Mode (`strict:`)
 
 Disables enhanced security validation for production workflows.

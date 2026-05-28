@@ -7690,7 +7690,7 @@ private: true
 # gh-aw repository and verifies the compiled version is not blocked and meets the
 # minimum supported version. Set to false to disable the check (not allowed in
 # strict mode). See:
-# https://github.github.com/gh-aw/reference/frontmatter/#check-for-updates
+# https://github.github.com/gh-aw/reference/frontmatter/#update-check-check-for-updates
 # (optional)
 check-for-updates: true
 
@@ -7701,7 +7701,7 @@ check-for-updates: true
 # supply chain security warning is emitted at compile time; in strict mode this is
 # an error. Per-runtime control is also available via
 # runtimes.<runtime>.run-install-scripts. See:
-# https://github.github.com/gh-aw/reference/frontmatter/#run-install-scripts
+# https://github.github.com/gh-aw/reference/frontmatter/#install-scripts-run-install-scripts
 # (optional)
 run-install-scripts: true
 
