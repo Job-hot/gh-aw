@@ -1,1 +1,59 @@
-{"updated":"2026-05-27","recs":[{"id":"fix-smoke-claude-playwright-allowed-domains","p":"critical","iss":"smoke-claude-playwright-install-timeout","s":"NEW: Smoke Claude failed because the `Install Playwright CLI skills` step downloaded FFmpeg from `playwright-akamai.azureedge.net` / `playwright-verizon.azureedge.net` / `playwright.azureedge.net` — none of which are in GH_AW_ALLOWED_DOMAINS. The allowlist contains `cdn.playwright.dev` but the real binary blob lives behind Azure CDN. Two fixes: (a) add the 3 Playwright Azure CDN hosts (or `*.azureedge.net`) to the Smoke Claude allowed_domains; (b) pre-install or cache FFmpeg in the runner image so the step doesn't need network. Either path takes < 10 lines of YAML."},{"id":"update-changeset-generator-model","p":"critical","iss":"codex-model-not-found-alpha","s":"STUCK FOR 7 DAYS: Changeset Generator is the LAST workflow still pinned to `gpt-5.3-codex` which the CLI auto-routes to `gpt-5-codex-alpha-2025-11-07` (404 at proxy). Other codex workflows (AI Moderator, Smoke Codex, Daily Cache Strategy Analyzer) all migrated to `gpt-5.4` and succeed. One-line frontmatter edit: change `model: gpt-5.3-codex` → `model: gpt-5.4` in `.github/workflows/changeset-generator.md` and re-compile."},{"id":"harden-add-comment-target-validation","p":"high","iss":"safe-output-add-comment-target-star","s":"PARTIAL FIX HOLDING (15 → 2 occurrences) but not eliminated. The remaining 2 failures both in Contribution Check today suggest a prompt template still emits target=* without item_number under some path. Hardest fix is at MCP boundary: reject add_comment with target=\"*\" AND no item_number at validation time so the agent gets immediate feedback and retries. Cheaper than fixing every prompt that ever generates this pattern."},{"id":"investigate-smoke-pi-firewall-91pct","p":"medium","iss":"smoke-pi-firewall-block-91pct","s":"NEW observability: Smoke Pi blocked 20/22 requests (91%) on `api-proxy:10000` and `api-proxy:10002`. Workflow succeeded — pattern may be intentional (testing block behavior) or stale config. Verify by checking smoke-pi.md frontmatter: do the api-proxy hostnames match the current sandbox config? If yes (test), document the expected block rate so future audits don't flag. If no (drift), update."},{"id":"investigate-firewall-block-rate-spike","p":"medium","iss":"firewall-block-rate-spike","s":"24.9% block rate today (was 16.4% yest). Drivers identified: Playwright FFmpeg blocks (causing actual failure) + Smoke Pi internal proxies (cosmetic). Fixing the Playwright issue removes ~3-5% of the spike. Smoke Pi review separates remaining test-intentional blocks from real drift."},{"id":"confirm-daily-safe-output-optimizer-cost","p":"medium","iss":"daily-safe-output-optimizer-cost-spike","s":"WAITING: workflow still in_progress at audit time. Re-check tomorrow whether the $9.90 spike continues or normalizes. If 2 consecutive days at $9+, escalate to critical and investigate prompt/input growth."},{"id":"watch-pr-sous-chef-stabilization","p":"low","iss":"pr-sous-chef-execution-drift","s":"IMPROVING: variance tightened from 0-217 → 10-48 turns, 3/3 runs succeeded today. If trend holds tomorrow, close as resolved."},{"id":"pin-copilot-CLI-1.0.52","p":"low","iss":"copilot-CLI-1.0.52-stable","s":"DAY 4 CONFIRMED: pin 1.0.52 as minimum allowed CLI version in CI to prevent regression. 22 copilot runs today across 9 different workflows, all clean."},{"id":"firewall-watch","p":"low","iss":"high-firewall-block-rate","s":"Continue tracking. Today's spike is explained by 2 specific causes; once addressed, expect return to ~16% baseline."}]}
+{
+  "updated": "2026-05-28",
+  "recs": [
+    {
+      "id": "investigate-copilot-cli-all-retries-no-category",
+      "p": "critical",
+      "iss": "copilot-cli-all-retries-exhausted-no-category",
+      "s": "NEW: 4 copilot-CLI failures today (Smoke Copilot, PR Sous Chef x2, Auto-Triage) all exit 1 after 4 attempts with NO specific error category set. Two of the three failing workflows are gpt-5-mini (Sous Chef + Auto-Triage); the third (Smoke Copilot) is gpt-5.3-codex. Action: (a) inspect the stdout captured in the failing runs (hasOutput=true) to identify the actual error text the copilot CLI emitted; (b) if 'all retries exhausted no category' specifically affects gpt-5-mini today, consider temporarily routing PR Sous Chef + Auto-Triage to a more reliable model; (c) extend copilot-harness error classification to map the new failure signature into a named category."
+    },
+    {
+      "id": "raise-avenger-max-turns",
+      "p": "critical",
+      "iss": "avenger-max-turns-env-mismatch",
+      "s": "STUCK FOR 5 DAYS: Avenger hit isMaxTurnsExit=true in 3 of 3 runs today. The workflow's CI-failure-investigation task requires more than 25 turns. One-line frontmatter edit: add `max-turns: 50` (or similar) to .github/workflows/avenger.md and re-compile. Yesterday's recommendation noted ~$1+/run wasted; cumulative cost across 5 days exceeds $5. Each failure today also opened a comment on cascade tracker issue #35532, which is itself becoming noisy. Either raise max-turns or refactor the prompt to be more decisive within 25 turns."
+    },
+    {
+      "id": "update-changeset-generator-model",
+      "p": "critical",
+      "iss": "codex-model-not-found-alpha",
+      "s": "STUCK FOR 9 DAYS: Changeset Generator still pinned to gpt-5.3-codex which auto-routes to gpt-5-codex-alpha-2025-11-07 (404). Smoke Copilot is also on gpt-5.3-codex and failed today in a related way. ONE-LINE FIX: change `model: gpt-5.3-codex` → `model: gpt-5.4` in .github/workflows/changeset-generator.md (and review Smoke Copilot's model choice). Other codex workflows (AI Moderator, Smoke Codex, Daily Cache Strategy) all run on gpt-5.4 successfully. This is the highest-cost-to-fix:value ratio in the queue."
+    },
+    {
+      "id": "harden-safe-output-target-validation-everywhere",
+      "p": "high",
+      "iss": "safe-output-target-star-no-number",
+      "s": "EXTENDED: target=* without explicit number now affects 3+ safe-output tools (add_comment, create_pull_request_review_comment, set_issue_field). Validating at each prompt is intractable. Recommend a single MCP-boundary validator: for any tool whose target config is '*' AND whose workflow context cannot auto-resolve to an issue/PR, reject the call with a clear error message naming the missing field. This converts a silent post-agent failure into immediate agent feedback so the model can self-correct."
+    },
+    {
+      "id": "investigate-daily-safe-output-optimizer-cost-trend",
+      "p": "high",
+      "iss": "daily-safe-output-optimizer-cost-escalating",
+      "s": "3-day rising trend: $6.05 → $9.90 → $11.33 (+87%). Workflow itself succeeds, but the cost slope is unsustainable. Action: diff the workflow markdown / its imported files over the last 3 commits to identify what was added to the prompt. Likely candidates: bigger example sets, accumulated analysis history loaded into context, or a new search step that drags in more data. Cap with either a max-tokens guard or by moving heavy data ingestion to deterministic pre-steps."
+    },
+    {
+      "id": "investigate-gpt-5-mini-reliability",
+      "p": "medium",
+      "iss": "pr-sous-chef-mini-failures",
+      "s": "Both PR Sous Chef failures + Auto-Triage failure today are gpt-5-mini on copilot CLI. Yesterday all 3 PR Sous Chef runs (also gpt-5-mini) succeeded. Action: (a) check whether the failing PR Sous Chef runs share a PR-input pattern (size, file types, presence of specific markers); (b) compare gpt-5-mini overall success rate today vs prior days; (c) if pattern persists tomorrow, raise with the gpt-5-mini gateway team."
+    },
+    {
+      "id": "close-smoke-claude-playwright-install",
+      "p": "low",
+      "iss": "smoke-claude-playwright-install-timeout",
+      "s": "Yesterday's critical did NOT recur today. Today's Smoke Claude failure is a different (target=*) issue. Mark the Playwright/FFmpeg/azureedge.net allowlist issue as resolved unless it returns within 3 days."
+    },
+    {
+      "id": "watch-firewall-trend",
+      "p": "low",
+      "iss": "firewall-block-rate-spike",
+      "s": "17.2% today vs 24.9% yesterday. Baseline restored. Continue tracking; no action."
+    },
+    {
+      "id": "pin-copilot-CLI-1.0.52",
+      "p": "low",
+      "iss": "copilot-CLI-1.0.52-stable",
+      "s": "Day 5 stable for the original ENOENT/anthropic-beta failure modes. Pin 1.0.52 as minimum allowed CLI version in CI when convenient. Note: the new 'all retries exhausted no category' pattern is a separate concern and not a regression of 1.0.52 specifically."
+    }
+  ]
+}

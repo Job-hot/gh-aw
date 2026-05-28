@@ -1,1 +1,137 @@
-{"updated":"2026-05-27","issues":[{"id":"smoke-claude-playwright-install-timeout","sev":"critical","cat":"sandbox","first":"05-27","last":"05-27","n":1,"r24":1,"title":"NEW: Smoke Claude `Install Playwright CLI skills` step times out at 10min downloading FFmpeg from blocked azureedge.net domains","detail":"Run 26537099387 (Smoke Claude, 13.7m duration, conclusion=failure). Step `Install Playwright CLI skills` ran `playwright-cli install --skills` which downloads FFmpeg from `cdn.playwright.dev`. The download then redirects/CDN-resolves through `playwright-akamai.azureedge.net:443`, `playwright-verizon.azureedge.net:443`, and `playwright.azureedge.net:443` — all 3 are NOT in GH_AW_ALLOWED_DOMAINS and were firewall-blocked. After 10min the GitHub Actions step timed out. The allowlist already contains `cdn.playwright.dev` and `playwright.download.prss.microsoft.com` but is missing the actual binary-blob host. Two fixes: (a) add `*.azureedge.net` (or the 3 specific playwright-*.azureedge.net hosts) to allowed_domains for Smoke Claude; (b) pre-cache the FFmpeg binary in the runner image so the step doesn't need network access."},{"id":"safe-output-add-comment-target-star","sev":"high","cat":"safe_output","first":"05-26","last":"05-27","n":2,"r24":2,"title":"Copilot agents still emit add_comment with target=\"*\" but no item_number (RECURRED, down from 15 to 2)","detail":"Contribution Check (run 26539586973, copilot+claude-sonnet-4.6) emitted 2 add_comment payloads with target=\"*\" and no item_number. Workflow conclusion: failure. DOWN from 15 yesterday so the prompt fix from yesterday's recommendation partially landed but didn't fully eliminate the pattern. Yesterday's two-pronged fix still relevant: (1) tighten the workflow prompt to require explicit item_number when target=*; (2) tighten safe-output schema validation at MCP boundary."},{"id":"codex-model-not-found-alpha","sev":"high","cat":"model_config","first":"05-21","last":"05-27","n":7,"r24":1,"title":"Changeset Generator still on gpt-5.3-codex → 404 (recommendation unactioned 2 days running)","detail":"Run 26537099239 — Changeset Generator codex CLI sent `gpt-5-codex-alpha-2025-11-07` to proxy → 404 Model not found. Aw_info.json model field still reads `gpt-5.3-codex`. All 5 retries failed. This is the EXACT failure noted yesterday with the EXACT recommended fix (set model: gpt-5.4 in workflow frontmatter) still unactioned. Other codex workflows (AI Moderator, Smoke Codex) succeeded on gpt-5.4 today, confirming the fix path works."},{"id":"smoke-pi-firewall-block-91pct","sev":"medium","cat":"network","first":"05-27","last":"05-27","n":1,"r24":1,"title":"Smoke Pi blocks 20 of 22 requests (91% block rate, observability hotspot)","detail":"Observability surfaced Smoke Pi as `network friction hotspot` with 91% firewall block rate. Blocked endpoints: `api-proxy:10002` (12), `api-proxy:10000` (8) — these are internal sandbox API-proxy endpoints. The smoke test executed but most internal-proxy traffic was rejected. Either the proxy hostnames changed or the firewall config for Smoke Pi is stale. Workflow itself still succeeded so this may be expected behavior of the smoke test, but worth verifying."},{"id":"firewall-block-rate-spike","sev":"medium","cat":"network","first":"05-19","last":"05-27","n":9,"r24":419,"title":"Daily firewall block rate JUMPED to 24.9% (was 16.4% yesterday) driven by Playwright + Smoke Pi internal-proxy blocks","detail":"1682 total requests, 419 blocked (24.9%). Up significantly from 16.4% yesterday. Drivers: (1) Playwright Azure edge nodes blocked in Smoke Claude (3 endpoints) — root cause of the Smoke Claude timeout; (2) Smoke Pi internal api-proxy blocks (20 reqs); (3) `(unknown)` DNS-failure blocks still dominate at 299. Excluding Smoke Pi and Smoke Claude, block rate is more typical."},{"id":"claude-cli-step-timeout-10min","sev":"resolved","cat":"harness","first":"05-26","last":"05-26","n":1,"r24":0,"title":"RESOLVED: yesterday's Execute Claude Code CLI step-timeout did not recur","detail":"Across 9 claude runs today (incl Smoke Claude, Daily Caveman Optimizer, Design Decision Gate, Lockfile Stats, Team Evolution, Failure Investigator, Daily Safe Output Tool Optimizer), none hit the `Execute Claude Code CLI` 10-min timeout. Today's Smoke Claude failure is a DIFFERENT step (Install Playwright CLI skills) — that timeout has its own issue entry. Yesterday's recommendation to bump timeout-minutes may have landed; or the wrapper-drain bug was transient."},{"id":"awf-squid-unhealthy","sev":"resolved","cat":"sandbox","first":"05-24","last":"05-26","n":2,"r24":0,"title":"RESOLVED for this audit cycle: 0 occurrences in 22 copilot runs today","detail":"awf-squid container ran healthy across all PR Sous Chef and Smoke Copilot runs today. The recurrence pattern is intermittent (1-2/day historically); keep watching but no action needed."},{"id":"smoke-copilot-upload-artifact-empty","sev":"resolved","cat":"safe_output","first":"05-26","last":"05-26","n":1,"r24":0,"title":"RESOLVED: Smoke Copilot succeeded today including upload_artifact test","detail":"Run 26537099471 (Smoke Copilot, 12.8m, success). The staging-dir-empty issue from yesterday did not recur. Either the prompt fix landed or yesterday was a one-off agent behavior. Close as resolved."},{"id":"daily-safe-output-optimizer-cost-spike","sev":"watch","cat":"cost","first":"05-21","last":"05-27","n":7,"r24":1,"title":"Daily Safe Output Tool Optimizer in_progress today — cost trend pending","detail":"Run 26539593266 still running at audit time (3.6m in, baseline). Cannot confirm whether yesterday's $9.90 daily-high spike continues. Re-audit tomorrow with completed run data."},{"id":"pr-sous-chef-execution-drift","sev":"low","cat":"prompt_stability","first":"05-21","last":"05-27","n":7,"r24":3,"title":"PR Sous Chef turn variance NORMALIZED to 10-48 (avg 34.7, was 0-217 yesterday)","detail":"Observability flagged drift as MEDIUM severity but variance is dramatically tighter than yesterday's 0-217 range. 3 PR Sous Chef runs today all succeeded. Trending toward stable; keep on watch but consider de-escalating if pattern holds for 2 more days."},{"id":"copilot-CLI-1.0.52-stable","sev":"resolved","cat":"harness","first":"05-24","last":"05-27","n":4,"r24":0,"title":"CONFIRMED stable (day 4): 22 copilot runs, 0 ENOENT, 0 anthropic-beta errors","detail":"4-day streak. CLI 1.0.52 is the new known-good baseline. Pin as minimum allowed version when convenient."},{"id":"high-firewall-block-rate","sev":"watch","cat":"network","first":"05-19","last":"05-27","n":9,"r24":419,"title":"Daily firewall block rate watch (continues with higher variance)","detail":"See firewall-block-rate-spike. Watch entry continues for trend tracking."}]}
+{
+  "updated": "2026-05-28",
+  "issues": [
+    {
+      "id": "copilot-cli-all-retries-exhausted-no-category",
+      "sev": "critical",
+      "cat": "harness",
+      "first": "05-28",
+      "last": "05-28",
+      "n": 1,
+      "r24": 4,
+      "title": "NEW: Copilot CLI 'all retries exhausted' with no specific error category in 4 runs today",
+      "detail": "Affected: Smoke Copilot (run 26594967220, gpt-5.3-codex), PR Sous Chef (runs 26595665041 + 26598471276, gpt-5-mini), Auto-Triage Issues (run 26596900064, gpt-5-mini). All 4 hit the same pattern: copilot-harness attempts 1-4 fail with exitCode=1, all category flags false (isCAPIError400=false, isMCPPolicyError=false, isModelNotSupportedError=false, isNullTypeToolCallError=false, isAuthError=false). Two of the 4 are gpt-5-mini (Sous Chef + Auto-Triage), one is gpt-5.3-codex (Smoke Copilot is on the alpha-model path that we already know is broken). The Smoke Copilot failure could be the gpt-5.3-codex routing problem masked behind copilot-CLI generic error. The 3 gpt-5-mini failures suggest a new model-specific reliability issue. Investigate by inspecting copilot-harness stdout/stderr captures (hasOutput=true in all cases — output was produced but final exit was 1)."
+    },
+    {
+      "id": "avenger-max-turns-env-mismatch",
+      "sev": "critical",
+      "cat": "configuration",
+      "first": "05-24",
+      "last": "05-28",
+      "n": 5,
+      "r24": 3,
+      "title": "UNRESOLVED 5 DAYS: Avenger hits isMaxTurnsExit=true every run (--max-turns 25 too low)",
+      "detail": "3 Avenger runs today (26596698302, 26599358074, 26602359656), all conclusion=failure with [claude-harness] attempt 1 failed: isMaxTurnsExit=true. The Claude CLI is invoked with --max-turns 25. Avenger is a CI-failure investigator that uses Bash to inspect failing logs — 25 turns is insufficient for the task scope (run 26596698302 already burned 16 turns just reaching the failure-detail grep). RECOMMENDATION ACTIVE FOR 5 DAYS UNACTIONED: either raise --max-turns in workflow frontmatter to ~50, or trim the Avenger prompt to converge faster. Today's 3 failures each opened a comment on issue #35532 (the cascade-tracking parent issue). Cumulative wasted cost across 5 days now exceeds $5."
+    },
+    {
+      "id": "codex-model-not-found-alpha",
+      "sev": "critical",
+      "cat": "model_config",
+      "first": "05-21",
+      "last": "05-28",
+      "n": 8,
+      "r24": 2,
+      "title": "UNRESOLVED 9 DAYS: Changeset Generator + Smoke Copilot still routing to gpt-5-codex-alpha-2025-11-07 → 404",
+      "detail": "Run 26594967273 (Changeset Generator, codex CLI): 4 attempts × 5 retries each, all 404 'Model not found gpt-5-codex-alpha-2025-11-07' at proxy http://172.30.0.30:10000/responses. Workflow frontmatter still reads model: gpt-5.3-codex. Same proxy-routing bug we've flagged for 9 days. Smoke Copilot (run 26594967220) is ALSO on gpt-5.3-codex and failed in a related but masked way (see copilot-cli-all-retries-exhausted issue). Fix: ONE workflow-frontmatter edit in changeset-generator.md (and check whether Smoke Copilot should also move off gpt-5.3-codex)."
+    },
+    {
+      "id": "safe-output-target-star-no-number",
+      "sev": "high",
+      "cat": "safe_output",
+      "first": "05-26",
+      "last": "05-28",
+      "n": 3,
+      "r24": 2,
+      "title": "RECURRING with NEW VARIANT: safe-output target=\"*\" without explicit item_number/pull_request_number — now appearing in 2 different tools",
+      "detail": "Contribution Check (run 26603360040): 1 add_comment failure 'Target is \"*\" but no item_number specified'. Smoke Claude (run 26594967360): 2 create_pull_request_review_comment failures 'Target is \"*\" but no pull_request_number specified'. Same root pattern (target=* config + agent fails to supply explicit number) but spreading to additional safe-output tool types. Yesterday's recommendation to validate at MCP boundary still relevant; the validation needs to cover all target=*-configured tools (add_comment, create_pull_request_review_comment, set_issue_field, add_labels, etc.)."
+    },
+    {
+      "id": "smoke-codex-set-issue-field-no-issue-number",
+      "sev": "high",
+      "cat": "safe_output",
+      "first": "05-28",
+      "last": "05-28",
+      "n": 1,
+      "r24": 1,
+      "title": "NEW: Smoke Codex set_issue_field failed 'No issue number available'",
+      "detail": "Run 26594967309 (Smoke Codex, gpt-5.4, agent step succeeded). The agent emitted set_issue_field but the workflow context did not provide an issue number to target. This is the same family of safe-output target-resolution failures as add_comment/create_pull_request_review_comment target=*. The set_issue_field tool needs item_number when there is no triggering issue/PR or when target config does not match the context. Either prompt-side guard (Smoke Codex must skip set_issue_field unless an item exists) or schema-side guard (require item_number when context cannot auto-resolve)."
+    },
+    {
+      "id": "daily-safe-output-optimizer-cost-escalating",
+      "sev": "high",
+      "cat": "cost",
+      "first": "05-21",
+      "last": "05-28",
+      "n": 8,
+      "r24": 1,
+      "title": "Daily Safe Output Tool Optimizer cost trend: $6.05 → $9.90 → $11.33 (NEW HIGH, 87% rise in 3 days)",
+      "detail": "Run 26597857310 today cost $11.33, surpassing yesterday's $9.90 and Friday's $6.05. Workflow succeeded but token consumption keeps climbing. Likely causes: prompt size growth (e.g., loaded examples or analysis history), expanding scope, or model selection change. Worth investigating the prompt diff over the last 3 days to identify the growth source. At current trajectory this single workflow will exceed $15/day within a week."
+    },
+    {
+      "id": "smoke-claude-playwright-install-timeout",
+      "sev": "resolved",
+      "cat": "sandbox",
+      "first": "05-27",
+      "last": "05-27",
+      "n": 1,
+      "r24": 0,
+      "title": "RESOLVED for this audit cycle: Smoke Claude Playwright FFmpeg-CDN timeout did not recur today",
+      "detail": "Today's Smoke Claude failure (run 26594967360) is a DIFFERENT safe-output target-star issue, not the Playwright install timeout. No firewall blocks on azureedge.net hosts today. Could be the allowlist was patched, or the Smoke Claude test changed scope. Either way the original critical from yesterday is not recurring."
+    },
+    {
+      "id": "firewall-block-rate-spike",
+      "sev": "watch",
+      "cat": "network",
+      "first": "05-19",
+      "last": "05-28",
+      "n": 10,
+      "r24": 650,
+      "title": "Firewall block rate normalized: 17.2% today (was 24.9% yesterday)",
+      "detail": "3770 total requests, 650 blocked (17.2%). Down from yesterday's 24.9% spike. Major change: Playwright/Smoke Claude blocks absent today. Smoke Pi pattern (high block rate on internal api-proxy ports) likely continues but is by-design for that smoke test. Watch entry retained for trend tracking."
+    },
+    {
+      "id": "pr-sous-chef-mini-failures",
+      "sev": "medium",
+      "cat": "model_reliability",
+      "first": "05-28",
+      "last": "05-28",
+      "n": 1,
+      "r24": 2,
+      "title": "NEW: PR Sous Chef gpt-5-mini failed 2 of 4 runs today (50% fail rate) — was 100% success yesterday",
+      "detail": "Today: 4 PR Sous Chef runs, 2 success and 2 failure (runs 26595665041, 26598471276) — both gpt-5-mini, both via copilot CLI, both hit 'all retries exhausted' with no specific error category. Yesterday all 3 PR Sous Chef runs succeeded. Could indicate (a) gpt-5-mini reliability regression today, (b) input/PR-content edge case, or (c) gateway flakiness affecting copilot CLI traffic. Related to the broader copilot-cli-all-retries-exhausted-no-category issue above."
+    },
+    {
+      "id": "auto-triage-issues-fail",
+      "sev": "medium",
+      "cat": "model_reliability",
+      "first": "05-28",
+      "last": "05-28",
+      "n": 1,
+      "r24": 1,
+      "title": "NEW: Auto-Triage Issues failed (gpt-5-mini, copilot CLI all retries exhausted)",
+      "detail": "Run 26596900064. Same generic copilot-CLI failure pattern as PR Sous Chef. gpt-5-mini may be the common factor."
+    },
+    {
+      "id": "copilot-CLI-1.0.52-stable",
+      "sev": "resolved",
+      "cat": "harness",
+      "first": "05-24",
+      "last": "05-28",
+      "n": 5,
+      "r24": 0,
+      "title": "Day 5 confirmed: 41 copilot runs today, 0 ENOENT, 0 anthropic-beta errors",
+      "detail": "Copilot CLI 1.0.52 remains stable for the known failure modes. The new 'all retries exhausted no category' pattern is distinct — it produces output then exits 1, vs ENOENT which was a missing-binary issue. 1.0.52 still recommended as min."
+    },
+    {
+      "id": "pr-sous-chef-execution-drift",
+      "sev": "watch",
+      "cat": "prompt_stability",
+      "first": "05-21",
+      "last": "05-28",
+      "n": 8,
+      "r24": 4,
+      "title": "PR Sous Chef variance widened slightly today due to 2 failures (cannot compare turn counts on failed runs)",
+      "detail": "4 runs today, only 2 succeeded — too small a successful sample to evaluate turn variance reliably. Held in watch state."
+    }
+  ]
+}
