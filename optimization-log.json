@@ -1,15 +1,6 @@
 [
   {
     "date": "2026-04-23",
-    "workflow_name": "Test Quality Sentinel",
-    "workflow_file": "test-quality-sentinel",
-    "runs_audited": 45,
-    "total_tokens_analyzed": 15964870,
-    "estimated_savings_per_run": 120000,
-    "recommendations_count": 5
-  },
-  {
-    "date": "2026-04-23",
     "workflow_name": "Architecture Guardian",
     "workflow_file": "architecture-guardian",
     "runs_audited": 1,
@@ -272,5 +263,15 @@
     "recommendations_count": 4,
     "subagent_candidates": 0,
     "estimated_savings_per_run": 365000
+  },
+  {
+    "date": "2026-05-28",
+    "workflow_name": "Scout",
+    "workflow_file": "scout",
+    "total_tokens_analyzed": 5820292,
+    "runs_audited": 1,
+    "recommendations_count": 4,
+    "subagent_candidates": 1,
+    "estimated_savings_per_run": 700000
   }
 ]
