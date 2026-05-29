@@ -23,3 +23,4 @@
 ./pkg/cli/git_test.go|2026-05-25
 ./pkg/stringutil/fuzzy_match_test.go|2026-05-26
 ./pkg/cli/fix_command_test.go|2026-05-28
+./pkg/errorutil/errors_test.go|2026-05-29
