@@ -23,6 +23,7 @@ var initLog = logger.New("cli:init")
 type InitOptions struct {
 	Ctx              context.Context
 	Verbose          bool
+	Engine           string
 	MCP              bool
 	CodespaceRepos   []string
 	CodespaceEnabled bool
@@ -39,6 +40,7 @@ func InitRepository(opts InitOptions) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	copilotArtifactsEnabled := opts.Engine == "" || opts.Engine == "copilot"
 
 	// Show welcome banner for interactive mode
 	console.ShowWelcomeBanner("This tool will initialize your repository for GitHub Agentic Workflows.")
@@ -76,14 +78,22 @@ func InitRepository(opts InitOptions) error {
 		fmt.Fprintln(os.Stderr, console.FormatSuccessMessage("Configured .gitattributes"))
 	}
 
-	// Write dispatcher agent
-	initLog.Print("Writing agentic workflows dispatcher agent")
-	if err := ensureAgenticWorkflowsDispatcher(opts.Verbose, false); err != nil {
-		initLog.Printf("Failed to write dispatcher agent: %v", err)
-		return fmt.Errorf("failed to write dispatcher agent: %w", err)
-	}
-	if opts.Verbose {
-		fmt.Fprintln(os.Stderr, console.FormatSuccessMessage("Created dispatcher agent"))
+	// Write dispatcher skill for Copilot engine only
+	if copilotArtifactsEnabled {
+		initLog.Print("Writing agentic workflows dispatcher skill")
+		if err := ensureAgenticWorkflowsDispatcher(opts.Verbose, false); err != nil {
+			initLog.Printf("Failed to write dispatcher skill: %v", err)
+			return fmt.Errorf("failed to write dispatcher skill: %w", err)
+		}
+		if opts.Verbose {
+			fmt.Fprintln(os.Stderr, console.FormatSuccessMessage("Created dispatcher skill"))
+		}
+		if err := deleteLegacyAgentFiles(opts.Verbose); err != nil {
+			initLog.Printf("Failed to delete legacy agent files: %v", err)
+			fmt.Fprintln(os.Stderr, console.FormatWarningMessage(fmt.Sprintf("Warning: Failed to delete legacy agent files: %v", err)))
+		}
+	} else {
+		initLog.Printf("Skipping Copilot dispatcher skill for engine: %s", opts.Engine)
 	}
 
 	// Delete existing setup agentic workflows agent if it exists
@@ -94,7 +104,7 @@ func InitRepository(opts InitOptions) error {
 	}
 
 	// Configure MCP if requested
-	if opts.MCP {
+	if opts.MCP && copilotArtifactsEnabled {
 		initLog.Print("Configuring GitHub Copilot Agent MCP integration")
 
 		// Detect action mode for setup steps generation
@@ -177,7 +187,7 @@ func InitRepository(opts InitOptions) error {
 		prBody := "This PR initializes the repository for agentic workflows by:\n" +
 			"- Configuring .gitattributes\n" +
 			"- Creating GitHub Copilot custom instructions\n" +
-			"- Setting up workflow prompts and agents"
+			"- Setting up workflow prompts and skills"
 		if _, err := CreatePRWithChanges("init-agentic-workflows", "chore: initialize agentic workflows", "Initialize agentic workflows", prBody, opts.Verbose); err != nil {
 			return err
 		}
