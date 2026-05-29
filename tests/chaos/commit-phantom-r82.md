@@ -2,3 +2,4 @@
 Strategy: amend + two-commits
 Persona: commit-phantom
 Amended line
+Second commit addition
