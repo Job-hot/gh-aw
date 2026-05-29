@@ -1,14 +1,5 @@
 [
   {
-    "date": "2026-04-23",
-    "workflow_name": "Architecture Guardian",
-    "workflow_file": "architecture-guardian",
-    "runs_audited": 1,
-    "total_tokens_analyzed": 1969440,
-    "estimated_savings_per_run": 900000,
-    "recommendations_count": 4
-  },
-  {
     "date": "2026-04-24",
     "workflow_name": "Documentation Noob Tester",
     "workflow_file": "docs-noob-tester",
@@ -273,5 +264,15 @@
     "recommendations_count": 4,
     "subagent_candidates": 1,
     "estimated_savings_per_run": 700000
+  },
+  {
+    "date": "2026-05-29",
+    "workflow_name": "PR Sous Chef",
+    "workflow_file": "pr-sous-chef",
+    "total_tokens_analyzed": 6711514,
+    "runs_audited": 2,
+    "recommendations_count": 4,
+    "subagent_candidates": 0,
+    "estimated_savings_per_run": 1550000
   }
 ]
