@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="400" style="background:white;font-family:sans-serif">
+<text x="450" y="25" text-anchor="middle" font-size="14" font-weight="bold">Daily Token Usage Trend</text>
+<line x1="100" y1="40" x2="860" y2="40" stroke="#eee" stroke-width="1"/>
+<text x="95" y="45" text-anchor="end" font-size="10">138,000,015</text>
+<line x1="100" y1="115" x2="860" y2="115" stroke="#eee" stroke-width="1"/>
+<text x="95" y="120" text-anchor="end" font-size="10">113,077,054</text>
+<line x1="100" y1="190" x2="860" y2="190" stroke="#eee" stroke-width="1"/>
+<text x="95" y="195" text-anchor="end" font-size="10">88,154,093</text>
+<line x1="100" y1="265" x2="860" y2="265" stroke="#eee" stroke-width="1"/>
+<text x="95" y="270" text-anchor="end" font-size="10">63,231,132</text>
+<line x1="100" y1="340" x2="860" y2="340" stroke="#eee" stroke-width="1"/>
+<text x="95" y="345" text-anchor="end" font-size="10">38,308,171</text>
+<polyline points="100,87 126,165 152,191 178,291 204,124 231,142 257,164 283,250 309,232 335,190 362,167 388,221 414,204 440,234 466,225 493,240 519,291 545,220 571,310 597,326 624,237 650,340 676,231 702,235 728,267 755,244 781,87 807,155 833,103 860,40" fill="none" stroke="steelblue" stroke-width="2"/>
+<circle cx="100" cy="87" r="3" fill="steelblue"/>
+<circle cx="126" cy="165" r="3" fill="steelblue"/>
+<circle cx="152" cy="191" r="3" fill="steelblue"/>
+<circle cx="178" cy="291" r="3" fill="steelblue"/>
+<circle cx="204" cy="124" r="3" fill="steelblue"/>
+<circle cx="231" cy="142" r="3" fill="steelblue"/>
+<circle cx="257" cy="164" r="3" fill="steelblue"/>
+<circle cx="283" cy="250" r="3" fill="steelblue"/>
+<circle cx="309" cy="232" r="3" fill="steelblue"/>
+<circle cx="335" cy="190" r="3" fill="steelblue"/>
+<circle cx="362" cy="167" r="3" fill="steelblue"/>
+<circle cx="388" cy="221" r="3" fill="steelblue"/>
+<circle cx="414" cy="204" r="3" fill="steelblue"/>
+<circle cx="440" cy="234" r="3" fill="steelblue"/>
+<circle cx="466" cy="225" r="3" fill="steelblue"/>
+<circle cx="493" cy="240" r="3" fill="steelblue"/>
+<circle cx="519" cy="291" r="3" fill="steelblue"/>
+<circle cx="545" cy="220" r="3" fill="steelblue"/>
+<circle cx="571" cy="310" r="3" fill="steelblue"/>
+<circle cx="597" cy="326" r="3" fill="steelblue"/>
+<circle cx="624" cy="237" r="3" fill="steelblue"/>
+<circle cx="650" cy="340" r="3" fill="steelblue"/>
+<circle cx="676" cy="231" r="3" fill="steelblue"/>
+<circle cx="702" cy="235" r="3" fill="steelblue"/>
+<circle cx="728" cy="267" r="3" fill="steelblue"/>
+<circle cx="755" cy="244" r="3" fill="steelblue"/>
+<circle cx="781" cy="87" r="3" fill="steelblue"/>
+<circle cx="807" cy="155" r="3" fill="steelblue"/>
+<circle cx="833" cy="103" r="3" fill="steelblue"/>
+<circle cx="860" cy="40" r="3" fill="steelblue"/>
+<text x="100" y="360" text-anchor="middle" font-size="9" transform="rotate(-45,100,360)">2026-04-04</text>
+<text x="178" y="360" text-anchor="middle" font-size="9" transform="rotate(-45,178,360)">2026-04-09</text>
+<text x="257" y="360" text-anchor="middle" font-size="9" transform="rotate(-45,257,360)">2026-04-13</text>
+<text x="335" y="360" text-anchor="middle" font-size="9" transform="rotate(-45,335,360)">2026-04-16</text>
+<text x="414" y="360" text-anchor="middle" font-size="9" transform="rotate(-45,414,360)">2026-04-20</text>
+<text x="493" y="360" text-anchor="middle" font-size="9" transform="rotate(-45,493,360)">2026-04-23</text>
+<text x="571" y="360" text-anchor="middle" font-size="9" transform="rotate(-45,571,360)">2026-04-28</text>
+<text x="650" y="360" text-anchor="middle" font-size="9" transform="rotate(-45,650,360)">2026-05-01</text>
+<text x="728" y="360" text-anchor="middle" font-size="9" transform="rotate(-45,728,360)">2026-05-20</text>
+<text x="807" y="360" text-anchor="middle" font-size="9" transform="rotate(-45,807,360)">2026-05-27</text>
+<line x1="100" y1="40" x2="100" y2="340" stroke="#999"/>
+<line x1="100" y1="340" x2="860" y2="340" stroke="#999"/>
+<text x="450" y="395" text-anchor="middle" font-size="12">Date</text>
+</svg>

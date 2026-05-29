@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="550" style="background:white;font-family:sans-serif">
+<text x="450" y="25" text-anchor="middle" font-size="14" font-weight="bold">Top 15 Workflows by Token Usage (Last 30 Days)</text>
+<rect x="300" y="44" width="103" height="24" fill="#2166ac" rx="2"/>
+<text x="295" y="61" text-anchor="end" font-size="11">PR Code Quality Reviewer</text>
+<text x="408" y="61" font-size="11">2,902,456</text>
+<rect x="300" y="76" width="113" height="24" fill="#4393c3" rx="2"/>
+<text x="295" y="93" text-anchor="end" font-size="11">Go Fan</text>
+<text x="418" y="93" font-size="11">3,169,406</text>
+<rect x="300" y="108" width="113" height="24" fill="#74add1" rx="2"/>
+<text x="295" y="125" text-anchor="end" font-size="11">Matt Pocock Skills Reviewer</text>
+<text x="418" y="125" font-size="11">3,188,126</text>
+<rect x="300" y="140" width="119" height="24" fill="#abd9e9" rx="2"/>
+<text x="295" y="157" text-anchor="end" font-size="11">Daily Documentation Updater</text>
+<text x="424" y="157" font-size="11">3,340,878</text>
+<rect x="300" y="172" width="130" height="24" fill="#e0f3f8" rx="2"/>
+<text x="295" y="189" text-anchor="end" font-size="11">GitHub API Consumption Report Agent</text>
+<text x="435" y="189" font-size="11">3,662,632</text>
+<rect x="300" y="204" width="131" height="24" fill="#fee090" rx="2"/>
+<text x="295" y="221" text-anchor="end" font-size="11">Copilot Agent Prompt Clustering Ana...</text>
+<text x="436" y="221" font-size="11">3,681,770</text>
+<rect x="300" y="236" width="132" height="24" fill="#fdae61" rx="2"/>
+<text x="295" y="253" text-anchor="end" font-size="11">Instructions Janitor</text>
+<text x="437" y="253" font-size="11">3,702,789</text>
+<rect x="300" y="268" width="185" height="24" fill="#f46d43" rx="2"/>
+<text x="295" y="285" text-anchor="end" font-size="11">Daily AgentRx Trace Optimizer</text>
+<text x="490" y="285" font-size="11">5,188,636</text>
+<rect x="300" y="300" width="195" height="24" fill="#d73027" rx="2"/>
+<text x="295" y="317" text-anchor="end" font-size="11">Sergo - Serena Go Expert</text>
+<text x="500" y="317" font-size="11">5,479,611</text>
+<rect x="300" y="332" width="196" height="24" fill="#a50026" rx="2"/>
+<text x="295" y="349" text-anchor="end" font-size="11">Daily OTel Instrumentation Advisor</text>
+<text x="501" y="349" font-size="11">5,510,217</text>
+<rect x="300" y="364" width="204" height="24" fill="#313695" rx="2"/>
+<text x="295" y="381" text-anchor="end" font-size="11">Daily Rendering Scripts Verifier</text>
+<text x="509" y="381" font-size="11">5,737,530</text>
+<rect x="300" y="396" width="208" height="24" fill="#4575b4" rx="2"/>
+<text x="295" y="413" text-anchor="end" font-size="11">Static Analysis Report</text>
+<text x="513" y="413" font-size="11">5,832,354</text>
+<rect x="300" y="428" width="304" height="24" fill="#74add1" rx="2"/>
+<text x="295" y="445" text-anchor="end" font-size="11">Go Logger Enhancement</text>
+<text x="609" y="445" font-size="11">8,521,113</text>
+<rect x="300" y="460" width="310" height="24" fill="#abd9e9" rx="2"/>
+<text x="295" y="477" text-anchor="end" font-size="11">Safe Output Health Monitor</text>
+<text x="615" y="477" font-size="11">8,701,066</text>
+<rect x="300" y="492" width="560" height="24" fill="#e0f3f8" rx="2"/>
+<text x="295" y="509" text-anchor="end" font-size="11">PR Sous Chef</text>
+<text x="865" y="509" font-size="11">15,695,443</text>
+<line x1="300" y1="40" x2="300" y2="520" stroke="#999" stroke-width="1"/>
+<line x1="300" y1="520" x2="860" y2="520" stroke="#999" stroke-width="1"/>
+<text x="580" y="545" text-anchor="middle" font-size="12">Total Tokens</text>
+</svg>
