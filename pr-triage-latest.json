@@ -1,10 +1,10 @@
 {
-  "run_date": "2026-05-29T13:29:00Z",
-  "run_id": "26639937889",
+  "run_date": "2026-05-29T19:06:52Z",
+  "run_id": "26656673020",
   "fork_prs": 0,
-  "agent_prs_found": 11,
-  "notes": "Found 11 open Copilot PRs (copilot-swe-agent), all branch-based (head_repo == base_repo == github/gh-aw). No fork PRs to triage per workflow fork-only policy.",
-  "branch_prs_skipped": [35694, 35691, 35690, 35689, 35642, 35631, 35630, 35613, 35595, 35381, 33219],
+  "agent_prs_found": 6,
+  "notes": "Found 6 open Copilot PRs (copilot-swe-agent), all branch-based (isCrossRepository=false, head_repo==base_repo==github/gh-aw). No fork PRs to triage per workflow fork-only policy.",
+  "branch_prs_skipped": [35765, 35764, 35763, 35694, 35381, 33219],
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
@@ -16,17 +16,5 @@
     "by_risk": {},
     "by_priority": {},
     "by_action": {}
-  },
-  "pr_summary": {
-    "35694": {"title": "feat: expose authHeader in awf.apiProxy.targets frontmatter", "state": "OPEN", "additions": 3338, "deletions": 965},
-    "35691": {"title": "chore: bump default Claude/Copilot/Codex and GitHub MCP Server versions", "state": "DRAFT", "additions": 3394, "deletions": 3394},
-    "35690": {"title": "CI: enforce regexpcompileinfunction and fprintlnsprintf in custom linter gate", "state": "DRAFT", "additions": 1, "deletions": 1},
-    "35689": {"title": "Stabilize non-fast-forward fallback tests in push_to_pull_request_branch (CJS shard 4)", "state": "DRAFT", "additions": 54, "deletions": 12},
-    "35642": {"title": "Remove features.copilot-requests; gate Copilot token mode on permissions.copilot-requests: write", "state": "DRAFT", "additions": 1105, "deletions": 545},
-    "35631": {"title": "BYOK: suppress COPILOT_GITHUB_TOKEN injection when COPILOT_PROVIDER_BASE_URL is set", "state": "OPEN", "additions": 100, "deletions": 5},
-    "35630": {"title": "feat: expose sandbox.agent.model-fallback in compiler frontmatter", "state": "DRAFT", "additions": 355, "deletions": 10},
-    "35613": {"title": "Refactor sanitizer duplication and unify compiler error formatting API", "state": "OPEN", "additions": 339, "deletions": 222},
-    "35595": {"title": "Harden cache-memory artifact upload against corrupted git object stores", "state": "DRAFT", "additions": 48, "deletions": 1},
-    "33219": {"title": "Bind Node toolcache into AWF chroot for Copilot-engine workflow startup reliability", "state": "OPEN", "additions": 7191, "deletions": 1019}
   }
 }
