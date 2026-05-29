@@ -422,7 +422,7 @@ jobs:
           GH_AW_INFO_AWF_VERSION: "v0.25.56"
           GH_AW_INFO_ENGINE_ID: "copilot"
           INPUT_INSTALL_COPILOT: 'true'
-          INPUT_GH_AW_VERSION: "947e72fa-dirty"
+          INPUT_GH_AW_VERSION: "c9e74f2"
       - name: Set runtime paths
         id: set-runtime-paths
         run: |
@@ -1293,7 +1293,7 @@ jobs:
           GH_AW_INFO_AWF_VERSION: "v0.25.56"
           GH_AW_INFO_ENGINE_ID: "copilot"
           INPUT_INSTALL_COPILOT: 'true'
-          INPUT_GH_AW_VERSION: "947e72fa-dirty"
+          INPUT_GH_AW_VERSION: "c9e74f2"
       - name: Download agent output artifact
         id: download-agent-output
         continue-on-error: true
