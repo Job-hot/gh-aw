@@ -1,59 +1,47 @@
 {
-  "updated": "2026-05-28",
+  "updated": "2026-05-29",
   "recs": [
     {
-      "id": "investigate-copilot-cli-all-retries-no-category",
+      "id": "fix-cache-memory-git-setup-script",
       "p": "critical",
-      "iss": "copilot-cli-all-retries-exhausted-no-category",
-      "s": "NEW: 4 copilot-CLI failures today (Smoke Copilot, PR Sous Chef x2, Auto-Triage) all exit 1 after 4 attempts with NO specific error category set. Two of the three failing workflows are gpt-5-mini (Sous Chef + Auto-Triage); the third (Smoke Copilot) is gpt-5.3-codex. Action: (a) inspect the stdout captured in the failing runs (hasOutput=true) to identify the actual error text the copilot CLI emitted; (b) if 'all retries exhausted no category' specifically affects gpt-5-mini today, consider temporarily routing PR Sous Chef + Auto-Triage to a more reliable model; (c) extend copilot-harness error classification to map the new failure signature into a named category."
+      "iss": "cache-memory-git-setup-fatal",
+      "s": "NEW & ACTIONABLE: setup_cache_memory_git.sh fails 'fatal: not in a git directory' (exit 128) after a cache hit when the restored cache dir has data files but no valid .git. Today this failed 2/2 cache-memory-enabled workflows (Chaos PR Bundle Fuzzer, Copilot PR Prompt Pattern Analysis). The same fault also fails the downstream 'Commit cache-memory changes' step. FIX: after restore, verify the repo with `git -C \"$GH_AW_CACHE_DIR\" rev-parse --git-dir` (or test -d .git) and, when files are present but it is not a valid git repo, `git init` + re-add the remote/branch instead of trusting the cache-hit flag and immediately running git commands. Add a regression guard for the 'non-git files present after restore' branch. This is the single highest-value fix in the queue today (one script, restores 2 workflows)."
     },
     {
-      "id": "raise-avenger-max-turns",
-      "p": "critical",
+      "id": "investigate-serena-go-lsp-eof",
+      "p": "medium",
+      "iss": "smoke-claude-missing-tools",
+      "s": "serena find_symbol/get_symbols_overview return 'MCP error 0 EOF' on first query in Smoke Claude (run 26662945808) — the Go LSP backend crashes after a successful activate_project. Action: capture serena/gopls stderr in the smoke run, check gopls version compatibility with the repo's Go toolchain, and confirm whether the LSP needs a warm-up/index step before symbol queries. Run passed overall so this is medium, but it silently removes symbol-search coverage from the Claude smoke test."
+    },
+    {
+      "id": "clarify-mcpscripts-gh-and-web-fetch-availability",
+      "p": "low",
+      "iss": "smoke-codex-web-fetch-missing",
+      "s": "Two tool-availability gaps surfaced in smoke tests: (1) mcpscripts CLI has no `gh` passthrough (Smoke Claude expected mcpscripts-gh; only github_pr_query/issue/discussion/go/make exist) and (2) web-fetch MCP tool is absent for Smoke Codex. Both runs passed. Decide per tool: either provision the tool or update the smoke-test prompt to stop expecting it, so missing-tool noise stops being reported."
+    },
+    {
+      "id": "verify-avenger-max-turns-next-cycle",
+      "p": "high",
       "iss": "avenger-max-turns-env-mismatch",
-      "s": "STUCK FOR 5 DAYS: Avenger hit isMaxTurnsExit=true in 3 of 3 runs today. The workflow's CI-failure-investigation task requires more than 25 turns. One-line frontmatter edit: add `max-turns: 50` (or similar) to .github/workflows/avenger.md and re-compile. Yesterday's recommendation noted ~$1+/run wasted; cumulative cost across 5 days exceeds $5. Each failure today also opened a comment on cascade tracker issue #35532, which is itself becoming noisy. Either raise max-turns or refactor the prompt to be more decisive within 25 turns."
-    },
-    {
-      "id": "update-changeset-generator-model",
-      "p": "critical",
-      "iss": "codex-model-not-found-alpha",
-      "s": "STUCK FOR 9 DAYS: Changeset Generator still pinned to gpt-5.3-codex which auto-routes to gpt-5-codex-alpha-2025-11-07 (404). Smoke Copilot is also on gpt-5.3-codex and failed today in a related way. ONE-LINE FIX: change `model: gpt-5.3-codex` → `model: gpt-5.4` in .github/workflows/changeset-generator.md (and review Smoke Copilot's model choice). Other codex workflows (AI Moderator, Smoke Codex, Daily Cache Strategy) all run on gpt-5.4 successfully. This is the highest-cost-to-fix:value ratio in the queue."
+      "s": "CARRIED: Avenger did not run in today's window, so the --max-turns 25 / isMaxTurnsExit issue is unverified. Keep the recommendation to set max-turns: ~50 in .github/workflows/avenger.md open and re-evaluate on the next cycle in which Avenger runs."
     },
     {
       "id": "harden-safe-output-target-validation-everywhere",
-      "p": "high",
-      "iss": "safe-output-target-star-no-number",
-      "s": "EXTENDED: target=* without explicit number now affects 3+ safe-output tools (add_comment, create_pull_request_review_comment, set_issue_field). Validating at each prompt is intractable. Recommend a single MCP-boundary validator: for any tool whose target config is '*' AND whose workflow context cannot auto-resolve to an issue/PR, reject the call with a clear error message naming the missing field. This converts a silent post-agent failure into immediate agent feedback so the model can self-correct."
-    },
-    {
-      "id": "investigate-daily-safe-output-optimizer-cost-trend",
-      "p": "high",
-      "iss": "daily-safe-output-optimizer-cost-escalating",
-      "s": "3-day rising trend: $6.05 → $9.90 → $11.33 (+87%). Workflow itself succeeds, but the cost slope is unsustainable. Action: diff the workflow markdown / its imported files over the last 3 commits to identify what was added to the prompt. Likely candidates: bigger example sets, accumulated analysis history loaded into context, or a new search step that drags in more data. Cap with either a max-tokens guard or by moving heavy data ingestion to deterministic pre-steps."
-    },
-    {
-      "id": "investigate-gpt-5-mini-reliability",
       "p": "medium",
-      "iss": "pr-sous-chef-mini-failures",
-      "s": "Both PR Sous Chef failures + Auto-Triage failure today are gpt-5-mini on copilot CLI. Yesterday all 3 PR Sous Chef runs (also gpt-5-mini) succeeded. Action: (a) check whether the failing PR Sous Chef runs share a PR-input pattern (size, file types, presence of specific markers); (b) compare gpt-5-mini overall success rate today vs prior days; (c) if pattern persists tomorrow, raise with the gpt-5-mini gateway team."
+      "iss": "safe-output-target-star-no-number",
+      "s": "CARRIED (no recurrence in partial window): target=* without explicit number affected 3 tools on 05-28 but none failed today. Keep the MCP-boundary validator recommendation: reject any target=* tool call whose context cannot auto-resolve to an issue/PR, with an error naming the missing field, so the agent self-corrects instead of failing post-run. Confirm over a full-day window before closing."
     },
     {
-      "id": "close-smoke-claude-playwright-install",
+      "id": "confirm-changeset-generator-fix",
       "p": "low",
-      "iss": "smoke-claude-playwright-install-timeout",
-      "s": "Yesterday's critical did NOT recur today. Today's Smoke Claude failure is a different (target=*) issue. Mark the Playwright/FFmpeg/azureedge.net allowlist issue as resolved unless it returns within 3 days."
+      "iss": "codex-model-not-found-alpha",
+      "s": "RESOLVED today: Changeset Generator on gpt-5.4 succeeded after 9 days stuck. Action: confirm no recurrence over the next 2 cycles, then this issue can be fully closed. No code change needed."
     },
     {
-      "id": "watch-firewall-trend",
+      "id": "watch-daily-safe-output-optimizer-cost",
       "p": "low",
-      "iss": "firewall-block-rate-spike",
-      "s": "17.2% today vs 24.9% yesterday. Baseline restored. Continue tracking; no action."
-    },
-    {
-      "id": "pin-copilot-CLI-1.0.52",
-      "p": "low",
-      "iss": "copilot-CLI-1.0.52-stable",
-      "s": "Day 5 stable for the original ENOENT/anthropic-beta failure modes. Pin 1.0.52 as minimum allowed CLI version in CI when convenient. Note: the new 'all retries exhausted no category' pattern is a separate concern and not a regression of 1.0.52 specifically."
+      "iss": "daily-safe-output-optimizer-cost-escalating",
+      "s": "REVERSED today ($11.33 -> $3.07). No action; keep watching for re-escalation of the prompt-growth pattern."
     }
   ]
 }

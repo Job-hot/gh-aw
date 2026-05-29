@@ -1,89 +1,76 @@
 {
-  "updated": "2026-05-28",
+  "updated": "2026-05-29",
+  "note": "05-29 window partial (21 runs). New infra anomaly; several prior anomalies resolved or could not be re-evaluated in-window.",
   "anomalies": [
     {
-      "id": "copilot-cli-all-retries-exhausted-no-category",
+      "id": "cache-memory-git-setup-fatal",
       "persist": 1,
       "state": "new-critical",
-      "last": "05-28",
-      "t": "NEW: 4 copilot-CLI failures share an identical signature: exit 1 after 4 attempts, with all known error-category flags FALSE (not CAPI 400, not MCP policy, not model-not-supported, not auth, not null-type-tool-call). Affected: Smoke Copilot (gpt-5.3-codex), PR Sous Chef × 2 (gpt-5-mini), Auto-Triage (gpt-5-mini). 3 of 4 are gpt-5-mini — possible model-specific reliability issue. Output WAS produced (hasOutput=true), so the actual error is in the captured copilot CLI stdout/stderr but not yet classified by the harness."
-    },
-    {
-      "id": "avenger-max-turns-env-mismatch",
-      "persist": 5,
-      "state": "stuck-escalated",
-      "last": "05-28",
-      "t": "STUCK 5 DAYS, 3 fresh failures today (100% fail rate). All hit isMaxTurnsExit=true under --max-turns 25. Each failure also opens a comment on cascade-tracker #35532, which is itself becoming noisy. Two-line fix (max-turns: 50 in workflow frontmatter) unactioned. Cumulative wasted cost > $5."
+      "last": "05-29",
+      "t": "NEW: Both cache-memory-enabled workflows in the window (Chaos PR Bundle Fuzzer, Copilot PR Prompt Pattern Analysis) failed identically. setup_cache_memory_git.sh detects a cache hit, claims 'git repository found', then hits 'fatal: not in a git directory' (exit 128) because the restored cache has data files but no valid .git. Failure occurs at both the setup step and the commit step. Chaos agent never executed (turns=0). Single-script fix: validate .git after restore and re-init when the dir has files but is not a git repo."
     },
     {
       "id": "codex-model-not-found-alpha",
-      "persist": 8,
-      "state": "stuck",
-      "last": "05-28",
-      "t": "STUCK 9 DAYS: Changeset Generator + Smoke Copilot both on gpt-5.3-codex → routes to gpt-5-codex-alpha-2025-11-07 → 404. EXACT same recommendation given for 9 days unactioned. One workflow-frontmatter edit (model: gpt-5.4) blocks resolution."
+      "persist": 0,
+      "state": "resolved",
+      "last": "05-29",
+      "t": "RESOLVED after 9 days. Changeset Generator now on model: gpt-5.4 (confirmed in aw_info.json run 26662945784) and SUCCEEDED. The single frontmatter edit recommended daily for 9 days was applied. Smoke Copilot also passed today."
+    },
+    {
+      "id": "daily-safe-output-optimizer-cost-trend",
+      "persist": 0,
+      "state": "reversed",
+      "last": "05-29",
+      "t": "REVERSED: cost fell $11.33 -> $3.07 (54.5M -> 3.1M eff_tok). The +87% 3-day escalation broke. Watch for re-escalation but no longer escalating."
     },
     {
       "id": "safe-output-target-star-spreading",
       "persist": 3,
-      "state": "spreading",
+      "state": "quiet-partial-window",
       "last": "05-28",
-      "t": "target=*-without-explicit-number pattern is now affecting 3 distinct safe-output tools (add_comment in Contribution Check, create_pull_request_review_comment in Smoke Claude, set_issue_field in Smoke Codex). Yesterday it was 1 tool. Tool-by-tool prompt fixes won't scale; need a single MCP-boundary validator."
+      "t": "Did not recur in the 05-29 window: Contribution Check, Smoke Claude, Smoke Codex all passed. Window is partial so this is not confirmation of a fix. MCP-boundary validator recommendation still recommended as durable guard."
     },
     {
-      "id": "daily-safe-output-optimizer-cost-trend",
-      "persist": 3,
-      "state": "escalating",
+      "id": "avenger-max-turns-env-mismatch",
+      "persist": 5,
+      "state": "not-in-window",
       "last": "05-28",
-      "t": "3-day rising cost: $6.05 → $9.90 → $11.33 (+87%). Workflow succeeds but trajectory unsustainable. Likely prompt/input growth. Investigate prompt diff over last 3 commits."
+      "t": "Avenger did not run in the 21-run window; isMaxTurnsExit issue unverified today. max-turns:50 recommendation remains open. Re-check next cycle."
     },
     {
-      "id": "pr-sous-chef-mini-failures",
+      "id": "copilot-cli-all-retries-exhausted-no-category",
+      "persist": 1,
+      "state": "quiet-partial-window",
+      "last": "05-28",
+      "t": "No 'all retries exhausted no category' signatures in the 05-29 window. Smoke Copilot succeeded; PR Sous Chef was in_progress (not failed); Auto-Triage absent. Keep harness error-classification rec open."
+    },
+    {
+      "id": "smoke-claude-serena-go-lsp-eof",
       "persist": 1,
       "state": "new",
-      "last": "05-28",
-      "t": "NEW: PR Sous Chef went 0/3 → 2/4 failures today, both gpt-5-mini. Combined with Auto-Triage failure (also gpt-5-mini), suggests possible gpt-5-mini-specific issue today via copilot CLI."
-    },
-    {
-      "id": "smoke-claude-playwright-install-timeout",
-      "persist": 1,
-      "state": "resolved",
-      "last": "05-27",
-      "t": "RESOLVED: Yesterday's Playwright FFmpeg/azureedge.net blocked-domain issue did NOT recur. Today's Smoke Claude failure is a separate safe-output target=* issue."
-    },
-    {
-      "id": "firewall-block-rate-spike",
-      "persist": 1,
-      "state": "normalized",
-      "last": "05-28",
-      "t": "Firewall block rate normalized to 17.2% (was 24.9% yesterday). Playwright Azure-CDN blocks absent today. Baseline restored."
-    },
-    {
-      "id": "pr-sous-chef-turn-variance",
-      "persist": 8,
-      "state": "indeterminate",
-      "last": "05-28",
-      "t": "Only 2 of 4 PR Sous Chef runs succeeded today — sample too small to compare turn variance reliably. Held."
+      "last": "05-29",
+      "t": "NEW: serena symbol tools (find_symbol/get_symbols_overview) crash with 'MCP error 0 EOF' on first query in Smoke Claude — Go LSP backend appears to crash. activate_project succeeded. Run passed overall but symbol-search coverage lost. Worth a dedicated serena/Go-LSP reliability fix."
     },
     {
       "id": "daily-success-rate-trend",
-      "persist": 6,
+      "persist": 7,
       "state": "watch",
-      "last": "05-28",
-      "t": "81.0% success rate today on 58 completed runs (mid-day, partial). 9-day trend: 92.78 → 88.89 → 85.9 → 75.6 → 41.6 → 81.1 → 94.7 → 85.7 → 90.9 → 81.0. Mostly in normal range; today's dip driven by Avenger (3) + new copilot-CLI category (4) + Changeset (1) + safe-output target=* (3 across 2 workflows)."
-    },
-    {
-      "id": "copilot-CLI-1.0.52-stable",
-      "persist": 5,
-      "state": "resolved-confirmed",
-      "last": "05-28",
-      "t": "Day 5 stable for original ENOENT/anthropic-beta failures. 41 copilot runs today across many workflows; the original two failure modes both at zero."
+      "last": "05-29",
+      "t": "89.5% completion rate in the 05-29 window (17/19 completed; 2 in_progress). 11-day trend: 92.78 -> 88.89 -> 85.9 -> 75.6 -> 41.6 -> 81.1 -> 94.7 -> 85.7 -> 90.9 -> 81.0 -> 89.5. Within normal band. Window is partial."
     },
     {
       "id": "high-cost-runs",
-      "persist": 10,
+      "persist": 11,
       "state": "persistent",
-      "last": "05-28",
-      "t": "Top eff_tokens today: Daily Safe Output Tool Optimizer 54.6M (1 run, $11.33), Daily Testify Uber Super Expert 23.3M (1 run), PR Code Quality Reviewer 22.9M (5 runs), Test Quality Sentinel 22.6M (5 runs), Matt Pocock Skills Reviewer 22.5M (5 runs). Top minutes: Avenger 57m (3 runs all fail), PR Sous Chef 32m (4 runs), Matt Pocock 30m, PR Code Quality 30m, Test Quality 28m."
+      "last": "05-29",
+      "t": "Top eff_tokens in window: Smoke Copilot 3.17M, Daily Safe Output Tool Optimizer 3.13M ($3.07), PR Code Quality Reviewer 1.65M, Daily Caveman Optimizer 1.35M ($1.87), Smoke Claude 1.24M ($1.45). Cost only reported for claude engine; copilot/codex/gemini cost not in run_summary. Total measured claude cost in window ~$7.18 (partial)."
+    },
+    {
+      "id": "smoke-antigravity-firewall-block",
+      "persist": 1,
+      "state": "by-design",
+      "last": "05-29",
+      "t": "Smoke Antigravity 10/12 blocked (83%) — flagged as network hotspot but expected for the antigravity smoke test (antigravity-unleash.goog + Playwright Azure-CDN). No action."
     }
   ]
 }
