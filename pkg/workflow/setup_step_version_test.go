@@ -292,17 +292,20 @@ func TestGenerateSetupStepEmitsInstallCopilotGate(t *testing.T) {
 
 	tests := []struct {
 		name           string
+		mode           ActionMode
 		data           *WorkflowData
 		installCopilot bool
 		wantEmit       bool
 	}{
-		{name: "copilot engine + opt-in emits both env vars", data: copilotData, installCopilot: true, wantEmit: true},
-		{name: "copilot engine without opt-in suppresses env vars", data: copilotData, installCopilot: false, wantEmit: false},
-		{name: "non-copilot engine ignores opt-in", data: claudeData, installCopilot: true, wantEmit: false},
+		{name: "copilot engine + opt-in emits both env vars in release mode", mode: ActionModeRelease, data: copilotData, installCopilot: true, wantEmit: true},
+		{name: "copilot engine + opt-in suppresses env vars in dev mode", mode: ActionModeDev, data: copilotData, installCopilot: true, wantEmit: false},
+		{name: "copilot engine without opt-in suppresses env vars", mode: ActionModeRelease, data: copilotData, installCopilot: false, wantEmit: false},
+		{name: "non-copilot engine ignores opt-in", mode: ActionModeRelease, data: claudeData, installCopilot: true, wantEmit: false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			c.SetActionMode(tt.mode)
 			lines := c.generateSetupStep(tt.data, "github/gh-aw/actions/setup@abc123", "${{ runner.temp }}/gh-aw", false, "", "", tt.installCopilot)
 			combined := strings.Join(lines, "")
 			hasGate := strings.Contains(combined, "INPUT_INSTALL_COPILOT: 'true'")

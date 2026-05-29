@@ -118,12 +118,9 @@ func (c *Compiler) generateRestoreActionsSetupStep() string {
 //
 // For Copilot-engine workflows, the setup step receives INPUT_INSTALL_COPILOT
 // (the resolver gate) and INPUT_GH_AW_VERSION (the compatibility-matrix
-// selector) only when installCopilot is true. This is enabled for jobs that
-// actually invoke the Copilot CLI (the main agent job and the threat-detection
-// job). Other jobs that share the setup action (cache, unlock, safe-outputs,
-// activation, pre_activation, publish-assets, repo-memory, notify-comment,
-// experiments) leave it disabled so they do not run the resolver
-// unnecessarily.
+// selector) only when installCopilot is true and the compiler is in release/
+// action mode. This keeps dev-mode lockfiles stable while still enabling the
+// resolver for released workflows that actually invoke the Copilot CLI.
 //
 // Returns a slice of strings representing the YAML lines for the setup step.
 func buildSetupWorkflowRefExpr(data *WorkflowData) string {
@@ -227,7 +224,7 @@ func (c *Compiler) generateSetupStep(data *WorkflowData, setupActionRef string, 
 		if enableArtifactClient {
 			setupLines = append(setupLines, "          INPUT_SAFE_OUTPUT_ARTIFACT_CLIENT: 'true'\n")
 		}
-		if setupEngineID == "copilot" && installCopilot {
+		if setupEngineID == "copilot" && installCopilot && (c.actionMode.IsRelease() || c.actionMode.IsAction()) {
 			setupLines = append(setupLines,
 				"          INPUT_INSTALL_COPILOT: 'true'\n",
 				fmt.Sprintf("          INPUT_GH_AW_VERSION: %q\n", GetVersion()),
@@ -279,15 +276,15 @@ func (c *Compiler) generateSetupStep(data *WorkflowData, setupActionRef string, 
 	if hasWorkflowCallTrigger(data.On) {
 		setupLines = append(setupLines, "          GH_AW_SETUP_AW_CONTEXT: ${{ inputs.aw_context }}\n")
 	}
-	if setupEngineID == "copilot" && installCopilot {
+	if setupEngineID == "copilot" && installCopilot && (c.actionMode.IsRelease() || c.actionMode.IsAction()) {
 		// INPUT_INSTALL_COPILOT acts as the explicit opt-in for the toolcache
 		// resolver; setup.sh gates the resolver invocation on this flag. We
 		// only emit it for jobs that actually run the Copilot CLI (the main
-		// agent job and the threat-detection job). The resolver also reads
-		// INPUT_GH_AW_VERSION directly from the step env to pick a compatible
-		// cached build, so we emit both in the same env block. Neither value
-		// is declared as an action.yml input — passing them via step env keeps
-		// the action's input surface unchanged.
+		// agent job and the threat-detection job), and only in release/action
+		// mode. The resolver also reads INPUT_GH_AW_VERSION directly from the
+		// step env to pick a compatible cached build, so we emit both in the
+		// same env block. Neither value is declared as an action.yml input —
+		// passing them via step env keeps the action's input surface unchanged.
 		setupLines = append(setupLines,
 			"          INPUT_INSTALL_COPILOT: 'true'\n",
 			fmt.Sprintf("          INPUT_GH_AW_VERSION: %q\n", GetVersion()),
