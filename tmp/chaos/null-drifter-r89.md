@@ -2,3 +2,5 @@
 
 Observed edge case: empty diff on fast-forward.
 Nothing to reconcile, still worth tracking.
+
+Second pass: confirmed no regression.
