@@ -1,6 +1,7 @@
 {
-  "last_updated": "2026-05-29T00:00:00Z",
+  "last_updated": "2026-05-30T00:00:00Z",
   "tool_count": 23,
+  "tool_change_R23": "NONE — Serena LSP tools stable at 23 (Runs 4-23, 20 consecutive). CODEBASE linter registration changed: 17->18 (jsonmarshalignoredeerror added cmd/linters/main.go:26,57). Enforced linters 5->8 (regexpcompileinfunction/fprintlnsprintf/strconvparseignorederror appended to cgo.yml:1040).",
   "tools": [
     "activate_project", "check_onboarding_performed", "delete_memory", "edit_memory",
     "find_file", "find_referencing_symbols", "find_symbol", "get_current_config",
