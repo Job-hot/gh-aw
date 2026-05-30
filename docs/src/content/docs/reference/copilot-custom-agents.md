@@ -134,6 +134,32 @@ Perform detailed security analysis using specialized agent files and tools.
 
 Instead of (or alongside) importing agent files from `.github/agents/`, you can define agents directly inside the workflow markdown. See [Inline Sub-Agents](/gh-aw/reference/inline-sub-agents/) for the complete syntax reference, including name constraints and frontmatter fields.
 
+## Interoperability: Ignored Frontmatter Fields
+
+A single markdown file can serve as both a gh-aw workflow and a GitHub Copilot custom agent. To support this, the compiler silently ignores frontmatter fields that belong to Copilot custom agents but are not part of the gh-aw schema, rather than reporting them as validation errors.
+
+The following fields are currently ignored:
+
+| Field | Why it is ignored |
+|-------|-------------------|
+| `user-invokable` | A GitHub Copilot custom agent field that controls whether the agent can be invoked directly by a user. It has no effect in gh-aw and is stripped during compilation. |
+
+This lets you keep one source of truth — for example, a `.github/agents/my-agent.md` file that GitHub Copilot reads natively while gh-aw imports the same file as a workflow component — without the gh-aw compiler rejecting Copilot-only fields.
+
+```markdown title=".github/agents/my-agent.md"
+---
+name: My Copilot Agent
+description: Specialized prompt for code review tasks
+user-invokable: true   # Honored by Copilot, ignored by gh-aw
+---
+
+# Agent Instructions
+
+You are a specialized code review agent.
+```
+
+For the meaning of these fields, see GitHub Copilot's [custom agent documentation](https://docs.github.com/copilot).
+
 ## Related Documentation
 
 - [Imports Reference](/gh-aw/reference/imports/) - Complete import system documentation
