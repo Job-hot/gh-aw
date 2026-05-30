@@ -1,5 +1,15 @@
 # Copilot Session Insights — repo memory
 
+## 2026-05-30 snapshot
+
+- 50 sessions; 26% completion (13/50) — rebound after 05-29 dip (14%→26%)
+- 2 branches, 100% top-2: fix-pi-agent-configuration (37, 12/37=32%) + share-runner-temp-env-var (13, 1/13=8%)
+- action_required 22%, skipped 34%, failure 18%
+- BURST PATTERN BROKEN: 25-sess burst on fix-pi = 7 success/16 skipped/2 fail (NOT action_required); 7-sess share-runner burst = 100% action_required. Outcome is branch-dependent → new pattern burst_outcome_branch_dependence (supersedes synchronized_burst_saturation).
+- Bimodal: median 0.175m vs mean 2.23m; 37 sub-30s, 8 ≥5min, 3 ≥15min (max 18.95m)
+- Orphan escalations: 0; unassigned PRs 6/8=75% but all idle (0 gates) → not orphaned
+- Conversation logs empty 7th consecutive day
+
 ## 2026-05-29 snapshot
 
 - 50 sessions; 14% completion rate — recovery streak broken (22%→28%→14%)
