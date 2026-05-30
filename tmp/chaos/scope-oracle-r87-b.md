@@ -1,0 +1,2 @@
+staged line
+unstaged line
