@@ -1,17 +1,62 @@
 {
-  "updated": "2026-05-29",
-  "note": "2026-05-29 window was partial (21 runs, mid-cycle). Several 05-28 issues did not recur in-window; status updated accordingly.",
+  "updated": "2026-05-30",
+  "note": "2026-05-30 full window (56 completed runs, 91.1% success). 5 failures across 5 DISTINCT classes. Yesterday's critical cache-memory git bug did NOT recur. target=* reactivated; token-budget 429 recurred.",
   "issues": [
     {
+      "id": "token-budget-429-effective-tokens",
+      "sev": "high",
+      "cat": "cost_budget",
+      "first": "05-30",
+      "last": "05-30",
+      "n": 1,
+      "r24": 1,
+      "tracker": "#35661",
+      "title": "Token-budget 429: Linter Miner exceeded 25M effective-token cap (25.13M/25M), all retries exhausted -> run failed",
+      "detail": "Run 26690626184 (Linter Miner, copilot engine, claude-sonnet-4.6, CLI 1.0.55). After 59 turns / 2.44M raw tokens the copilot harness hit 'CAPIError: 429 Maximum effective tokens exceeded (25132364.10 / 25000000)'. It retried 4 attempts with --continue (isCAPIError400=false, not auth/model errors), each re-hitting the 429, then 'all 3 retries exhausted — giving up (exitCode=1)' after 18m25s. This is the open token-budget issue #35661 — Linter Miner is a heavy linter-aggregation workflow whose effective-token consumption now reliably blows the 25M cap. FIX OPTIONS: (a) reduce Linter Miner's per-run scope / chunk its work, (b) raise the effective-token budget for this workflow if justified, (c) make the harness fail fast on a budget-429 (retrying with --continue cannot help once the cap is hit — it just burns ~92s x3). The Failure Investigator's open #35661 covers the budget class."
+    },
+    {
+      "id": "golangci-lint-download-flake",
+      "sev": "medium",
+      "cat": "infrastructure",
+      "first": "05-30",
+      "last": "05-30",
+      "n": 1,
+      "r24": 1,
+      "title": "NEW: golangci-lint release tarball downloaded as non-gzip body -> tar exit 2 -> agent job fails before agent runs (0 turns)",
+      "detail": "Run 26690499578 (PR Sous Chef, copilot/gpt-5-mini). The 'Install development dependencies' step ran 'make install-golangci-lint' which downloads golangci-lint v2.12.2 from github releases and pipes curl|tar. The release endpoint returned a non-gzip body (truncated/HTML/rate-limited); 'tar' aborted ('not in gzip format') and the step exited 2, failing the agent job at turns=0/tok=0. Transient and shared: ANY workflow using this setup step is exposed. The Failure Investigator (26692427111) independently diagnosed this and filed a durable tracking issue. FIX (from that analysis): in the install-golangci-lint Makefile target (~Makefile:403) download to a temp file, verify gzip magic bytes / HTTP 200 before extracting, retry with backoff (3x), and pin+verify a checksum; prefer Actions cache / vendored binary."
+    },
+    {
+      "id": "safe-output-target-star-no-number",
+      "sev": "medium",
+      "cat": "safe_output",
+      "first": "05-26",
+      "last": "05-30",
+      "n": 4,
+      "r24": 1,
+      "title": "REACTIVATED: add_comment target=* with no number fails the whole safe_outputs job (Contribution Check)",
+      "detail": "Run 26689948645 (Contribution Check, copilot/gpt-5-mini). Agent SUCCEEDED but the safe_outputs step FAILED: 'Message 3 (add_comment) failed: Target is \"*\" but no item_number/issue_number/pull_request_number specified'. On a schedule event there is no triggering issue/PR, so a target=* add_comment with no number is structurally unsatisfiable, yet the agent emitted one despite an explicit prompt guardrail (contribution-check.md lines ~184-187). Two defects: (1) Process Safe Outputs fails the ENTIRE job on one invalid item, discarding the successful create_issue; (2) create_issue with temporary_id 'aw_summary' registered 0 temp ids, leaving the chained add_labels permanently deferred. Was in 'watch' (absent in the 05-29 partial window) — REACTIVATED on this full-window recurrence. FIX: (High) make Process Safe Outputs treat an invalid item as skipped-with-warning when >=1 item succeeded; (High) validate target=* at emit time via the MCP boundary so the agent self-corrects in-loop; (Med) fix temp-id registration on create_issue success."
+    },
+    {
+      "id": "claude-cli-engine-timeout",
+      "sev": "medium",
+      "cat": "engine_timeout",
+      "first": "05-30",
+      "last": "05-30",
+      "n": 2,
+      "r24": 2,
+      "title": "Claude Code CLI step timeouts: Smoke Claude (10min) and Failure Investigator (60min) both failed on 'Execute Claude Code CLI timed out'",
+      "detail": "Two claude/opus runs failed at the CLI step time limit. (A) Smoke Claude 26690105542: 'timed out after 10 minutes', 61 turns, 21x 'MCP error 0: connection closed: ... client is closing: EOF' tool-result errors; this was run_attempt 2 on the now-MERGED firewall/gateway-bump PR #35973 (firewall v0.25.58 / gateway v0.3.22); awf-squid was Healthy (NOT #35780). Because the PR is merged this is a PR-branch smoke artifact — MONITOR for the MCP-EOF cluster recurring on main. (B) [aw] Failure Investigator (6h) 26692427111: 'timed out after 60 minutes', 7.8M tokens, $7.15 (most expensive run of the day). It determined 'zero failures in the 6h window' early (~19:11) yet kept running for the full hour before the CLI step timeout. EFFICIENCY/COST concern: a failure investigator that finds nothing should converge quickly, not burn 60min/$7.15 and red-fail. Action: investigate why the Failure Investigator does not early-exit on a clean window, and consider whether 60min is the intended ceiling."
+    },
+    {
       "id": "cache-memory-git-setup-fatal",
-      "sev": "critical",
+      "sev": "resolved",
       "cat": "infrastructure",
       "first": "05-29",
       "last": "05-29",
       "n": 1,
-      "r24": 2,
-      "title": "NEW: setup_cache_memory_git.sh fails 'fatal: not in a git directory' after cache hit — both cache-memory-enabled workflows failed",
-      "detail": "Affected today: Chaos PR Bundle Fuzzer (run 26662502294) and Copilot PR Prompt Pattern Analysis (run 26662652590). Both failed identically: the 'Setup cache-memory git repository' step (step 11/13) logs 'Cache hit detected: git repository found (restored from a previous run)' then '=== Cache directory: non-git files present after restore ===' (lists cache-hit-history.json etc.) then 'fatal: not in a git directory' + exit code 128. The 'Commit cache-memory changes' step (46/51) fails the same way. Root cause: after an Actions cache restore, the cache dir contains the data files but the .git directory is missing/corrupt, yet the script's cache-hit detection asserts a git repo was found and runs git commands without re-initializing. For Chaos the agent never ran (turns=0) — the setup-step failure aborted before the agent executed. FIX: setup_cache_memory_git.sh must verify .git is a valid repo after restore (e.g. `git rev-parse --git-dir`) and re-`git init` if the restored dir has files but is not a git repo, instead of trusting the cache-hit flag."
+      "r24": 0,
+      "title": "RESOLVED/NOT-RECURRING: cache-memory git setup fatal did not recur — both affected workflows green today",
+      "detail": "Yesterday's critical setup_cache_memory_git.sh 'fatal: not in a git directory' (exit 128) failed 2/2 cache-memory workflows. Today BOTH passed: Chaos PR Bundle Fuzzer (26694560325, success, 31 turns) and Copilot PR Prompt Pattern Analysis (26694706324, success, 8 turns). No 'non-git files present after restore' / exit-128 signatures in the window. Marking resolved-for-now; the defensive fix (verify .git via rev-parse and re-init when the restored dir has files but no valid repo) is still worthwhile to prevent a cache-state regression, but no active failures."
     },
     {
       "id": "smoke-claude-missing-tools",
@@ -20,53 +65,9 @@
       "first": "05-29",
       "last": "05-29",
       "n": 1,
-      "r24": 1,
-      "title": "Smoke Claude: 2 missing/broken tools — mcpscripts-gh passthrough absent + serena symbol tools crash (Go LSP EOF)",
-      "detail": "Run 26662945808 (Smoke Claude SUCCEEDED overall). Two capability gaps surfaced: (1) mcpscripts CLI exposes no `gh` passthrough tool (only github_pr_query/issue/discussion, go, make) — test #2 worked around it with github_pr_query; (2) serena activate_project succeeded but all symbol tools (find_symbol, get_symbols_overview) return 'MCP error 0 EOF' — the Go LSP backend crashes on first query. Item (2) is a recurring serena/Go-LSP reliability concern worth a dedicated fix; item (1) may be an expected limitation (the smoke test self-corrected). Neither failed the run but both reduce Smoke Claude's coverage."
-    },
-    {
-      "id": "smoke-codex-web-fetch-missing",
-      "sev": "low",
-      "cat": "tooling",
-      "first": "05-29",
-      "last": "05-29",
-      "n": 1,
-      "r24": 1,
-      "title": "Smoke Codex: web-fetch MCP tool not available in environment",
-      "detail": "Run 26662945780 (Smoke Codex SUCCEEDED overall). The agent reported the required web-fetch MCP tool is not available. Either the smoke test should not exercise web-fetch in this environment, or web-fetch should be provisioned. Low severity (run passed)."
-    },
-    {
-      "id": "codex-model-not-found-alpha",
-      "sev": "resolved",
-      "cat": "model_config",
-      "first": "05-21",
-      "last": "05-29",
-      "n": 9,
       "r24": 0,
-      "title": "RESOLVED after 9 days: Changeset Generator moved to gpt-5.4 and SUCCEEDED",
-      "detail": "The 9-day-stuck alpha-routing failure is fixed. Changeset Generator (run 26662945784) now reads model: gpt-5.4 in aw_info.json and completed successfully (5.9m, codex engine). The one-line frontmatter edit recommended for 9 days was applied. Smoke Copilot also SUCCEEDED today (run 26662945830). Marking resolved; will confirm no recurrence over next 2 cycles."
-    },
-    {
-      "id": "safe-output-target-star-no-number",
-      "sev": "watch",
-      "cat": "safe_output",
-      "first": "05-26",
-      "last": "05-28",
-      "n": 3,
-      "r24": 0,
-      "title": "WATCH: target=* safe-output failures did NOT recur in 05-29 window",
-      "detail": "On 05-28 this affected add_comment (Contribution Check), create_pull_request_review_comment (Smoke Claude), set_issue_field (Smoke Codex). In the 05-29 window Contribution Check, Smoke Claude, and Smoke Codex all SUCCEEDED — no target=* failures observed. Note the 05-29 window is partial, so absence is not proof of fix. The MCP-boundary validation recommendation remains valuable as a durable guard. Retained in watch state."
-    },
-    {
-      "id": "daily-safe-output-optimizer-cost-escalating",
-      "sev": "resolved",
-      "cat": "cost",
-      "first": "05-21",
-      "last": "05-29",
-      "n": 8,
-      "r24": 1,
-      "title": "REVERSED: Daily Safe Output Tool Optimizer cost dropped $11.33 -> $3.07 (3.1M tokens)",
-      "detail": "Run 26662957238 today cost $3.07 on 3.13M tokens / 58 turns — a sharp drop from the 05-28 high of $11.33 (54.5M eff_tok). The 3-day escalating trend ($6.05 -> $9.90 -> $11.33) has reversed. Either the prompt-growth source was trimmed or this is downward variance. Marking resolved-for-now; keep watching for re-escalation."
+      "title": "CARRY: serena Go-LSP symbol tools crash (MCP error 0 EOF) + mcpscripts-gh passthrough absent in Smoke Claude",
+      "detail": "From 05-29 (run 26662945808). Smoke Claude FAILED today on a different cause (CLI 10-min timeout, 26690105542), so the serena/Go-LSP symbol-crash and mcpscripts-gh gaps were not separately re-evaluated. Keep the serena/gopls reliability fix and the smoke-test tool-expectation cleanup open; re-check on a clean Smoke Claude run."
     },
     {
       "id": "avenger-max-turns-env-mismatch",
@@ -76,41 +77,52 @@
       "last": "05-28",
       "n": 5,
       "r24": 0,
-      "title": "WATCH: Avenger did not run in the 05-29 window — max-turns fix status unknown",
-      "detail": "No Avenger runs appear in the 21-run 05-29 window, so the isMaxTurnsExit=true (--max-turns 25) issue could not be re-evaluated today. The recommendation to raise max-turns to ~50 in .github/workflows/avenger.md remains open and unverified. Re-check next cycle when Avenger runs."
+      "title": "WATCH: Avenger did not run in the 05-30 window — max-turns fix still unverified (absent 2 consecutive windows)",
+      "detail": "Avenger has now been absent for two consecutive windows (05-29, 05-30), so the isMaxTurnsExit=true (--max-turns 25) issue remains unverified. The recommendation to raise max-turns to ~50 in .github/workflows/avenger.md stays open. Re-evaluate on the next window in which Avenger runs."
     },
     {
-      "id": "copilot-cli-all-retries-exhausted-no-category",
+      "id": "daily-safe-output-optimizer-cost-escalating",
       "sev": "watch",
-      "cat": "harness",
-      "first": "05-28",
-      "last": "05-28",
-      "n": 1,
+      "cat": "cost",
+      "first": "05-21",
+      "last": "05-30",
+      "n": 8,
+      "r24": 1,
+      "title": "WATCH: Daily Safe Output Tool Optimizer cost $5.24 today (24.5M eff_tok) — up from $3.07 but below the $11.33 peak",
+      "detail": "Run 26695025552 cost $5.24 on 5.80M tokens / 74 turns / 24.46M eff_tok. Up from 05-29's $3.07 but still under the 05-28 peak of $11.33. The reversal held; it is the 2nd-highest-cost workflow today behind the Failure Investigator. Keep watching for re-escalation toward the prior peak."
+    },
+    {
+      "id": "codex-model-not-found-alpha",
+      "sev": "resolved",
+      "cat": "model_config",
+      "first": "05-21",
+      "last": "05-30",
+      "n": 9,
       "r24": 0,
-      "title": "WATCH: 'all retries exhausted no category' did NOT recur in 05-29 window",
-      "detail": "On 05-28 this hit Smoke Copilot, PR Sous Chef x2, Auto-Triage (3 of 4 gpt-5-mini). In the 05-29 window Smoke Copilot SUCCEEDED; PR Sous Chef was still in_progress (no failure captured); Auto-Triage did not run in-window. No instances of the signature today. Partial window — keep the harness error-classification recommendation open and re-check."
+      "title": "RESOLVED (confirmed 2 cycles): Changeset Generator on gpt-5.4 succeeded again",
+      "detail": "Changeset Generator (26690105555) succeeded again today on gpt-5.4. Second consecutive clean cycle after the 9-day alpha-routing 404. Fully closed."
     },
     {
       "id": "firewall-block-rate-spike",
       "sev": "watch",
       "cat": "network",
       "first": "05-19",
-      "last": "05-29",
-      "n": 11,
+      "last": "05-30",
+      "n": 12,
       "r24": 12,
-      "title": "Firewall: only notable block pressure today is Smoke Antigravity 10/12 (83%, by-design smoke)",
-      "detail": "The 05-29 window's firewall hotspot is Smoke Antigravity (10 blocked of 12 total) — expected for that engine's smoke test (antigravity-unleash.goog and Playwright Azure-CDN domains). No broad cross-workflow block spike in this window. Retained for trend tracking."
+      "title": "Firewall healthy at 16.6% (706/4253). Blocks dominated by (unknown) SNI + Google browser telemetry; no failure-causing blocks",
+      "detail": "Top blocked: (unknown) 555 (DNS/SNI without resolvable host), www.google.com 39, content-autofill.googleapis.com 33, accounts.google.com 25, localhost:8080 19 — all Chrome/Playwright background telemetry and safebrowsing, not workflow-affecting. Highest per-workflow pressure: Smoke Copilot 121/304, Linter Miner 63/277, Smoke Claude 35/184, Smoke Antigravity 10/12 (by-design). No firewall block caused a run failure today. Down from 24.9% (05-27); stable band."
     },
     {
-      "id": "copilot-CLI-1.0.52-stable",
+      "id": "copilot-CLI-stable",
       "sev": "resolved",
       "cat": "harness",
       "first": "05-24",
-      "last": "05-29",
-      "n": 6,
+      "last": "05-30",
+      "n": 7,
       "r24": 0,
-      "title": "Stable: 11 copilot runs in window, 0 ENOENT / 0 anthropic-beta errors",
-      "detail": "Copilot CLI remains stable for the original ENOENT/anthropic-beta failure modes across 11 copilot runs in the 05-29 window. 1.0.52 still recommended as minimum."
+      "title": "Stable: 39 copilot runs, 0 ENOENT / 0 anthropic-beta / 0 model-not-supported errors (CLI 1.0.55)",
+      "detail": "Copilot CLI 1.0.55 stable for the original ENOENT/anthropic-beta/model-not-supported failure modes across 39 copilot runs. The only copilot failures today were a token-budget 429 (Linter Miner) and an infra download flake (PR Sous Chef) — both non-CLI."
     }
   ]
 }

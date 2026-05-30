@@ -1,76 +1,90 @@
 {
-  "updated": "2026-05-29",
-  "note": "05-29 window partial (21 runs). New infra anomaly; several prior anomalies resolved or could not be re-evaluated in-window.",
+  "updated": "2026-05-30",
+  "note": "05-30 full window (56 completed runs, 91.1%). 5 failures, 5 distinct classes. Prior critical cache-memory git anomaly resolved (did not recur).",
   "anomalies": [
     {
-      "id": "cache-memory-git-setup-fatal",
+      "id": "linter-miner-token-budget-429",
       "persist": 1,
-      "state": "new-critical",
+      "state": "new-high",
+      "last": "05-30",
+      "t": "NEW: Linter Miner blew the 25M effective-token cap (25.13M/25M) -> CAPIError 429 -> all 4 --continue retries re-hit the cap -> exitCode=1 after 18m25s. Recurrence of the open token-budget class (#35661). Heavy linter-aggregation workflow now reliably exceeds the budget; needs scope reduction or a fail-fast on budget-429."
+    },
+    {
+      "id": "failure-investigator-60min-timeout-cost",
+      "persist": 1,
+      "state": "new-high",
+      "last": "05-30",
+      "t": "NEW & ironic: the [aw] Failure Investigator (6h) was the day's failure hotspot (100%, 1/1) — it timed out at the 60-min Claude CLI ceiling having spent 7.8M tokens / $7.15 (most expensive run today), AFTER concluding 'zero failures in the 6h window' early (~19:11). A no-failure window should converge in minutes; the full-hour burn + red fail is a cost/efficiency anomaly. Investigate early-exit logic."
+    },
+    {
+      "id": "golangci-lint-download-flake",
+      "persist": 1,
+      "state": "new",
+      "last": "05-30",
+      "t": "NEW: PR Sous Chef (26690499578) failed pre-agent (0 turns) when the golangci-lint release tarball downloaded as a non-gzip body and tar exited 2 in the shared 'Install development dependencies' step. Transient infra flake exposing every workflow using that setup. Fix: validate/retry/checksum the download (Makefile:403). Durable tracking issue filed by the Failure Investigator."
+    },
+    {
+      "id": "safe-output-target-star-no-number",
+      "persist": 4,
+      "state": "reactivated",
+      "last": "05-30",
+      "t": "REACTIVATED: add_comment target=* with no number failed the whole Contribution Check safe_outputs job (despite a successful create_issue). Absent in the 05-29 partial window; recurred on this full window. Plus create_issue temporary_id registered 0 temp ids, breaking add_labels chaining. Needs partial-failure tolerance + emit-time validation."
+    },
+    {
+      "id": "cache-memory-git-setup-fatal",
+      "persist": 0,
+      "state": "resolved",
       "last": "05-29",
-      "t": "NEW: Both cache-memory-enabled workflows in the window (Chaos PR Bundle Fuzzer, Copilot PR Prompt Pattern Analysis) failed identically. setup_cache_memory_git.sh detects a cache hit, claims 'git repository found', then hits 'fatal: not in a git directory' (exit 128) because the restored cache has data files but no valid .git. Failure occurs at both the setup step and the commit step. Chaos agent never executed (turns=0). Single-script fix: validate .git after restore and re-init when the dir has files but is not a git repo."
+      "t": "RESOLVED/NOT-RECURRING: yesterday's critical setup_cache_memory_git.sh 'fatal: not in a git directory' (which failed 2/2 cache-memory workflows) did NOT recur. Today both Chaos PR Bundle Fuzzer and Copilot PR Prompt Pattern Analysis succeeded. Defensive .git-validation fix still advisable but no active failures."
+    },
+    {
+      "id": "smoke-claude-cli-timeout-mcp-eof",
+      "persist": 1,
+      "state": "monitor",
+      "last": "05-30",
+      "t": "Smoke Claude (26690105542) failed on a 10-min Claude CLI timeout with 21x 'MCP error 0: client is closing: EOF' — run_attempt 2 on the now-MERGED firewall/gateway-bump PR #35973 (awf-squid Healthy, not #35780). PR-branch artifact; monitor whether the MCP-EOF cluster recurs on main after the gateway bump landed."
     },
     {
       "id": "codex-model-not-found-alpha",
       "persist": 0,
       "state": "resolved",
-      "last": "05-29",
-      "t": "RESOLVED after 9 days. Changeset Generator now on model: gpt-5.4 (confirmed in aw_info.json run 26662945784) and SUCCEEDED. The single frontmatter edit recommended daily for 9 days was applied. Smoke Copilot also passed today."
+      "last": "05-30",
+      "t": "RESOLVED (2nd clean cycle): Changeset Generator on gpt-5.4 succeeded again. Fully closed."
     },
     {
       "id": "daily-safe-output-optimizer-cost-trend",
-      "persist": 0,
-      "state": "reversed",
-      "last": "05-29",
-      "t": "REVERSED: cost fell $11.33 -> $3.07 (54.5M -> 3.1M eff_tok). The +87% 3-day escalation broke. Watch for re-escalation but no longer escalating."
-    },
-    {
-      "id": "safe-output-target-star-spreading",
-      "persist": 3,
-      "state": "quiet-partial-window",
-      "last": "05-28",
-      "t": "Did not recur in the 05-29 window: Contribution Check, Smoke Claude, Smoke Codex all passed. Window is partial so this is not confirmation of a fix. MCP-boundary validator recommendation still recommended as durable guard."
+      "persist": 1,
+      "state": "watch",
+      "last": "05-30",
+      "t": "Cost ticked back up to $5.24 (24.5M eff_tok) from $3.07, still below the $11.33 peak. 2nd-highest-cost workflow today. Watch for re-escalation."
     },
     {
       "id": "avenger-max-turns-env-mismatch",
       "persist": 5,
       "state": "not-in-window",
       "last": "05-28",
-      "t": "Avenger did not run in the 21-run window; isMaxTurnsExit issue unverified today. max-turns:50 recommendation remains open. Re-check next cycle."
-    },
-    {
-      "id": "copilot-cli-all-retries-exhausted-no-category",
-      "persist": 1,
-      "state": "quiet-partial-window",
-      "last": "05-28",
-      "t": "No 'all retries exhausted no category' signatures in the 05-29 window. Smoke Copilot succeeded; PR Sous Chef was in_progress (not failed); Auto-Triage absent. Keep harness error-classification rec open."
-    },
-    {
-      "id": "smoke-claude-serena-go-lsp-eof",
-      "persist": 1,
-      "state": "new",
-      "last": "05-29",
-      "t": "NEW: serena symbol tools (find_symbol/get_symbols_overview) crash with 'MCP error 0 EOF' on first query in Smoke Claude — Go LSP backend appears to crash. activate_project succeeded. Run passed overall but symbol-search coverage lost. Worth a dedicated serena/Go-LSP reliability fix."
+      "t": "Avenger absent two consecutive windows (05-29, 05-30); max-turns issue unverified. max-turns:50 recommendation remains open."
     },
     {
       "id": "daily-success-rate-trend",
-      "persist": 7,
-      "state": "watch",
-      "last": "05-29",
-      "t": "89.5% completion rate in the 05-29 window (17/19 completed; 2 in_progress). 11-day trend: 92.78 -> 88.89 -> 85.9 -> 75.6 -> 41.6 -> 81.1 -> 94.7 -> 85.7 -> 90.9 -> 81.0 -> 89.5. Within normal band. Window is partial."
+      "persist": 8,
+      "state": "healthy",
+      "last": "05-30",
+      "t": "91.1% completion (51/56) on a full window. 12-day trend: 92.78 -> 88.89 -> 85.9 -> 75.6 -> 41.6 -> 81.1 -> 94.7 -> 85.7 -> 90.9 -> 81.0 -> 89.5 -> 91.1. Above the recent band; 5 failures all distinct one-offs, no systemic regression."
     },
     {
       "id": "high-cost-runs",
-      "persist": 11,
+      "persist": 12,
       "state": "persistent",
-      "last": "05-29",
-      "t": "Top eff_tokens in window: Smoke Copilot 3.17M, Daily Safe Output Tool Optimizer 3.13M ($3.07), PR Code Quality Reviewer 1.65M, Daily Caveman Optimizer 1.35M ($1.87), Smoke Claude 1.24M ($1.45). Cost only reported for claude engine; copilot/codex/gemini cost not in run_summary. Total measured claude cost in window ~$7.18 (partial)."
+      "last": "05-30",
+      "t": "Top cost (claude-measured): Failure Investigator $7.15 (timed out), Daily Safe Output Tool Optimizer $5.24, Daily Code Metrics $2.65, Smoke Claude $2.50 (timed out), Team Evolution $1.52. Top eff_tok: Linter Miner 25.1M (429-failed), Daily Safe Output Optimizer 24.5M, Failure Investigator 22.6M, Testify 21.3M, Cache Strategy 20.6M. Note: copilot/codex/gemini cost not reported (EstimatedCost=0), so total $24.55 is claude-biased."
     },
     {
       "id": "smoke-antigravity-firewall-block",
-      "persist": 1,
+      "persist": 2,
       "state": "by-design",
-      "last": "05-29",
-      "t": "Smoke Antigravity 10/12 blocked (83%) — flagged as network hotspot but expected for the antigravity smoke test (antigravity-unleash.goog + Playwright Azure-CDN). No action."
+      "last": "05-30",
+      "t": "Smoke Antigravity 10/12 blocked (83%) again — expected (antigravity-unleash.goog + Playwright Azure-CDN). No action."
     }
   ]
 }

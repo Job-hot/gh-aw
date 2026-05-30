@@ -1,47 +1,48 @@
 {
-  "updated": "2026-05-29",
+  "updated": "2026-05-30",
   "recs": [
     {
-      "id": "fix-cache-memory-git-setup-script",
-      "p": "critical",
-      "iss": "cache-memory-git-setup-fatal",
-      "s": "NEW & ACTIONABLE: setup_cache_memory_git.sh fails 'fatal: not in a git directory' (exit 128) after a cache hit when the restored cache dir has data files but no valid .git. Today this failed 2/2 cache-memory-enabled workflows (Chaos PR Bundle Fuzzer, Copilot PR Prompt Pattern Analysis). The same fault also fails the downstream 'Commit cache-memory changes' step. FIX: after restore, verify the repo with `git -C \"$GH_AW_CACHE_DIR\" rev-parse --git-dir` (or test -d .git) and, when files are present but it is not a valid git repo, `git init` + re-add the remote/branch instead of trusting the cache-hit flag and immediately running git commands. Add a regression guard for the 'non-git files present after restore' branch. This is the single highest-value fix in the queue today (one script, restores 2 workflows)."
+      "id": "fix-linter-miner-token-budget-429",
+      "p": "high",
+      "iss": "token-budget-429-effective-tokens",
+      "tracker": "#35661",
+      "s": "NEW & ACTIONABLE: Linter Miner (run 26690626184) failed with CAPIError 429 'Maximum effective tokens exceeded (25.13M/25M)' after exhausting 4 --continue retries (each just re-hits the cap, wasting ~5min). Two-part fix: (1) Reduce Linter Miner's effective-token footprint — chunk its linter-aggregation scope, trim per-file context, or split into multiple smaller runs so a single run stays under 25M eff_tok; (2) Harness change: detect the 429 'Maximum effective tokens exceeded' signature and FAIL FAST instead of retrying with --continue, since continuation cannot recover a hard budget cap. Ties into open #35661 (token-budget). This is the single clearest actionable failure today."
+    },
+    {
+      "id": "harden-golangci-lint-download",
+      "p": "medium",
+      "iss": "golangci-lint-download-flake",
+      "s": "NEW & ACTIONABLE: PR Sous Chef (26690499578) failed pre-agent because 'make install-golangci-lint' piped a non-gzip golangci-lint v2.12.2 release body into tar (exit 2) in the shared 'Install development dependencies' step, killing the agent at 0 turns. Harden the install-golangci-lint Makefile target (~Makefile:403): download to a temp file, verify HTTP 200 + gzip magic bytes before extracting, retry with backoff (3 attempts), pin and verify a checksum, and prefer the Actions cache / a vendored binary over the live release endpoint each run. Shared step => fixes flake for all dependent workflows. The Failure Investigator already filed a durable tracking issue for this."
+    },
+    {
+      "id": "harden-safe-output-target-validation",
+      "p": "high",
+      "iss": "safe-output-target-star-no-number",
+      "s": "REACTIVATED & ACTIONABLE: Contribution Check (26689948645) safe_outputs step failed because one add_comment had target=* with no number on a schedule event, hard-failing the whole job and discarding a successful create_issue. Fix (two parts): (1) Make 'Process Safe Outputs' treat an individual invalid item as skipped-with-warning when >=1 item succeeded, so one malformed add_comment cannot nullify a good create_issue; (2) Validate target=* at the MCP emit boundary — reject an add_comment whose context cannot resolve to a concrete issue/PR number, returning a tool error so the agent self-corrects in-loop rather than failing post-run. Separately investigate why create_issue with temporary_id 'aw_summary' registered 0 temp ids (broke add_labels chaining). Prompt-only guardrails proved insufficient (the model violated an explicit instruction)."
+    },
+    {
+      "id": "investigate-failure-investigator-early-exit",
+      "p": "medium",
+      "iss": "claude-cli-engine-timeout",
+      "s": "NEW: The [aw] Failure Investigator (6h) (26692427111) determined 'zero failures in the 6h window' early (~19:11) but ran the full 60 minutes / 7.8M tokens / $7.15 — the most expensive run of the day — and red-failed on the 60-min Claude CLI timeout. Investigate why it does not early-exit/converge on a clean window (it should emit a short noop/'no failures' report and stop). Confirm whether the 60-min step ceiling is intended; if a clean window legitimately needs <5min, the hour-long burn is wasted cost. Smoke Claude's 10-min timeout (26690105542) is a separate PR-branch smoke artifact on the merged gateway-bump PR #35973 — monitor the MCP 'client is closing: EOF' cluster for recurrence on main, no fix filed."
+    },
+    {
+      "id": "verify-avenger-max-turns-next-cycle",
+      "p": "medium",
+      "iss": "avenger-max-turns-env-mismatch",
+      "s": "CARRIED: Avenger absent two consecutive windows (05-29, 05-30); --max-turns 25 / isMaxTurnsExit issue still unverified. Keep the 'set max-turns: ~50 in .github/workflows/avenger.md' recommendation open; re-evaluate on the next window in which Avenger runs."
     },
     {
       "id": "investigate-serena-go-lsp-eof",
       "p": "medium",
       "iss": "smoke-claude-missing-tools",
-      "s": "serena find_symbol/get_symbols_overview return 'MCP error 0 EOF' on first query in Smoke Claude (run 26662945808) — the Go LSP backend crashes after a successful activate_project. Action: capture serena/gopls stderr in the smoke run, check gopls version compatibility with the repo's Go toolchain, and confirm whether the LSP needs a warm-up/index step before symbol queries. Run passed overall so this is medium, but it silently removes symbol-search coverage from the Claude smoke test."
-    },
-    {
-      "id": "clarify-mcpscripts-gh-and-web-fetch-availability",
-      "p": "low",
-      "iss": "smoke-codex-web-fetch-missing",
-      "s": "Two tool-availability gaps surfaced in smoke tests: (1) mcpscripts CLI has no `gh` passthrough (Smoke Claude expected mcpscripts-gh; only github_pr_query/issue/discussion/go/make exist) and (2) web-fetch MCP tool is absent for Smoke Codex. Both runs passed. Decide per tool: either provision the tool or update the smoke-test prompt to stop expecting it, so missing-tool noise stops being reported."
-    },
-    {
-      "id": "verify-avenger-max-turns-next-cycle",
-      "p": "high",
-      "iss": "avenger-max-turns-env-mismatch",
-      "s": "CARRIED: Avenger did not run in today's window, so the --max-turns 25 / isMaxTurnsExit issue is unverified. Keep the recommendation to set max-turns: ~50 in .github/workflows/avenger.md open and re-evaluate on the next cycle in which Avenger runs."
-    },
-    {
-      "id": "harden-safe-output-target-validation-everywhere",
-      "p": "medium",
-      "iss": "safe-output-target-star-no-number",
-      "s": "CARRIED (no recurrence in partial window): target=* without explicit number affected 3 tools on 05-28 but none failed today. Keep the MCP-boundary validator recommendation: reject any target=* tool call whose context cannot auto-resolve to an issue/PR, with an error naming the missing field, so the agent self-corrects instead of failing post-run. Confirm over a full-day window before closing."
-    },
-    {
-      "id": "confirm-changeset-generator-fix",
-      "p": "low",
-      "iss": "codex-model-not-found-alpha",
-      "s": "RESOLVED today: Changeset Generator on gpt-5.4 succeeded after 9 days stuck. Action: confirm no recurrence over the next 2 cycles, then this issue can be fully closed. No code change needed."
+      "s": "CARRIED: serena find_symbol/get_symbols_overview return 'MCP error 0 EOF' on first query (Go LSP backend crash after activate_project). Capture serena/gopls stderr, check gopls/Go-toolchain compatibility, and confirm whether a warm-up/index step is needed before symbol queries. Re-check on a clean Smoke Claude run (today's Smoke Claude failed on an unrelated CLI timeout)."
     },
     {
       "id": "watch-daily-safe-output-optimizer-cost",
       "p": "low",
       "iss": "daily-safe-output-optimizer-cost-escalating",
-      "s": "REVERSED today ($11.33 -> $3.07). No action; keep watching for re-escalation of the prompt-growth pattern."
+      "s": "WATCH: cost ticked back up to $5.24 (24.5M eff_tok) from $3.07, still below the $11.33 peak. No action; monitor for re-escalation of the prompt-growth pattern toward the prior high."
     }
   ]
 }

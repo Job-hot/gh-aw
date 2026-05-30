@@ -1,29 +1,31 @@
 {
-  "updated": "2026-05-29",
-  "date": "2026-05-29",
-  "partial": true,
+  "updated": "2026-05-30",
+  "date": "2026-05-30",
+  "partial": false,
   "totals": {
-    "r": 21,
-    "s": 17,
-    "f": 2,
-    "in_prog": 2,
-    "rate": 89.5,
-    "tok": 14553338,
-    "eff_tok": 85252759,
-    "$": 7.18,
+    "r": 56,
+    "s": 51,
+    "f": 5,
+    "in_prog": 1,
+    "rate": 91.1,
+    "tok": 49889280,
+    "eff_tok": 366326011,
+    "$": 24.55,
     "$_partial": true,
-    "$_note": "claude-only measured EstimatedCost; copilot/codex/gemini cost not reported in run_summary",
-    "turns": 317,
-    "min": 157,
-    "errors": 2,
-    "fw_note": "smoke-antigravity 10/12 blocked (83%, by-design)",
-    "safe_items": 24,
-    "github_api": 134
+    "$_note": "claude-engine measured EstimatedCost; copilot/codex/gemini cost not reported in run_summary (EstimatedCost=0)",
+    "turns": 1100,
+    "min": 472,
+    "errors": 0,
+    "fw_req": 4253,
+    "fw_blk": 706,
+    "fw_blk_pct": 16.6,
+    "safe_items": 28,
+    "github_api": 313
   },
   "engines": {
-    "copilot": 11,
-    "claude": 5,
-    "codex": 2,
+    "copilot": 39,
+    "claude": 12,
+    "codex": 3,
     "antigravity": 1,
     "gemini": 1,
     "pi": 1
@@ -38,7 +40,8 @@
     {"d": "2026-05-25", "r": 174, "s": 162, "rate": 94.7, "$": 26.2265, "tok": 56839455},
     {"d": "2026-05-26", "r": 49, "s": 42, "rate": 85.7, "$": 26.366459, "tok": 54489070},
     {"d": "2026-05-27", "r": 37, "s": 30, "rate": 90.9, "$": 12.0, "tok": 17283384, "partial": true},
-    {"d": "2026-05-28", "r": 64, "s": 47, "rate": 81.0, "$": 29.354164500000003, "tok": 48923104, "partial": true},
-    {"d": "2026-05-29", "r": 21, "s": 17, "rate": 89.5, "$": 7.18, "tok": 14553338, "partial": true, "note": "small mid-cycle window; $ is claude-only"}
+    {"d": "2026-05-28", "r": 64, "s": 47, "rate": 81.0, "$": 29.354164, "tok": 48923104, "partial": true},
+    {"d": "2026-05-29", "r": 21, "s": 17, "rate": 89.5, "$": 7.18, "tok": 14553338, "partial": true, "note": "small mid-cycle window; $ is claude-only"},
+    {"d": "2026-05-30", "r": 56, "s": 51, "rate": 91.1, "$": 24.55, "tok": 49889280, "note": "full window; $ claude-measured (copilot/codex cost not reported)"}
   ]
 }
