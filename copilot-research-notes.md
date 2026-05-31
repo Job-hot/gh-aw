@@ -1,5 +1,24 @@
 # Copilot CLI Research Notes (Last 6 runs)
 
+### 2026-05-31 (Run 26703913319) — This Run
+- 236 total workflows (same as 05-27); 97 Copilot (41%), 51 Claude, 9 Codex
+- **max-continuations**: 5 workflows (unchanged — persistently underused)
+- **max-runs**: not checked but likely similar
+- **bare mode**: 12 workflows (slight growth)
+- **cache-memory**: 116 workflows (all engines — significant growth from 95)
+- **sandbox AWF**: 23 workflows (growth from 16)
+- **model: small**: 11 copilot-specific; model: large: 1; 86 no explicit model
+- **mcp-scripts**: 12 workflows (stable)
+- **engine.agent**: 20+ workflows using custom agent files
+- **engine.args**: 0 (PERSISTENT GAP, 14th+ consecutive run with ZERO usage)
+- **engine.api-target**: 0 (PERSISTENT GAP, 14th consecutive run)
+- **engine.harness**: 0 (never used)
+- **BYOK**: 1 workflow (NEW! First time observed - daily-byok-ollama test)
+- **network configured copilot**: 49/97 workflows (49% with network restrictions, 51% without)
+- **github toolsets [default]**: 34 workflows; [default, issues]: 7; [default, discussions]: 7
+- **Unused agent files**: grumpy-reviewer, interactive-agent-designer, w3c-specification-writer, create-safe-output-type, custom-engine-implementation (5 files unused)
+- Discussion created: "Copilot CLI Deep Research - 2026-05-31"
+
 ### 2026-05-25 (Run 26384338048) — This Run
 - 235 total workflows (+2); 97 Copilot (41%), 51 Claude, 10 Codex
 - **max-continuations**: 12 workflows (↑ from 5 — significant growth, teams embracing longer autonomous runs)
