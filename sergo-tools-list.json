@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-05-30T00:00:00Z",
+  "last_updated": "2026-05-31T00:00:00Z",
   "tool_count": 23,
-  "tool_change_R23": "NONE — Serena LSP tools stable at 23 (Runs 4-23, 20 consecutive). CODEBASE linter registration changed: 17->18 (jsonmarshalignoredeerror added cmd/linters/main.go:26,57). Enforced linters 5->8 (regexpcompileinfunction/fprintlnsprintf/strconvparseignorederror appended to cgo.yml:1040).",
+  "tool_change_R24": "NONE — Serena LSP stable at 23 (R4-24, 21 consec). Registered linters UNCHANGED at 18 (cmd/linters/main.go:41-58). CI ENFORCEMENT 8->9: maintainer appended -jsonmarshalignoredeerror to cgo.yml:1040 (sg23a1 R23 finding landed within the week — 3rd consec). All 19 jsonmarshal sites triaged.",
   "tools": [
     "activate_project", "check_onboarding_performed", "delete_memory", "edit_memory",
     "find_file", "find_referencing_symbols", "find_symbol", "get_current_config",
@@ -11,6 +11,6 @@
     "think_about_collected_information", "think_about_task_adherence",
     "think_about_whether_you_are_done", "write_memory"
   ],
-  "params": "activate_project --project (NOT --path). find_symbol --name_path_pattern. find_referencing_symbols --name_path + --relative_path FILE. search_for_pattern --substring_pattern. JSON stdin pipe `.` sentinel for multi-param.",
-  "gotchas": "Bare receiver-method names return [] from find_symbol - must qualify '(*Type).method'. get_symbols_overview reveals qualified form. 23 tools stable Runs 4-22 (19 consec). find_symbol broad 70s+, prefer Grep. activate_project ~1.3s warm, ~7.3s cold (R22). Bash sandbox blocks go build, find/ls/mkdir outside repo dir. Compound mkdir && ls split-checked. gh CLI v2.83.0 'Malformed version:' on gh issue list --json/--state — use gh api search/issues. Search API returns recursive envelope, filter --jq '.items[]|select(.html_url)'. safeoutputs `. < file.json` works first try. R20: create-issue.expires:7d confirmed auto-closes sergo trackers (#34368, #34580 closed after ~3 days). R21: sergo trackers may also be closed-completed by pelikhan when fix lands (#35130, #35131 closed within hours, NOT 7d). R22: sergo trackers MAY ALSO be closed not_planned within ~2 min of creation (#35389/#35390/#35391 R21 issues — fast manual dismissal). Repo-memory /tmp/gh-aw/repo-memory/default/ is OUTSIDE allowed write dir — Bash blocks mkdir/ls there, but Glob/Read/Write tools work. sed blocked even for safe ranges — use Read with offset/limit instead. 17 registered linters total (cmd/linters/main.go): 5 ENFORCED (errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib), 12 UNENFORCED."
+  "params": "activate_project --project (NOT --path). find_symbol --name_path_pattern. find_referencing_symbols --name_path + --relative_path FILE. search_for_pattern --substring_pattern. JSON stdin pipe `.` sentinel.",
+  "gotchas": "Bare receiver-method names return [] from find_symbol — qualify '(*Type).method'. find_symbol broad 70s+ (prefer Grep). activate_project ~1.3s warm/~7.3s cold. Bash sandbox blocks go build, find-exec, mkdir/ls outside repo, multi-stmt compounds, sed, for-loops, git on /tmp. gh issue list --json 'Malformed version:' — use gh api search/issues. safeoutputs `. < file.json` works. Repo-memory /tmp/gh-aw/repo-memory/default/ OUTSIDE write dir — bash blocked, use Glob/Read/Write tools; append via Edit on unique tail to keep patch <10KB. /tmp/gh-aw/agent/ writable. Dynamic Workflow tool needs manual review (no auto-run). 18 linters: R24 9 enforced, 9 unenforced."
 }
