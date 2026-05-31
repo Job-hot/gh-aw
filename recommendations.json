@@ -1,48 +1,54 @@
 {
-  "updated": "2026-05-30",
+  "updated": "2026-05-31",
   "recs": [
     {
-      "id": "fix-linter-miner-token-budget-429",
+      "id": "harden-safe-output-partial-failure-tolerance",
+      "p": "high",
+      "iss": "safe-output-partial-failure-intolerance",
+      "s": "TOP PRIORITY (escalating, 4 workflows since 05-26, 2 today). Make 'Process Safe Outputs' treat an individual failed/invalid item as skipped-with-warning whenever >=1 item in the same batch succeeded, instead of red-failing the entire job. Today this nullified 11 successful update_issue items (Sub-Issue Closer 26706621748) and 3 successful create_issue + 1 create_discussion (LintMonster 26702419759). Two supporting fixes: (1) validate target=* at the MCP emit boundary — reject an add_comment whose context cannot resolve to a concrete issue/PR number (e.g. schedule events) so the agent self-corrects in-loop; prompt-only guardrails have repeatedly failed. (2) Investigate why assign_to_agent to 'copilot' returned GitHub API 'Request failed' for #36048/#36049 — endpoint, permission, or eventual-consistency right after create_issue."
+    },
+    {
+      "id": "fix-token-budget-429-heavy-workflows",
       "p": "high",
       "iss": "token-budget-429-effective-tokens",
       "tracker": "#35661",
-      "s": "NEW & ACTIONABLE: Linter Miner (run 26690626184) failed with CAPIError 429 'Maximum effective tokens exceeded (25.13M/25M)' after exhausting 4 --continue retries (each just re-hits the cap, wasting ~5min). Two-part fix: (1) Reduce Linter Miner's effective-token footprint — chunk its linter-aggregation scope, trim per-file context, or split into multiple smaller runs so a single run stays under 25M eff_tok; (2) Harness change: detect the 429 'Maximum effective tokens exceeded' signature and FAIL FAST instead of retrying with --continue, since continuation cannot recover a hard budget cap. Ties into open #35661 (token-budget). This is the single clearest actionable failure today."
+      "s": "RECURRING 2nd consecutive day, now a 2nd workflow. Daily Firewall Logs Collector (26702042593) blew the 25M effective-token cap (25.41M/25M) exactly as Linter Miner did 05-30 (25.13M/25M), and Documentation Noob Tester reached 25.03M and barely passed. Two-part fix: (1) Reduce the effective-token footprint of heavy daily-aggregation workflows (Daily Firewall Logs, Linter Miner, Documentation Noob Tester) — chunk scope, trim per-item context, or split into smaller runs to stay under 25M eff_tok. (2) Harness: detect the 429 'Maximum effective tokens exceeded' signature and FAIL FAST rather than retrying 4x with --continue (continuation cannot recover a hard cap; it wastes ~90s x4). Ties into open #35661."
+    },
+    {
+      "id": "fix-threat-detection-missing-prompt",
+      "p": "medium",
+      "iss": "threat-detection-missing-prompt",
+      "s": "NEW & ACTIONABLE. Code Simplifier (26703540010) failed its detection job because the threat-detection prompt.txt was missing — the setup 'cp /tmp/gh-aw/aw-prompts/prompt.txt ... || true' silently masked the missing source, then the detection agent hard-failed ('Prompt file not found') with exit 1 and no THREAT_DETECTION_RESULT. Fix the detection harness: do NOT mask the cp with '|| true'; verify the prompt file exists (and is non-empty) before invoking the detection agent, and either fail with a clear actionable error or regenerate the prompt. Shared step => protects every create_pull_request workflow."
+    },
+    {
+      "id": "guard-pr-branch-deleted-checkout",
+      "p": "low",
+      "iss": "pr-branch-deleted-race",
+      "s": "TRANSIENT/external. Test Quality Sentinel (26700870332) and Design Decision Gate (26700870336) failed because PR head branch 'copilot/update-agentic-workflows-and-skill-file' was deleted/merged before they checked out ('couldn't find remote ref'). Optional hardening: at checkout, detect a missing PR head ref and exit with a NEUTRAL/skip conclusion rather than a red failure, so a branch deleted mid-flight does not count as a workflow failure. Low priority — no code defect, just noise reduction."
+    },
+    {
+      "id": "watch-go-logger-enhancement-cost",
+      "p": "low",
+      "iss": "go-logger-enhancement-cost-outlier",
+      "s": "WATCH: Go Logger Enhancement (26703472897, claude/opus) was the day's most expensive run at $8.30 / 41.9M eff_tok / 117 turns — a new daily-cost high, but it SUCCEEDED (value-for-cost, not waste). No action; monitor whether the 117-turn / 41.9M-eff heavy tail repeats or grows."
     },
     {
       "id": "harden-golangci-lint-download",
-      "p": "medium",
+      "p": "low",
       "iss": "golangci-lint-download-flake",
-      "s": "NEW & ACTIONABLE: PR Sous Chef (26690499578) failed pre-agent because 'make install-golangci-lint' piped a non-gzip golangci-lint v2.12.2 release body into tar (exit 2) in the shared 'Install development dependencies' step, killing the agent at 0 turns. Harden the install-golangci-lint Makefile target (~Makefile:403): download to a temp file, verify HTTP 200 + gzip magic bytes before extracting, retry with backoff (3 attempts), pin and verify a checksum, and prefer the Actions cache / a vendored binary over the live release endpoint each run. Shared step => fixes flake for all dependent workflows. The Failure Investigator already filed a durable tracking issue for this."
+      "s": "PREVENTIVE (did not recur 05-31). Keep open: harden the install-golangci-lint Makefile target (~Makefile:403) — download to a temp file, verify HTTP 200 + gzip magic bytes before extracting, retry with backoff (3x), pin+verify a checksum, prefer Actions cache / vendored binary. Prevents the 05-30 non-gzip/tar exit-2 flake from recurring across all dependent workflows."
     },
     {
-      "id": "harden-safe-output-target-validation",
-      "p": "high",
-      "iss": "safe-output-target-star-no-number",
-      "s": "REACTIVATED & ACTIONABLE: Contribution Check (26689948645) safe_outputs step failed because one add_comment had target=* with no number on a schedule event, hard-failing the whole job and discarding a successful create_issue. Fix (two parts): (1) Make 'Process Safe Outputs' treat an individual invalid item as skipped-with-warning when >=1 item succeeded, so one malformed add_comment cannot nullify a good create_issue; (2) Validate target=* at the MCP emit boundary — reject an add_comment whose context cannot resolve to a concrete issue/PR number, returning a tool error so the agent self-corrects in-loop rather than failing post-run. Separately investigate why create_issue with temporary_id 'aw_summary' registered 0 temp ids (broke add_labels chaining). Prompt-only guardrails proved insufficient (the model violated an explicit instruction)."
+      "id": "verify-avenger-max-turns-next-cycle",
+      "p": "low",
+      "iss": "avenger-max-turns-env-mismatch",
+      "s": "CARRIED: Avenger absent 3 consecutive windows (05-29/30/31); --max-turns 25 issue still unverified. Keep the 'set max-turns: ~50 in .github/workflows/avenger.md' recommendation open; re-evaluate when Avenger next runs."
     },
     {
       "id": "investigate-failure-investigator-early-exit",
       "p": "medium",
       "iss": "claude-cli-engine-timeout",
-      "s": "NEW: The [aw] Failure Investigator (6h) (26692427111) determined 'zero failures in the 6h window' early (~19:11) but ran the full 60 minutes / 7.8M tokens / $7.15 — the most expensive run of the day — and red-failed on the 60-min Claude CLI timeout. Investigate why it does not early-exit/converge on a clean window (it should emit a short noop/'no failures' report and stop). Confirm whether the 60-min step ceiling is intended; if a clean window legitimately needs <5min, the hour-long burn is wasted cost. Smoke Claude's 10-min timeout (26690105542) is a separate PR-branch smoke artifact on the merged gateway-bump PR #35973 — monitor the MCP 'client is closing: EOF' cluster for recurrence on main, no fix filed."
-    },
-    {
-      "id": "verify-avenger-max-turns-next-cycle",
-      "p": "medium",
-      "iss": "avenger-max-turns-env-mismatch",
-      "s": "CARRIED: Avenger absent two consecutive windows (05-29, 05-30); --max-turns 25 / isMaxTurnsExit issue still unverified. Keep the 'set max-turns: ~50 in .github/workflows/avenger.md' recommendation open; re-evaluate on the next window in which Avenger runs."
-    },
-    {
-      "id": "investigate-serena-go-lsp-eof",
-      "p": "medium",
-      "iss": "smoke-claude-missing-tools",
-      "s": "CARRIED: serena find_symbol/get_symbols_overview return 'MCP error 0 EOF' on first query (Go LSP backend crash after activate_project). Capture serena/gopls stderr, check gopls/Go-toolchain compatibility, and confirm whether a warm-up/index step is needed before symbol queries. Re-check on a clean Smoke Claude run (today's Smoke Claude failed on an unrelated CLI timeout)."
-    },
-    {
-      "id": "watch-daily-safe-output-optimizer-cost",
-      "p": "low",
-      "iss": "daily-safe-output-optimizer-cost-escalating",
-      "s": "WATCH: cost ticked back up to $5.24 (24.5M eff_tok) from $3.07, still below the $11.33 peak. No action; monitor for re-escalation of the prompt-growth pattern toward the prior high."
+      "s": "CARRIED (no 05-31 recurrence yet; the window's Failure Investigator run 26707041713 was still in-progress at audit time). Re-confirm next window whether the [aw] Failure Investigator early-exits on a clean (zero-failure) window instead of burning the full 60-min Claude CLI ceiling and red-failing, as seen 05-30 ($7.15 wasted)."
     }
   ]
 }

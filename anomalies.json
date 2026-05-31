@@ -1,90 +1,76 @@
 {
-  "updated": "2026-05-30",
-  "note": "05-30 full window (56 completed runs, 91.1%). 5 failures, 5 distinct classes. Prior critical cache-memory git anomaly resolved (did not recur).",
+  "updated": "2026-05-31",
+  "note": "05-31 full window (59 completed runs, 89.8%). 6 failures, 5 distinct classes. Two recurrence classes strengthened (token-budget-429 #35661 2nd day; safe-output partial-failure intolerance 2 more workflows). 1 new infra (threat-detection prompt missing). 2 transient PR-branch-deleted-race failures.",
   "anomalies": [
     {
-      "id": "linter-miner-token-budget-429",
-      "persist": 1,
-      "state": "new-high",
-      "last": "05-30",
-      "t": "NEW: Linter Miner blew the 25M effective-token cap (25.13M/25M) -> CAPIError 429 -> all 4 --continue retries re-hit the cap -> exitCode=1 after 18m25s. Recurrence of the open token-budget class (#35661). Heavy linter-aggregation workflow now reliably exceeds the budget; needs scope reduction or a fail-fast on budget-429."
+      "id": "safe-output-partial-failure-intolerance",
+      "persist": 6,
+      "state": "escalating",
+      "last": "05-31",
+      "t": "ESCALATING & highest-leverage: one failed safe-output item red-fails the WHOLE safe_outputs job even when others succeeded. Today TWO workflows: Sub-Issue Closer (11 add_comment target=* no-number failed despite 11 successful update_issue) and LintMonster (assign_to_agent #36048/#36049 API errors despite 3 create_issue + 1 create_discussion succeeding). Class now spans 4 workflows since 05-26. Needs partial-failure tolerance (skip-with-warning when >=1 item ok) + emit-time target=* validation + investigate assign_to_agent API failure."
     },
     {
-      "id": "failure-investigator-60min-timeout-cost",
-      "persist": 1,
-      "state": "new-high",
-      "last": "05-30",
-      "t": "NEW & ironic: the [aw] Failure Investigator (6h) was the day's failure hotspot (100%, 1/1) — it timed out at the 60-min Claude CLI ceiling having spent 7.8M tokens / $7.15 (most expensive run today), AFTER concluding 'zero failures in the 6h window' early (~19:11). A no-failure window should converge in minutes; the full-hour burn + red fail is a cost/efficiency anomaly. Investigate early-exit logic."
+      "id": "token-budget-429-effective-tokens",
+      "persist": 2,
+      "state": "recurring-high",
+      "last": "05-31",
+      "t": "RECURRING (2nd consecutive day, different workflow): Daily Firewall Logs Collector blew the 25M effective-token cap (25.41M/25M) -> CAPIError 429 -> 4 --continue retries re-hit the cap -> exitCode=1 after 18m25s. Same signature as 05-30 Linter Miner (25.13M/25M). Documentation Noob Tester hit 25.03M eff_tok and barely SUCCEEDED — at the cliff edge. Open #35661. Needs scope chunking on heavy daily-aggregation workflows + harness fail-fast on budget-429."
     },
     {
-      "id": "golangci-lint-download-flake",
+      "id": "threat-detection-missing-prompt",
       "persist": 1,
       "state": "new",
-      "last": "05-30",
-      "t": "NEW: PR Sous Chef (26690499578) failed pre-agent (0 turns) when the golangci-lint release tarball downloaded as a non-gzip body and tar exited 2 in the shared 'Install development dependencies' step. Transient infra flake exposing every workflow using that setup. Fix: validate/retry/checksum the download (Makefile:403). Durable tracking issue filed by the Failure Investigator."
+      "last": "05-31",
+      "t": "NEW infra: Code Simplifier (26703540010) agent succeeded and produced a valid PR patch, but the DETECTION job failed because the threat-detection prompt.txt was missing (cp masked by '|| true') -> detection agent exit 1 -> no THREAT_DETECTION_RESULT -> parse fail -> run red. Shared detection harness exposes any create_pull_request workflow with a missing prompt at detection time. Fix: verify the prompt exists (don't mask cp failure) and fail with a clear error or regenerate it."
     },
     {
-      "id": "safe-output-target-star-no-number",
-      "persist": 4,
-      "state": "reactivated",
-      "last": "05-30",
-      "t": "REACTIVATED: add_comment target=* with no number failed the whole Contribution Check safe_outputs job (despite a successful create_issue). Absent in the 05-29 partial window; recurred on this full window. Plus create_issue temporary_id registered 0 temp ids, breaking add_labels chaining. Needs partial-failure tolerance + emit-time validation."
+      "id": "pr-branch-deleted-race",
+      "persist": 1,
+      "state": "transient",
+      "last": "05-31",
+      "t": "TRANSIENT (external cause): 2 PR-event runs on head branch 'copilot/update-agentic-workflows-and-skill-file' which no longer existed on the remote. Test Quality Sentinel (26700870332) -> git fetch exit 22, 0 turns; Design Decision Gate (26700870336, claude) -> push_to_pull_request_branch failed at 21 turns. PR branch merged/deleted while these workflows were queued. Low priority; a checkout guard could skip-cleanly on a deleted branch instead of red-failing."
+    },
+    {
+      "id": "go-logger-enhancement-cost-outlier",
+      "persist": 1,
+      "state": "new-watch",
+      "last": "05-31",
+      "t": "NEW cost outlier (but a SUCCESS): Go Logger Enhancement (claude/opus) $8.30 / 41.9M eff_tok / 117 turns — the day's most expensive run and a new daily-cost high above the prior $7.15 peak. Succeeded, so value-for-cost, but the heavy tail (117 turns) is worth watching for repeat."
+    },
+    {
+      "id": "daily-success-rate-trend",
+      "persist": 9,
+      "state": "healthy",
+      "last": "05-31",
+      "t": "89.8% completion (53/59) on a full window. 13-window trend: 92.78 -> 88.89 -> 85.9 -> 75.6 -> 41.6 -> 81.1 -> 94.7 -> 85.7 -> 90.9 -> 81.0 -> 89.5 -> 91.1 -> 89.8. Stable in the high-80s/low-90s band; the 6 failures are 5 distinct classes, no single systemic regression. Note 3 runs still in-progress at audit time (incl. this audit + the Failure Investigator)."
+    },
+    {
+      "id": "high-cost-runs",
+      "persist": 13,
+      "state": "persistent",
+      "last": "05-31",
+      "t": "Top cost (claude-measured): Go Logger Enhancement $8.30 (success, NEW high), Safe Output Health Monitor $5.24, Sergo $4.29, Static Analysis Report $3.11, Design Decision Gate $1.62 (failed). Top eff_tok: Go Logger Enhancement 41.9M, Daily Firewall Logs 25.4M (429-failed), Documentation Noob Tester 25.0M (at-cap success), Safe Output Health Monitor 23.8M, Copilot CLI Deep Research 23.1M. Total $31.63 is claude-biased (copilot/codex EstimatedCost=0)."
     },
     {
       "id": "cache-memory-git-setup-fatal",
       "persist": 0,
       "state": "resolved",
       "last": "05-29",
-      "t": "RESOLVED/NOT-RECURRING: yesterday's critical setup_cache_memory_git.sh 'fatal: not in a git directory' (which failed 2/2 cache-memory workflows) did NOT recur. Today both Chaos PR Bundle Fuzzer and Copilot PR Prompt Pattern Analysis succeeded. Defensive .git-validation fix still advisable but no active failures."
+      "t": "RESOLVED: 2nd consecutive clean window; no exit-128 'not in a git directory' signatures."
     },
     {
       "id": "smoke-claude-cli-timeout-mcp-eof",
       "persist": 1,
       "state": "monitor",
       "last": "05-30",
-      "t": "Smoke Claude (26690105542) failed on a 10-min Claude CLI timeout with 21x 'MCP error 0: client is closing: EOF' — run_attempt 2 on the now-MERGED firewall/gateway-bump PR #35973 (awf-squid Healthy, not #35780). PR-branch artifact; monitor whether the MCP-EOF cluster recurs on main after the gateway bump landed."
+      "t": "Did not recur on 05-31. Continue monitoring the MCP 'client is closing: EOF' cluster on main after the merged gateway-bump PR #35973."
     },
     {
-      "id": "codex-model-not-found-alpha",
-      "persist": 0,
-      "state": "resolved",
-      "last": "05-30",
-      "t": "RESOLVED (2nd clean cycle): Changeset Generator on gpt-5.4 succeeded again. Fully closed."
-    },
-    {
-      "id": "daily-safe-output-optimizer-cost-trend",
+      "id": "documentation-noob-tester-firewall-hotspot",
       "persist": 1,
-      "state": "watch",
-      "last": "05-30",
-      "t": "Cost ticked back up to $5.24 (24.5M eff_tok) from $3.07, still below the $11.33 peak. 2nd-highest-cost workflow today. Watch for re-escalation."
-    },
-    {
-      "id": "avenger-max-turns-env-mismatch",
-      "persist": 5,
-      "state": "not-in-window",
-      "last": "05-28",
-      "t": "Avenger absent two consecutive windows (05-29, 05-30); max-turns issue unverified. max-turns:50 recommendation remains open."
-    },
-    {
-      "id": "daily-success-rate-trend",
-      "persist": 8,
-      "state": "healthy",
-      "last": "05-30",
-      "t": "91.1% completion (51/56) on a full window. 12-day trend: 92.78 -> 88.89 -> 85.9 -> 75.6 -> 41.6 -> 81.1 -> 94.7 -> 85.7 -> 90.9 -> 81.0 -> 89.5 -> 91.1. Above the recent band; 5 failures all distinct one-offs, no systemic regression."
-    },
-    {
-      "id": "high-cost-runs",
-      "persist": 12,
-      "state": "persistent",
-      "last": "05-30",
-      "t": "Top cost (claude-measured): Failure Investigator $7.15 (timed out), Daily Safe Output Tool Optimizer $5.24, Daily Code Metrics $2.65, Smoke Claude $2.50 (timed out), Team Evolution $1.52. Top eff_tok: Linter Miner 25.1M (429-failed), Daily Safe Output Optimizer 24.5M, Failure Investigator 22.6M, Testify 21.3M, Cache Strategy 20.6M. Note: copilot/codex/gemini cost not reported (EstimatedCost=0), so total $24.55 is claude-biased."
-    },
-    {
-      "id": "smoke-antigravity-firewall-block",
-      "persist": 2,
       "state": "by-design",
-      "last": "05-30",
-      "t": "Smoke Antigravity 10/12 blocked (83%) again — expected (antigravity-unleash.goog + Playwright Azure-CDN). No action."
+      "last": "05-31",
+      "t": "Documentation Noob Tester 125/247 firewall blocks (51%) — browser/Playwright + Google telemetry, by-design. No action."
     }
   ]
 }
