@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "tone_variant": {
+      "clinical": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "26713517872",
+      "timestamp": "2026-05-31T13:10:01.618Z",
+      "assignments": {
+        "tone_variant": "clinical"
+      }
+    }
+  ]
+}
