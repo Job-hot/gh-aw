@@ -25,3 +25,4 @@
 ./pkg/cli/fix_command_test.go|2026-05-28
 ./pkg/errorutil/errors_test.go|2026-05-29
 ./pkg/workflow/frontmatter_extraction_yaml_test.go|2026-05-30
+./pkg/parser/frontmatter_extraction_test.go|2026-05-31
