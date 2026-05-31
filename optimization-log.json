@@ -1,14 +1,5 @@
 [
   {
-    "date": "2026-04-24",
-    "workflow_name": "Documentation Noob Tester",
-    "workflow_file": "docs-noob-tester",
-    "runs_audited": 1,
-    "total_tokens_analyzed": 3009872,
-    "estimated_savings_per_run": 1400000,
-    "recommendations_count": 4
-  },
-  {
     "date": "2026-04-27",
     "workflow_name": "Daily Syntax Error Quality Check",
     "workflow_file": "daily-syntax-error-quality",
@@ -274,5 +265,15 @@
     "recommendations_count": 4,
     "subagent_candidates": 0,
     "estimated_savings_per_run": 1550000
+  },
+  {
+    "date": "2026-05-31",
+    "workflow_name": "Go Logger Enhancement",
+    "workflow_file": "go-logger",
+    "runs_audited": 1,
+    "total_tokens_analyzed": 12380723,
+    "recommendations_count": 5,
+    "subagent_candidates": 0,
+    "estimated_savings_per_run": 1700000
   }
 ]
