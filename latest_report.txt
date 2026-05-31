@@ -1,90 +1,82 @@
 ### 📊 Performance Summary
 
-**Date**: 2026-05-29  
-**Status**: ⚠️ 1 regression(s) detected
+**Date**: 2026-05-31  
+**Status**: ⚠️ 2 regression(s) detected
+
 
 ### 🎯 Key Metrics
 
-- **Total Benchmarks**: 9
-- **Stable**: 2
+- **Total Benchmarks**: 7
+- **Stable**: 3
 - **Warnings**: 0
-- **Regressions**: 1
-- **Improvements**: 6
+- **Regressions**: 2
+- **Improvements**: 2
 
 <details>
 <summary>📈 Detailed Benchmark Results</summary>
 
 #### ✓ CompileComplexWorkflow
 
-- **Current**: 2.91ms
-- **Historical Average**: 3.06ms
-- **Change**: -4.9%
-- **Memory**: 1150210 B/op
-- **Allocations**: 10042 allocs/op
+- **Current**: 2.77ms
+- **Historical Average**: 2.89ms
+- **Change**: -4.1%
+- **Memory**: 1190885 B/op
+- **Allocations**: 10108 allocs/op
+- **Status**: ✓ STABLE: -4.1% change
 
-#### ✨ CompileMCPWorkflow
+#### ✓ CompileMCPWorkflow
 
-- **Current**: 322.01µs
-- **Historical Average**: 359.60µs
-- **Change**: -10.4%
-- **Memory**: 133762 B/op
-- **Allocations**: 2333 allocs/op
+- **Current**: 315.65µs
+- **Historical Average**: 308.53µs
+- **Change**: +2.3%
+- **Memory**: 133389 B/op
+- **Allocations**: 2328 allocs/op
+- **Status**: ✓ STABLE: 2.3% change
 
 #### ✨ CompileMemoryUsage
 
-- **Current**: 2.51ms
-- **Historical Average**: 2.81ms
-- **Change**: -10.6%
-- **Memory**: 1058909 B/op
-- **Allocations**: 8178 allocs/op
+- **Current**: 2.43ms
+- **Historical Average**: 2.58ms
+- **Change**: -5.9%
+- **Memory**: 1046933 B/op
+- **Allocations**: 8205 allocs/op
+- **Status**: ✅ IMPROVEMENT: -5.9% faster
 
 #### ✨ CompileSimpleWorkflow
 
-- **Current**: 1.44ms
-- **Historical Average**: 1.90ms
-- **Change**: -24.1%
-- **Memory**: 844258 B/op
-- **Allocations**: 5124 allocs/op
+- **Current**: 1.49ms
+- **Historical Average**: 1.92ms
+- **Change**: -22.2%
+- **Memory**: 845866 B/op
+- **Allocations**: 5130 allocs/op
+- **Status**: ✅ IMPROVEMENT: -22.2% faster
 
-#### ✓ ExtractWorkflowNameFromFile
+#### ⚠️ ParseWorkflow
 
-- **Current**: 13.37µs
-- **Historical Average**: 13.81µs
-- **Change**: -3.2%
-- **Memory**: 1816 B/op
-- **Allocations**: 8 allocs/op
+- **Current**: 279.34µs
+- **Historical Average**: 244.42µs
+- **Change**: +14.3%
+- **Memory**: 100112 B/op
+- **Allocations**: 1768 allocs/op
+- **Status**: ⚠️ REGRESSION: 14.3% slower
 
-#### ⚠️ FindIncludesInContent
+#### ⚠️ Validation
 
-- **Current**: 3.52µs
-- **Historical Average**: 2.41µs
-- **Change**: +45.7%
-- **Memory**: 64 B/op
-- **Allocations**: 1 allocs/op
-
-#### ✨ ParseWorkflow
-
-- **Current**: 252.13µs
-- **Historical Average**: 323.79µs
-- **Change**: -22.1%
-- **Memory**: 100320 B/op
-- **Allocations**: 1772 allocs/op
-
-#### ✨ Validation
-
-- **Current**: 10.94µs
-- **Historical Average**: 31.65µs
-- **Change**: -65.4%
+- **Current**: 22.89µs
+- **Historical Average**: 8.96µs
+- **Change**: +155.3%
 - **Memory**: 360 B/op
 - **Allocations**: 3 allocs/op
+- **Status**: ⚠️ REGRESSION: 155.3% slower
 
-#### ✨ YAMLGeneration
+#### ✓ YAMLGeneration
 
-- **Current**: 1.90ms
-- **Historical Average**: 2.33ms
-- **Change**: -18.3%
-- **Memory**: 842448 B/op
-- **Allocations**: 4642 allocs/op
+- **Current**: 2.06ms
+- **Historical Average**: 2.03ms
+- **Change**: +1.2%
+- **Memory**: 831402 B/op
+- **Allocations**: 4646 allocs/op
+- **Status**: ✓ STABLE: 1.2% change
 
 </details>
 
@@ -92,4 +84,5 @@
 
 1. Review recent changes to the compilation pipeline
 2. Run `make bench-memory` to generate memory profiles
-3. Use `go tool pprof` to identify hotspots
+3. Use `go tool pprof` to identify performance hotspots
+4. Note: with only 1 data point of history, these may be normal variance

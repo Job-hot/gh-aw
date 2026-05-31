@@ -1,1 +1,15 @@
 {"timestamp": "2026-05-30T15:15:08Z", "date": "2026-05-30", "benchmarks": {"CompileSimpleWorkflow": {"ns_per_op": 1919718, "bytes_per_op": 864386, "allocs_per_op": 5146, "iterations": 3}, "CompileComplexWorkflow": {"ns_per_op": 2890827, "bytes_per_op": 1156573, "allocs_per_op": 10088, "iterations": 3}, "CompileMCPWorkflow": {"ns_per_op": 308531, "bytes_per_op": 133453, "allocs_per_op": 2328, "iterations": 3}, "CompileMemoryUsage": {"ns_per_op": 2583951, "bytes_per_op": 1043693, "allocs_per_op": 8201, "iterations": 3}, "ParseWorkflow": {"ns_per_op": 244421, "bytes_per_op": 100032, "allocs_per_op": 1768, "iterations": 3}, "Validation": {"ns_per_op": 8964, "bytes_per_op": 360, "allocs_per_op": 3, "iterations": 3}, "YAMLGeneration": {"ns_per_op": 2033489, "bytes_per_op": 815197, "allocs_per_op": 4636, "iterations": 3}, "ExtractWorkflowNameFromFile": {"ns_per_op": 9220, "bytes_per_op": 263, "allocs_per_op": 7, "iterations": 130812}}}
+{
+  "timestamp": "2026-05-31T15:17:36Z",
+  "date": "2026-05-31",
+  "benchmarks": {
+    "CompileSimpleWorkflow": {"ns_per_op": 1493601, "bytes_per_op": 845866, "allocs_per_op": 5130, "iterations": 3},
+    "CompileComplexWorkflow": {"ns_per_op": 2772435, "bytes_per_op": 1190885, "allocs_per_op": 10108, "iterations": 3},
+    "CompileMCPWorkflow": {"ns_per_op": 315650, "bytes_per_op": 133389, "allocs_per_op": 2328, "iterations": 3},
+    "CompileMemoryUsage": {"ns_per_op": 2431125, "bytes_per_op": 1046933, "allocs_per_op": 8205, "iterations": 3},
+    "ParseWorkflow": {"ns_per_op": 279339, "bytes_per_op": 100112, "allocs_per_op": 1768, "iterations": 3},
+    "Validation": {"ns_per_op": 22886, "bytes_per_op": 360, "allocs_per_op": 3, "iterations": 3},
+    "YAMLGeneration": {"ns_per_op": 2058329, "bytes_per_op": 831402, "allocs_per_op": 4646, "iterations": 3}
+  }
+}
+
