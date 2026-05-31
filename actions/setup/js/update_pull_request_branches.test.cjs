@@ -62,7 +62,14 @@ describe("update_pull_request_branches", () => {
     });
     mockGithub.rest.pulls.updateBranch.mockResolvedValue({ data: {} });
 
-    await moduleUnderTest.main();
+    vi.useFakeTimers();
+    try {
+      const mainPromise = moduleUnderTest.main();
+      await vi.runAllTimersAsync();
+      await mainPromise;
+    } finally {
+      vi.useRealTimers();
+    }
 
     expect(mockGithub.rest.pulls.updateBranch).toHaveBeenCalledTimes(2);
     expect(mockGithub.rest.pulls.updateBranch).toHaveBeenNthCalledWith(1, {
@@ -170,7 +177,14 @@ describe("update_pull_request_branches", () => {
     const nonFatalErr = Object.assign(new Error("update branch failed"), { status: 422 });
     mockGithub.rest.pulls.updateBranch.mockRejectedValueOnce(fatalErr).mockRejectedValueOnce(nonFatalErr);
 
-    await expect(moduleUnderTest.main()).resolves.not.toThrow();
+    vi.useFakeTimers();
+    try {
+      const mainPromise = moduleUnderTest.main();
+      await vi.runAllTimersAsync();
+      await expect(mainPromise).resolves.not.toThrow();
+    } finally {
+      vi.useRealTimers();
+    }
     expect(mockCore.error).toHaveBeenCalledWith(expect.stringContaining("Failed to update branch for PR #10"));
     expect(mockCore.warning).toHaveBeenCalledWith(expect.stringContaining("Skipping PR #11"));
     expect(mockCore.notice).toHaveBeenCalledWith(expect.stringContaining("updated=0, skipped=1, failed=1"));
@@ -200,7 +214,14 @@ describe("update_pull_request_branches", () => {
     });
     mockGithub.rest.pulls.updateBranch.mockResolvedValue({ data: {} });
 
-    await moduleUnderTest.main();
+    vi.useFakeTimers();
+    try {
+      const mainPromise = moduleUnderTest.main();
+      await vi.runAllTimersAsync();
+      await mainPromise;
+    } finally {
+      vi.useRealTimers();
+    }
 
     expect(mockGithub.rest.pulls.updateBranch).toHaveBeenCalledTimes(2);
     expect(mockGithub.rest.pulls.updateBranch).toHaveBeenCalledWith(expect.objectContaining({ pull_number: 1 }));
