@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-05-31T00:00:00Z",
+  "last_updated": "2026-06-01T00:00:00Z",
   "tool_count": 23,
-  "tool_change_R24": "NONE — Serena LSP stable at 23 (R4-24, 21 consec). Registered linters UNCHANGED at 18 (cmd/linters/main.go:41-58). CI ENFORCEMENT 8->9: maintainer appended -jsonmarshalignoredeerror to cgo.yml:1040 (sg23a1 R23 finding landed within the week — 3rd consec). All 19 jsonmarshal sites triaged.",
+  "tool_change_R25": "NONE — Serena LSP stable at 23 (R4-25, 22 consec). Registered linters 18->19: NEW fmterrorfnoverbs (cmd/linters/main.go:25 import, :49 register) flags fmt.Errorf no-%-verb single string literal -> errors.New; NO //nolint support. CI ENFORCEMENT 9->10: maintainer appended -uncheckedtypeassertion to cgo.yml:1040 (sg24a1 R24 finding landed within the week — 4th consec). Both ResultOf type-assert sites now two-value form.",
   "tools": [
     "activate_project", "check_onboarding_performed", "delete_memory", "edit_memory",
     "find_file", "find_referencing_symbols", "find_symbol", "get_current_config",
@@ -12,5 +12,5 @@
     "think_about_whether_you_are_done", "write_memory"
   ],
   "params": "activate_project --project (NOT --path). find_symbol --name_path_pattern. find_referencing_symbols --name_path + --relative_path FILE. search_for_pattern --substring_pattern. JSON stdin pipe `.` sentinel.",
-  "gotchas": "Bare receiver-method names return [] from find_symbol — qualify '(*Type).method'. find_symbol broad 70s+ (prefer Grep). activate_project ~1.3s warm/~7.3s cold. Bash sandbox blocks go build, find-exec, mkdir/ls outside repo, multi-stmt compounds, sed, for-loops, git on /tmp. gh issue list --json 'Malformed version:' — use gh api search/issues. safeoutputs `. < file.json` works. Repo-memory /tmp/gh-aw/repo-memory/default/ OUTSIDE write dir — bash blocked, use Glob/Read/Write tools; append via Edit on unique tail to keep patch <10KB. /tmp/gh-aw/agent/ writable. Dynamic Workflow tool needs manual review (no auto-run). 18 linters: R24 9 enforced, 9 unenforced."
+  "gotchas": "Bare receiver-method names return [] from find_symbol — qualify '(*Type).method'. find_symbol broad 70s+ (prefer Grep). activate_project ~1.3s warm/~7.3s cold. Bash sandbox blocks go build, find-exec, mkdir/ls outside repo, multi-stmt compounds, sed, for-loops, backtick grep (cmd subst), git on /tmp. gh issue list/search --json 'Malformed version:'. gh api search/issues returns null items for label query — open-sergo-issue check unreliable; rely on memory open_issues + 7d auto-expiry. safeoutputs `. < file.json` works. Repo-memory /tmp/gh-aw/repo-memory/default/ OUTSIDE write dir — bash blocked (mkdir/ls/cat), use Glob/Read/Write tools; append via Edit on unique tail to keep patch <10KB. /tmp/gh-aw/agent/ writable. Dynamic Workflow tool needs manual review (no auto-run). 19 linters: R25 10 enforced, 9 unenforced. *_wasm.go = implicit GOARCH=wasm, excluded from host linis."
 }

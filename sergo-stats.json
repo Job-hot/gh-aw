@@ -1,26 +1,26 @@
 {
-  "total_runs": 24,
-  "total_findings": 198,
-  "total_tasks": 50,
-  "avg_success_score": 8.66,
-  "last_run": "2026-05-31",
-  "serena_lsp": "23 tools stable R4-24. activate_project --project ~1.3s warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'. Dynamic Workflow tool needs manual review (did NOT auto-run R24) — do audits directly via Grep/Read.",
+  "total_runs": 25,
+  "total_findings": 204,
+  "total_tasks": 51,
+  "avg_success_score": 8.67,
+  "last_run": "2026-06-01",
+  "serena_lsp": "23 tools stable R4-25. activate_project --project ~1.3s warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'. Dynamic Workflow tool needs manual review — do audits directly via Grep/Read.",
   "open_issues": {
-    "sg24a1_R24": "uncheckedtypeassertion (registered cmd/linters/main.go:36, UNENFORCED). EXACTLY 2 prod single-value violations (whole pkg/+cmd/): jsonmarshalignoredeerror.go:26 + strconvparseignorederror.go:34 — both `insp := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)` (the 2 newest analyzers). 16 siblings use safe two-value `insp,ok:=...; if !ok { return nil, fmt.Errorf(...) }` (ctxbackground.go:29-32). Analyzer exempts only two-value/type-switch/test. Issue filed: fix 2 sites + append -uncheckedtypeassertion to cgo.yml:1040. Expect lands R25.",
+    "sg25a1_R25": "fmterrorfnoverbs (NEW 19th linter, registered cmd/linters/main.go:25/49, UNENFORCED). Flags fmt.Errorf with no-%-verb single string-literal arg0 -> errors.New. NO //nolint support (no BuildLineIndex) -> fix-to-zero is ONLY enforce path. 16 grep hits but ONLY 2 enforceable under default linux host build: pkg/workflow/utc_offset.go:18+24 (no build tag; fmt kept by Sprintf:27, add errors import). Other 14 wasm-only (*_wasm.go GOARCH=wasm, excluded from host golint-custom): console input(3)/list(1)/confirm(1)/select(2)/form(1) + parser/github_wasm(1) + workflow/git_helpers(1)+github_cli(4); wasm fix swaps fmt->errors import. Issue filed: fix utc_offset 2 sites (+optional 14 wasm parity) then append -fmterrorfnoverbs to cgo.yml:1040. Expect lands R26 (5th consec).",
     "sgbo1_defensible": "2 filepath.Join variants intentional: cli/git.go:303 trailing-slash, cli/fix_command.go:410 Separator-suffix."
   },
-  "completed_scans": "Resolved+enforced: errstringmatch(R14) panicinlibrarycode(R19) manualmutexunlock/osexit/rawlog(R21) regexp/fprintln/strconv(R23) jsonmarshal(sg23a1 R24, 19 sites triaged). type_assert: sg18a1 FIXED; R24 only 2 single-value left=sg24a1. fmt_errorf %w universal(1404). sync defer-Unlock universal. octal 57(R8). DEFER: largefunc(>60)/excessivefuncparams(>8) R5-6 17fn/11fn refactor-heavy unfiled; ctxbackground 28 sites unfiled. DO-NOT-REFILE (dismissed): ossetenvlibrary 10, contextcancelnotdeferred 6, fileclosenotdeferred zero-prod.",
+  "completed_scans": "Resolved+enforced: errstringmatch(R14) panicinlibrarycode(R19) manualmutexunlock/osexit/rawlog(R21) regexp/fprintln/strconv(R23) jsonmarshal(sg23a1 R24) uncheckedtypeassertion(sg24a1 R25, both ResultOf sites two-value). type_assert sg18a1 FIXED. fmt_errorf %w universal(1404). sync defer-Unlock universal. octal 57(R8). DEFER: largefunc(>60)/excessivefuncparams(>8) R5-6 17fn/11fn refactor-heavy unfiled; ctxbackground 28 sites unfiled. DO-NOT-REFILE (dismissed): ossetenvlibrary 10, contextcancelnotdeferred 6, fileclosenotdeferred zero-prod.",
   "patterns": {
-    "type_assert": "uncheckedtypeassertion exempts ONLY two-value(len Lhs==2 && Rhs==1)/type-switch(Type==nil)/test — NOT sync.Map/ResultOf/post-ctor (those are my judgment). pass.ResultOf single-value IS flagged. Safe ResultOf form: `insp,ok:=pass.ResultOf[inspect.Analyzer].(*inspector.Inspector); if !ok { return nil, fmt.Errorf(...) }`.",
-    "ci_enforce": "cgo.yml:1040 POSITIVE LINTER_FLAGS. R24=9 flags: -errstringmatch -panicinlibrarycode -manualmutexunlock -osexitinlibrary -rawloginlib -regexpcompileinfunction -fprintlnsprintf -strconvparseignorederror -jsonmarshalignoredeerror. Append for zero-vio; refactor///nolint first for non-zero.",
-    "enforce_landed_3consec": "PROVEN R22->R23->R24: audit registered-but-unenforced linter -> fix-to-zero -> file enforce issue = HIGHEST-ROI, lands within the week. Re-filing dismissed prod-site issues does NOT land. Frame as 'fix N trivial sites then enforce', NOT 'refactor N sites'.",
-    "self_consistency": "Linter framework's own analyzers should pass enforced linters. sg24a1: 2 newest analyzers regressed from established two-value ResultOf idiom — clean landable ask."
+    "ci_enforce": "cgo.yml:1040 POSITIVE LINTER_FLAGS. R25=10 flags: -errstringmatch -panicinlibrarycode -manualmutexunlock -osexitinlibrary -rawloginlib -regexpcompileinfunction -fprintlnsprintf -strconvparseignorederror -jsonmarshalignoredeerror -uncheckedtypeassertion. Append for zero-vio; refactor///nolint first for non-zero.",
+    "enforce_landed_4consec": "PROVEN R22->R23->R24->R25: audit registered-but-unenforced linter -> fix-to-zero -> file enforce issue = HIGHEST-ROI, lands within the week. Re-filing dismissed prod-site issues does NOT land. Frame as 'fix N trivial sites then enforce', NOT 'refactor N sites'.",
+    "wasm_build_tag": "*_wasm.go files carry IMPLICIT GOARCH=wasm constraint via filename (no //go:build needed). Host (linux) golint-custom EXCLUDES them. So enforce-readiness counts ONLY non-wasm-tagged violations. Inverse for linux-only files. Always partition grep hits by build constraint before claiming 'N enforceable'.",
+    "self_consistency": "Linter framework's own analyzers should pass enforced linters. sg24a1 (2 newest analyzers regressed two-value ResultOf) was clean landable ask — RESOLVED R25."
   },
-  "linters_R24": {
-    "total_registered": 18,
-    "enforced_9": "errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror",
-    "unenforced_9": "contextcancelnotdeferred(dismissed) ctxbackground(28,refactor) errormessage(opt-in) excessivefuncparams(refactor) fileclosenotdeferred(zero,dismissed) largefunc(refactor) ossetenvlibrary(dismissed) ssljson(not-go-code) uncheckedtypeassertion(sg24a1 filed)",
-    "next_candidates": "Reverify sg24a1 R25. After it lands, clean enforce candidates EXHAUSTED. Pivot R25+: (a) errormessage opt-in scope, (b) ctxbackground 28-site scoped refactor proposal, (c) watch for NEW 19th linter (registry grows ~1/few-runs)."
+  "linters_R25": {
+    "total_registered": 19,
+    "enforced_10": "errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion",
+    "unenforced_9": "contextcancelnotdeferred(dismissed) ctxbackground(28,refactor) errormessage(opt-in) excessivefuncparams(refactor) fileclosenotdeferred(zero,dismissed) largefunc(refactor) ossetenvlibrary(dismissed) ssljson(not-go-code) fmterrorfnoverbs(sg25a1 filed)",
+    "next_candidates": "Reverify sg25a1 R26. After it lands, clean enforce candidates again EXHAUSTED unless 20th linter appears (registry grew 18->19 this run, ~1/few-runs). Pivot R26+: (a) errormessage opt-in scope, (b) ctxbackground 28-site scoped refactor proposal, (c) fmterrorfnoverbs lacks //nolint support — possible follow-up to add BuildLineIndex for parity with siblings."
   },
-  "bash_policy": "Sandbox blocks: multi-stmt compounds (esp /testdata/ literal or cat repo-memory path), mkdir/ls/find-exec/wc/cat/sed outside repo dir, for-loops(simple_expansion), heredoc {quote}, git on /tmp dirs (cd or -C). go build blocked (lint via Grep/Read). gh issue list --json 'Malformed version:' — use gh api search/issues -f q=... --jq '.items[]|select(.html_url)'. Glob/Read/Write work on /tmp; bash CANNOT write /tmp/gh-aw/repo-memory (use Write/Edit; append via Edit on unique tail). /tmp/gh-aw/agent/ bash-writable. safeoutputs `. < file.json`. Dynamic Workflow needs manual review. KEEP MEMORY FILES SMALL — 10KB patch limit; prefer Edit over full Write rewrites."
+  "bash_policy": "Sandbox blocks: multi-stmt compounds, mkdir/ls/find-exec/wc/cat/sed outside repo, for-loops, backtick grep (cmd subst), heredoc, git on /tmp. go build blocked (lint via Grep/Read). gh issue/search list --json 'Malformed version:'; gh api search/issues label query returns null items — open-issue check unreliable, rely on memory+7d expiry. Glob/Read/Write work on /tmp; bash CANNOT write/read /tmp/gh-aw/repo-memory (use Write/Edit; append via Edit on unique tail). /tmp/gh-aw/agent/ bash-writable. safeoutputs `. < file.json`. KEEP MEMORY FILES SMALL — 10KB patch limit; prefer Edit over full Write rewrites."
 }
