@@ -1,36 +1,39 @@
 {
-  "updated": "2026-05-31",
-  "date": "2026-05-31",
+  "updated": "2026-06-01",
+  "date": "2026-06-01",
   "partial": false,
   "totals": {
-    "r": 59,
-    "s": 53,
-    "f": 6,
-    "in_prog": 3,
-    "rate": 89.8,
-    "tok": 68838688,
-    "eff_tok": 476590514,
-    "$": 31.63,
+    "r": 53,
+    "s": 51,
+    "f": 2,
+    "in_prog": 2,
+    "rate": 96.2,
+    "tok": 38076235,
+    "eff_tok": 324468521,
+    "$": 15.62,
     "$_partial": true,
-    "$_note": "claude-engine measured EstimatedCost; copilot/codex cost not reported in run_summary (EstimatedCost=0)",
-    "turns": 1199,
-    "min": 466,
-    "errors": 6,
-    "fw_req": 4204,
-    "fw_blk": 702,
-    "fw_blk_pct": 16.7,
-    "missing_tools": 0,
+    "$_note": "claude-engine measured EstimatedCost; copilot/codex/gemini/pi/antigravity cost not reported in run_summary (EstimatedCost=0)",
+    "turns": 792,
+    "min": 449,
+    "errors": 2,
+    "fw_req": 3635,
+    "fw_blk": 700,
+    "fw_blk_pct": 19.3,
+    "missing_tools": 2,
     "missing_data": 0,
-    "safe_items": 3,
-    "github_api": 297
+    "mcp_failures": 0,
+    "safe_items": 26,
+    "github_api": 483
   },
   "engines": {
-    "copilot": 44,
-    "claude": 17,
-    "codex": 1
+    "copilot": 36,
+    "claude": 12,
+    "codex": 4,
+    "antigravity": 1,
+    "gemini": 1,
+    "pi": 1
   },
   "history": [
-    {"d": "2026-05-17", "r": 97, "s": 90, "rate": 92.78, "$": 36.2901, "tok": 69940167},
     {"d": "2026-05-19", "r": 45, "s": 40, "rate": 88.89, "$": 17.188636, "tok": 32438548},
     {"d": "2026-05-20", "r": 78, "s": 67, "rate": 85.9, "$": 26.72, "tok": 59645141},
     {"d": "2026-05-21", "r": 41, "s": 31, "rate": 75.6, "$": 19.96, "tok": 35895593},
@@ -42,6 +45,7 @@
     {"d": "2026-05-28", "r": 64, "s": 47, "rate": 81.0, "$": 29.354164, "tok": 48923104, "partial": true},
     {"d": "2026-05-29", "r": 21, "s": 17, "rate": 89.5, "$": 7.18, "tok": 14553338, "partial": true, "note": "small mid-cycle window; $ is claude-only"},
     {"d": "2026-05-30", "r": 56, "s": 51, "rate": 91.1, "$": 24.55, "tok": 49889280, "note": "full window; $ claude-measured (copilot/codex cost not reported)"},
-    {"d": "2026-05-31", "r": 59, "s": 53, "rate": 89.8, "$": 31.63, "tok": 68838688, "note": "full window; $ claude-measured. Cost up on Go Logger Enhancement $8.30 outlier (success)."}
+    {"d": "2026-05-31", "r": 59, "s": 53, "rate": 89.8, "$": 31.63, "tok": 68838688, "note": "full window; $ claude-measured. Cost up on Go Logger Enhancement $8.30 outlier (success)."},
+    {"d": "2026-06-01", "r": 53, "s": 51, "rate": 96.2, "$": 15.62, "tok": 38076235, "note": "full window; $ claude-measured. BEST success rate in 14-day window. Both failures = same safe-output target=* class. 429/threat-detection/pr-branch classes all quiet. New-engine smoke tests added (antigravity/gemini/pi)."}
   ]
 }
