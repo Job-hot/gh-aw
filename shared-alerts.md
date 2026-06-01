@@ -1,4 +1,4 @@
-# Shared Alerts — 2026-06-01T06:08Z
+# Shared Alerts — 2026-06-01T14:44Z
 
 ## P0 (Critical) 🚨
 _None active_
@@ -10,14 +10,13 @@ _None active_
 - **CGO CI**: Mixed ~33% fail. PR #35883 pending review. DO NOT re-file.
 
 ## P2 (Watch) ⚠️
+- **Token budget exhaustion (systemic)**: jsweep (#36183) + daily-compiler (#36172) June 1 — may need P1 escalation
+- **chaos-test PR stall**: 10+ open PRs (#36120–#36124, #36251–#36256), 0 merges — worsening
 - **Daily Safe Output Tool Optimizer** (#35316): runaway token usage
-- **jsweep JavaScript Unbloater** (#36183): Token budget exhausted June 1
-- **Daily Compiler Quality Check** (#36172): Token budget exhausted June 1
-- **Daily Firewall Logs Collector** (#36171): Recurring failure (June 1 instance)
+- **Daily Firewall Logs Collector** (#36171): Recurring failure (was #36047 closed, recurred)
 - **Daily SPDD Spec Planner** (#36138): Failed May 31
 - **Safe Outputs Conformance SEC-005** (#36079): update_activation_comment.cjs allowlist gap
 - **CLI Tools Test** (#36076): compile --workflow-name flag undocumented
-- **chaos-test**: 5 open PRs (#36120–#36124) with 0 merges — stall
 
 ## Resolved ✅ (since May 30)
 - **Smoke tests**: #35959, #36018, #36019, #35955, #35954 all CLOSED
