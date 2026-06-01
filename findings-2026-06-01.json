@@ -1,0 +1,31 @@
+{
+  "date": "2026-06-01",
+  "files_analyzed": {
+    "documentation": [
+      "docs/src/content/docs/troubleshooting/common-issues.md",
+      "docs/src/content/docs/reference/frontmatter-hash-specification.md"
+    ],
+    "messages": [
+      ".github/workflows/smoke-codex.md",
+      ".github/workflows/pdf-summary.md"
+    ],
+    "validation": ["pkg/stringutil/pat_validation_test.go"]
+  },
+  "overall_quality": "mixed",
+  "quality_highlights": [
+    "common-issues.md: exemplary multi-layer structure with GHES error table, cause/solution format, callouts",
+    "pat_validation_test.go: correct build tag, table-driven tests, proper require/assert usage, partial-prefix edge cases"
+  ],
+  "single_file_improvements": [
+    {
+      "file": ".github/workflows/smoke-codex.md",
+      "priority": "high",
+      "issue": "Oracle/mystical messages ('The ancient spirits stir...', 'The prophecy is fulfilled...', 'The oracle requires further meditation...') — run-failure provides no actionable guidance"
+    },
+    {
+      "file": ".github/workflows/pdf-summary.md",
+      "priority": "medium",
+      "issue": "run-failure 'Reading interrupted! ... The document remains unsummarized...' is non-actionable and colloquial"
+    }
+  ]
+}

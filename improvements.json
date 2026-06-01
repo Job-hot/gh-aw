@@ -1,6 +1,20 @@
 {
-  "last_updated": "2026-05-24",
+  "last_updated": "2026-06-01",
   "pending_tasks": [
+    {
+      "file": ".github/workflows/smoke-codex.md",
+      "created": "2026-06-01",
+      "status": "pending",
+      "priority": "high",
+      "title": "Replace theatrical oracle status messages with actionable enterprise-appropriate messages"
+    },
+    {
+      "file": ".github/workflows/pdf-summary.md",
+      "created": "2026-06-01",
+      "status": "pending",
+      "priority": "medium",
+      "title": "Make run-failure message actionable with diagnostic direction"
+    },
     {
       "file": ".github/workflows/dev-hawk.md",
       "created": "2026-05-27",
@@ -14,20 +28,6 @@
       "status": "pending",
       "priority": "medium",
       "title": "Fix missing sentence break on line 80 (working well That's)"
-    },
-    {
-      "file": ".github/workflows/smoke-pi.md",
-      "created": "2026-05-23",
-      "status": "pending",
-      "priority": "high",
-      "title": "Professionalize Smoke Test Workflow Messages"
-    },
-    {
-      "file": "docs/src/content/docs/blog/2026-03-23-weekly-update.md",
-      "created": "2026-05-23",
-      "status": "pending",
-      "priority": "high",
-      "title": "Add Progressive Disclosure to Blog Post"
     },
     {
       "file": ".github/workflows/architecture-guardian.md",
@@ -46,8 +46,8 @@
   ],
   "completed_tasks": [],
   "quality_trends": {
-    "2026-05-23": {"professional": 4, "needs_minor_work": 2, "needs_significant_work": 0},
     "2026-05-24": {"professional": 2, "needs_minor_work": 2, "needs_significant_work": 1},
-    "2026-05-27": {"professional": 3, "needs_minor_work": 2, "needs_significant_work": 0}
+    "2026-05-27": {"professional": 3, "needs_minor_work": 2, "needs_significant_work": 0},
+    "2026-06-01": {"professional": 3, "needs_minor_work": 1, "needs_significant_work": 1}
   }
 }
