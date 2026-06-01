@@ -1,7 +1,7 @@
 {
   "counts": {
     "reasoning_depth": {
-      "iterative": 11,
+      "iterative": 12,
       "single_pass": 9
     }
   },
@@ -144,6 +144,13 @@
       "timestamp": "2026-05-31T23:48:09.595Z",
       "assignments": {
         "reasoning_depth": "single_pass"
+      }
+    },
+    {
+      "run_id": "26789367565",
+      "timestamp": "2026-06-01T23:53:50.656Z",
+      "assignments": {
+        "reasoning_depth": "iterative"
       }
     }
   ]
