@@ -1,32 +1,36 @@
-# Workflow Health — 2026-05-31T05:54Z
+# Workflow Health — 2026-06-01T06:08Z
 
-Score: 81/100 (↑5 from 76 — both P0 issues CLOSED)
-Workflows: 237 | Lock files: 237/237 (100% ✅) | Run: §26704730183
+Score: 82/100 (↑1 from 81)
+Workflows: 237 | Lock files: 237/237 (100% ✅) | Run: §26738226272
 
 ## KEY FINDINGS
 
-### Status (May 31)
-- **Compilation:** 237/237 workflows have lock files (100% ✅) — +1 new workflow
-- **New P0/P1 issues filed this run: 0** (no new systemic issues found; all tracked)
-- **MAJOR IMPROVEMENT:** Both P0 issues from yesterday CLOSED:
-  - #35351 (safe_outputs add_comment validation) — CLOSED ✅
-  - #35388 (Copilot CLI engine systemic failure) — CLOSED ✅
+### Status (June 1)
+- **Compilation:** 237/237 workflows have lock files (100% ✅) — unchanged
+- **New P0/P1 issues filed this run: 0** (no new systemic issues; tracked below)
+- **IMPROVEMENT:** Most smoke test issues CLOSED (#35959, #36018, #36019, #35955, #35954)
+- **Token Budget Exhaustion pattern** newly observed affecting 2+ workflows
 
 ### Critical Issues (P1) 🚨
-- **Smoke tests** (100% fail): All smoke variants 100% failing on main branch. Multiple open issues: #35964, #35959, #36018, #36019, #35955, #35954. Systemic infrastructure failure.
-- **LintMonster backlog**: New batch issues filed (#36050, #36051, #36052). Ongoing (#35368 epic).
-- **Failure-reporters duplication**: #35984 (new: `add_comment` with `target: "*"` and no issue_number) — dedup gate still unimplemented.
-- **Step Name Alignment**: #36062 filed today — "Start MCP server" step name casing mismatch.
-- **CGO CI**: Mixed (50% failure) — some action_required, some failures. PR #35883 (CLI tools update) pending.
+- **Step Name Alignment** (#36062 OPEN): Still failing, new run failure #36187 (Claude engine terminating). 100% fail.
+- **Failure-reporters duplication**: #35984 still OPEN
+- **LintMonster backlog**: #36050 still open; #36175, #36173 new batch today
+
+### P2 Issues ⚠️
+- **jsweep JavaScript Unbloater** (#36183): Token budget exhausted  
+- **Daily Compiler Quality Check** (#36172): Token budget exhausted
+- **Daily Firewall Logs Collector** (#36171): New instance (was #36047 closed, recurring)
+- **Daily SPDD Spec Planner** (#36138): Failed May 31
+- **Token budget exhaustion pattern**: jsweep + daily-compiler both hit limit — may be systemic
 
 ### Actions Taken This Run
-- No new issues filed (all P1 issues already tracked, both P0s resolved)
-- Updated shared memory with improved health score
+- No new issues filed (failures already tracked or P2 via auto-filing)
+- Updated shared memory with June 1 assessment
 
 ### Trends
-- Score: 81/100 (↑5 from 76 — P0 closures are big win)
-- Both P0s from May 30 resolved — ecosystem recovering
-- Smoke tests: still 100% fail, systemic, 6+ issues open
-- LintMonster: still flooding with issues (~3 new today)
+- Score: 82/100 (↑1 from 81)
+- Smoke tests: mostly CLOSED — major improvement
+- Token budget exhaustion: new recurring pattern affecting analytics/quality workflows
+- CGO: 33% failure rate, 1 recent failure in last 5 runs
 
-Last updated: 2026-05-31T05:54:00Z by workflow-health-manager
+Last updated: 2026-06-01T06:08:00Z by workflow-health-manager
