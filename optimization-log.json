@@ -1,15 +1,6 @@
 [
   {
     "date": "2026-04-27",
-    "workflow_name": "Daily Firewall Logs Collector and Reporter",
-    "workflow_file": "daily-firewall-report",
-    "runs_audited": 1,
-    "total_tokens_analyzed": 2486927,
-    "estimated_savings_per_run": 1050000,
-    "recommendations_count": 5
-  },
-  {
-    "date": "2026-04-27",
     "workflow_name": "Package Specification Extractor",
     "workflow_file": "spec-extractor",
     "runs_audited": 4,
@@ -276,5 +267,15 @@
     "recommendations_count": 4,
     "subagent_candidates": 1,
     "estimated_savings_per_run": 1550000
+  },
+  {
+    "date": "2026-06-01",
+    "workflow_name": "[aw] Failure Investigator (6h)",
+    "workflow_file": "aw-failure-investigator",
+    "total_tokens_analyzed": 9155220,
+    "runs_audited": 1,
+    "recommendations_count": 4,
+    "subagent_candidates": 0,
+    "estimated_savings_per_run": 1450000
   }
 ]
