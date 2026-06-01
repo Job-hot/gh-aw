@@ -1,9 +1,9 @@
 {
-  "run_date": "2026-06-01T01:26:22Z",
-  "run_id": "26730351280",
+  "run_date": "2026-06-01T08:12:05Z",
+  "run_id": "26743037760",
   "fork_prs": 0,
   "agent_prs_found": 0,
-  "notes": "No open PRs found in github/gh-aw repository.",
+  "notes": "No open Copilot agent PRs from forks found. Only open PR is #36190 from github-actions bot (internal branch, not fork).",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
