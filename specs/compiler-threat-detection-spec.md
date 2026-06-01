@@ -7,7 +7,7 @@ sidebar:
 
 # GitHub Actions Compiler Threat Detection Specification
 
-**Version**: 1.0.13  
+**Version**: 1.0.14  
 **Status**: Candidate Recommendation  
 **Latest Version**: https://github.com/github/gh-aw/blob/main/specs/compiler-threat-detection-spec.md  
 **Editors**: GitHub Next (GitHub, Inc.)
@@ -78,6 +78,7 @@ This section anchors the specification version to the minimum gh-aw binary versi
 
 | Spec version | Minimum gh-aw binary version | Lock-file compatibility notes |
 |--------------|------------------------------|-------------------------------|
+| `1.0.14` | `v0.72.1` (or newer) | Threat-detection behavior must remain compatible with current `.lock.yml` compilation semantics, including manifest drift enforcement (`gh-aw-manifest` checks for CTR-016), update-check validation (`check-for-updates` handling for CTR-018), and cache-memory integrity enforcement (`update_cache_memory` gating for CTR-019). |
 | `1.0.13` | `v0.72.1` (or newer) | Threat-detection behavior must remain compatible with current `.lock.yml` compilation semantics, including manifest drift enforcement (`gh-aw-manifest` checks for CTR-016), update-check validation (`check-for-updates` handling for CTR-018), and cache-memory integrity enforcement (`update_cache_memory` gating for CTR-019). |
 | `1.0.12` | `v0.72.1` (or newer) | Threat-detection behavior must remain compatible with current `.lock.yml` compilation semantics, including manifest drift enforcement (`gh-aw-manifest` checks for CTR-016), update-check validation (`check-for-updates` handling for CTR-018), and cache-memory integrity enforcement (`update_cache_memory` gating for CTR-019). |
 | `1.0.11` | `v0.72.1` (or newer) | Threat-detection behavior must remain compatible with current `.lock.yml` compilation semantics, including manifest drift enforcement (`gh-aw-manifest` checks for CTR-016), update-check validation (`check-for-updates` handling for CTR-018), and cache-memory integrity enforcement (`update_cache_memory` gating for CTR-019). |
@@ -265,9 +266,9 @@ The mappings above are pattern-based references and MUST be validated against co
 
 When mappings change, this table MUST be updated in the same change set as the implementation update.
 
-### 7.2 Mapping Audit (2026-05-27)
+### 7.2 Mapping Audit (2026-06-01)
 
-Audit result: ✅ all listed `CTR-001` through `CTR-019` rows currently include non-empty implementation references and non-empty test coverage targets; no `TODO` placeholders were found in the mapping table. Review window: PRs merged 2026-05-26 through 2026-05-27 (PRs #35005–#35078). Nine security-relevant items were evaluated: (1) Permission-scope validation caching (`permissions_compiler_validator.go`, PR #35076) — performance optimization that caches `ValidatePermissionScopeNames` results; CTR-001 detection behavior is unchanged. (2) `ghs_` installation token redaction regex update (`redact_secrets.cjs`, PR #35063) — runtime secret masking improvement for new stateless `ghs_` token format; outside compiler threat detection scope per Section 1.2. (3) Codex structured outputs for threat detection parsing (`codex_engine.go`, `parse_threat_detection_results.cjs`, PR #35061) — infrastructure change replacing log scraping with structured output files for Codex threat detection results; changes detection result ingestion, not detection rules; no new CTR entry required. (4) `add_comment` locked-target handling (`add_comment.cjs`, PR #35064) — safe-outputs operational fix downgrades HTTP 423/403-lock failures to non-fatal skips; no compiler detection rule change. (5) `github-workflow.json` schema: `code-quality` permission key addition (PR #35025) — expands the JSON schema for generated lock files to recognize the new GitHub Actions `code-quality` permission; CTR-001 compiler validation of the frontmatter input is unaffected since permission scope enforcement is handled in `permissions.go`. (6–9) Remaining PRs (#35005, #35015, #35057, #35060, #35065, #35070, #35072, #35077, #35078) are documentation, UI, or non-security dependency changes with no compiler threat detection impact. No new uncovered threats were identified in this review cycle.
+Audit result: ✅ all listed `CTR-001` through `CTR-019` rows currently include non-empty implementation references and non-empty test coverage targets; no `TODO` placeholders were found in the mapping table. Review window: 2026-05-28 through 2026-06-01. One commit was evaluated: PR #36178 (Weekly blog post – 2026-06-01) — documentation-only, zero compiler or security changes. Additionally, the following existing compiler components were inspected for uncovered threat surface: (1) `mcp_mount_validation.go` — validates MCP container mount string syntax (`source:destination:mode` format); this is a format-correctness check on workflow-author-controlled configuration, not an agent-runtime attack surface; no new CTR rule is required because mount paths are trusted workflow-author input and the existing CTR-004 (sandbox configuration) and CTR-011 (network firewall) rules cover the relevant trust boundaries for container-based execution. (2) `repo_memory_validation.go` — validates branch prefix length, character set, and reserved names for repo-memory entries; this is an operational correctness validator with no security-control implications outside existing CTR-001 (privilege escalation via branch write permissions). (3) `frontmatter_extraction_security.go` — extracts network permissions and sandbox configuration from frontmatter; this is existing extraction infrastructure backing CTR-004 (sandbox bypass) and CTR-011 (network firewall) detections; no new rule required. No new uncovered threats were identified in this review cycle.
 
 ### 7.3 Sync Protocol for CTR Rule and Manifest Updates
 
@@ -338,6 +339,13 @@ The following test IDs map one-to-one to the CTR rules in Section 5.1. Each test
 ---
 
 ## 10. Change Log
+
+### 1.0.14 (2026-06-01)
+
+- Updated Section 7.2 mapping audit to 2026-06-01 confirming no new uncovered threats in this review cycle
+- Evaluated one commit in the review window (PR #36178: weekly blog post — documentation only, no compiler or security changes)
+- Inspected three existing compiler components for uncovered threat surface: MCP mount syntax validation (`mcp_mount_validation.go`), repo-memory branch prefix validation (`repo_memory_validation.go`), and frontmatter security extraction (`frontmatter_extraction_security.go`); all are existing infrastructure backing CTR-001, CTR-004, and CTR-011; no new CTR rules required
+- Updated Section 2 spec-to-implementation sync table with version 1.0.14 entry
 
 ### 1.0.13 (2026-05-27)
 
