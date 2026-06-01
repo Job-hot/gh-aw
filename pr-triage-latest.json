@@ -1,9 +1,9 @@
 {
-  "run_date": "2026-06-01T14:22:12Z",
-  "run_id": "26760777844",
+  "run_date": "2026-06-01T19:49:30Z",
+  "run_id": "26777976781",
   "fork_prs": 0,
-  "agent_prs_found": 8,
-  "notes": "8 open Copilot agent PRs found (#36221-36228, #36238) but all are from internal branches (head.repo.full_name == base.repo.full_name = github/gh-aw). Fork-only policy excludes all. No PRs to triage.",
+  "agent_prs_found": 3,
+  "notes": "3 open bot-authored PRs found (#36307, #36313, #36314) but all are from internal branches (isCrossRepository=false). Fork-only policy excludes all. No PRs to triage.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
