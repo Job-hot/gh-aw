@@ -1,0 +1,192 @@
+{
+  "date": "2026-06-01",
+  "pr_count": 18,
+  "avg_sentiment": 0.08398202941678834,
+  "positive_count": 10,
+  "neutral_count": 0,
+  "negative_count": 8,
+  "top_keywords": [
+    "test",
+    "output",
+    "artifact",
+    "guardrail",
+    "workflow"
+  ],
+  "cluster_info": {
+    "0": {
+      "terms": [
+        "offset",
+        "utc",
+        "utc offset",
+        "config",
+        "repo config",
+        "expiration",
+        "repo",
+        "rendered"
+      ],
+      "count": 1
+    },
+    "1": {
+      "terms": [
+        "guardrail",
+        "frontmatter",
+        "artifact",
+        "fallback",
+        "activation",
+        "workflow",
+        "detection",
+        "configured"
+      ],
+      "count": 6
+    },
+    "2": {
+      "terms": [
+        "report",
+        "safe",
+        "output",
+        "safe output",
+        "workflow",
+        "added",
+        "failures",
+        "prompt"
+      ],
+      "count": 5
+    },
+    "3": {
+      "terms": [
+        "package",
+        "paths",
+        "changes",
+        "requirements",
+        "via",
+        "new",
+        "path",
+        "handling"
+      ],
+      "count": 2
+    },
+    "4": {
+      "terms": [
+        "validation",
+        "merge",
+        "test",
+        "branch",
+        "command",
+        "error",
+        "formatting",
+        "paths"
+      ],
+      "count": 4
+    }
+  },
+  "pr_sentiments": [
+    {
+      "number": 36220,
+      "title": "chore(deps): bump github.com/securego/gosec/v2 v2.26.1 \u2192 v2.27.0",
+      "sentiment": 0.4707363636363636,
+      "label": "positive"
+    },
+    {
+      "number": 36179,
+      "title": "Gate daily ET guardrail and artifact client setup on explicit configuration",
+      "sentiment": 0.365196875,
+      "label": "positive"
+    },
+    {
+      "number": 36177,
+      "title": "Refactor compiler orchestrators to enforce 60-line largefunc limits (part 1)",
+      "sentiment": 0.6016830357142857,
+      "label": "positive"
+    },
+    {
+      "number": 36164,
+      "title": "Add structured diagnostics to the daily workflow ET guardrail",
+      "sentiment": 0.3652892561983471,
+      "label": "positive"
+    },
+    {
+      "number": 36155,
+      "title": "Enable `close_discussion` safe output in Daily Regulatory workflow",
+      "sentiment": -0.15525384615384613,
+      "label": "negative"
+    },
+    {
+      "number": 36153,
+      "title": "Fix: install @actions/artifact when daily-effective-workflow guardrail is configured",
+      "sentiment": 0.18255,
+      "label": "positive"
+    },
+    {
+      "number": 36149,
+      "title": "test(parser): migrate frontmatter_extraction_test.go to testify + add missing coverage",
+      "sentiment": -0.42504407735122024,
+      "label": "negative"
+    },
+    {
+      "number": 36145,
+      "title": "Normalize report-format instructions in terminal-stylist and daily-doc-updater workflows",
+      "sentiment": -0.32078333333333336,
+      "label": "negative"
+    },
+    {
+      "number": 36144,
+      "title": "Refactor deploy command orchestration to satisfy largefunc limits in `pkg/cli`",
+      "sentiment": 0.2854,
+      "label": "positive"
+    },
+    {
+      "number": 36142,
+      "title": "Add project UTC offset support for rendered timestamps and expiration messages",
+      "sentiment": 0.4938474025974026,
+      "label": "positive"
+    },
+    {
+      "number": 36140,
+      "title": "Resolve lint-go findings and refresh post-merge workflow test expectations",
+      "sentiment": -0.28915,
+      "label": "negative"
+    },
+    {
+      "number": 36139,
+      "title": "Format CJS helpers failing lint-js, merge main, and recompile workflows",
+      "sentiment": 0.4293444444444444,
+      "label": "positive"
+    },
+    {
+      "number": 36137,
+      "title": "Optimize `api-consumption-report` with inline small-model sub-agents",
+      "sentiment": 0.4057047619047619,
+      "label": "positive"
+    },
+    {
+      "number": 36128,
+      "title": "fix: use canonical module paths for pkg/logger in package READMEs",
+      "sentiment": -0.054400000000000004,
+      "label": "negative"
+    },
+    {
+      "number": 36114,
+      "title": "Refactor `.github/aw` instructions into compact indexed references",
+      "sentiment": 0.48158977591036417,
+      "label": "positive"
+    },
+    {
+      "number": 36113,
+      "title": "Harden threat-detection against missing prompt artifact; unblock safe_outputs",
+      "sentiment": -0.5065102564102564,
+      "label": "negative"
+    },
+    {
+      "number": 36112,
+      "title": "Keep assign_to_agent failures from failing safe_outputs",
+      "sentiment": -0.5156020833333333,
+      "label": "negative"
+    },
+    {
+      "number": 36042,
+      "title": "Add 24-hour per-workflow effective-token guardrail with enterprise defaults and ET shorthand support",
+      "sentiment": -0.3029217893217893,
+      "label": "negative"
+    }
+  ]
+}
