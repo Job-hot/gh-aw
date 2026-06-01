@@ -2,7 +2,8 @@
   "counts": {
     "timeout_setting": {
       "default": 2,
-      "relaxed": 1
+      "relaxed": 1,
+      "tight": 1
     }
   },
   "runs": [
@@ -25,6 +26,13 @@
       "timestamp": "2026-05-31T14:43:55.838Z",
       "assignments": {
         "timeout_setting": "default"
+      }
+    },
+    {
+      "run_id": "26767019980",
+      "timestamp": "2026-06-01T16:13:24.336Z",
+      "assignments": {
+        "timeout_setting": "tight"
       }
     }
   ]
