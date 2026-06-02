@@ -1,60 +1,61 @@
 # Agent Performance Analyzer — Latest Run
 
-**Timestamp:** 2026-06-01T14:44:40Z  
+**Timestamp:** 2026-06-02T14:03:32Z  
 **Workflow:** Agent Performance Analyzer  
-**Run ID:** 26761815519  
-**Run URL:** https://github.com/github/gh-aw/actions/runs/26761815519
+**Run ID:** 26824629412  
+**Run URL:** https://github.com/github/gh-aw/actions/runs/26824629412
 
 ## Executive Summary
 
-- **Agents analyzed:** 20 active workflow groups (~237 total workflows)
-- **Quality score:** 73/100 (↑1 from 72 yesterday)
-- **Effectiveness:** 67/100 (→ stable)
-- **Ecosystem health:** 82/100 (↑3 from 79 — smoke tests largely resolved ✅)
+- **Agents analyzed:** 23 active workflow groups (~237 total workflows)
+- **Quality score:** 72/100 (↓1 from 73 — new failures offset improvements)
+- **Effectiveness:** 66/100 (↓1 — Agentic Commands degraded further)
+- **Ecosystem health:** 81/100 (unchanged — CJS P1 still open)
 
-## Key Changes Since Yesterday
+## Key Changes Since Yesterday (June 1)
 
 ### Improvements ✅
-- Smoke tests mostly CLOSED (#35959, #36018, #36019, #35955, #35954)
-- Daily Syntax Error Check CLOSED (#36089)
-- Design Decision Gate CLOSED (#36044)
-- Test Quality Sentinel CLOSED (#36043)
-- Firewall Logs Collector #36047 CLOSED (but recurred as #36171)
-- Lint batches #36051, #36052 CLOSED
+- **Step Name Alignment** (#36062): PASSED today — likely resolved, monitor
+- **Agentic Maintenance**: 75% ok (4 runs) — healthy
+- **copilot-swe-agent**: 22 merged PRs recently, 5 open WIP PRs — high throughput
 
-### New Issues / Regressions
-- **Token budget exhaustion pattern**: jsweep (#36183) + Daily Compiler (#36172) both hit limit June 1 — systemic
-- **chaos-test PR flood continues**: New r95 batch (#36251–#36256), still 0 merges — stall worsening
-- **Firewall Logs Collector recurring**: Was closed, now #36171 (recurring failure pattern)
+### New Issues / Regressions 🚨
+- **CJS typecheck P1** (#36410, filed June 2): Still 100% failing (4 failed + more cancelled)
+- **CGO** (2 runs, 0% success, 2 failures): continuing 100% failure
+- **Typist - Go Type Analysis failed** (#36443): new failure report
+- **Failure Investigator (6h) failed** (#36424): recurring failure reporter
+- **Q workflow**: 0% ok in 18 runs — fully blocked (pattern unchanged)
+- **Agentic Commands**: 22% ok in 18 runs — degraded from prior period
 
 ## Critical Findings (No Change — Do Not Re-File)
 
 ### P1 - High Priority
-1. **Step Name Alignment** (#36062, new failure #36187): 100% fail, Claude engine terminating
-2. **LintMonster backlog** (#36050 + #36175, #36173 new today): 2218+ findings, runaway
-3. **Failure-reporters duplication** (#35984): 60% duplicate rate, chronic
-4. **CGO CI** (PR #35883 pending): ~33% failure rate
+1. **CJS typecheck broken** (#36410, filed June 2): 100% fail since June 1 ~23:32Z
+2. **CGO unit tests** (#35028): Escalated to 100% failure (20+ runs)
+3. **Q workflow**: 0% success rate (18 runs, all cancelled) — fully blocked
+4. **LintMonster backlog** (#36050): intermittent failures
+5. **Failure-reporters duplication** (#35984): 60% duplicate rate
 
 ### P2 - Watch
-- **Token budget exhaustion** (#36183 jsweep, #36172 daily-compiler): Systemic pattern emerging
-- **chaos-test** (PRs #36120–#36124, now #36251–#36256): 0 merges, stall worsening (10+ open PRs)
-- **Daily Safe Output Tool Optimizer** (#35316): Runaway 14.9M tokens
-- **Safe Outputs Conformance SEC-005** (#36079): allowlist gap
+- **Token budget exhaustion**: jsweep (#36183) + daily-compiler (#36172)
+- **chaos-test PR stall**: 10+ open PRs, 0 merges
+- **Agentic Commands degradation**: 22% ok (18 runs) — was higher previously
+- **Typist workflow failing**: #36443 (new)
 
 ## Top Performers (unchanged)
 
-1. spec-enforcer (85/100 quality, 88/100 effectiveness, 100% merge rate)
-2. copilot-swe-agent (84/100 quality, 82/100 effectiveness, 94% merge rate)
-3. docs-updater (78/100 quality, 72/100 effectiveness, 70% merge rate)
+1. spec-enforcer (85/100 quality, 88/100 effectiveness)
+2. copilot-swe-agent (84/100 quality, 82/100 effectiveness, 22 merged PRs vs 8 open)
+3. License Compliance Check (100% success rate)
+4. Auto-Close Parent Issues (100% success rate)
 
-## Pattern Detection Results
+## Pattern Detection
 
-- **blocked**: Q (0% success, 11 runs), AI-moderator (0%, 12 runs), Deployment-monitor (0%, 5 runs)
-- **degraded**: Agentic-commands (33%), Content-moderation (25%), Smoke-CI (11%)
-- **over-creation + stall**: chaos-test (flooding PRs, 0 merges)
-- **token-exhaustion**: jsweep, daily-compiler (new pattern)
-- **repetition+scope-creep**: failure-reporters (#35984)
-- **healthy**: spec-enforcer, copilot-swe-agent, docs-updater, github-actions-updater, workflow-health-manager
+- **blocked**: Q (0%, 18 runs), CGO (0%, 5 runs), CJS (0%, 6 runs), AI Moderator (0%)
+- **degraded**: Agentic Commands (22%, 18 runs), Smoke CI (9%, 11 runs)
+- **over-creation/stall**: chaos-test flooding (10+ PRs, 0 merges)
+- **token-exhaustion**: jsweep + daily-compiler (systemic)
+- **healthy**: copilot-swe-agent, License Compliance, Auto-Close, Agentic Maintenance
 
 ## Issues Created This Run
 
@@ -63,11 +64,13 @@ None — all critical issues already tracked per Do Not Re-File list.
 ## Coordination Notes
 
 ### For Campaign Manager
-- chaos-test stall now 10+ open PRs, 0 merges — escalate or pause the workflow
-- Token budget exhaustion: jsweep + daily-compiler may need budget increases or scope reduction
-- copilot-swe-agent quality high (84/100), consider assigning more complex tasks
+- chaos-test stall persists (10+ open PRs, 0 merges) — should pause or escalate
+- copilot-swe-agent throughput high (22 merged), consider assigning more complex tasks
+- Typist workflow (#36443) needs investigation — new failure
 
 ### For Workflow Health Manager
-- Token budget exhaustion is now a systemic pattern (2+ workflows June 1) — consider P1 escalation
-- Firewall Logs Collector recurring failure: consider root-cause fix vs. repeated band-aids
-- chaos-test PR stall: 10+ open unmerged PRs consuming PR bandwidth
+- CJS typecheck P1 (#36410) filed June 2 — track resolution
+- CGO escalating — auto-notifier #35028 open
+- Step Name Alignment possibly resolved — confirm and close #36062/#36187 if confirmed
+
+Last updated: 2026-06-02T14:03:32Z by agent-performance-analyzer
