@@ -54,7 +54,10 @@ type copilotSDKStdinOptions struct {
 var copilotExecLog = logger.New("workflow:copilot_engine_execution")
 
 const customEngineCommandScriptPath = "/tmp/gh-aw/engine-command.sh"
-const nodeRuntimeResolutionCommand = `GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || true)"; fi; if [ -z "$GH_AW_NODE_EXEC" ]; then echo "node runtime missing on this runner — check runtimes.node in workflow YAML" >&2; exit 127; fi; "$GH_AW_NODE_EXEC"`
+const nodePathSetupCommand = `GH_AW_NPM_GLOBAL_ROOT="$(npm root -g 2>/dev/null || true)"; if [ -n "$GH_AW_NPM_GLOBAL_ROOT" ]; then export NODE_PATH="${GH_AW_NPM_GLOBAL_ROOT}${NODE_PATH:+:${NODE_PATH}}"; fi`
+const nodeRuntimeResolutionCommand = `GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || true)"; fi; if [ -z "$GH_AW_NODE_EXEC" ]; then echo "node runtime missing on this runner — check runtimes.node in workflow YAML" >&2; exit 127; fi; ` + nodePathSetupCommand + `; "$GH_AW_NODE_EXEC"`
+const nodePathSetupCommandForCopilotSDK = `GH_AW_WORKSPACE_NODE_MODULES="${GITHUB_WORKSPACE:-$PWD}/node_modules"; if [ -d "$GH_AW_WORKSPACE_NODE_MODULES" ]; then export NODE_PATH="${GH_AW_WORKSPACE_NODE_MODULES}${NODE_PATH:+:${NODE_PATH}}"; fi; ` + nodePathSetupCommand
+const nodeRuntimeResolutionCommandForCopilotSDK = `GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || true)"; fi; if [ -z "$GH_AW_NODE_EXEC" ]; then echo "node runtime missing on this runner — check runtimes.node in workflow YAML" >&2; exit 127; fi; ` + nodePathSetupCommandForCopilotSDK + `; "$GH_AW_NODE_EXEC"`
 
 // GetExecutionSteps returns the GitHub Actions steps for executing GitHub Copilot CLI
 func (e *CopilotEngine) GetExecutionSteps(workflowData *WorkflowData, logFile string) []GitHubActionStep {
@@ -213,15 +216,19 @@ func (e *CopilotEngine) GetExecutionSteps(workflowData *WorkflowData, logFile st
 	if workflowData.EngineConfig != nil && workflowData.EngineConfig.HarnessScript != "" {
 		harnessScriptName = workflowData.EngineConfig.HarnessScript
 	}
+	isCopilotSDKMode := workflowData.EngineConfig != nil && workflowData.EngineConfig.CopilotSDK
+
 	var execPrefix string
 	if harnessScriptName != "" {
 		// Harness wraps the copilot subprocess; ${RUNNER_TEMP} and ${GH_AW_NODE_BIN} expand in the shell context.
-		execPrefix = fmt.Sprintf(`%s %s/%s %s`, nodeRuntimeResolutionCommand, SetupActionDestinationShell, harnessScriptName, commandName)
+		runtimeResolutionCommand := nodeRuntimeResolutionCommand
+		if isCopilotSDKMode {
+			runtimeResolutionCommand = nodeRuntimeResolutionCommandForCopilotSDK
+		}
+		execPrefix = fmt.Sprintf(`%s %s/%s %s`, runtimeResolutionCommand, SetupActionDestinationShell, harnessScriptName, commandName)
 	} else {
 		execPrefix = commandName
 	}
-
-	isCopilotSDKMode := workflowData.EngineConfig != nil && workflowData.EngineConfig.CopilotSDK
 
 	if isCopilotSDKMode {
 		// SDK mode: all Copilot CLI options are bundled into a JSON payload piped via stdin.
@@ -255,7 +262,9 @@ func (e *CopilotEngine) GetExecutionSteps(workflowData *WorkflowData, logFile st
 		jsonStr := strings.ReplaceAll(string(optionsJSON), "'", `'\''`)
 		// No copilot CLI args are appended to the harness invocation: all options live in the
 		// JSON payload, so the harness command is simply `node harness copilot`.
-		copilotCommand = fmt.Sprintf(`printf '%%s' '%s' | %s`, jsonStr, execPrefix)
+		// Wrap the right-hand side in a shell group so stdin from the pipe reaches the harness
+		// command after node runtime resolution statements execute.
+		copilotCommand = fmt.Sprintf(`printf '%%s' '%s' | { %s; }`, jsonStr, execPrefix)
 	} else if sandboxEnabled {
 		// Sandbox mode: add workspace dir and pass prompt file path directly
 		copilotCommand = fmt.Sprintf(`%s %s --add-dir "${GITHUB_WORKSPACE}" --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt`, execPrefix, shellJoinArgs(copilotArgs))

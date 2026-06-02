@@ -100,6 +100,22 @@ func TestCopilotEngineInstallationSteps(t *testing.T) {
 	if len(stepsWithVersion) != 1 {
 		t.Errorf("Expected 1 installation step with version (install), got %d", len(stepsWithVersion))
 	}
+
+	workflowDataWithSDK := &WorkflowData{
+		EngineConfig: &EngineConfig{CopilotSDK: true},
+	}
+	stepsWithSDK := engine.GetInstallationSteps(workflowDataWithSDK)
+	if len(stepsWithSDK) != 2 {
+		t.Fatalf("Expected 2 installation steps with copilot-sdk enabled, got %d", len(stepsWithSDK))
+	}
+	sdkInstallStep := strings.Join(stepsWithSDK[1], "\n")
+	if !strings.Contains(sdkInstallStep, "name: Install GitHub Copilot SDK") {
+		t.Fatalf("Expected SDK install step name, got:\n%s", sdkInstallStep)
+	}
+	expectedSDKInstall := "cd \"${GITHUB_WORKSPACE}\" && npm install --ignore-scripts --no-save @github/copilot-sdk@" + string(constants.DefaultCopilotSDKVersion)
+	if !strings.Contains(sdkInstallStep, expectedSDKInstall) {
+		t.Fatalf("Expected SDK install command %q, got:\n%s", expectedSDKInstall, sdkInstallStep)
+	}
 }
 
 func TestCopilotEngineExecutionSteps(t *testing.T) {
@@ -248,6 +264,15 @@ func TestCopilotEngineExecutionStepsWithCopilotSDK(t *testing.T) {
 	if !strings.Contains(stepContent, expectedURI) {
 		t.Fatalf("Expected %s in step env, got:\n%s", expectedURI, stepContent)
 	}
+	if !strings.Contains(stepContent, `npm root -g`) || !strings.Contains(stepContent, `export NODE_PATH=`) {
+		t.Fatalf("Expected SDK mode command to configure NODE_PATH from npm global root, got:\n%s", stepContent)
+	}
+	if !strings.Contains(stepContent, `${GITHUB_WORKSPACE:-$PWD}/node_modules`) {
+		t.Fatalf("Expected SDK mode command to configure NODE_PATH from workspace node_modules, got:\n%s", stepContent)
+	}
+	if !strings.Contains(stepContent, `${NODE_PATH:+:${NODE_PATH}}`) {
+		t.Fatalf("Expected SDK mode command to preserve existing NODE_PATH entries, got:\n%s", stepContent)
+	}
 
 	// SDK mode pipes a JSON options payload via stdin.
 	// The payload must include promptFile and serverArgs (complete CLI arg list for the headless server).
@@ -277,6 +302,9 @@ func TestCopilotEngineExecutionStepsWithCopilotSDK(t *testing.T) {
 	}
 	// Copilot CLI args must NOT be passed as CLI args to the harness after the command name.
 	// In SDK mode the harness invocation is `... copilot` with no trailing flags.
+	if !strings.Contains(stepContent, "| { ") {
+		t.Fatalf("Expected SDK mode command to group runtime resolution after pipe so stdin reaches harness, got:\n%s", stepContent)
+	}
 	// Verify by checking that known CLI flags do not appear *after* the pipe character.
 	pipeIdx := strings.LastIndex(stepContent, "| ")
 	if pipeIdx >= 0 {

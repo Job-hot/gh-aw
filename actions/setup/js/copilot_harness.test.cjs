@@ -28,6 +28,7 @@ const {
   isAuthenticationFailedError,
   isModelAvailableInReflectData,
   isModelAvailableInReflectFile,
+  resolveCopilotSDKCustomProviderFromReflect,
   enrichReflectModels,
   extractModelIds,
   fetchAWFReflect,
@@ -274,6 +275,43 @@ describe("copilot_harness.cjs", () => {
         expect(result.output).toContain("send failed");
         expect(disconnect).toHaveBeenCalledTimes(1);
         expect(stop).toHaveBeenCalledTimes(1);
+      });
+
+      it("passes custom provider and model through to SDK createSession", async () => {
+        const disconnect = vi.fn().mockResolvedValue(undefined);
+        const stop = vi.fn().mockResolvedValue(undefined);
+        const createSession = vi.fn().mockResolvedValue({
+          sessionId: "session-provider",
+          on: () => {},
+          sendAndWait: vi.fn().mockResolvedValue({ data: { content: "ok" } }),
+          disconnect,
+        });
+        class FakeCopilotClient {
+          start = vi.fn().mockResolvedValue(undefined);
+          createSession = createSession;
+          stop = stop;
+        }
+
+        const result = await runWithCopilotSDK({
+          sdkUri: "http://127.0.0.1:3002",
+          prompt: "test prompt",
+          logger: () => {},
+          model: "gpt-5.4",
+          provider: { type: "openai", baseUrl: "http://api-proxy:10002" },
+          sdkModule: {
+            CopilotClient: FakeCopilotClient,
+            RuntimeConnection: { forUri: vi.fn(() => ({})) },
+            approveAll: () => "allow",
+          },
+        });
+
+        expect(result.exitCode).toBe(0);
+        expect(createSession).toHaveBeenCalledWith(
+          expect.objectContaining({
+            model: "gpt-5.4",
+            provider: { type: "openai", baseUrl: "http://api-proxy:10002" },
+          })
+        );
       });
     });
 
@@ -1204,11 +1242,10 @@ describe("copilot_harness.cjs", () => {
   });
 
   describe("log format", () => {
-    it("log lines include [copilot-harness] prefix and ISO timestamp", () => {
+    it("log lines include [copilot-harness] prefix without rendered timestamp", () => {
       // Verify the format matches what we expect in agent-stdio.log
-      const ts = new Date().toISOString();
-      const logLine = `[copilot-harness] ${ts} test message`;
-      expect(logLine).toMatch(/^\[copilot-harness\] \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+      const logLine = "[copilot-harness] test message";
+      expect(logLine).toBe("[copilot-harness] test message");
     });
   });
 
@@ -1317,6 +1354,25 @@ describe("copilot_harness.cjs", () => {
         const logs = [];
         expect(isModelAvailableInReflectFile("claude-sonnet-4.6", { reflectPath: reflectFile, logger: msg => logs.push(msg) })).toBe(true);
         expect(isModelAvailableInReflectFile("gpt-4.1", { reflectPath: reflectFile, logger: msg => logs.push(msg) })).toBe(false);
+      } finally {
+        fs.unlinkSync(reflectFile);
+      }
+    });
+
+    it("derives SDK custom provider and model from reflect data", () => {
+      const reflectFile = path.join(os.tmpdir(), `awf-reflect-provider-${Date.now()}.json`);
+      try {
+        fs.writeFileSync(
+          reflectFile,
+          JSON.stringify({
+            endpoints: [{ provider: "copilot", port: 10002, configured: true, models: ["gpt-5.4", "claude-sonnet-4.6"] }],
+          }),
+          "utf8"
+        );
+        expect(resolveCopilotSDKCustomProviderFromReflect({ reflectPath: reflectFile })).toEqual({
+          model: "gpt-5.4",
+          provider: { type: "openai", baseUrl: "http://api-proxy:10002" },
+        });
       } finally {
         fs.unlinkSync(reflectFile);
       }
