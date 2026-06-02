@@ -1,7 +1,7 @@
 {
   "counts": {
     "sub_agent_strategy": {
-      "single_agent": 18,
+      "single_agent": 19,
       "sub_agents": 22
     }
   },
@@ -282,6 +282,13 @@
     {
       "run_id": "26788943021",
       "timestamp": "2026-06-01T23:43:10.180Z",
+      "assignments": {
+        "sub_agent_strategy": "single_agent"
+      }
+    },
+    {
+      "run_id": "26789674021",
+      "timestamp": "2026-06-02T00:02:21.884Z",
       "assignments": {
         "sub_agent_strategy": "single_agent"
       }
