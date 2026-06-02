@@ -1,14 +1,15 @@
 {
-  "run_date": "2026-06-02T01:25:00Z",
-  "run_id": "26792520949",
+  "run_date": "2026-06-02T07:58:41Z",
+  "run_id": "26806475458",
   "fork_prs": 0,
-  "agent_prs_found": 3,
+  "agent_prs_found": 4,
   "prs_found": [
-    {"number": 36371, "author": "app/github-actions", "branch": "docs-healer-frontmatter-anchors-2026-06-02-55baa7ab5d38cfc2", "is_fork": false},
-    {"number": 36358, "author": "app/copilot-swe-agent", "branch": "copilot/fix-copilot-sdk-integration", "is_fork": false},
-    {"number": 36353, "author": "app/copilot-swe-agent", "branch": "copilot/fix-secrets-exposure-issue", "is_fork": false}
+    {"number": 36421, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Recompute effective tokens from raw usage with current weights"},
+    {"number": 36415, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Refactor harness permission-denied handling into shared helper"},
+    {"number": 36412, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Add on-demand token audit workflow with date-range dispatch"},
+    {"number": 36404, "author": "app/github-actions", "is_fork": false, "title": "[jsweep] Clean validate_memory_files.cjs"}
   ],
-  "notes": "3 open bot-authored PRs found (#36371, #36358, #36353) but all are from internal branches. Fork-only policy excludes all. No PRs to triage.",
+  "notes": "4 open bot-authored PRs found (#36421, #36415, #36412, #36404) but all are from internal branches. Fork-only policy excludes all. No PRs to triage.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
