@@ -1,6 +1,6 @@
 {
   "updated": "2026-06-02",
-  "note": "06-02 AFTERNOON re-audit (47 completed, 89.4%, 14:31-17:23Z) complementing morning #36398. token-budget-429 ABSENT this window (positive). 5 failures / 5 distinct classes, 3 infra/experimental/non-agent. NEW: runner-infra-node-missing (exit127), agent-timeout-no-output (Avenger opus 48min). safe-output count-exceeded variant (CLI Consistency). copilot-sdk session.idle timeout (ab-advisor experiment).",
+  "note": "06-02 EVENING re-audit (46 completed, 97.8%, 16:51-19:34Z) — third 06-02 window. ONLY 1 failure: copilot-sdk session.idle 600s timeout, now on a PRODUCTION schedule/main workflow (Daily Security Observability Report) — ESCALATION from experimental-branch-only. safe-output partial-failure ABSENT, token-budget-429 ABSENT (both positive). sdk-driver path now ~14/48 copilot+codex runs. Prior (AFTERNOON, 47 completed, 89.4%): token-budget-429 absent, 5 failures/5 classes incl runner-infra-node-missing exit127, agent-timeout Avenger opus 48min, safe-output count-exceeded.",
   "anomalies": [
     {
       "id": "token-budget-429-effective-tokens",
@@ -18,10 +18,10 @@
     },
     {
       "id": "copilot-sdk-session-auth",
-      "persist": 1,
-      "state": "new-dev-iteration",
-      "last": "06-02",
-      "t": "NEW: Smoke Copilot SDK failed 4x at agent T0 on feature branch copilot/fix-copilot-sdk-integration \u2014 'Session was not created with authentication info or custom provider' from copilot-sdk sdk-driver on 'sending prompt'. 4 distinct SHAs dispatched over ~3h = active dev iteration on experimental SDK integration, NOT a production regression. Headless server warns 'No COPILOT_CONNECTION_TOKEN set'. Watch-only until the fix lands."
+      "persist": 3,
+      "state": "escalated-production-main",
+      "last": "2026-06-02",
+      "t": "ESCALATED (06-02 evening): the copilot-sdk session.idle 600s timeout hit a PRODUCTION schedule/main workflow \u2014 Daily Security Observability Report 26836111514 (the evening window's ONLY failure). Session created, provider resolved WITH auth, prompt sent, then 'Timeout after 600000ms waiting for session.idle', hasOutput=false, NOT retried, exit1, 10m. sdk-driver path now ~14/48 copilot+codex runs; legacy path 0/34. No longer experimental-only. Earlier variants: Smoke Copilot SDK auth-info failure 4x on copilot/fix-copilot-sdk-integration (morning); PR Code Quality Reviewer session.idle timeout on ab-advisor branch (afternoon)."
     },
     {
       "id": "daily-success-rate-trend",

@@ -58,9 +58,9 @@
     },
     {
       "id": "gate-copilot-sdk-experimental-from-pr-triggers",
-      "p": "medium",
+      "p": "high",
       "iss": "copilot-sdk-session-auth",
-      "s": "UPDATED: the experimental copilot-sdk path now shows BOTH a session-auth failure (morning) and a session.idle 600s TIMEOUT (PR Code Quality Reviewer 26827796547 on copilot/ab-advisor-experiment-campaign-max-turns, afternoon). Recommend gating the experimental copilot-sdk / ab-advisor max-turns campaign workflows from scheduled/PR triggers until the SDK session lifecycle (auth + idle) is stable, so dev-iteration noise stops polluting failure metrics."
+      "s": "ESCALATED to HIGH (06-02 evening): the copilot-sdk session.idle 600s timeout is no longer experimental-branch-only — it hit a PRODUCTION schedule/main workflow (Daily Security Observability Report 26836111514), the evening window's ONLY failure. The sdk-driver path is now rolled out to ~14/48 copilot+codex runs (~13 prod copilot wfs), with an intermittent ~7% session.idle hang (legacy copilot CLI path 0/34). FIX (High): (1) RETRY at least once after a session.idle timeout — the current 'no output produced -> not retrying' rule is wrong here: the session WAS created and the prompt WAS sent, so it is a mid-session hang, not a startup crash, and a retry would likely succeed; (2) root-cause why the headless Copilot server never emits session.idle for some prompts (long tool-loop / lost SDK event / missing idle signal); (3) until the sdk-driver session lifecycle is stable, lower the sdk-driver rollout percentage or keep heavy/long-running production workflows (e.g. Daily Security Observability Report, 27.5m) on the legacy copilot path. Earlier variants: session-auth 'Session was not created with authentication info or custom provider' (Smoke Copilot SDK morning), session.idle timeout on ab-advisor branch (afternoon)."
     }
   ]
 }
