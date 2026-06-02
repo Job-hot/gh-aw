@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-06-01T00:00:00Z",
+  "last_updated": "2026-06-02T00:00:00Z",
   "tool_count": 23,
-  "tool_change_R25": "NONE — Serena LSP stable at 23 (R4-25, 22 consec). Registered linters 18->19: NEW fmterrorfnoverbs (cmd/linters/main.go:25 import, :49 register) flags fmt.Errorf no-%-verb single string literal -> errors.New; NO //nolint support. CI ENFORCEMENT 9->10: maintainer appended -uncheckedtypeassertion to cgo.yml:1040 (sg24a1 R24 finding landed within the week — 4th consec). Both ResultOf type-assert sites now two-value form.",
+  "tool_change_R26": "NONE on Serena LSP — stable at 23 (R4-26, 23 consec). Registered linters 19->20: NEW seenmapbool (cmd/linters/main.go:35 import, :59 register; pkg/linters/seenmapbool) flags LOCAL map[string]bool set (only =true) -> map[string]struct{}; NO //nolint support; inspectBody escape-blind. CI ENFORCEMENT 10->11: maintainer appended -fmterrorfnoverbs to cgo.yml:1040 (sg25a1 R25 finding landed within the week — 5th consec); utc_offset.go:24/29/33 -> errors.New. seenmapbool NOT near-zero (60+ prod sites) -> first non-clean-enforce registered linter in 5 runs.",
   "tools": [
     "activate_project", "check_onboarding_performed", "delete_memory", "edit_memory",
     "find_file", "find_referencing_symbols", "find_symbol", "get_current_config",
