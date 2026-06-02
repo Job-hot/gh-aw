@@ -459,6 +459,29 @@ Workflows compiled with `strict: false` cannot run on public repositories. The w
 
 See [Network Permissions - Strict Mode Validation](/gh-aw/reference/network/#strict-mode-validation) for details on network validation and [CLI Commands](/gh-aw/setup/cli/#compile) for compilation options.
 
+### Check for Updates
+
+The `check-for-updates:` field controls whether the compile-agentic version update check runs in the activation job. When `true` (the default), the activation job downloads `config.json` from the gh-aw repository and verifies that the compiled version is not blocked and meets the minimum supported version.
+
+```yaml wrap
+check-for-updates: false  # Skip the version check in the activation job
+```
+
+Setting `check-for-updates: false` disables the check. This is not allowed in strict mode.
+
+### Run Install Scripts
+
+The `run-install-scripts:` field allows npm pre/post install scripts to execute during package installation. By default (`false`), `--ignore-scripts` is added to all generated npm install commands to prevent supply chain attacks via malicious install hooks.
+
+```yaml wrap
+run-install-scripts: true  # Allow npm install hooks to run (all runtimes)
+```
+
+Setting `run-install-scripts: true` disables this protection globally for every runtime. The compiler emits a supply chain security warning; in strict mode this is an error. Use `runtimes.<runtime>.run-install-scripts` to control the behavior for a single runtime instead.
+
+> [!WARNING]
+> Enabling install scripts removes a supply chain safeguard. Only set `run-install-scripts: true` when a dependency genuinely requires install hooks, and prefer scoping it to a single runtime.
+
 ## Related Documentation
 
 See also: [Trigger Events](/gh-aw/reference/triggers/), [AI Engines](/gh-aw/reference/engines/), [CLI Commands](/gh-aw/setup/cli/), [Workflow Structure](/gh-aw/reference/workflow-structure/), [Network Permissions](/gh-aw/reference/network/), [Feature Flags](/gh-aw/reference/feature-flags/), [Custom Steps and Jobs](/gh-aw/reference/steps-jobs/), [OpenTelemetry](/gh-aw/reference/open-telemetry/), [Command Triggers](/gh-aw/reference/command-triggers/), [MCPs](/gh-aw/guides/mcps/), [Tools](/gh-aw/reference/tools/), [Imports](/gh-aw/reference/imports/)
