@@ -1,48 +1,48 @@
 {
   "updated": "2026-06-02",
-  "note": "06-02 full window (57 completed, 84.2% — DOWN from 06-01's 96.2% peak). 9 failures / 3 classes. token-budget-429 RE-ESCALATED (2 wf over cap), safe-output partial-failure-intolerance persists (3 wf), NEW copilot-sdk-session-auth (4 dev-iteration runs / 1 experimental wf). Cost outlier Semantic Function Refactoring $6.35 (success).",
+  "note": "06-02 AFTERNOON re-audit (47 completed, 89.4%, 14:31-17:23Z) complementing morning #36398. token-budget-429 ABSENT this window (positive). 5 failures / 5 distinct classes, 3 infra/experimental/non-agent. NEW: runner-infra-node-missing (exit127), agent-timeout-no-output (Avenger opus 48min). safe-output count-exceeded variant (CLI Consistency). copilot-sdk session.idle timeout (ab-advisor experiment).",
   "anomalies": [
     {
       "id": "token-budget-429-effective-tokens",
       "persist": 4,
-      "state": "re-escalating",
-      "last": "06-02",
-      "t": "RE-ESCALATED: did NOT recur 06-01 but came back on 2 workflows 06-02, both OVER the 25M cap. Daily Firewall Logs 25.67M/25M (RECURRENCE of the same workflow that failed 05-31) + Smoke Copilot 25.50M/25M (NEW in class, failed at T74 after 14/16 smoke checks). Harness retried 5x (~83-92s each) before giving up. Maps to open #35661. Needs heavy-workflow scope-chunking + harness fail-fast on the maxEffectiveTokensExceeded signature."
+      "state": "intermittent-window-quiet",
+      "last": "2026-06-02",
+      "t": "06-02 AFTERNOON: did NOT recur (top eff_tok 23.79M < 25M cap, SUCCESS). 2nd window-level reprieve. But the 06-02 MORNING window had 2 over-cap failures, so still intermittent. Open #35661. Heavy daily-aggregation workflows keep flirting with the cap."
     },
     {
       "id": "safe-output-partial-failure-intolerance",
-      "persist": 9,
+      "persist": 10,
       "state": "persistent-dominant",
-      "last": "06-02",
-      "t": "3 of 9 failures today, all agent-exit-0 / safe_outputs-job-red. LintMonster update_issue target=triggering not-in-issue-context (RECURRENCE), Smoke Codex set_issue_field 'No issue number available', PR Sous Chef update_pull_request #36353 ERR_API branch-from-base (API-error variant). Variants now span target=*, target=triggering, no-number, transient ERR_API. Root defect unchanged: whole job red on ANY failed item instead of skip-with-warning when >=1 succeeded. Needs partial-failure tolerance + emit-time validation."
+      "last": "2026-06-02",
+      "t": "06-02 afternoon +1 variant: CLI Consistency Checker over-emitted a capped type (3x create_issue, max 1) -> agent step exit 1 despite the 1 allowed issue landing. Variants now span target=*, target=triggering, no-number, ERR_API, AND count-exceeded. Root: validation red-fails the run despite useful output."
     },
     {
       "id": "copilot-sdk-session-auth",
       "persist": 1,
       "state": "new-dev-iteration",
       "last": "06-02",
-      "t": "NEW: Smoke Copilot SDK failed 4x at agent T0 on feature branch copilot/fix-copilot-sdk-integration — 'Session was not created with authentication info or custom provider' from copilot-sdk sdk-driver on 'sending prompt'. 4 distinct SHAs dispatched over ~3h = active dev iteration on experimental SDK integration, NOT a production regression. Headless server warns 'No COPILOT_CONNECTION_TOKEN set'. Watch-only until the fix lands."
+      "t": "NEW: Smoke Copilot SDK failed 4x at agent T0 on feature branch copilot/fix-copilot-sdk-integration \u2014 'Session was not created with authentication info or custom provider' from copilot-sdk sdk-driver on 'sending prompt'. 4 distinct SHAs dispatched over ~3h = active dev iteration on experimental SDK integration, NOT a production regression. Headless server warns 'No COPILOT_CONNECTION_TOKEN set'. Watch-only until the fix lands."
     },
     {
       "id": "daily-success-rate-trend",
-      "persist": 11,
+      "persist": 12,
       "state": "regression-from-peak",
-      "last": "06-02",
-      "t": "84.2% completion (48/57) — DOWN sharply from 06-01's 96.2% peak (the best in the window). 15-window trend: 85.9 -> 75.6 -> 41.6 -> 81.1 -> 94.7 -> 85.7 -> 90.9 -> 81.0 -> 89.5 -> 91.1 -> 89.8 -> 96.2 -> 84.2. The drop is driven by 3 concurrent classes (429 x2, safe-output x3, copilot-sdk-auth x4). Note the 4 copilot-sdk-auth failures are a single experimental dev-iteration workflow; excluding it, effective success ~90.6% (48/53). 6 runs in-progress at audit time."
+      "last": "2026-06-02",
+      "t": "06-02 afternoon window 89.4% (42/47) \u2014 back in the stable ~89-91% band after the morning window's 84.2%. 15-day daily trend (one point/day): ...89.8 -> 96.2 (06-01 peak) -> 84.2 (06-02 full-day). Afternoon slice is healthier; no 429, failures are spread across infra/experimental classes rather than one dominant mode."
     },
     {
       "id": "high-cost-runs",
       "persist": 15,
       "state": "single-outlier",
       "last": "06-02",
-      "t": "Cost top: Semantic Function Refactoring $6.35 / 14.3M eff / 43 turns (SUCCESS) — well above 06-01's flat $2.98 top and the single largest claude run. Then Daily Documentation Healer $2.00, Smoke Claude $1.55. Total $15.05 claude-measured (copilot/codex/gemini/pi/antigravity EstimatedCost=0). Top eff_tok both 429-failures over the 25M cap (Daily Firewall Logs 25.67M, Smoke Copilot 25.22M). Watch Semantic Function Refactoring for recurrence at this magnitude."
+      "t": "Cost top: Semantic Function Refactoring $6.35 / 14.3M eff / 43 turns (SUCCESS) \u2014 well above 06-01's flat $2.98 top and the single largest claude run. Then Daily Documentation Healer $2.00, Smoke Claude $1.55. Total $15.05 claude-measured (copilot/codex/gemini/pi/antigravity EstimatedCost=0). Top eff_tok both 429-failures over the 25M cap (Daily Firewall Logs 25.67M, Smoke Copilot 25.22M). Watch Semantic Function Refactoring for recurrence at this magnitude."
     },
     {
       "id": "firewall-smoke-block-rate",
       "persist": 2,
       "state": "by-design",
       "last": "06-02",
-      "t": "Firewall blocks 698/3936 (17.6%), down from 19.3%. Hotspots all smoke probes: Smoke Copilot 56/136 (41%), Smoke Codex 38/114 (33%), Smoke Gemini 25/78 (32%), Smoke Claude 29/97 (30%) — Google telemetry + (unknown) SNI + Playwright azureedge + localhost. By-design, no failure-causing blocks. No action."
+      "t": "Firewall blocks 698/3936 (17.6%), down from 19.3%. Hotspots all smoke probes: Smoke Copilot 56/136 (41%), Smoke Codex 38/114 (33%), Smoke Gemini 25/78 (32%), Smoke Claude 29/97 (30%) \u2014 Google telemetry + (unknown) SNI + Playwright azureedge + localhost. By-design, no failure-causing blocks. No action."
     },
     {
       "id": "threat-detection-missing-prompt",
@@ -57,6 +57,20 @@
       "state": "resolved-transient",
       "last": "05-31",
       "t": "Did NOT recur 06-02 (2 consecutive quiet windows). External-cause transient; checkout skip-cleanly guard remains a low-priority idea."
+    },
+    {
+      "id": "runner-infra-node-missing-exit127",
+      "persist": 1,
+      "state": "new-infra",
+      "last": "2026-06-02",
+      "t": "NEW: Daily Issues Report Generator 26831132205 agent exit 127 \u2014 copilot_harness 'node runtime missing on this runner' guard fired. Runner lacked usable node. Pre-agent infra, single occurrence. Watch recurrence -> runtimes.node / runner image."
+    },
+    {
+      "id": "agent-timeout-no-output",
+      "persist": 1,
+      "state": "new",
+      "last": "2026-06-02",
+      "t": "NEW: Avenger (claude/opus) ran 48.4min then failed turns=0 / empty output \u2014 agent-step time-limit while still dispatching Bash+TaskOutput. No safe output emitted. Single occurrence; watch for a stuck TaskOutput poll pattern."
     }
   ]
 }

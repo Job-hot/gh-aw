@@ -1,40 +1,40 @@
 {
   "updated": "2026-06-02",
-  "note": "2026-06-02 full window (57 completed, 84.2% success — DOWN sharply from 06-01's 96.2% peak). 9 failures across 3 classes. token-budget-429 (#35661) RE-ESCALATED after one quiet window: 2 workflows blew past the 25M cap. safe-output partial-failure-intolerance persists across 3 workflows. NEW class: copilot-sdk-session-auth (4 dev-iteration dispatch runs on 1 experimental feature branch). threat-detection-missing-prompt and pr-branch-deleted-race stayed quiet.",
+  "note": "2026-06-02 AFTERNOON re-audit (47 completed, 89.4%, window 14:31-17:23Z) complementing the morning audit #36398. POSITIVE: token-budget-429 did NOT recur this window (top eff_tok 23.79M < 25M cap). safe-output partial-failure-intolerance persists (CLI Consistency Checker count-exceeded variant). TWO NEW classes: runner-infra-node-missing (exit 127, Daily Issues Report Generator) and agent-timeout-no-output (Avenger opus, 48min). copilot-sdk experimental class recurred as a session.idle TIMEOUT variant (PR Code Quality Reviewer on ab-advisor branch).",
   "issues": [
     {
       "id": "token-budget-429-effective-tokens",
       "sev": "high",
       "cat": "cost_budget",
       "first": "05-30",
-      "last": "06-02",
+      "last": "2026-06-02",
       "n": 4,
       "r24": 2,
       "tracker": "#35661",
-      "title": "RE-ESCALATED high: 25M effective-token cap 429 hit 2 workflows on 06-02 after 1 quiet window — Daily Firewall Logs 25.67M (RECURRENCE) + Smoke Copilot 25.50M (NEW)",
-      "detail": "Both over the 25M effective-token cap. (A) Daily Firewall Logs Collector 26796384191 (copilot): 'CAPIError: 429 Maximum effective tokens exceeded (25666412.40 / 25000000)', retried 5x (~83-92s each), agent step exit 1, isMaxEffectiveTokensExceededError=true. RECURRENCE on the SAME workflow that 429'd on 05-31. (B) Smoke Copilot 26788943047 (copilot, T74): reached 14/16 smoke checks then 'CAPIError: 429 Maximum effective tokens exceeded (25499262.00 / 25000000)'. NEW workflow in this class. Severity re-raised medium->high: the 06-01 quiet window was a reprieve, not a fix; heavy daily-aggregation workflows keep flirting with the cap (06-01 Linter Miner 22.5M, today's two over). Maps to open #35661. FIX: (1) reduce effective-token footprint of heavy daily-aggregation workflows (scope/chunk Daily Firewall Logs especially); (2) harness FAIL-FAST on the 429 'Maximum effective tokens exceeded' signature instead of 5 retries — a hard cap cannot be recovered by --continue and the retries burn ~7-8 min/run."
+      "title": "WATCH this window: token-budget-429 did NOT recur in the 06-02 afternoon window (top eff_tok 23.79M < 25M cap, SUCCESS). Stays OPEN #35661 \u2014 morning window had 2 over-cap; remains intermittent.",
+      "detail": "06-02 afternoon (14:31-17:23Z): NO 429 / no isMaxEffectiveTokensExceededError=true. Heaviest run UK AI Operational Resilience 23.79M succeeded under the 25M cap. This is the SECOND window-level reprieve (06-01 was also quiet) but the morning 06-02 window had 2 over-cap failures (Daily Firewall Logs 25.67M, Smoke Copilot 25.50M), so the cap stays intermittently hit by heavy daily-aggregation workflows. Maps to open #35661. FIX unchanged: (1) scope/chunk heavy daily-aggregation workflows; (2) harness FAIL-FAST on the maxEffectiveTokensExceeded signature instead of 5 retries."
     },
     {
       "id": "safe-output-partial-failure-intolerance",
       "sev": "high",
       "cat": "safe_output",
       "first": "05-26",
-      "last": "06-02",
-      "n": 9,
-      "r24": 3,
-      "title": "PERSISTENT top class: one failed/invalid safe-output item red-fails the WHOLE safe_outputs job even when other items succeeded — 3 more workflows on 06-02 (now 9+ distinct since 05-26)",
-      "detail": "3 of today's 9 failures are this class, all with agent step exit 0 (agent succeeded, safe_outputs job red): (A) LintMonster 26796998912 (copilot): update_issue with target='triggering' but NOT in issue context (schedule event) -> 'Message 1 (update_issue) failed' -> whole job red. RECURRENCE on LintMonster (also 05-31). (B) Smoke Codex 26788943036 (codex): set_issue_field 'No issue number available' -> 'Message 2 failed' -> job red. (C) PR Sous Chef 26794554270 (copilot): update_pull_request #36353 'ERR_API ... branch from base failed' -> 'Message 2 failed' -> job red (API-error variant, not target=*). Root defect UNCHANGED: 'Process Safe Outputs' fails the whole job on ANY failed item rather than skip-with-warning when >=1 item succeeded. Variants now span target='*', target='triggering', no-issue-number, and transient ERR_API. FIX (High): (1) make Process Safe Outputs treat individual failed items as skipped-with-warning when >=1 item in the batch succeeded; (2) validate target='*'/'triggering' at the MCP emit boundary on schedule/non-issue/non-PR events so the agent self-corrects in-loop; (3) for ERR_API on update_pull_request branch-from-base, retry/treat as soft."
+      "last": "2026-06-02",
+      "n": 10,
+      "r24": 1,
+      "title": "PERSISTENT: +1 variant on 06-02 afternoon \u2014 CLI Consistency Checker over-emitted a CAPPED safe-output type (3x create_issue, max 1), red-failing the AGENT step despite the 1 allowed issue being created",
+      "detail": "Root defect family unchanged: a safe-output validation problem red-fails the run even though useful output landed. 06-02 afternoon variant: CLI Consistency Checker 26826617790 (copilot) emitted 3x create_issue but the type cap is 1 -> 2 'Too many items of type create_issue. Maximum allowed: 1' validation errors -> AGENT step exit 1 -> run failure, while the safe_outputs job SUCCEEDED and created the 1 allowed issue. Variants now span target=*, target=triggering, no-issue-number, transient ERR_API, AND count-exceeded. FIX (High): (1) when a capped type is over-emitted, KEEP the first N allowed items and emit a WARNING instead of failing the agent step; (2) make Process Safe Outputs treat individual failed/over-limit items as skipped-with-warning when >=1 item succeeded; (3) validate target/context at the MCP emit boundary so the agent self-corrects in-loop."
     },
     {
       "id": "copilot-sdk-session-auth",
       "sev": "watch",
       "cat": "engine_integration",
       "first": "06-02",
-      "last": "06-02",
-      "n": 1,
-      "r24": 4,
-      "title": "NEW (dev-iteration): Smoke Copilot SDK failed 4x at agent T0 — 'Session was not created with authentication info or custom provider'",
-      "detail": "4 workflow_dispatch runs (26792092514, 26793757607, 26795908399, 26797319253) on experimental feature branch copilot/fix-copilot-sdk-integration all failed at the agent step with T0: copilot-sdk headless server starts (port 3002), sdk-driver connects + creates a session, then on 'sending prompt' throws uncaught 'Error: Execution failed: Error: Session was not created with authentication info or custom provider' and exits 1. This is an in-development experimental Copilot SDK integration being iterated via repeated manual dispatch (4 distinct SHAs over ~3h), NOT a production-workflow regression. Watch-only: confirm the fix lands and the SDK session is created WITH auth info / a custom provider before this graduates from smoke. The headless server warns 'No COPILOT_CONNECTION_TOKEN was set' — likely the missing auth-info path."
+      "last": "2026-06-02",
+      "n": 2,
+      "r24": 1,
+      "title": "EXPERIMENTAL (dev-iteration): +timeout variant 06-02 afternoon \u2014 PR Code Quality Reviewer copilot-sdk 'Timeout after 600000ms waiting for session.idle' on ab-advisor experiment branch",
+      "detail": "4 workflow_dispatch runs (26792092514, 26793757607, 26795908399, 26797319253) on experimental feature branch copilot/fix-copilot-sdk-integration all failed at the agent step with T0: copilot-sdk headless server starts (port 3002), sdk-driver connects + creates a session, then on 'sending prompt' throws uncaught 'Error: Execution failed: Error: Session was not created with authentication info or custom provider' and exits 1. This is an in-development experimental Copilot SDK integration being iterated via repeated manual dispatch (4 distinct SHAs over ~3h), NOT a production-workflow regression. Watch-only: confirm the fix lands and the SDK session is created WITH auth info / a custom provider before this graduates from smoke. The headless server warns 'No COPILOT_CONNECTION_TOKEN was set' \u2014 likely the missing auth-info path. | 06-02 afternoon: PR Code Quality Reviewer 26827796547 on branch copilot/ab-advisor-experiment-campaign-max-turns hit a NEW failure mode in the same experimental copilot-sdk family: sdk-driver 'Timeout after 600000ms waiting for session.idle' (10m hard), no output, not retried. Still experimental dev-iteration (ab-advisor max-turns campaign), not a production regression. Watch-only."
     },
     {
       "id": "semantic-function-refactoring-cost-top",
@@ -45,7 +45,7 @@
       "n": 1,
       "r24": 1,
       "title": "WATCH (new): Semantic Function Refactoring is the day's cost top at $6.35 / 14.3M eff-tok / 43 turns (SUCCESS)",
-      "detail": "claude-engine run, $6.35 EstimatedCost — well above 06-01's flat top of $2.98, and the single largest claude run this window. Succeeded. Not anomalous on its own (one heavy refactor), but it single-handedly lifts the claude-measured daily cost band. Watch whether it recurs at this magnitude or grows; if it becomes a regular >$6 daily tail, consider scoping its task. No action yet."
+      "detail": "claude-engine run, $6.35 EstimatedCost \u2014 well above 06-01's flat top of $2.98, and the single largest claude run this window. Succeeded. Not anomalous on its own (one heavy refactor), but it single-handedly lifts the claude-measured daily cost band. Watch whether it recurs at this magnitude or grows; if it becomes a regular >$6 daily tail, consider scoping its task. No action yet."
     },
     {
       "id": "threat-detection-missing-prompt",
@@ -55,7 +55,7 @@
       "last": "05-31",
       "n": 1,
       "r24": 0,
-      "title": "Did NOT recur on 06-02 — threat-detection prompt.txt missing infra failure not seen for 2 windows",
+      "title": "Did NOT recur on 06-02 \u2014 threat-detection prompt.txt missing infra failure not seen for 2 windows",
       "detail": "No 'ERR_SYSTEM: Prompt file not found at /tmp/gh-aw/threat-detection/aw-prompts/prompt.txt' signatures in the 06-02 window. Harden-the-cp recommendation (don't mask with '|| true'; verify prompt exists before invoking detection agent) stays OPEN as a preventive since the shared detection harness still exposes every create_pull_request workflow."
     },
     {
@@ -66,7 +66,7 @@
       "last": "05-31",
       "n": 2,
       "r24": 0,
-      "title": "Did NOT recur on 06-02 — Test Quality Sentinel & Design Decision Gate passed (or in-progress, no failures)",
+      "title": "Did NOT recur on 06-02 \u2014 Test Quality Sentinel & Design Decision Gate passed (or in-progress, no failures)",
       "detail": "The 05-31 transient PR-head-branch-deleted race did not repeat across 2 consecutive windows. External-cause/transient; the optional checkout 'skip-cleanly on deleted branch' guard remains a low-priority noise-reduction idea."
     },
     {
@@ -100,7 +100,7 @@
       "n": 10,
       "r24": 0,
       "title": "Stable: 42 copilot runs, 0 ENOENT / 0 anthropic-beta / 0 model-not-supported errors",
-      "detail": "Copilot CLI harness stable across 42 copilot runs. Today's copilot failures were token-budget-429 (2) and safe-output partial-failure (2) classes — not CLI harness regressions. Distinct experimental Copilot SDK (sdk-driver) auth failure is tracked separately under copilot-sdk-session-auth."
+      "detail": "Copilot CLI harness stable across 42 copilot runs. Today's copilot failures were token-budget-429 (2) and safe-output partial-failure (2) classes \u2014 not CLI harness regressions. Distinct experimental Copilot SDK (sdk-driver) auth failure is tracked separately under copilot-sdk-session-auth."
     },
     {
       "id": "codex-model-not-found-alpha",
@@ -112,6 +112,28 @@
       "r24": 0,
       "title": "RESOLVED: 5 codex runs on 06-02, no model-not-found/404. Today's Smoke Codex failure was the safe-output class",
       "detail": "5 codex runs in the 06-02 window, no model-not-found/404 alpha-routing signatures. Smoke Codex's failure was set_issue_field safe-output partial-failure, not a model config issue. Remains fully closed."
+    },
+    {
+      "id": "runner-infra-node-missing-exit127",
+      "sev": "watch",
+      "cat": "infrastructure",
+      "first": "2026-06-02",
+      "last": "2026-06-02",
+      "n": 1,
+      "r24": 1,
+      "title": "NEW (infra): Daily Issues Report Generator failed agent step with exit 127 \u2014 'node runtime missing on this runner'",
+      "detail": "Daily Issues Report Generator 26831132205 (copilot, schedule/main): agent step exit 127. The copilot_harness guard fired: 'node runtime missing on this runner \u2014 check runtimes.node in workflow YAML; exit 127'. The runner lacked a usable node binary (GH_AW_NODE_BIN unset/non-exec and `command -v node` empty). Pre-agent INFRA failure, not agent logic. Watch for recurrence \u2014 if it repeats, the workflow's runtimes.node setup or runner image is the culprit. Single occurrence this window."
+    },
+    {
+      "id": "agent-timeout-no-output",
+      "sev": "watch",
+      "cat": "performance",
+      "first": "2026-06-02",
+      "last": "2026-06-02",
+      "n": 1,
+      "r24": 1,
+      "title": "NEW: Avenger (claude/opus) ran 48.4min then failed with turns=0 / empty output \u2014 agent-step time-limit while still working",
+      "detail": "Avenger 26831111185 (claude, opus-4-8, schedule/main): agent job ran 15:47:48->16:36:13Z (48.4min) actively making opus /v1/messages calls and dispatching Bash + TaskOutput tools, then failed with run.Turns=0, ErrorCount=0, agent_output items:[]. Hit the agent step time limit (or a stuck long-running TaskOutput/Bash) without ever emitting a safe output. Watch: if Avenger recurs at ~48min, cap its turns/time or investigate a blocking TaskOutput poll. Single occurrence."
     }
   ]
 }

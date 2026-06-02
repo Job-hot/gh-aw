@@ -6,25 +6,25 @@
       "p": "high",
       "iss": "token-budget-429-effective-tokens",
       "tracker": "#35661",
-      "s": "RE-ESCALATED to HIGH — 429 came back on 2 workflows 06-02 after one quiet window, both OVER the 25M effective-token cap (Daily Firewall Logs 25.67M RECURRENCE, Smoke Copilot 25.50M NEW). (1) Reduce the effective-token footprint of heavy daily-aggregation workflows — Daily Firewall Logs especially keeps blowing the cap; scope/chunk its log-processing so it stays comfortably under 25M. (2) Harness: on the 'CAPIError: 429 Maximum effective tokens exceeded' / isMaxEffectiveTokensExceededError=true signature, FAIL FAST instead of retrying 5x — each retry waits ~83-92s and a hard cap cannot be recovered by --continue, so today's two failures burned ~7-8 min apiece for nothing. Ties into open #35661."
+      "s": "RE-ESCALATED to HIGH \u2014 429 came back on 2 workflows 06-02 after one quiet window, both OVER the 25M effective-token cap (Daily Firewall Logs 25.67M RECURRENCE, Smoke Copilot 25.50M NEW). (1) Reduce the effective-token footprint of heavy daily-aggregation workflows \u2014 Daily Firewall Logs especially keeps blowing the cap; scope/chunk its log-processing so it stays comfortably under 25M. (2) Harness: on the 'CAPIError: 429 Maximum effective tokens exceeded' / isMaxEffectiveTokensExceededError=true signature, FAIL FAST instead of retrying 5x \u2014 each retry waits ~83-92s and a hard cap cannot be recovered by --continue, so today's two failures burned ~7-8 min apiece for nothing. Ties into open #35661. | 06-02 afternoon: 429 did NOT recur (top 23.79M < 25M). Stays OPEN/HIGH \u2014 intermittent across windows; the fail-fast + chunking fix is still warranted."
     },
     {
       "id": "harden-safe-output-partial-failure-tolerance",
       "p": "high",
       "iss": "safe-output-partial-failure-intolerance",
-      "s": "STILL HIGH — 3 of 06-02's 9 failures are this class (LintMonster, Smoke Codex, PR Sous Chef), all agent-exit-0 / safe_outputs-job-red. (1) Make 'Process Safe Outputs' treat an individual failed/invalid item as skipped-with-warning whenever >=1 item in the same batch succeeded, instead of red-failing the entire job. (2) Validate target='*' AND target='triggering' at the MCP emit boundary: reject update_issue/add_comment/create_pull_request_review_comment/set_issue_field whose triggering context cannot resolve to a concrete issue/PR number (schedule/non-issue/non-PR events) so the agent self-corrects in-loop — prompt-only guardrails have failed across 9+ workflows since 05-26. (3) For transient ERR_API on update_pull_request 'branch from base failed' (PR Sous Chef 26794554270), retry-with-backoff or treat as soft rather than red-failing. These together would have turned all 3 of today's safe-output failures into green-with-warning."
+      "s": "STILL HIGH \u2014 3 of 06-02's 9 failures are this class (LintMonster, Smoke Codex, PR Sous Chef), all agent-exit-0 / safe_outputs-job-red. (1) Make 'Process Safe Outputs' treat an individual failed/invalid item as skipped-with-warning whenever >=1 item in the same batch succeeded, instead of red-failing the entire job. (2) Validate target='*' AND target='triggering' at the MCP emit boundary: reject update_issue/add_comment/create_pull_request_review_comment/set_issue_field whose triggering context cannot resolve to a concrete issue/PR number (schedule/non-issue/non-PR events) so the agent self-corrects in-loop \u2014 prompt-only guardrails have failed across 9+ workflows since 05-26. (3) For transient ERR_API on update_pull_request 'branch from base failed' (PR Sous Chef 26794554270), retry-with-backoff or treat as soft rather than red-failing. These together would have turned all 3 of today's safe-output failures into green-with-warning. | 06-02 afternoon added a COUNT-EXCEEDED variant: CLI Consistency Checker emitted 3x create_issue (cap 1) -> agent step exit 1 despite the 1 allowed issue landing. Extend the fix: when a capped safe-output type is over-emitted, KEEP the first N allowed items and emit a WARNING rather than failing the agent step."
     },
     {
       "id": "watch-copilot-sdk-session-auth",
       "p": "medium",
       "iss": "copilot-sdk-session-auth",
-      "s": "NEW WATCH: experimental Smoke Copilot SDK failed 4x at T0 on branch copilot/fix-copilot-sdk-integration with 'Session was not created with authentication info or custom provider'. This is in-development dev-iteration, not a production regression. Action: ensure the copilot-sdk session is created WITH auth info or a custom provider before sending the prompt — the headless server log 'No COPILOT_CONNECTION_TOKEN was set' points at the missing auth path. Gate the workflow from scheduled/PR triggers until the SDK integration lands so the dispatch-iteration noise does not pollute the failure metrics."
+      "s": "NEW WATCH: experimental Smoke Copilot SDK failed 4x at T0 on branch copilot/fix-copilot-sdk-integration with 'Session was not created with authentication info or custom provider'. This is in-development dev-iteration, not a production regression. Action: ensure the copilot-sdk session is created WITH auth info or a custom provider before sending the prompt \u2014 the headless server log 'No COPILOT_CONNECTION_TOKEN was set' points at the missing auth path. Gate the workflow from scheduled/PR triggers until the SDK integration lands so the dispatch-iteration noise does not pollute the failure metrics."
     },
     {
       "id": "watch-semantic-function-refactoring-cost",
       "p": "low",
       "iss": "semantic-function-refactoring-cost-top",
-      "s": "NEW WATCH: Semantic Function Refactoring was 06-02's cost top at $6.35 / 14.3M eff / 43 turns (SUCCESS), well above the prior flat $2.98 band. Observation only — monitor whether it recurs at >$6 or grows; if it becomes a regular heavy tail, scope its task or cap turns. No action yet."
+      "s": "NEW WATCH: Semantic Function Refactoring was 06-02's cost top at $6.35 / 14.3M eff / 43 turns (SUCCESS), well above the prior flat $2.98 band. Observation only \u2014 monitor whether it recurs at >$6 or grows; if it becomes a regular heavy tail, scope its task or cap turns. No action yet."
     },
     {
       "id": "fix-threat-detection-missing-prompt",
@@ -36,13 +36,31 @@
       "id": "guard-pr-branch-deleted-checkout",
       "p": "low",
       "iss": "pr-branch-deleted-race",
-      "s": "PREVENTIVE (did NOT recur 06-01 or 06-02). Optional noise-reduction: at checkout, detect a missing PR head ref and exit with a NEUTRAL/skip conclusion rather than a red failure, so a branch deleted mid-flight does not count as a workflow failure. Low priority — no code defect."
+      "s": "PREVENTIVE (did NOT recur 06-01 or 06-02). Optional noise-reduction: at checkout, detect a missing PR head ref and exit with a NEUTRAL/skip conclusion rather than a red failure, so a branch deleted mid-flight does not count as a workflow failure. Low priority \u2014 no code defect."
     },
     {
       "id": "harden-golangci-lint-download",
       "p": "low",
       "iss": "golangci-lint-download-flake",
-      "s": "PREVENTIVE (no recurrence since 05-30). Keep open: harden the install-golangci-lint Makefile target (~Makefile:403) — download to a temp file, verify HTTP 200 + gzip magic bytes before extracting, retry with backoff (3x), pin+verify a checksum, prefer Actions cache / vendored binary."
+      "s": "PREVENTIVE (no recurrence since 05-30). Keep open: harden the install-golangci-lint Makefile target (~Makefile:403) \u2014 download to a temp file, verify HTTP 200 + gzip magic bytes before extracting, retry with backoff (3x), pin+verify a checksum, prefer Actions cache / vendored binary."
+    },
+    {
+      "id": "investigate-runner-node-missing-exit127",
+      "p": "medium",
+      "iss": "runner-infra-node-missing-exit127",
+      "s": "NEW: Daily Issues Report Generator failed agent step exit 127 ('node runtime missing on this runner'). If it recurs, the workflow's runtimes.node config or the runner image is dropping node before the harness runs. Action: confirm runtimes.node is declared for this workflow and that the copilot_harness node-resolution (GH_AW_NODE_BIN / PATH) finds node on the assigned runner; add a clearer pre-flight node check in activation so this fails at setup with an actionable message rather than mid-agent exit 127. Single occurrence \u2014 monitor."
+    },
+    {
+      "id": "investigate-avenger-agent-timeout",
+      "p": "low",
+      "iss": "agent-timeout-no-output",
+      "s": "NEW WATCH: Avenger (claude/opus) ran 48.4min then failed with turns=0 and empty output while still dispatching Bash + TaskOutput. Likely the agent step time limit, or a stuck/blocking TaskOutput poll. Action: if it recurs, cap Avenger's turns/runtime and check for a TaskOutput call that blocks without progress. Single occurrence \u2014 observe."
+    },
+    {
+      "id": "gate-copilot-sdk-experimental-from-pr-triggers",
+      "p": "medium",
+      "iss": "copilot-sdk-session-auth",
+      "s": "UPDATED: the experimental copilot-sdk path now shows BOTH a session-auth failure (morning) and a session.idle 600s TIMEOUT (PR Code Quality Reviewer 26827796547 on copilot/ab-advisor-experiment-campaign-max-turns, afternoon). Recommend gating the experimental copilot-sdk / ab-advisor max-turns campaign workflows from scheduled/PR triggers until the SDK session lifecycle (auth + idle) is stable, so dev-iteration noise stops polluting failure metrics."
     }
   ]
 }
