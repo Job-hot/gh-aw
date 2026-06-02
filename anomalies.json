@@ -1,69 +1,62 @@
 {
-  "updated": "2026-06-01",
-  "note": "06-01 full window (53 completed runs, 96.2% — best in 14-day window). Only 2 failures, BOTH the safe-output target=* partial-failure-intolerance class (Contribution Check recurrence + Smoke Claude new). Three prior failure classes quiet: token-budget-429, threat-detection-missing-prompt, pr-branch-deleted-race. No cost outlier.",
+  "updated": "2026-06-02",
+  "note": "06-02 full window (57 completed, 84.2% — DOWN from 06-01's 96.2% peak). 9 failures / 3 classes. token-budget-429 RE-ESCALATED (2 wf over cap), safe-output partial-failure-intolerance persists (3 wf), NEW copilot-sdk-session-auth (4 dev-iteration runs / 1 experimental wf). Cost outlier Semantic Function Refactoring $6.35 (success).",
   "anomalies": [
     {
-      "id": "safe-output-partial-failure-intolerance",
-      "persist": 8,
-      "state": "escalating-dominant",
-      "last": "06-01",
-      "t": "DOMINANT & ONLY recurring failure mode: both of today's 2 failures are this class. Contribution Check 26784313244 (add_comment target=* no item_number on schedule -> Message 3 failed -> whole job red despite create_issue + add_labels OK — RECURRENCE on this same workflow, also 05-30); Smoke Claude 26784371743 (2x create_pull_request_review_comment target=* no pull_request_number -> Messages 8,9 failed -> whole job red despite other outputs OK — NEW workflow). Class now spans 6 workflows since 05-26. Root defect unchanged: Process Safe Outputs red-fails the whole job on ANY failed item instead of skip-with-warning when >=1 succeeded. Needs partial-failure tolerance + emit-time target=* validation."
+      "id": "token-budget-429-effective-tokens",
+      "persist": 4,
+      "state": "re-escalating",
+      "last": "06-02",
+      "t": "RE-ESCALATED: did NOT recur 06-01 but came back on 2 workflows 06-02, both OVER the 25M cap. Daily Firewall Logs 25.67M/25M (RECURRENCE of the same workflow that failed 05-31) + Smoke Copilot 25.50M/25M (NEW in class, failed at T74 after 14/16 smoke checks). Harness retried 5x (~83-92s each) before giving up. Maps to open #35661. Needs heavy-workflow scope-chunking + harness fail-fast on the maxEffectiveTokensExceeded signature."
     },
     {
-      "id": "token-budget-429-effective-tokens",
+      "id": "safe-output-partial-failure-intolerance",
+      "persist": 9,
+      "state": "persistent-dominant",
+      "last": "06-02",
+      "t": "3 of 9 failures today, all agent-exit-0 / safe_outputs-job-red. LintMonster update_issue target=triggering not-in-issue-context (RECURRENCE), Smoke Codex set_issue_field 'No issue number available', PR Sous Chef update_pull_request #36353 ERR_API branch-from-base (API-error variant). Variants now span target=*, target=triggering, no-number, transient ERR_API. Root defect unchanged: whole job red on ANY failed item instead of skip-with-warning when >=1 succeeded. Needs partial-failure tolerance + emit-time validation."
+    },
+    {
+      "id": "copilot-sdk-session-auth",
+      "persist": 1,
+      "state": "new-dev-iteration",
+      "last": "06-02",
+      "t": "NEW: Smoke Copilot SDK failed 4x at agent T0 on feature branch copilot/fix-copilot-sdk-integration — 'Session was not created with authentication info or custom provider' from copilot-sdk sdk-driver on 'sending prompt'. 4 distinct SHAs dispatched over ~3h = active dev iteration on experimental SDK integration, NOT a production regression. Headless server warns 'No COPILOT_CONNECTION_TOKEN set'. Watch-only until the fix lands."
+    },
+    {
+      "id": "daily-success-rate-trend",
+      "persist": 11,
+      "state": "regression-from-peak",
+      "last": "06-02",
+      "t": "84.2% completion (48/57) — DOWN sharply from 06-01's 96.2% peak (the best in the window). 15-window trend: 85.9 -> 75.6 -> 41.6 -> 81.1 -> 94.7 -> 85.7 -> 90.9 -> 81.0 -> 89.5 -> 91.1 -> 89.8 -> 96.2 -> 84.2. The drop is driven by 3 concurrent classes (429 x2, safe-output x3, copilot-sdk-auth x4). Note the 4 copilot-sdk-auth failures are a single experimental dev-iteration workflow; excluding it, effective success ~90.6% (48/53). 6 runs in-progress at audit time."
+    },
+    {
+      "id": "high-cost-runs",
+      "persist": 15,
+      "state": "single-outlier",
+      "last": "06-02",
+      "t": "Cost top: Semantic Function Refactoring $6.35 / 14.3M eff / 43 turns (SUCCESS) — well above 06-01's flat $2.98 top and the single largest claude run. Then Daily Documentation Healer $2.00, Smoke Claude $1.55. Total $15.05 claude-measured (copilot/codex/gemini/pi/antigravity EstimatedCost=0). Top eff_tok both 429-failures over the 25M cap (Daily Firewall Logs 25.67M, Smoke Copilot 25.22M). Watch Semantic Function Refactoring for recurrence at this magnitude."
+    },
+    {
+      "id": "firewall-smoke-block-rate",
       "persist": 2,
-      "state": "quiet-improved",
-      "last": "05-31",
-      "t": "IMPROVED: did NOT recur on 06-01. Heaviest eff_tok was Linter Miner 22.5M (under the 25M cap); Copilot Opt 20.2M, Smoke Copilot 20.2M all under cap. No CAPIError 429 signatures. Severity downgraded; mitigation (#35661 scope-chunk + harness fail-fast) stays open as preventive. Re-escalate on any re-hit."
+      "state": "by-design",
+      "last": "06-02",
+      "t": "Firewall blocks 698/3936 (17.6%), down from 19.3%. Hotspots all smoke probes: Smoke Copilot 56/136 (41%), Smoke Codex 38/114 (33%), Smoke Gemini 25/78 (32%), Smoke Claude 29/97 (30%) — Google telemetry + (unknown) SNI + Playwright azureedge + localhost. By-design, no failure-causing blocks. No action."
     },
     {
       "id": "threat-detection-missing-prompt",
       "persist": 1,
       "state": "quiet",
       "last": "05-31",
-      "t": "Did NOT recur on 06-01. The 05-31 Code Simplifier detection-job prompt-missing failure did not repeat. Harden-the-cp recommendation stays open as a preventive (shared detection harness)."
+      "t": "Did NOT recur 06-02 (2 consecutive quiet windows). Harden-the-cp preventive stays open (shared detection harness exposes every create_pull_request workflow)."
     },
     {
       "id": "pr-branch-deleted-race",
       "persist": 1,
       "state": "resolved-transient",
       "last": "05-31",
-      "t": "Did NOT recur on 06-01. Test Quality Sentinel (2x) and Design Decision Gate (3x) all SUCCESS this window. External-cause transient; checkout skip-cleanly guard remains a low-priority idea."
-    },
-    {
-      "id": "pr-code-quality-reviewer-turn-drift",
-      "persist": 1,
-      "state": "new-watch",
-      "last": "06-01",
-      "t": "NEW drift watch: PR Code Quality Reviewer turn count varied 3->22 (avg 13.8) across 3 SUCCESS runs. 7x spread suggests changing task shape (PR size) or unstable prompt. No failures; watch the high-turn tail."
-    },
-    {
-      "id": "daily-success-rate-trend",
-      "persist": 10,
-      "state": "healthy-peak",
-      "last": "06-01",
-      "t": "96.2% completion (51/53) — the BEST in the 14-day window. 14-window trend: 88.89 -> 85.9 -> 75.6 -> 41.6 -> 81.1 -> 94.7 -> 85.7 -> 90.9 -> 81.0 -> 89.5 -> 91.1 -> 89.8 -> 96.2. Both failures are a single class; three other classes went quiet. 2 runs still in-progress at audit time (this audit + Daily Regulatory Report Generator)."
-    },
-    {
-      "id": "high-cost-runs",
-      "persist": 14,
-      "state": "flat-low",
-      "last": "06-01",
-      "t": "Cost flat & LOW: total $15.62 (claude-measured) — lowest claude-measured daily cost in the 14-day window. Top: Daily Code Metrics $2.98, Failure Investigator $2.45, Daily Team Evolution $1.58, Smoke Claude $1.55 (failed), Copilot Agent PR Analysis $1.49. No heavy-tail outlier (Go Logger absent). Top eff_tok: Linter Miner 22.5M, Copilot Opt 20.2M, Smoke Copilot 20.2M — all under the 25M cap. copilot/codex/gemini/pi/antigravity EstimatedCost=0 so total is claude-biased."
-    },
-    {
-      "id": "new-engine-smoke-coverage",
-      "persist": 1,
-      "state": "new-info",
-      "last": "06-01",
-      "t": "INFO: three new engines added to smoke coverage this window — Smoke Antigravity, Smoke Gemini, Smoke Pi — all PASSED. They drove most of the firewall block-rate uptick (19.3% vs 16.7%) via by-design telemetry/Playwright/localhost probes."
-    },
-    {
-      "id": "firewall-newengine-block-uptick",
-      "persist": 1,
-      "state": "by-design",
-      "last": "06-01",
-      "t": "Firewall blocks 700/3635 (19.3%), up from 16.7%. Hotspots Smoke Antigravity 10/12 (83%), Smoke Copilot 118/325 (36%), Linter Miner 63/243 (26%) — Google telemetry + (unknown) + Playwright azureedge + localhost. By-design, no failure-causing blocks. No action."
+      "t": "Did NOT recur 06-02 (2 consecutive quiet windows). External-cause transient; checkout skip-cleanly guard remains a low-priority idea."
     }
   ]
 }

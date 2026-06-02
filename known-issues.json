@@ -1,29 +1,51 @@
 {
-  "updated": "2026-06-01",
-  "note": "2026-06-01 full window (53 completed runs, 96.2% success — best in 14-day window). Only 2 failures, and BOTH are the SAME class: safe-output target=* partial-failure-intolerance (Contribution Check RECURRENCE + Smoke Claude NEW). This class is now the dominant and only recurring failure mode. THREE other classes went quiet this window: token-budget-429 (#35661) did NOT recur (heaviest eff_tok 22.5M < 25M cap), threat-detection-missing-prompt did NOT recur, pr-branch-deleted-race did NOT recur. No cost outlier.",
+  "updated": "2026-06-02",
+  "note": "2026-06-02 full window (57 completed, 84.2% success — DOWN sharply from 06-01's 96.2% peak). 9 failures across 3 classes. token-budget-429 (#35661) RE-ESCALATED after one quiet window: 2 workflows blew past the 25M cap. safe-output partial-failure-intolerance persists across 3 workflows. NEW class: copilot-sdk-session-auth (4 dev-iteration dispatch runs on 1 experimental feature branch). threat-detection-missing-prompt and pr-branch-deleted-race stayed quiet.",
   "issues": [
+    {
+      "id": "token-budget-429-effective-tokens",
+      "sev": "high",
+      "cat": "cost_budget",
+      "first": "05-30",
+      "last": "06-02",
+      "n": 4,
+      "r24": 2,
+      "tracker": "#35661",
+      "title": "RE-ESCALATED high: 25M effective-token cap 429 hit 2 workflows on 06-02 after 1 quiet window — Daily Firewall Logs 25.67M (RECURRENCE) + Smoke Copilot 25.50M (NEW)",
+      "detail": "Both over the 25M effective-token cap. (A) Daily Firewall Logs Collector 26796384191 (copilot): 'CAPIError: 429 Maximum effective tokens exceeded (25666412.40 / 25000000)', retried 5x (~83-92s each), agent step exit 1, isMaxEffectiveTokensExceededError=true. RECURRENCE on the SAME workflow that 429'd on 05-31. (B) Smoke Copilot 26788943047 (copilot, T74): reached 14/16 smoke checks then 'CAPIError: 429 Maximum effective tokens exceeded (25499262.00 / 25000000)'. NEW workflow in this class. Severity re-raised medium->high: the 06-01 quiet window was a reprieve, not a fix; heavy daily-aggregation workflows keep flirting with the cap (06-01 Linter Miner 22.5M, today's two over). Maps to open #35661. FIX: (1) reduce effective-token footprint of heavy daily-aggregation workflows (scope/chunk Daily Firewall Logs especially); (2) harness FAIL-FAST on the 429 'Maximum effective tokens exceeded' signature instead of 5 retries — a hard cap cannot be recovered by --continue and the retries burn ~7-8 min/run."
+    },
     {
       "id": "safe-output-partial-failure-intolerance",
       "sev": "high",
       "cat": "safe_output",
       "first": "05-26",
-      "last": "06-01",
-      "n": 8,
-      "r24": 2,
-      "title": "TOP & ONLY recurring failure mode: one invalid/failed safe-output item (target=* with no resolvable number) red-fails the WHOLE safe_outputs job even when other items succeeded — now 6 distinct workflows",
-      "detail": "Both of today's 2 failures are this class. (A) Contribution Check 26784313244 (copilot/sonnet-4.6): an add_comment item had target=* with NO item_number on a SCHEDULE event ('Message 3 (add_comment) failed: Target is \"*\" but no item_number/issue_number/pull_request_number specified'). That single failed item red-failed the whole safe_outputs job DESPITE create_issue (#aw_summary) + add_labels succeeding. This is a RECURRENCE on Contribution Check specifically (also hit 05-30). (B) Smoke Claude 26784371743 (claude): TWO create_pull_request_review_comment items had target=* with NO pull_request_number ('Messages 8,9 failed: Target is \"*\" but no pull_request_number specified'); those 2 failed items red-failed the job despite other smoke outputs succeeding. NEW workflow in the class. Class now spans 6 workflows since 05-26 (Contribution Check, Sub-Issue Closer, LintMonster, Smoke Claude + earlier). The common root defect is UNCHANGED: 'Process Safe Outputs' fails the whole job on ANY failed item rather than skip-with-warning when >=1 item succeeded. SECONDARY: target=* with no resolvable number on schedule/non-PR events is structurally unsatisfiable yet emitted repeatedly — validate at the MCP emit boundary so the agent self-corrects in-loop; prompt-only guardrails remain insufficient. FIX (High): (1) make Process Safe Outputs treat individual failed items as skipped-with-warning when >=1 item in the batch succeeded; (2) reject target=* at emit time when context cannot resolve a concrete number."
+      "last": "06-02",
+      "n": 9,
+      "r24": 3,
+      "title": "PERSISTENT top class: one failed/invalid safe-output item red-fails the WHOLE safe_outputs job even when other items succeeded — 3 more workflows on 06-02 (now 9+ distinct since 05-26)",
+      "detail": "3 of today's 9 failures are this class, all with agent step exit 0 (agent succeeded, safe_outputs job red): (A) LintMonster 26796998912 (copilot): update_issue with target='triggering' but NOT in issue context (schedule event) -> 'Message 1 (update_issue) failed' -> whole job red. RECURRENCE on LintMonster (also 05-31). (B) Smoke Codex 26788943036 (codex): set_issue_field 'No issue number available' -> 'Message 2 failed' -> job red. (C) PR Sous Chef 26794554270 (copilot): update_pull_request #36353 'ERR_API ... branch from base failed' -> 'Message 2 failed' -> job red (API-error variant, not target=*). Root defect UNCHANGED: 'Process Safe Outputs' fails the whole job on ANY failed item rather than skip-with-warning when >=1 item succeeded. Variants now span target='*', target='triggering', no-issue-number, and transient ERR_API. FIX (High): (1) make Process Safe Outputs treat individual failed items as skipped-with-warning when >=1 item in the batch succeeded; (2) validate target='*'/'triggering' at the MCP emit boundary on schedule/non-issue/non-PR events so the agent self-corrects in-loop; (3) for ERR_API on update_pull_request branch-from-base, retry/treat as soft."
     },
     {
-      "id": "token-budget-429-effective-tokens",
-      "sev": "medium",
-      "cat": "cost_budget",
-      "first": "05-30",
-      "last": "05-31",
-      "n": 2,
-      "r24": 0,
-      "tracker": "#35661",
-      "title": "IMPROVED: 25M effective-token cap 429 did NOT recur on 06-01 — heaviest eff_tok was Linter Miner 22.5M (under cap), all heavy workflows stayed below 25M",
-      "detail": "No 'CAPIError: 429 Maximum effective tokens exceeded' signatures in the 06-01 window. The workflows that hit the cap on 05-30 (Linter Miner) and 05-31 (Daily Firewall Logs) either ran under-cap or did not run: Linter Miner succeeded at 22.53M eff_tok, Copilot Opt 20.23M, Smoke Copilot 20.16M — all below the 25M cap. The mitigation recommendations (scope-chunk heavy daily-aggregation workflows + harness fail-fast on budget-429) remain OPEN as preventives, but severity downgraded high->medium after one clean window. Maps to open #35661. Re-escalate if any workflow re-hits the cap."
+      "id": "copilot-sdk-session-auth",
+      "sev": "watch",
+      "cat": "engine_integration",
+      "first": "06-02",
+      "last": "06-02",
+      "n": 1,
+      "r24": 4,
+      "title": "NEW (dev-iteration): Smoke Copilot SDK failed 4x at agent T0 — 'Session was not created with authentication info or custom provider'",
+      "detail": "4 workflow_dispatch runs (26792092514, 26793757607, 26795908399, 26797319253) on experimental feature branch copilot/fix-copilot-sdk-integration all failed at the agent step with T0: copilot-sdk headless server starts (port 3002), sdk-driver connects + creates a session, then on 'sending prompt' throws uncaught 'Error: Execution failed: Error: Session was not created with authentication info or custom provider' and exits 1. This is an in-development experimental Copilot SDK integration being iterated via repeated manual dispatch (4 distinct SHAs over ~3h), NOT a production-workflow regression. Watch-only: confirm the fix lands and the SDK session is created WITH auth info / a custom provider before this graduates from smoke. The headless server warns 'No COPILOT_CONNECTION_TOKEN was set' — likely the missing auth-info path."
+    },
+    {
+      "id": "semantic-function-refactoring-cost-top",
+      "sev": "watch",
+      "cat": "cost",
+      "first": "06-02",
+      "last": "06-02",
+      "n": 1,
+      "r24": 1,
+      "title": "WATCH (new): Semantic Function Refactoring is the day's cost top at $6.35 / 14.3M eff-tok / 43 turns (SUCCESS)",
+      "detail": "claude-engine run, $6.35 EstimatedCost — well above 06-01's flat top of $2.98, and the single largest claude run this window. Succeeded. Not anomalous on its own (one heavy refactor), but it single-handedly lifts the claude-measured daily cost band. Watch whether it recurs at this magnitude or grows; if it becomes a regular >$6 daily tail, consider scoping its task. No action yet."
     },
     {
       "id": "threat-detection-missing-prompt",
@@ -33,8 +55,8 @@
       "last": "05-31",
       "n": 1,
       "r24": 0,
-      "title": "Did NOT recur on 06-01 — threat-detection prompt.txt missing infra failure not seen this window",
-      "detail": "No 'ERR_SYSTEM: Prompt file not found at /tmp/gh-aw/threat-detection/aw-prompts/prompt.txt' / 'ERR_PARSE: No THREAT_DETECTION_RESULT' signatures in the 06-01 window. The 05-31 Code Simplifier detection-job failure did not repeat. The harden recommendation (don't mask the cp with '|| true'; verify prompt exists before invoking detection agent) stays OPEN as a preventive since the shared detection harness still exposes every create_pull_request workflow."
+      "title": "Did NOT recur on 06-02 — threat-detection prompt.txt missing infra failure not seen for 2 windows",
+      "detail": "No 'ERR_SYSTEM: Prompt file not found at /tmp/gh-aw/threat-detection/aw-prompts/prompt.txt' signatures in the 06-02 window. Harden-the-cp recommendation (don't mask with '|| true'; verify prompt exists before invoking detection agent) stays OPEN as a preventive since the shared detection harness still exposes every create_pull_request workflow."
     },
     {
       "id": "pr-branch-deleted-race",
@@ -44,74 +66,41 @@
       "last": "05-31",
       "n": 2,
       "r24": 0,
-      "title": "Did NOT recur on 06-01 — Test Quality Sentinel & Design Decision Gate all passed this window",
-      "detail": "The 05-31 transient PR-head-branch-deleted race (branch 'copilot/update-agentic-workflows-and-skill-file' missing on remote) did not repeat. Test Quality Sentinel ran 2x and Design Decision Gate ran 3x in the 06-01 window, all SUCCESS. Was external-cause/transient; the optional checkout 'skip-cleanly on deleted branch' guard remains a low-priority noise-reduction idea."
+      "title": "Did NOT recur on 06-02 — Test Quality Sentinel & Design Decision Gate passed (or in-progress, no failures)",
+      "detail": "The 05-31 transient PR-head-branch-deleted race did not repeat across 2 consecutive windows. External-cause/transient; the optional checkout 'skip-cleanly on deleted branch' guard remains a low-priority noise-reduction idea."
     },
     {
-      "id": "pr-code-quality-reviewer-turn-drift",
-      "sev": "watch",
-      "cat": "drift",
-      "first": "06-01",
-      "last": "06-01",
-      "n": 1,
-      "r24": 1,
-      "title": "WATCH (new): PR Code Quality Reviewer turn-count varied 3->22 (avg 13.8) across 3 runs — unstable task shape or prompt",
-      "detail": "Observability drift flag: workflow pr-code-quality-reviewer varied from 3 to 22 turns across its 3 runs (all SUCCESS). A 7x turn spread suggests changing task shape (large vs small PRs) or an unstable prompt. No failures; monitor whether the high-turn tail correlates with specific PR sizes and whether it ever times out."
-    },
-    {
-      "id": "go-logger-enhancement-cost-outlier",
-      "sev": "resolved",
-      "cat": "cost",
-      "first": "05-31",
-      "last": "05-31",
-      "n": 1,
-      "r24": 0,
-      "title": "Did NOT recur — Go Logger Enhancement absent on 06-01; today's most expensive run was only $2.98 (Daily Code Metrics)",
-      "detail": "Go Logger Enhancement did not run in the 06-01 window. The 05-31 $8.30/41.9M-eff/117-turn heavy tail did not repeat. Today's cost distribution is flat — top run Daily Code Metrics $2.98, total $15.62 (claude-measured), the lowest claude-measured daily cost in the 14-day window. No cost anomaly."
-    },
-    {
-      "id": "firewall-block-rate-spike",
+      "id": "firewall-block-rate",
       "sev": "watch",
       "cat": "network",
       "first": "05-19",
-      "last": "06-01",
-      "n": 14,
-      "r24": 14,
-      "title": "Firewall 19.3% (700/3635), up from 16.7%. Driven by NEW-ENGINE smoke tests; no failure-causing blocks",
-      "detail": "Block rate 19.3%, up from 05-31's 16.7% — the increase is attributable to new-engine smoke tests added this window (Smoke Antigravity 10/12=83%, Smoke Gemini 23/77, Smoke Copilot 118/325=36%) plus Linter Miner 63/243. Blocks are predominantly (unknown) + Google telemetry (content-autofill.googleapis.com, accounts.google.com, www.google.com), Playwright azureedge, and localhost — browser/telemetry noise, not workflow-affecting. No firewall block caused either of the 2 run failures."
-    },
-    {
-      "id": "claude-cli-engine-timeout",
-      "sev": "resolved",
-      "cat": "engine_timeout",
-      "first": "05-30",
-      "last": "05-30",
-      "n": 2,
-      "r24": 0,
-      "title": "RESOLVED/clean: Failure Investigator succeeded on 06-01 (no timeout/early-exit); 2 consecutive clean windows",
-      "detail": "The [aw] Failure Investigator (6h) completed SUCCESSFULLY this window (29 turns, $2.45) with no 60-min CLI-step timeout and no early-exit failure. Smoke Claude's failure was the unrelated safe-output target=* class, not a CLI timeout. The 05-30 claude/opus CLI-step timeout concern has now had 2 clean windows."
-    },
-    {
-      "id": "copilot-CLI-stable",
-      "sev": "resolved",
-      "cat": "harness",
-      "first": "05-24",
-      "last": "06-01",
-      "n": 9,
-      "r24": 0,
-      "title": "Stable: 36 copilot runs, 0 ENOENT / 0 anthropic-beta / 0 model-not-supported errors",
-      "detail": "Copilot CLI stable across 36 copilot runs. Today's only copilot failure (Contribution Check) was the safe-output target=* class, not a CLI harness regression."
+      "last": "06-02",
+      "n": 15,
+      "r24": 15,
+      "title": "Firewall 17.6% (698/3936), down from 19.3%. Hotspots are smoke tests; no failure-causing blocks",
+      "detail": "Block rate 17.6%, down from 06-01's 19.3%. Hotspots all by-design smoke probes: Smoke Copilot 56/136 (41%), Smoke Codex 38/114 (33%), Smoke Gemini 25/78 (32%), Smoke Claude 29/97 (30%). Predominantly Google telemetry, (unknown) SNI, Playwright azureedge, and localhost. No firewall block caused any of the 9 run failures. No action."
     },
     {
       "id": "new-engine-smoke-tests",
       "sev": "info",
       "cat": "coverage",
       "first": "06-01",
-      "last": "06-01",
-      "n": 1,
-      "r24": 1,
-      "title": "NEW (info): three new engines added to smoke coverage — antigravity, gemini, pi — all PASSED",
-      "detail": "The 06-01 window introduced Smoke Antigravity (antigravity engine), Smoke Gemini (gemini engine), and Smoke Pi (pi engine), all SUCCESS. Engine mix this window: copilot 36, claude 12, codex 4, antigravity 1, gemini 1, pi 1. The new-engine smoke tests drove most of the firewall block-rate increase (by-design telemetry/Playwright probes). No engine-specific failures."
+      "last": "06-02",
+      "n": 2,
+      "r24": 2,
+      "title": "Stable: new engines antigravity/gemini/pi all passed again (2/2 each) on 06-02",
+      "detail": "Smoke Antigravity 2/2, Smoke Gemini 2/2, Smoke Pi 2/2 SUCCESS this window. Engine mix: copilot 42, claude 10, codex 5, antigravity 2, gemini 2, pi 2. New-engine smokes contribute to firewall block volume (by-design telemetry/Playwright probes) but no engine-specific failures."
+    },
+    {
+      "id": "copilot-CLI-stable",
+      "sev": "resolved",
+      "cat": "harness",
+      "first": "05-24",
+      "last": "06-02",
+      "n": 10,
+      "r24": 0,
+      "title": "Stable: 42 copilot runs, 0 ENOENT / 0 anthropic-beta / 0 model-not-supported errors",
+      "detail": "Copilot CLI harness stable across 42 copilot runs. Today's copilot failures were token-budget-429 (2) and safe-output partial-failure (2) classes — not CLI harness regressions. Distinct experimental Copilot SDK (sdk-driver) auth failure is tracked separately under copilot-sdk-session-auth."
     },
     {
       "id": "codex-model-not-found-alpha",
@@ -121,8 +110,8 @@
       "last": "05-30",
       "n": 9,
       "r24": 0,
-      "title": "RESOLVED: Changeset Generator alpha-routing 404 — 4 codex runs on 06-01, no recurrence",
-      "detail": "4 codex runs in the 06-01 window (incl. Smoke Codex), no model-not-found/404 signatures. Remains fully closed."
+      "title": "RESOLVED: 5 codex runs on 06-02, no model-not-found/404. Today's Smoke Codex failure was the safe-output class",
+      "detail": "5 codex runs in the 06-02 window, no model-not-found/404 alpha-routing signatures. Smoke Codex's failure was set_issue_field safe-output partial-failure, not a model config issue. Remains fully closed."
     }
   ]
 }
