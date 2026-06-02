@@ -13,6 +13,10 @@ permissions:
   actions: read
   issues: read
   pull-requests: read
+network:
+  allowed:
+    - defaults
+    - python
 tracker-id: agentic-token-trend-audit
 safe-outputs:
   create-issue:
@@ -168,9 +172,10 @@ Handle null/missing `token_usage` by treating them as 0.
 
 ## Phase 2 — Generate Charts
 
-Create one chart image in `/tmp/gh-aw/token-audit/charts/` using Python, `matplotlib`, and `seaborn` with `whitegrid` styling:
+Create chart images in `/tmp/gh-aw/token-audit/charts/` using Python, `matplotlib`, and `seaborn` with `whitegrid` styling:
 
 1. **Token usage by workflow** (`token_by_workflow.png`): a horizontal bar chart of the top 15 workflows by total tokens from `audit_snapshot.json`.
+2. **Daily token usage trend** (`daily_token_trend.png`, optional): a line chart that aggregates completed-run token usage by UTC day across the requested date range (skip this chart if fewer than 2 daily points exist).
 
 Chart requirements:
 
@@ -178,8 +183,12 @@ Chart requirements:
 - Use 300 DPI and a white background.
 - Add clear axis labels and titles.
 - Save only PNG files.
+- Always generate `token_by_workflow.png`.
+- If there are fewer than 2 daily points for the requested range, skip `daily_token_trend.png` and explain why in the issue.
 - After generating each chart, call `upload_asset` with its file path.
-- In the issue template below, replace `UPLOAD_URL_WORKFLOW_PLACEHOLDER` with the URL returned for `token_by_workflow.png`.
+- Replace `UPLOAD_URL_WORKFLOW_PLACEHOLDER` only after `token_by_workflow.png` is uploaded.
+- Replace `UPLOAD_URL_DAILY_TREND_PLACEHOLDER` only after `daily_token_trend.png` is uploaded.
+- If `daily_token_trend.png` is skipped, omit only the `![Daily Token Usage Trend](...)` image markdown line and its placeholder replacement; keep the Trends section text and explicitly state why the chart was skipped.
 
 ## Phase 3 — Publish Audit Issue
 
@@ -214,6 +223,11 @@ Create an issue with these sections:
 Embed chart images using uploaded asset URLs when available:
 
 ![Token Usage by Workflow](UPLOAD_URL_WORKFLOW_PLACEHOLDER)
+
+<!-- Optional: include only if daily_token_trend.png was generated and uploaded; otherwise remove this line -->
+![Daily Token Usage Trend](UPLOAD_URL_DAILY_TREND_PLACEHOLDER)
+
+Summarize daily token movement across the requested range (up/down days, spikes, and overall direction) when daily historical points are available; if the chart was skipped, explicitly state why.
 
 <details>
 <summary><b>Full Per-Workflow Breakdown</b></summary>
