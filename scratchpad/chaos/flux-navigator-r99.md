@@ -5,3 +5,5 @@ persona: flux-navigator
 
 Initial staged content.
 Second line of content.
+
+Line-ending variant line.
