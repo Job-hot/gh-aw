@@ -1,3 +1,1 @@
-{"date":"2026-05-20","pr_count":52,"message_count":52,"prs_with_discussion":0,"avg_sentiment":0.048,"sentiment_neutral":33,"sentiment_positive":15,"sentiment_negative":4,"top_topic":"command_http_triggering","workflow_run":"26158790413"}
-{"date": "2026-05-27", "pr_count": 33, "avg_sentiment": 0.0178, "positive": 11, "neutral": 14, "negative": 8, "top_keywords": ["workflow", "run", "model", "file", "lock"], "top_cluster": "dependency, validation, cost, spec, weekly"}
-{"date": "2026-05-29", "pr_count": 37, "avg_sentiment": 0.0016, "avg_subjectivity": 0.3558, "positive": 12, "neutral": 12, "negative": 13, "top_keywords": ["workflow", "from", "added", "issue", "job"], "top_cluster_terms": ["key", "workflow", "setup"], "run_id": "26634153062"}
+{"date":"2026-06-02","pr_count":37,"avg_vader":0.085,"avg_textblob":0.019,"positive":21,"neutral":1,"negative":15,"top_topic":"agent/prompt/cost/workflow","n_clusters":5,"data_source":"pr_metadata_only"}
