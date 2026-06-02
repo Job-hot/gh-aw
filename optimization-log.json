@@ -1,15 +1,6 @@
 [
   {
     "date": "2026-04-27",
-    "workflow_name": "Package Specification Extractor",
-    "workflow_file": "spec-extractor",
-    "runs_audited": 4,
-    "total_tokens_analyzed": 12740535,
-    "estimated_savings_per_run": 1620000,
-    "recommendations_count": 4
-  },
-  {
-    "date": "2026-04-27",
     "workflow_name": "Agentic Observability Kit",
     "workflow_file": "agentic-observability-kit",
     "runs_audited": 1,
@@ -277,5 +268,15 @@
     "recommendations_count": 4,
     "subagent_candidates": 0,
     "estimated_savings_per_run": 1450000
+  },
+  {
+    "date": "2026-06-02",
+    "workflow_name": "Agentic Workflow Audit Agent",
+    "workflow_file": "agentic-token-audit",
+    "total_tokens_analyzed": 3389240,
+    "runs_audited": 1,
+    "recommendations_count": 4,
+    "subagent_candidates": 0,
+    "estimated_savings_per_run": 730000
   }
 ]
