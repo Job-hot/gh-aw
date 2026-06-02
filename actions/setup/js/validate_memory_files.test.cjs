@@ -243,10 +243,10 @@ describe("validateMemoryFiles", () => {
     expect(result.invalidFiles).toEqual([]);
   });
 
-  it("uses repo as memoryType without errors", () => {
-    fs.writeFileSync(path.join(tempDir, "note.txt"), "text");
+  it("uses repo as memoryType in error messages", () => {
+    fs.writeFileSync(path.join(tempDir, "invalid.log"), "log");
     const result = validateMemoryFiles(tempDir, "repo", [".txt"]);
-    expect(result.valid).toBe(true);
-    expect(result.invalidFiles).toEqual([]);
+    expect(result.valid).toBe(false);
+    expect(result.invalidFiles).toEqual(["invalid.log"]);
   });
 });
