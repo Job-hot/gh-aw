@@ -4,4 +4,6 @@ strategy: minor-rename + two-commits
 persona: drift-alchemist
 
 First commit: base content with original identifier.
-Label: drift-v1
+Label: drift-v2
+
+Second commit: minor rename applied.
