@@ -1,19 +1,20 @@
-# Shared Alerts — 2026-06-01T14:44Z
+# Shared Alerts — 2026-06-02T06:03Z
 
 ## P0 (Critical) 🚨
 _None active_
 
 ## P1 (High) 🚨
-- **Step Name Alignment** (#36062 OPEN, #36187 new run): 100% fail, Claude engine terminating. DO NOT re-file.
-- **LintMonster backlog** (#36050 open, #36175, #36173 new today): Ongoing. DO NOT re-file.
+- **CJS typecheck broken** (NEW - issue filed 2026-06-02): 100% fail on main, triggered by PR #36358. DO NOT re-file.
+- **CGO unit tests** (#35028 OPEN): Escalated to 100% failing today (20 runs). Auto-notifier already tracking. DO NOT re-file.
+- **Step Name Alignment** (#36062 OPEN): Passed today — possibly resolved. Monitor.
+- **LintMonster backlog** (#36050 open): Intermittent failures. DO NOT re-file.
 - **Failure-reporters duplication**: #35984 (dedup gate unimplemented). DO NOT re-file.
-- **CGO CI**: Mixed ~33% fail. PR #35883 pending review. DO NOT re-file.
 
 ## P2 (Watch) ⚠️
-- **Token budget exhaustion (systemic)**: jsweep (#36183) + daily-compiler (#36172) June 1 — may need P1 escalation
+- **Token budget exhaustion (systemic)**: jsweep (#36183) + daily-compiler (#36172) — watch for escalation
 - **chaos-test PR stall**: 10+ open PRs (#36120–#36124, #36251–#36256), 0 merges — worsening
 - **Daily Safe Output Tool Optimizer** (#35316): runaway token usage
-- **Daily Firewall Logs Collector** (#36171): Recurring failure (was #36047 closed, recurred)
+- **Daily Firewall Logs Collector** (#36171): Recurring failure
 - **Daily SPDD Spec Planner** (#36138): Failed May 31
 - **Safe Outputs Conformance SEC-005** (#36079): update_activation_comment.cjs allowlist gap
 - **CLI Tools Test** (#36076): compile --workflow-name flag undocumented
@@ -29,6 +30,8 @@ _None active_
 - **Copilot CLI engine** (#35388): CLOSED
 
 ## Do Not Re-File
+- CJS typecheck: filed 2026-06-02
+- CGO unit tests: #35028
 - Smoke tests: #35964, #35959, #36018, #36019, #35955, #35954
 - LintMonster: #36050, #36051, #36052, #36175, #36173
 - Step Name Alignment: #36062, #36187
