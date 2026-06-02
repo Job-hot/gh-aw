@@ -1,8 +1,8 @@
 {
-  "updated": "2026-06-02T19:35Z",
+  "updated": "2026-06-02T22:08Z",
   "date": "2026-06-02",
   "partial": false,
-  "latest_window": "2026-06-02 EVENING 16:51-19:34Z: 50 runs, 46 completed, 1 failure (97.8%), copilot-sdk session.idle timeout on prod main (Daily Security Observability Report)",
+  "latest_window": "2026-06-02 NIGHT 19:54-22:06Z: 31 runs, 28 completed, 4 failures (85.7%). NEW docker-registry-pull-timeout (2 runs: Smoke CI main + Smoke Codex branch, exit 123) + safe-output-partial-failure-intolerance (2 new variants: allowed-files rejection on Changeset Generator, dispatch_workflow no-ref on Smoke Copilot). token-budget-429 + copilot-sdk timeouts ABSENT. 3 of 4 failures on dev feature branch. 14.0M tok/63.4M eff, fw 287/1337 (21.5%), 0 missing-tools/data/mcp.",
   "totals": {
     "r": 57,
     "s": 48,

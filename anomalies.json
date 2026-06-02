@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-02",
+  "updated": "2026-06-02T22:08Z",
   "note": "06-02 EVENING re-audit (46 completed, 97.8%, 16:51-19:34Z) — third 06-02 window. ONLY 1 failure: copilot-sdk session.idle 600s timeout, now on a PRODUCTION schedule/main workflow (Daily Security Observability Report) — ESCALATION from experimental-branch-only. safe-output partial-failure ABSENT, token-budget-429 ABSENT (both positive). sdk-driver path now ~14/48 copilot+codex runs. Prior (AFTERNOON, 47 completed, 89.4%): token-budget-429 absent, 5 failures/5 classes incl runner-infra-node-missing exit127, agent-timeout Avenger opus 48min, safe-output count-exceeded.",
   "anomalies": [
     {
@@ -21,28 +21,29 @@
       "persist": 3,
       "state": "escalated-production-main",
       "last": "2026-06-02",
-      "t": "ESCALATED (06-02 evening): the copilot-sdk session.idle 600s timeout hit a PRODUCTION schedule/main workflow \u2014 Daily Security Observability Report 26836111514 (the evening window's ONLY failure). Session created, provider resolved WITH auth, prompt sent, then 'Timeout after 600000ms waiting for session.idle', hasOutput=false, NOT retried, exit1, 10m. sdk-driver path now ~14/48 copilot+codex runs; legacy path 0/34. No longer experimental-only. Earlier variants: Smoke Copilot SDK auth-info failure 4x on copilot/fix-copilot-sdk-integration (morning); PR Code Quality Reviewer session.idle timeout on ab-advisor branch (afternoon)."
+      "t": "ESCALATED (06-02 evening): the copilot-sdk session.idle 600s timeout hit a PRODUCTION schedule/main workflow — Daily Security Observability Report 26836111514 (the evening window's ONLY failure). Session created, provider resolved WITH auth, prompt sent, then 'Timeout after 600000ms waiting for session.idle', hasOutput=false, NOT retried, exit1, 10m. sdk-driver path now ~14/48 copilot+codex runs; legacy path 0/34. No longer experimental-only. Earlier variants: Smoke Copilot SDK auth-info failure 4x on copilot/fix-copilot-sdk-integration (morning); PR Code Quality Reviewer session.idle timeout on ab-advisor branch (afternoon)."
     },
     {
       "id": "daily-success-rate-trend",
       "persist": 12,
       "state": "regression-from-peak",
       "last": "2026-06-02",
-      "t": "06-02 afternoon window 89.4% (42/47) \u2014 back in the stable ~89-91% band after the morning window's 84.2%. 15-day daily trend (one point/day): ...89.8 -> 96.2 (06-01 peak) -> 84.2 (06-02 full-day). Afternoon slice is healthier; no 429, failures are spread across infra/experimental classes rather than one dominant mode."
+      "t": "06-02 afternoon window 89.4% (42/47) — back in the stable ~89-91% band after the morning window's 84.2%. 15-day daily trend (one point/day): ...89.8 -> 96.2 (06-01 peak) -> 84.2 (06-02 full-day). Afternoon slice is healthier; no 429, failures are spread across infra/experimental classes rather than one dominant mode.",
+      "summary": "06-02 NIGHT window completed-run success 85.7% (24/28). Day trended 84.2% morning -> 89.4% afternoon -> 97.8% evening -> 85.7% night. Night dip driven by 2 infra docker-pull failures + 2 safe-output partial-failure failures (3 of 4 on a dev feature branch). Not a regression of a single workflow."
     },
     {
       "id": "high-cost-runs",
       "persist": 15,
       "state": "single-outlier",
       "last": "06-02",
-      "t": "Cost top: Semantic Function Refactoring $6.35 / 14.3M eff / 43 turns (SUCCESS) \u2014 well above 06-01's flat $2.98 top and the single largest claude run. Then Daily Documentation Healer $2.00, Smoke Claude $1.55. Total $15.05 claude-measured (copilot/codex/gemini/pi/antigravity EstimatedCost=0). Top eff_tok both 429-failures over the 25M cap (Daily Firewall Logs 25.67M, Smoke Copilot 25.22M). Watch Semantic Function Refactoring for recurrence at this magnitude."
+      "t": "Cost top: Semantic Function Refactoring $6.35 / 14.3M eff / 43 turns (SUCCESS) — well above 06-01's flat $2.98 top and the single largest claude run. Then Daily Documentation Healer $2.00, Smoke Claude $1.55. Total $15.05 claude-measured (copilot/codex/gemini/pi/antigravity EstimatedCost=0). Top eff_tok both 429-failures over the 25M cap (Daily Firewall Logs 25.67M, Smoke Copilot 25.22M). Watch Semantic Function Refactoring for recurrence at this magnitude."
     },
     {
       "id": "firewall-smoke-block-rate",
       "persist": 2,
       "state": "by-design",
       "last": "06-02",
-      "t": "Firewall blocks 698/3936 (17.6%), down from 19.3%. Hotspots all smoke probes: Smoke Copilot 56/136 (41%), Smoke Codex 38/114 (33%), Smoke Gemini 25/78 (32%), Smoke Claude 29/97 (30%) \u2014 Google telemetry + (unknown) SNI + Playwright azureedge + localhost. By-design, no failure-causing blocks. No action."
+      "t": "Firewall blocks 698/3936 (17.6%), down from 19.3%. Hotspots all smoke probes: Smoke Copilot 56/136 (41%), Smoke Codex 38/114 (33%), Smoke Gemini 25/78 (32%), Smoke Claude 29/97 (30%) — Google telemetry + (unknown) SNI + Playwright azureedge + localhost. By-design, no failure-causing blocks. No action."
     },
     {
       "id": "threat-detection-missing-prompt",
@@ -63,14 +64,22 @@
       "persist": 1,
       "state": "new-infra",
       "last": "2026-06-02",
-      "t": "NEW: Daily Issues Report Generator 26831132205 agent exit 127 \u2014 copilot_harness 'node runtime missing on this runner' guard fired. Runner lacked usable node. Pre-agent infra, single occurrence. Watch recurrence -> runtimes.node / runner image."
+      "t": "NEW: Daily Issues Report Generator 26831132205 agent exit 127 — copilot_harness 'node runtime missing on this runner' guard fired. Runner lacked usable node. Pre-agent infra, single occurrence. Watch recurrence -> runtimes.node / runner image."
     },
     {
       "id": "agent-timeout-no-output",
       "persist": 1,
       "state": "new",
       "last": "2026-06-02",
-      "t": "NEW: Avenger (claude/opus) ran 48.4min then failed turns=0 / empty output \u2014 agent-step time-limit while still dispatching Bash+TaskOutput. No safe output emitted. Single occurrence; watch for a stuck TaskOutput poll pattern."
+      "t": "NEW: Avenger (claude/opus) ran 48.4min then failed turns=0 / empty output — agent-step time-limit while still dispatching Bash+TaskOutput. No safe output emitted. Single occurrence; watch for a stuck TaskOutput poll pattern."
+    },
+    {
+      "id": "docker-registry-pull-timeout",
+      "first_seen": "2026-06-02T22:08Z",
+      "persistence_score": 1,
+      "status": "new-watch",
+      "title": "Docker Hub registry pull timeout cluster (night window)",
+      "summary": "2 agent-step failures (Smoke CI main, Smoke Codex branch) pulling node:lts-alpine from registry-1.docker.io with context-deadline-exceeded, exit 123, within ~21:05-21:39Z. Transient infra/network, not agent logic. Persistence 1 (single window). Escalate only if it recurs in a future window."
     }
   ]
 }
