@@ -392,6 +392,19 @@ runtimes:
 
 Omitted runtimes use the defaults above. Runtimes from imported shared workflows are merged with your workflow's configuration.
 
+#### `run-install-scripts`
+
+By default, package-manager install scripts are blocked for supply chain safety. Set `run-install-scripts: true` on a runtime to allow npm pre/post install scripts to run during package installation. A supply chain security warning is emitted at compile time; in [strict mode](#strict-mode-strict) this becomes an error. Defaults to `false`.
+
+```yaml wrap
+runtimes:
+  node:
+    version: "22"
+    run-install-scripts: true
+```
+
+This field is scoped to a runtime block. It was previously accepted at the top level of the frontmatter, but that form has been removed — configure it under the relevant runtime (such as `node`) instead.
+
 ### Source Tracking (`source:`)
 
 Tracks workflow origin in format `owner/repo/path@ref`. Automatically populated when using `gh aw add` to install workflows from external repositories. Optional for manually created workflows.
@@ -458,6 +471,16 @@ strict: false  # Disable for development/testing
 Workflows compiled with `strict: false` cannot run on public repositories. The workflow fails at runtime with an error message prompting recompilation with strict mode.
 
 See [Network Permissions - Strict Mode Validation](/gh-aw/reference/network/#strict-mode-validation) for details on network validation and [CLI Commands](/gh-aw/setup/cli/#compile) for compilation options.
+
+### `check-for-updates`
+
+Controls whether the compile-time version update check runs in the activation job. When `true` (the default), the activation job downloads `config.json` from the gh-aw repository and verifies that the compiled workflow version is not blocked and meets the minimum supported version. Set it to `false` to skip the check.
+
+```yaml wrap
+check-for-updates: false
+```
+
+Disabling the check is not allowed in [strict mode](#strict-mode-strict).
 
 ## Related Documentation
 
