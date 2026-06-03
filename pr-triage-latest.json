@@ -1,13 +1,13 @@
 {
-  "run_date": "2026-06-03T01:30:23Z",
-  "run_id": "26858165853",
+  "run_date": "2026-06-03T08:03:46Z",
+  "run_id": "26871722704",
   "fork_prs": 0,
   "agent_prs_found": 4,
   "prs_found": [
-    {"number": 36556, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Remove compiler-generated GitHub App token invalidation steps and refresh compiled workflow locks"},
-    {"number": 36549, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Refactor copilot SDK driver into self-contained Node program"},
-    {"number": 36546, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Add target field support to submit_pull_request_review safe-output"},
-    {"number": 36538, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Refine Copilot SDK-mode tool permission scoping from engine config"}
+    {"number": 36587, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Refactor duplicated markdown body/footer assembly into shared helper"},
+    {"number": 36584, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Implement `experiments.notify` notification routing in daily experiment reporting"},
+    {"number": 36583, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Add `license` string support in `aw.yml` manifest parsing and schema"},
+    {"number": 36549, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Refactor copilot SDK driver into self-contained Node program"}
   ],
   "notes": "4 open bot-authored PRs found but all originate from internal branches (isCrossRepository=false). Fork-only policy excludes all. No PRs to triage.",
   "fork_only_policy": true,
