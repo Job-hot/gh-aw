@@ -159,6 +159,30 @@ func TestNormalizeWhitespace(t *testing.T) {
 	}
 }
 
+func TestLeadingWhitespace(t *testing.T) {
+	tests := []struct {
+		name     string
+		line     string
+		expected string
+	}{
+		{name: "no indentation", line: "key: value", expected: ""},
+		{name: "spaces", line: "    key: value", expected: "    "},
+		{name: "tabs", line: "\t\tkey: value", expected: "\t\t"},
+		{name: "mixed", line: " \t  key: value", expected: " \t  "},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, LeadingWhitespace(tt.line))
+		})
+	}
+}
+
+func TestIndentLines(t *testing.T) {
+	lines := []string{"a", "", "  c"}
+	assert.Equal(t, []string{"--a", "--", "--  c"}, IndentLines(lines, "--"))
+}
+
 func BenchmarkTruncate(b *testing.B) {
 	s := "this is a very long string that needs to be truncated for testing purposes"
 	for b.Loop() {

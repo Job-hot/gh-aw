@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/github/gh-aw/pkg/logger"
+	"github.com/github/gh-aw/pkg/stringutil"
 )
 
 var networkFirewallCodemodLog = logger.New("cli:codemod_network_firewall")
@@ -189,7 +190,7 @@ func mergeFirewallIntoExistingSandbox(lines []string, fieldValue any) ([]string,
 		}
 	}
 
-	indentedAgentLines := indentLines(agentLines, agentIndent)
+	indentedAgentLines := stringutil.IndentLines(agentLines, agentIndent)
 	if agentStart == -1 {
 		newLines := make([]string, 0, len(lines)+len(indentedAgentLines))
 		newLines = append(newLines, lines[:sandboxIdx+1]...)
@@ -251,12 +252,4 @@ func sandboxAgentLinesForExistingSandbox(fieldValue any) []string {
 	}
 
 	return nil
-}
-
-func indentLines(lines []string, indent string) []string {
-	indented := make([]string, 0, len(lines))
-	for _, line := range lines {
-		indented = append(indented, indent+line)
-	}
-	return indented
 }

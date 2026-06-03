@@ -6,9 +6,15 @@ import (
 
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/parser"
+	"github.com/github/gh-aw/pkg/stringutil"
 )
 
 var yamlUtilsLog = logger.New("cli:yaml_frontmatter_utils")
+
+// getIndentation extracts the leading whitespace from a line.
+func getIndentation(line string) string {
+	return stringutil.LeadingWhitespace(line)
+}
 
 // isFrontmatterStrictFalse returns true when the frontmatter explicitly sets strict: false.
 // These codemods only need to run in strict mode; if the workflow has opted out of strict
@@ -42,11 +48,6 @@ func parseFrontmatterLines(content string) ([]string, string, error) {
 		return nil, "", fmt.Errorf("failed to parse frontmatter: %w", err)
 	}
 	return result.FrontmatterLines, result.Markdown, nil
-}
-
-// getIndentation extracts the leading whitespace from a line
-func getIndentation(line string) string {
-	return line[:len(line)-len(strings.TrimLeft(line, " \t"))]
 }
 
 // isTopLevelKey checks if a line is a top-level YAML key (no indentation, contains colon, not a comment)

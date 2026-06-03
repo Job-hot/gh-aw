@@ -13,6 +13,7 @@ import (
 
 	"github.com/github/gh-aw/pkg/jsonutil"
 	"github.com/github/gh-aw/pkg/logger"
+	"github.com/github/gh-aw/pkg/stringutil"
 	"github.com/github/gh-aw/pkg/typeutil"
 )
 
@@ -406,7 +407,7 @@ func (s *importExtractionState) extractImportItem(trimmed string, lineIndent int
 }
 
 func indentationOf(line string) int {
-	return len(line) - len(strings.TrimLeft(line, " \t"))
+	return len(stringutil.LeadingWhitespace(line))
 }
 
 // processImportsTextBased processes imports from frontmatter using text-based parsing

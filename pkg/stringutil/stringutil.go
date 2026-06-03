@@ -48,6 +48,20 @@ func NormalizeWhitespace(content string) string {
 	return normalized
 }
 
+// LeadingWhitespace returns the leading spaces/tabs prefix from a line.
+func LeadingWhitespace(line string) string {
+	return line[:len(line)-len(strings.TrimLeft(line, " \t"))]
+}
+
+// IndentLines prefixes each line with the provided indentation string.
+func IndentLines(lines []string, indent string) []string {
+	indented := make([]string, 0, len(lines))
+	for _, line := range lines {
+		indented = append(indented, indent+line)
+	}
+	return indented
+}
+
 // ParseVersionValue converts version values of various types to strings.
 // Supports string, int, int64, uint64, and float64 types.
 // Returns empty string for unsupported types.
