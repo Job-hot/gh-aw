@@ -1,10 +1,41 @@
 {
   "strategies": [
-    {"name":"Historical Trend Regression","tested":"2026-04-28","effectiveness":"High","finding":"Duration >15min = 100% success; <5min = ~7% success. Agent count >=4/day = 48.8% success"},
-    {"name":"CI Smoke Test Failure Clustering","tested":"2026-05-03","effectiveness":"High","finding":"3+ failures at same second = infra incident, not code regression"},
-    {"name":"Gate Workflow Composition Fingerprinting","tested":"2026-05-05","effectiveness":"High","finding":"1 gate=trivial, 4-7=moderate, 9+=feature. Security Review Agent co-occurrence=high-risk. Haiku-Printer-only=auto-merge candidate"},
-    {"name":"Gate Sweep Branch Concentration","tested":"2026-05-10","effectiveness":"Medium","finding":"Branch dominating >40% of daily sessions = routine/templated workflow with tight duration variance"},
-    {"name":"Inverse Gate-Count to Conclusiveness","tested":"2026-05-21","effectiveness":"High","finding":"Per-branch gate count strongly inversely correlated with conclusive rate. >15 gates/hour = waiting on agent action, not green CI"}
+    {
+      "name": "Historical Trend Regression",
+      "tested": "2026-04-28",
+      "effectiveness": "High",
+      "finding": "Duration >15min = 100% success; <5min = ~7% success. Agent count >=4/day = 48.8% success"
+    },
+    {
+      "name": "CI Smoke Test Failure Clustering",
+      "tested": "2026-05-03",
+      "effectiveness": "High",
+      "finding": "3+ failures at same second = infra incident, not code regression"
+    },
+    {
+      "name": "Gate Workflow Composition Fingerprinting",
+      "tested": "2026-05-05",
+      "effectiveness": "High",
+      "finding": "1 gate=trivial, 4-7=moderate, 9+=feature. Security Review Agent co-occurrence=high-risk. Haiku-Printer-only=auto-merge candidate"
+    },
+    {
+      "name": "Gate Sweep Branch Concentration",
+      "tested": "2026-05-10",
+      "effectiveness": "Medium",
+      "finding": "Branch dominating >40% of daily sessions = routine/templated workflow with tight duration variance"
+    },
+    {
+      "name": "Inverse Gate-Count to Conclusiveness",
+      "tested": "2026-05-21",
+      "effectiveness": "High",
+      "finding": "Per-branch gate count strongly inversely correlated with conclusive rate. >15 gates/hour = waiting on agent action, not green CI"
+    },
+    {
+      "name": "Success-Workflow Provenance Mapping",
+      "tested": "2026-06-03",
+      "effectiveness": "High",
+      "finding": "On gate-sweep days 100% of successes originate from the Running-Copilot-cloud-agent workflow; gate workflows (Q/Smoke CI/CJS/CGO/Agentic Commands/moderators) never produce success conclusions (only action_required). Completion-rate denominator is dominated by gate firings, so daily completion% mostly tracks gate-to-agent-session ratio, not agent quality."
+    }
   ],
-  "last_updated":"2026-05-21"
+  "last_updated": "2026-06-03"
 }
