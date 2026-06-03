@@ -114,7 +114,7 @@ See [Copilot Agent Files](/gh-aw/reference/copilot-custom-agents/) for details.
 
 ### Copilot SDK Mode (`copilot-sdk`)
 
-Set `copilot-sdk: true` on the Copilot engine to run the workflow through the Copilot SDK instead of sending the prompt only through the CLI wrapper. AWF keeps `engine.id: copilot`, starts a headless Copilot CLI sidecar, installs `@github/copilot-sdk`, and connects the workflow to that sidecar through `COPILOT_SDK_URI`.
+Set `copilot-sdk: true` on the Copilot engine to run the workflow through the Copilot SDK instead of sending the prompt only through the CLI wrapper. GitHub Agentic Workflows keeps `engine.id: copilot`, starts a headless Copilot CLI sidecar, installs `@github/copilot-sdk`, and connects the workflow to that sidecar through `COPILOT_SDK_URI`.
 
 ```yaml wrap
 engine:
@@ -138,7 +138,7 @@ engine:
   harness: custom_copilot_harness.cjs
 ```
 
-Your custom harness must remain a safe basename ending in `.js`, `.cjs`, or `.mjs`. In SDK mode, it is responsible for preserving the Copilot SDK sidecar lifecycle and passing the workflow through the expected driver environment.
+Your custom harness must use a filename-only basename ending in `.js`, `.cjs`, or `.mjs`. Do not include path separators, `..`, or shell metacharacters. In SDK mode, it is responsible for preserving the Copilot SDK sidecar lifecycle and passing the workflow through the expected driver environment.
 
 For the built-in driver contract, required environment variables, permission handling rules, and logging requirements, see [Copilot SDK Driver Specification](/gh-aw/reference/copilot-sdk-driver-specification/).
 
