@@ -1,38 +1,34 @@
-# Workflow Health — 2026-06-02T06:03Z
+# Workflow Health — 2026-06-03T06:09Z
 
-Score: 81/100 (↓1 from 82 — CJS CI broken)
-Workflows: 237 | Lock files: 237/237 (100% ✅) | Run: §26801601082
+Score: 82/100 (↑1 from 81)
+Workflows: 238 | Lock files: 238/238 (100% ✅) | Run: §26866961274
 
 ## KEY FINDINGS
 
-### Status (June 2)
-- **Compilation:** 237/237 workflows have lock files (100% ✅) — unchanged
-- **NEW P1 filed this run: 1** — CJS typecheck broken on main
-- **IMPROVEMENT:** Step Name Alignment (#36062) PASSED today — may be resolved
-- **CGO:** Still 100% failing today (auto-notifier #35028 open) — escalating
+### Status (June 3)
+- **Compilation:** 238/238 workflows have lock files (100% ✅)
+- **CJS typecheck IMPROVING:** Was 0% yesterday; today CI is 9/15 successes (60%). Still 2 failures, issue #36410 open
+- **CGO:** Still 100% failing (issue #35028 open) — 2 failures + 1 pending today
+- **Daily Firewall Logs Collector:** 4th consecutive failure (issue #36561 open) — escalating
+- **Smoke tests:** RESOLVED — Smoke Pi and others back to success ✅
+- **Auto-Triage:** RESOLVED — passing today ✅
+- **Sergo:** 1 failure today, issue #36574 filed
 
 ### Critical Issues (P1) 🚨
-- **CJS typecheck** (NEW, issue filed): 100% fail since June 1 ~23:32Z. `js-typecheck` job failing on all main pushes and PRs. Triggered by commit cf5be42 (PR #36358). 17 failures on June 2. DO NOT RE-FILE.
-- **CGO unit tests** (#35028 OPEN): 100% fail today (20 failures), auto-notifier already created issue. Escalating from 33%. DO NOT RE-FILE.
-- **LintMonster backlog** (#36050): 1 failure today, 1 success — still intermittent
+- **CGO unit tests** (#35028 OPEN): 100% fail today (2+1 runs), unchanged since May 27. DO NOT RE-FILE.
+- **Daily Firewall Logs Collector** (#36561 OPEN): 4 consecutive failures (May 31–Jun 3). DO NOT RE-FILE.
+- **CJS typecheck** (#36410 OPEN): Improving (60% today vs 0% yesterday). Monitor.
 
 ### P2 Issues ⚠️
-- **chaos-test PR stall**: 10+ open PRs, 0 merges — worsening
-- **Token budget exhaustion**: jsweep (#36183) + daily-compiler (#36172) — recurring
-- **Daily Firewall Logs Collector** (#36171): 1 failure today — recurring
+- **Sergo** (#36574 OPEN): 1 failure today, typically reliable
+- **chaos-test PR stall**: 10+ open PRs still pending merge
 
 ### Improvements ✅
-- **Step Name Alignment** (#36062): PASSED today (was 100% fail) — may be resolved
-- Smoke tests: still mostly closed
+- CJS typecheck: 60% success today (was 0% June 2) — showing recovery
+- Smoke Pi, Smoke Antigravity, Smoke Codex: back to success
+- Auto-Triage Issues: passing
 
 ### Actions Taken This Run
-- Filed P1 issue for CJS typecheck failure (new, untracked)
-- Updated shared memory with June 2 assessment
-
-### Trends
-- Score: 81/100 (↓1 — CJS CI breakage)
-- CGO escalating to 100% failure rate
-- CJS typecheck: new systemic issue introduced by PR #36358
-- Step Name Alignment: possible resolution
-
-Last updated: 2026-06-02T06:03:00Z by workflow-health-manager
+- Updated shared memory with June 3 assessment
+- Added comment to #36561 (Firewall — 4th day)
+- No new issues created (all tracked)
