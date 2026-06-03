@@ -129,22 +129,18 @@ Use this mode when you need SDK-backed session handling, SDK event capture, or b
 > [!NOTE]
 > `copilot-sdk` is an experimental Copilot-only setting. It does not change the engine ID to `copilot-sdk`.
 
-### Custom Copilot SDK Driver
+### Custom Copilot SDK Command
 
-In `copilot-sdk` mode, the built-in Copilot harness starts the headless sidecar and runs the bundled `copilot_sdk_driver.cjs` program as the default SDK driver. If you need different startup behavior or want to supply your own driver flow, set `engine.harness` to a custom Node.js harness script and keep `copilot-sdk: true`.
+In `copilot-sdk` mode, GitHub Agentic Workflows still uses the built-in Copilot harness and bundled `copilot_sdk_driver.cjs` program. To change what executable the SDK flow starts for the headless Copilot CLI sidecar, set `engine.command`.
 
 ```yaml wrap
 engine:
   id: copilot
   copilot-sdk: true
-  harness: custom_copilot_harness.cjs
+  command: /usr/local/bin/copilot-dev
 ```
 
-Your custom harness must use a filename ending in `.js`, `.cjs`, or `.mjs`. Do not include path separators, `..`, or shell metacharacters.
-
-These restrictions keep the harness selection safe for sandboxed execution and prevent path traversal or shell injection through workflow configuration. Valid examples include `my_harness.cjs` and `custom-sdk-driver.mjs`. Invalid examples include `../harness.js` and `harness;rm.cjs`.
-
-In SDK mode, the custom harness is responsible for preserving the Copilot SDK sidecar lifecycle and passing the workflow through the expected driver environment.
+Use `command` for a custom Copilot CLI build or wrapper that preserves the expected CLI arguments. `engine.harness` does not replace the SDK driver in this mode.
 
 For the built-in driver contract, required environment variables, permission handling rules, and logging requirements, see [Copilot SDK Driver Specification](/gh-aw/reference/copilot-sdk-driver-specification/).
 
