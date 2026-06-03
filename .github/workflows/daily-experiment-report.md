@@ -117,7 +117,7 @@ by the experiments CLI:
 - Primary metric (`metric:` field), if set
 - Secondary metrics (`secondary_metrics:` list), if set
 - Tracking issue number, if an `issue:` field is set
-- Notify target (`notify.issue` and/or `notify.discussion`), if set
+- Notify target (`notify.issue` and/or `notify.discussion`), if set, to determine where readiness/significance/guardrail notifications should be posted
 
 If no workflows declare `experiments:`, append the following to `$GITHUB_STEP_SUMMARY` and exit:
 
@@ -534,8 +534,9 @@ Daily experiment report: N experiments analysed, M reached significance (p < 0.0
 ## Step 8 — Notify Experiment Owners
 
 For each experiment that has a `notify.issue` or `notify.discussion` target set, post a comment to
-that target when any of the following conditions are met **for the first time today**. Every
-notification comment MUST include a mention for the experiment owner as `@${{ github.repository_owner }}`.
+that target when any of the following conditions are met **for the first time today**. In this
+workflow, the experiment owner is defined by convention as the repository owner, so every
+notification comment MUST include `@${{ github.repository_owner }}`.
 
 **Condition A — All variants reached `min_samples`:**
 Post a comment:
@@ -579,7 +580,9 @@ Recommendation: **ABANDON** — investigate immediately.
 ```
 
 Use the `add-comment` safe-output tool to post comments. Select the target in this order:
-1) `notify.issue` (when present), 2) `notify.discussion` (when present), 3) skip.
+1) `notify.issue` (when present), 2) `notify.discussion` (when present), 3) skip. If both are
+present, post to `notify.issue` only so each notification is emitted once and tracking stays tied to
+the canonical experiment thread.
 Do not post duplicate comments if the same condition was already reported in a previous run today.
 
 ## Step 9 — Update Experiment Lifecycle Labels
