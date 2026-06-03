@@ -112,6 +112,36 @@ engine:
 
 See [Copilot Agent Files](/gh-aw/reference/copilot-custom-agents/) for details.
 
+### Copilot SDK Mode (`copilot-sdk`)
+
+Set `copilot-sdk: true` on the Copilot engine to run the workflow through the Copilot SDK instead of sending the prompt only through the CLI wrapper. AWF keeps `engine.id: copilot`, starts a headless Copilot CLI sidecar, installs `@github/copilot-sdk`, and connects the workflow to that sidecar through `COPILOT_SDK_URI`.
+
+```yaml wrap
+engine:
+  id: copilot
+  copilot-sdk: true
+```
+
+Use this mode when you need SDK-backed session handling, SDK event capture, or behavior that depends on the Copilot SDK driver contract.
+
+> [!NOTE]
+> `copilot-sdk` is an experimental Copilot-only setting. It does not change the engine ID to `copilot-sdk`.
+
+### Custom Copilot SDK Driver
+
+In `copilot-sdk` mode, the built-in Copilot harness starts the headless sidecar and runs the bundled `copilot_sdk_driver.cjs` program as the default SDK driver. If you need different startup behavior or want to supply your own driver flow, set `engine.harness` to a custom Node.js harness script and keep `copilot-sdk: true`.
+
+```yaml wrap
+engine:
+  id: copilot
+  copilot-sdk: true
+  harness: custom_copilot_harness.cjs
+```
+
+Your custom harness must remain a safe basename ending in `.js`, `.cjs`, or `.mjs`. In SDK mode, it is responsible for preserving the Copilot SDK sidecar lifecycle and passing the workflow through the expected driver environment.
+
+For the built-in driver contract, required environment variables, permission handling rules, and logging requirements, see [Copilot SDK Driver Specification](/gh-aw/reference/copilot-sdk-driver-specification/).
+
 ### Engine Environment Variables
 
 All engines support custom environment variables through the `env` field:
