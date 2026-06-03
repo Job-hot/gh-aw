@@ -24,6 +24,7 @@ const { normalizeBranchName } = require("./normalize_branch_name.cjs");
 const { pushExtraEmptyCommit } = require("./extra_empty_commit.cjs");
 const { createCheckoutManager } = require("./dynamic_checkout.cjs");
 const { closeOlderPullRequests } = require("./close_older_pull_requests.cjs");
+const { findRepoCheckout } = require("./find_repo_checkout.cjs");
 const { getBaseBranch } = require("./get_base_branch.cjs");
 const { createAuthenticatedGitHubClient } = require("./handler_auth.cjs");
 const { buildWorkflowRunUrl } = require("./workflow_metadata_helpers.cjs");
@@ -747,13 +748,20 @@ async function main(config = {}) {
   // Track how many items we've processed for max limit
   let processedCount = 0;
 
-  // Create checkout manager for multi-repo support
+  // Multi-repo support: checkout mapping from compile-time checkout: configs.
+  // When target-repo: "*" is configured and repos are checked out into subdirectories,
+  // the checkout_mapping tells us where each repo lives on disk.
+  const checkoutMapping = config.checkout_mapping || null;
+
+  // Create checkout manager for multi-repo support (fallback when no checkout_mapping)
   // Token is available via GITHUB_TOKEN environment variable (set by the workflow job)
   const checkoutToken = process.env.GITHUB_TOKEN;
   const checkoutManager = checkoutToken ? createCheckoutManager(checkoutToken, { defaultBaseBranch: configBaseBranch }) : null;
 
   // Log multi-repo support status
-  if (allowedRepos.size > 0 && checkoutManager) {
+  if (checkoutMapping) {
+    core.info(`Multi-repo support enabled via checkout mapping: ${Object.keys(checkoutMapping).length} repo(s) mapped`);
+  } else if (allowedRepos.size > 0 && checkoutManager) {
     core.info(`Multi-repo support enabled: can switch between repos in allowed-repos list`);
   } else if (allowedRepos.size > 0 && !checkoutManager) {
     core.warning(`Multi-repo support disabled: GITHUB_TOKEN not available for dynamic checkout`);
@@ -866,21 +874,76 @@ async function main(config = {}) {
       }
     }
 
-    // Multi-repo support: Switch checkout to target repo if different from current
-    // This enables creating PRs in multiple repos from a single workflow run
-    if (checkoutManager && itemRepo) {
-      const switchResult = await checkoutManager.switchTo(itemRepo, { baseBranch });
-      if (!switchResult.success) {
-        core.warning(`Failed to switch to repository ${itemRepo}: ${switchResult.error}`);
-        return {
-          success: false,
-          error: `Failed to checkout repository ${itemRepo}: ${switchResult.error}`,
-        };
+    // Multi-repo support: Switch to the correct working directory for the target repo.
+    // Priority:
+    // 1. checkout_mapping: repos checked out into subdirectories (wildcard target-repo)
+    // 2. findRepoCheckout: scan workspace for repo checkouts (subdirectory discovery)
+    // 3. createCheckoutManager: dynamic git remote switching (legacy allowed-repos)
+    let repoCwd = undefined;
+    const workflowRepo = process.env.GITHUB_REPOSITORY || "";
+    const isTargetingDifferentRepo = itemRepo && itemRepo.toLowerCase() !== workflowRepo.toLowerCase();
+
+    if (isTargetingDifferentRepo && checkoutMapping) {
+      // Use checkout mapping to find the subdirectory for this repo
+      const targetLower = itemRepo.toLowerCase();
+      const mappedPath = checkoutMapping[targetLower];
+      if (mappedPath) {
+        const absolutePath = require("path").resolve(process.env.GITHUB_WORKSPACE || process.cwd(), mappedPath);
+        repoCwd = absolutePath;
+        core.info(`Using checkout mapping: ${itemRepo} -> ${mappedPath}`);
+      } else {
+        // Repo not in mapping; try scanning workspace
+        const checkoutResult = findRepoCheckout(itemRepo, process.env.GITHUB_WORKSPACE, { allowedRepos: [...allowedRepos] });
+        if (checkoutResult.success) {
+          repoCwd = checkoutResult.path;
+          core.info(`Found checkout for ${itemRepo} via workspace scan at: ${repoCwd}`);
+        } else {
+          core.warning(`Repository ${itemRepo} not found in checkout mapping or workspace`);
+          return {
+            success: false,
+            error: `Repository '${itemRepo}' not found in workspace. Configure it in checkout: with a path to enable multi-repo PR creation.`,
+          };
+        }
       }
-      if (switchResult.switched) {
-        core.info(`Switched checkout to repository: ${itemRepo}`);
+    } else if (isTargetingDifferentRepo && !checkoutMapping) {
+      // Legacy path: use findRepoCheckout first, fall back to dynamic checkout manager
+      const checkoutResult = findRepoCheckout(itemRepo, process.env.GITHUB_WORKSPACE, { allowedRepos: [...allowedRepos] });
+      if (checkoutResult.success) {
+        repoCwd = checkoutResult.path;
+        core.info(`Found checkout for ${itemRepo} at: ${repoCwd}`);
+      } else if (checkoutManager) {
+        // Fall back to dynamic remote switching (changes git remote in workspace root)
+        const switchResult = await checkoutManager.switchTo(itemRepo, { baseBranch });
+        if (!switchResult.success) {
+          core.warning(`Failed to switch to repository ${itemRepo}: ${switchResult.error}`);
+          return {
+            success: false,
+            error: `Failed to checkout repository ${itemRepo}: ${switchResult.error}`,
+          };
+        }
+        if (switchResult.switched) {
+          core.info(`Switched checkout to repository: ${itemRepo} (dynamic remote switch)`);
+        }
+      } else {
+        // No checkout found and no checkout manager available.
+        // Proceed without repoCwd — if a patch/bundle is required it will fail at apply time;
+        // if allow_empty is set the PR can still be created via API alone.
+        core.warning(`Repository '${itemRepo}' not found in workspace and no checkout manager available; proceeding from workspace root`);
       }
     }
+
+    // If we have a repoCwd (subdirectory checkout), change process cwd for git operations
+    const originalCwd = process.cwd();
+    if (repoCwd) {
+      try {
+        process.chdir(repoCwd);
+      } catch (chdirError) {
+        return { success: false, error: `Failed to change working directory to '${repoCwd}': ${getErrorMessage(chdirError)}` };
+      }
+      core.info(`Changed working directory to: ${repoCwd}`);
+    }
+
+    try {
 
     // SECURITY: Sanitize dynamically resolved base branch to prevent shell injection
     const originalBaseBranch = baseBranch;
@@ -2384,6 +2447,12 @@ ${patchPreview}`;
           success: false,
           error,
         };
+      }
+    }
+    } finally {
+      // Restore original working directory after multi-repo subdirectory operations
+      if (repoCwd) {
+        process.chdir(originalCwd);
       }
     }
   }; // End of handleCreatePullRequest
