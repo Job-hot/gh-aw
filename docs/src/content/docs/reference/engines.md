@@ -116,7 +116,7 @@ See [Copilot Agent Files](/gh-aw/reference/copilot-custom-agents/) for details.
 
 Set `copilot-sdk: true` on the Copilot engine to run the workflow through the Copilot SDK instead of sending the prompt only through the CLI wrapper.
 
-GitHub Agentic Workflows keeps `engine.id: copilot`, starts a headless Copilot CLI sidecar, installs `@github/copilot-sdk`, and connects the workflow to that sidecar through `COPILOT_SDK_URI`.
+GitHub Agentic Workflows preserves `engine.id: copilot`, starts a headless Copilot CLI sidecar, installs `@github/copilot-sdk`, and connects the workflow to that sidecar through `COPILOT_SDK_URI`.
 
 ```yaml wrap
 engine:
@@ -140,7 +140,7 @@ engine:
   harness: custom_copilot_harness.cjs
 ```
 
-Your custom harness must use a filename-only basename ending in `.js`, `.cjs`, or `.mjs`. Do not include path separators, `..`, or shell metacharacters.
+Your custom harness must use a filename ending in `.js`, `.cjs`, or `.mjs`. Do not include path separators, `..`, or shell metacharacters.
 
 These restrictions keep the harness selection safe for sandboxed execution and prevent path traversal or shell injection through workflow configuration. Valid examples include `my_harness.cjs` and `custom-sdk-driver.mjs`. Invalid examples include `../harness.js` and `harness;rm.cjs`.
 
