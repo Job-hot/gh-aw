@@ -16,6 +16,7 @@ permissions:
 name: Smoke Copilot SDK
 engine:
   id: copilot
+  command: node samples/copilot_driver.cjs
   copilot-sdk: true
   model: gpt-5.4
   bare: true
