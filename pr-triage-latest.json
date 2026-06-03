@@ -1,14 +1,15 @@
 {
-  "run_date": "2026-06-02T19:31:20Z",
-  "run_id": "26843044358",
+  "run_date": "2026-06-03T01:30:23Z",
+  "run_id": "26858165853",
   "fork_prs": 0,
-  "agent_prs_found": 3,
+  "agent_prs_found": 4,
   "prs_found": [
-    {"number": 36506, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Wire `COPILOT_CONNECTION_TOKEN` through Copilot SDK headless flow"},
-    {"number": 36505, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Increase Copilot SDK session timeout for Daily Security Observability workflow"},
-    {"number": 36493, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Generate `init`/`upgrade` dispatcher file lists from `github/gh-aw` with embedded fallback"}
+    {"number": 36556, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Remove compiler-generated GitHub App token invalidation steps and refresh compiled workflow locks"},
+    {"number": 36549, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Refactor copilot SDK driver into self-contained Node program"},
+    {"number": 36546, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Add target field support to submit_pull_request_review safe-output"},
+    {"number": 36538, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Refine Copilot SDK-mode tool permission scoping from engine config"}
   ],
-  "notes": "3 open bot-authored PRs found but all originate from internal branches (isCrossRepository=false). Fork-only policy excludes all. No PRs to triage.",
+  "notes": "4 open bot-authored PRs found but all originate from internal branches (isCrossRepository=false). Fork-only policy excludes all. No PRs to triage.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
