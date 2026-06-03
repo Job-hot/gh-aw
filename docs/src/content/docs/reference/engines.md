@@ -140,7 +140,9 @@ engine:
   harness: custom_copilot_harness.cjs
 ```
 
-Your custom harness must use a filename-only basename ending in `.js`, `.cjs`, or `.mjs`. Do not include path separators, `..`, or shell metacharacters. These restrictions keep the harness selection safe for sandboxed execution and prevent path traversal or shell injection through workflow configuration. Valid examples include `my_harness.cjs` and `custom-sdk-driver.mjs`. Invalid examples include `../harness.js` and `harness;rm.cjs`.
+Your custom harness must use a filename-only basename ending in `.js`, `.cjs`, or `.mjs`. Do not include path separators, `..`, or shell metacharacters.
+
+These restrictions keep the harness selection safe for sandboxed execution and prevent path traversal or shell injection through workflow configuration. Valid examples include `my_harness.cjs` and `custom-sdk-driver.mjs`. Invalid examples include `../harness.js` and `harness;rm.cjs`.
 
 In SDK mode, the custom harness is responsible for preserving the Copilot SDK sidecar lifecycle and passing the workflow through the expected driver environment.
 
