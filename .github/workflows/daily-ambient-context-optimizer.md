@@ -16,6 +16,9 @@ max-daily-effective-tokens: 100M
 network:
   allowed: [defaults, github]
 tools:
+  cli-proxy: true
+  github:
+    mode: gh-proxy
   agentic-workflows:
   bash: true
 safe-outputs:
@@ -58,13 +61,10 @@ Your job is to inspect the **first request sent to the DLLM** for several recent
 
 ### Step 1 — Download recent runs
 
-Use the `logs` tool from the `agentic-workflows` MCP server with:
+Use the CLI form instead of MCP tools:
 
-- `start_date: "-1d"`
-- `count: 60`
-- `parse: true`
-
-The tool downloads run data under `/tmp/gh-aw/aw-mcp/logs/`.
+- run `gh aw logs --start-date -1d -c 60 --json -o /tmp/gh-aw/aw-mcp/logs`
+- use the JSON artifacts under `/tmp/gh-aw/aw-mcp/logs/` as your source of run metadata
 
 ### Step 2 — Pick the sample set
 
@@ -86,7 +86,7 @@ Prefer higher-cost runs first by using `effective_tokens`, `token_usage`, `turns
 
 ### Step 3 — Enrich a subset with audits
 
-Run the `audit` tool from the `agentic-workflows` MCP server for the **2 most expensive sampled runs** so you have richer token context and references.
+Run the CLI form `gh aw audit <run-id> --json` for the **2 most expensive sampled runs** so you have richer token context and references.
 
 ## First-Request Extraction Rules
 
@@ -168,6 +168,13 @@ Assess whether the request size is likely driven by:
 - duplicated guardrails, examples, or formatting rules
 - context that should be moved to deterministic `steps:` or smaller sub-agents
 
+Also review proxy/CLI feature readiness for each sampled workflow:
+
+- GitHub gh-proxy enabled (`tools.github.mode: gh-proxy`)
+- CLI proxy enabled (`tools.cli-proxy: true`)
+
+When one or more are missing, include a recommendation to enable them and rewrite the workflow problem statements from MCP-tool wording to CLI-form usage.
+
 ## Sub-Agent Usage
 
 After the deterministic Python script finishes, invoke `request-optimizer` for **at most 2 sampled runs** using compact JSON summaries (never raw full prompts), and only when at least 2 sampled runs exist.
@@ -201,6 +208,7 @@ Prioritize recommendations that:
 2. reduce broad skill loading or oversized skill fusion
 3. simplify or remove low-value inline agents
 4. move deterministic data gathering out of the main prompt
+5. enable `gh-proxy` and `cli-proxy` when missing, then rewrite MCP-tool-oriented problem wording to CLI-form commands
 
 Do not recommend changes that would obviously weaken safety or remove necessary task context.
 
@@ -257,6 +265,8 @@ Summarize the Python script outputs and cite only the most relevant metrics.
 #### Workflow Markdown
 #### Skills
 #### Agents
+
+Do not add a separate "MCP Tools" section. Keep MCP-to-CLI rewrite guidance inside the existing categories, primarily Workflow Markdown.
 
 ### References
 - Include up to 3 sampled run links in `[§12345](https://github.com/owner/repo/actions/runs/12345)` format
