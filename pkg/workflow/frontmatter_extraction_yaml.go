@@ -9,7 +9,6 @@ import (
 	"github.com/github/gh-aw/pkg/console"
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/parser"
-	"github.com/github/gh-aw/pkg/stringutil"
 	"github.com/goccy/go-yaml"
 )
 
@@ -31,7 +30,7 @@ func (c *Compiler) indentYAMLLines(yamlContent, indent string) string {
 	result.WriteString(lines[0])
 	for i := 1; i < len(lines); i++ {
 		if strings.TrimSpace(lines[i]) != "" {
-			result.WriteString("\n" + stringutil.IndentLines([]string{lines[i]}, indent)[0])
+			result.WriteString("\n" + indent + lines[i])
 		} else {
 			result.WriteString("\n" + lines[i])
 		}
