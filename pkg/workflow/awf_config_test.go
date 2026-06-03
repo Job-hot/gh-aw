@@ -1045,6 +1045,78 @@ func TestBuildAWFCommand_UsesConfigFile(t *testing.T) {
 	assert.Contains(t, command, `"enabled":true`, "config JSON should have apiProxy enabled")
 }
 
+// TestBuildAWFCommand_SquidBootstrapRetry verifies that BuildAWFCommand wraps the AWF
+// invocation in a bootstrap retry loop that fires on awf-squid healthcheck failures.
+func TestBuildAWFCommand_SquidBootstrapRetry(t *testing.T) {
+	config := AWFCommandConfig{
+		EngineName:     "copilot",
+		EngineCommand:  "copilot --prompt-file /tmp/prompt.txt",
+		LogFile:        "/tmp/gh-aw/agent-stdio.log",
+		AllowedDomains: "github.com",
+		WorkflowData: &WorkflowData{
+			EngineConfig: &EngineConfig{ID: "copilot"},
+			NetworkPermissions: &NetworkPermissions{
+				Firewall: &FirewallConfig{Enabled: true},
+			},
+		},
+	}
+
+	command := BuildAWFCommand(config)
+
+	// Retry loop scaffolding must be present.
+	assert.Contains(t, command, "awf_bootstrap_retry_max=2",
+		"expected retry max counter")
+	assert.Contains(t, command, "awf_bootstrap_retry_attempt=0",
+		"expected retry attempt counter initialised to 0")
+	assert.Contains(t, command, "while true; do",
+		"expected retry while-loop")
+
+	// Per-attempt temp log must be created with restricted permissions.
+	assert.Contains(t, command, "umask 177",
+		"expected restricted permissions on per-attempt log")
+	assert.Contains(t, command, `mktemp "${RUNNER_TEMP:-/tmp}/awf-startup-XXXXXX.log"`,
+		"expected mktemp for per-attempt log")
+
+	// set +e / set -e must bracket the AWF pipeline so PIPESTATUS can be read
+	// even when the GitHub Actions runner uses bash -e (errexit).
+	setEOffIdx := strings.Index(command, "set +e")
+	awfIdx := strings.Index(command, "sudo -E awf")
+	setEOnIdx := strings.Index(command, "set -e")
+	assert.GreaterOrEqual(t, setEOffIdx, 0, "expected set +e before AWF pipeline")
+	assert.Less(t, setEOffIdx, awfIdx, "set +e must precede the AWF invocation")
+	assert.Less(t, awfIdx, setEOnIdx, "set -e must follow the AWF invocation")
+
+	// Exit code must be captured via PIPESTATUS[0] (not $?).
+	assert.Contains(t, command, "awf_exit=${PIPESTATUS[0]}",
+		"expected PIPESTATUS[0] to capture AWF exit code through the pipeline")
+
+	// Output must be split: per-attempt log (for grep) and main log (accumulated).
+	assert.Contains(t, command, `tee "$awf_attempt_log"`,
+		"expected per-attempt log written via tee for grep check")
+	assert.Contains(t, command, `tee -a /tmp/gh-aw/agent-stdio.log`,
+		"expected main log appended via tee -a")
+
+	// Retry condition must detect the specific squid unhealthy pattern.
+	assert.Contains(t, command, "dependency failed to start: container awf-squid is unhealthy",
+		"expected squid healthcheck failure pattern in retry condition")
+
+	// WARN message on retry and ERROR message on terminal failure.
+	assert.Contains(t, command, "[WARN] AWF bootstrap: awf-squid healthcheck failure on attempt",
+		"expected WARN message on retry")
+	assert.Contains(t, command, "[ERROR] AWF bootstrap: awf-squid healthcheck failure after all attempts",
+		"expected ERROR message on terminal failure")
+
+	// Squid container logs must be captured on terminal failure.
+	assert.Contains(t, command, "docker logs awf-squid",
+		"expected docker logs awf-squid captured on terminal failure")
+
+	// AWF must still be invoked with the standard flags.
+	assert.Contains(t, command, "sudo -E awf",
+		"expected sudo -E awf invocation inside retry loop")
+	assert.Contains(t, command, "--skip-pull",
+		"expected --skip-pull flag passed to AWF")
+}
+
 func TestBuildAWFCommand_ModelMultipliersLoadedFromFile(t *testing.T) {
 	config := AWFCommandConfig{
 		EngineName:    "copilot",

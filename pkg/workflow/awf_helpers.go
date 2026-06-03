@@ -300,6 +300,20 @@ fi`,
 	// pre-agent overhead such as workspace audit and CLI proxy startup.
 	writeAgentCLIStartMs := "printf '%s' \"$(date +%s%3N)\" > " + shellEscapeArg(AgentCLIStartMsPath)
 
+	// Build the AWF invocation with a one-shot bootstrap retry for transient awf-squid
+	// startup healthcheck failures. AWF v0.25.57+ already increases the squid healthcheck
+	// window (start_period=5s, retries=10, interval=2s), but this shell-level retry adds
+	// defence-in-depth for severely loaded runners that may still exhaust the probe window.
+	awfRunWithRetry := buildAWFSquidBootstrapRetry(
+		awfCommand,
+		expandableArgs,
+		toolCacheMountRef,
+		arcDindPrefixArgsRef,
+		awfArgs,
+		shellWrappedCommand,
+		config.LogFile,
+	)
+
 	// Build the complete command with proper formatting.
 	// configFileSetup (if non-empty) writes the AWF config JSON immediately before the
 	// AWF invocation so the file is present when AWF parses --config.
@@ -312,22 +326,14 @@ fi`,
 %s
 %s
 %s
-# shellcheck disable=SC1003
-%s %s %s %s %s \
-  -- %s 2>&1 | tee -a %s`,
+%s`,
 			writeAgentCLIStartMs,
 			config.PathSetup,
 			preCreateLog,
 			configFileSetup,
 			arcDindPrefixProbe,
 			toolCacheMountProbe,
-			awfCommand,
-			expandableArgs,
-			toolCacheMountRef,
-			arcDindPrefixArgsRef,
-			shellJoinArgs(awfArgs),
-			shellWrappedCommand,
-			shellEscapeArg(config.LogFile))
+			awfRunWithRetry)
 	} else if config.PathSetup != "" {
 		// Include path setup before AWF command (runs on host before AWF)
 		command = fmt.Sprintf(`set -o pipefail
@@ -336,21 +342,13 @@ fi`,
 %s
 %s
 %s
-# shellcheck disable=SC1003
-%s %s %s %s %s \
-  -- %s 2>&1 | tee -a %s`,
+%s`,
 			writeAgentCLIStartMs,
 			config.PathSetup,
 			preCreateLog,
 			arcDindPrefixProbe,
 			toolCacheMountProbe,
-			awfCommand,
-			expandableArgs,
-			toolCacheMountRef,
-			arcDindPrefixArgsRef,
-			shellJoinArgs(awfArgs),
-			shellWrappedCommand,
-			shellEscapeArg(config.LogFile))
+			awfRunWithRetry)
 	} else if configFileSetup != "" {
 		command = fmt.Sprintf(`set -o pipefail
 %s
@@ -358,45 +356,105 @@ fi`,
 %s
 %s
 %s
-# shellcheck disable=SC1003
-%s %s %s %s %s \
-  -- %s 2>&1 | tee -a %s`,
+%s`,
 			writeAgentCLIStartMs,
 			preCreateLog,
 			configFileSetup,
 			arcDindPrefixProbe,
 			toolCacheMountProbe,
-			awfCommand,
-			expandableArgs,
-			toolCacheMountRef,
-			arcDindPrefixArgsRef,
-			shellJoinArgs(awfArgs),
-			shellWrappedCommand,
-			shellEscapeArg(config.LogFile))
+			awfRunWithRetry)
 	} else {
 		command = fmt.Sprintf(`set -o pipefail
 %s
 %s
 %s
 %s
-# shellcheck disable=SC1003
-%s %s %s %s %s \
-  -- %s 2>&1 | tee -a %s`,
+%s`,
 			writeAgentCLIStartMs,
 			preCreateLog,
 			arcDindPrefixProbe,
 			toolCacheMountProbe,
-			awfCommand,
-			expandableArgs,
-			toolCacheMountRef,
-			arcDindPrefixArgsRef,
-			shellJoinArgs(awfArgs),
-			shellWrappedCommand,
-			shellEscapeArg(config.LogFile))
+			awfRunWithRetry)
 	}
 
 	awfHelpersLog.Print("Successfully built AWF command")
 	return command
+}
+
+// buildAWFSquidBootstrapRetry returns the shell fragment that invokes AWF with a
+// one-shot retry for transient awf-squid startup healthcheck failures.
+//
+// Motivation: Docker compose uses a depends_on healthcheck condition for the
+// awf-squid container. On loaded runners the squid proxy can take longer to
+// bind its listening port than the healthcheck window allows, which causes
+// "dependency failed to start: container awf-squid is unhealthy" and an
+// immediate exit-1 with no agent output. AWF v0.25.57+ increased the probe
+// window (start_period 2s→5s, retries 5→10, interval 1s→2s), but a shell-level
+// retry provides defence-in-depth for edge cases on severely loaded runners.
+//
+// Retry policy:
+//   - Max 2 attempts (awf_bootstrap_retry_max=2): one initial attempt + one retry.
+//   - 10s sleep between attempts to let Docker settle.
+//   - Retry fires only on the specific squid healthcheck error pattern; all other
+//     AWF failures propagate immediately with the original exit code.
+//   - On terminal failure (retries exhausted) the squid container logs are captured
+//     and appended to the agent stdio log to aid diagnosis.
+//
+// The attempt log (awf_attempt_log) captures output from the current attempt only;
+// the main log file (logFile) accumulates output across all attempts via tee -a.
+// set +e / set -e wraps the pipeline so ${PIPESTATUS[0]} can be read even when the
+// GitHub Actions default shell uses -e (errexit).
+func buildAWFSquidBootstrapRetry(
+	awfCommand string,
+	expandableArgs string,
+	toolCacheMountRef string,
+	arcDindPrefixArgsRef string,
+	awfArgs []string,
+	shellWrappedCommand string,
+	logFile string,
+) string {
+	escapedLog := shellEscapeArg(logFile)
+	return fmt.Sprintf(
+		`awf_bootstrap_retry_max=2
+awf_bootstrap_retry_attempt=0
+while true; do
+  awf_bootstrap_retry_attempt=$((awf_bootstrap_retry_attempt + 1))
+  awf_attempt_log=$(umask 177 && mktemp "${RUNNER_TEMP:-/tmp}/awf-startup-XXXXXX.log")
+  set +e
+  # shellcheck disable=SC1003
+  %s %s %s %s %s \
+    -- %s 2>&1 | tee "$awf_attempt_log" | tee -a %s
+  awf_exit=${PIPESTATUS[0]}
+  set -e
+  if [[ $awf_exit -eq 0 ]]; then
+    rm -f "$awf_attempt_log"
+    break
+  fi
+  if grep -Fq 'dependency failed to start: container awf-squid is unhealthy' "$awf_attempt_log" \
+     && [[ $awf_bootstrap_retry_attempt -lt $awf_bootstrap_retry_max ]]; then
+    echo "[WARN] AWF bootstrap: awf-squid healthcheck failure on attempt $awf_bootstrap_retry_attempt/$awf_bootstrap_retry_max — retrying in 10s" | tee -a %s
+    rm -f "$awf_attempt_log"
+    sleep 10
+    continue
+  fi
+  if grep -Fq 'dependency failed to start: container awf-squid is unhealthy' "$awf_attempt_log"; then
+    echo "[ERROR] AWF bootstrap: awf-squid healthcheck failure after all attempts — capturing squid container logs" | tee -a %s
+    docker logs awf-squid 2>&1 | tail -200 | sed 's/^/[awf-squid] /' | tee -a %s || true
+  fi
+  rm -f "$awf_attempt_log"
+  exit "$awf_exit"
+done`,
+		awfCommand,
+		expandableArgs,
+		toolCacheMountRef,
+		arcDindPrefixArgsRef,
+		shellJoinArgs(awfArgs),
+		shellWrappedCommand,
+		escapedLog,
+		escapedLog,
+		escapedLog,
+		escapedLog,
+	)
 }
 
 // BuildAWFArgs constructs common AWF arguments from configuration.
