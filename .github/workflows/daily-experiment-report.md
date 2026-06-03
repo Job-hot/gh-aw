@@ -44,7 +44,7 @@ safe-outputs:
     max: 10
   add-labels:
     max: 10
-  mentions: false
+  mentions: true
   allowed-github-references: []
   max-bot-mentions: 1
 
@@ -117,6 +117,7 @@ by the experiments CLI:
 - Primary metric (`metric:` field), if set
 - Secondary metrics (`secondary_metrics:` list), if set
 - Tracking issue number, if an `issue:` field is set
+- Notify target (`notify.issue` and/or `notify.discussion`), if set
 
 If no workflows declare `experiments:`, append the following to `$GITHUB_STEP_SUMMARY` and exit:
 
@@ -530,15 +531,18 @@ After the discussion is created, also write a one-line summary to `$GITHUB_STEP_
 Daily experiment report: N experiments analysed, M reached significance (p < 0.05). Discussion: <url>
 ```
 
-## Step 8 — Notify Tracking Issues
+## Step 8 — Notify Experiment Owners
 
-For each experiment that has a `issue:` field set, post a comment to that tracking issue when any
-of the following conditions are met **for the first time today**:
+For each experiment that has a `notify.issue` or `notify.discussion` target set, post a comment to
+that target when any of the following conditions are met **for the first time today**. Every
+notification comment MUST include a mention for the experiment owner as `@${{ github.repository_owner }}`.
 
 **Condition A — All variants reached `min_samples`:**
 Post a comment:
 ```
 🧪 **Experiment `<name>` is ready for analysis!**
+
+Owner: @${{ github.repository_owner }}
 
 All variants have reached the minimum sample size of `<min_samples>` runs:
 <variant>: <n>/<min_samples>
@@ -553,6 +557,8 @@ Post a comment:
 ```
 📊 **Experiment `<name>` has reached statistical significance (p = <p_value>)**
 
+Owner: @${{ github.repository_owner }}
+
 Recommendation: **<PROMOTE | EXTEND | ABANDON>**
 <one sentence rationale>
 
@@ -564,15 +570,17 @@ Post a comment:
 ```
 ⚠️ **Guardrail violation in experiment `<name>`**
 
+Owner: @${{ github.repository_owner }}
+
 The following guardrail metric failed:
 - `<metric_name>` expected `<threshold>`, got `<actual_value>` for variant `<variant>`
 
 Recommendation: **ABANDON** — investigate immediately.
 ```
 
-Use the `add-comment` safe-output tool to post comments. Skip experiments with no
-`issue:` field. Do not post duplicate comments if the same condition was already reported in a
-previous run today.
+Use the `add-comment` safe-output tool to post comments. Select the target in this order:
+1) `notify.issue` (when present), 2) `notify.discussion` (when present), 3) skip.
+Do not post duplicate comments if the same condition was already reported in a previous run today.
 
 ## Step 9 — Update Experiment Lifecycle Labels
 
