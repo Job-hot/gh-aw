@@ -1,28 +1,140 @@
 {
-  "u": "2026-06-02",
+  "u": "2026-06-03",
   "partial": false,
-  "window_note": "57-run completed window for 06-02 (48 success, 9 failure = 84.2%), plus 6 in-progress (incl Audit Agent self). Cost only for claude engine (copilot/codex/gemini/pi/antigravity EstimatedCost=0). Success DOWN from 06-01's 96.2% peak; 3 concurrent failure classes.",
+  "window_note": "06-03 window (since 06-02 night audit): 17 completed (13 success, 4 failure = 76.5%), 2 in-progress. ALL failures copilot. 3/4 are the copilot-sdk-session-auth escalation (100% of sdk-driver runs). Cost claude-only.",
   "w": {
-    "Daily Firewall Logs Collector and Reporter": {"r": 1, "s": 0, "f": 1, "eff_tok": 25666412, "turns": 61, "eng": "copilot", "note": "FAILED (26796384191) — CAPIError 429 Maximum effective tokens exceeded 25.67M/25M, retried 5x, agent exit 1. RECURRENCE of token-budget-429 on the SAME workflow (also 05-31). #35661."},
-    "Smoke Copilot": {"r": 2, "s": 1, "f": 1, "eff_tok": 25223718, "turns": 74, "eng": "copilot", "model": "gpt-5.4", "note": "1 FAILED (26788943047) — CAPIError 429 25.50M/25M after 14/16 smoke checks. NEW workflow in 429 class. Firewall hotspot 56/136 (41%)."},
-    "Smoke Copilot SDK": {"r": 4, "s": 0, "f": 4, "turns": 0, "eng": "copilot", "note": "ALL 4 FAILED (26792092514/26793757607/26795908399/26797319253) at agent T0 — 'Session was not created with authentication info or custom provider' (copilot-sdk sdk-driver). Experimental dev-iteration on branch copilot/fix-copilot-sdk-integration, 4 distinct SHAs over ~3h. NOT a production regression."},
-    "LintMonster": {"r": 1, "s": 0, "f": 1, "turns": 24, "eng": "copilot", "model": "haiku-4.5", "note": "FAILED (26796998912) — safe_outputs: update_issue target=triggering not-in-issue-context (schedule) -> Message 1 failed -> job red, agent exit 0. RECURRENCE (safe-output partial-failure-intolerance, also 05-31)."},
-    "Smoke Codex": {"r": 2, "s": 1, "f": 1, "turns": 0, "eng": "codex", "note": "1 FAILED (26788943036) — safe_outputs: set_issue_field 'No issue number available' -> Message 2 failed -> job red, agent exit 0. safe-output partial-failure class. Firewall 38/114 (33%) by-design."},
-    "PR Sous Chef": {"r": 4, "s": 3, "f": 1, "turns": 45, "eng": "copilot", "model": "gpt-5-mini", "note": "1 FAILED (26794554270) — safe_outputs: update_pull_request #36353 ERR_API 'branch from base failed' -> Message 2 failed -> job red, agent exit 0. API-error variant of partial-failure class."},
-    "Semantic Function Refactoring": {"r": 1, "s": 1, "f": 0, "eff_tok": 14279474, "turns": 43, "eng": "claude", "cost": 6.35, "note": "SUCCESS — day's COST TOP $6.35 (above 06-01 peak $2.98). Largest claude run this window. New cost-watch."},
-    "Daily Documentation Healer": {"r": 1, "s": 1, "f": 0, "eff_tok": 9079503, "eng": "claude", "cost": 2.00, "note": "SUCCESS."},
-    "Smoke Claude": {"r": 2, "s": 2, "f": 0, "eff_tok": 6073466, "eng": "claude", "cost": 1.55, "note": "SUCCESS both — safe-output target=* class did NOT recur on Smoke Claude this window (improvement vs 06-01). Firewall 29/97 (30%)."},
-    "[aw] Failure Investigator (6h)": {"r": 1, "s": 1, "f": 0, "eff_tok": 6355495, "turns": 29, "eng": "claude", "cost": 1.48, "note": "SUCCESS, no timeout. 2nd clean window."},
-    "Daily Security Red Team Agent": {"r": 1, "s": 1, "f": 0, "eff_tok": 5018990, "eng": "claude", "cost": 1.14, "note": "SUCCESS."},
-    "Contribution Check": {"r": 1, "s": 1, "f": 0, "eng": "copilot", "note": "SUCCESS this window — safe-output target=* class did NOT recur (failed 05-30 and 06-01). Improvement."},
-    "Smoke CI": {"r": 7, "s": 7, "f": 0, "eng": "copilot", "note": "All 7 passed. Stable."},
-    "Design Decision Gate": {"r": 3, "s": 2, "f": 0, "ip": 1, "eng": "claude", "note": "All passed (1 in-progress). pr-branch-deleted-race did NOT recur."},
-    "PR Code Quality Reviewer": {"r": 3, "s": 2, "f": 0, "ip": 1, "eng": "copilot", "note": "All passed (1 in-progress). Prior turn-drift watch — not re-flagged this window."},
-    "Test Quality Sentinel": {"r": 3, "s": 2, "f": 0, "ip": 1, "eng": "copilot", "note": "All passed. pr-branch-deleted-race did NOT recur."},
-    "Changeset Generator": {"r": 2, "s": 2, "f": 0, "eng": "codex", "note": "SUCCESS both. codex model-not-found stays resolved."},
-    "Smoke Antigravity": {"r": 2, "s": 2, "f": 0, "eng": "antigravity", "note": "NEW-ENGINE smoke, 2/2 SUCCESS."},
-    "Smoke Gemini": {"r": 2, "s": 2, "f": 0, "eng": "gemini", "note": "NEW-ENGINE smoke, 2/2 SUCCESS. Firewall 25/78 (32%) by-design."},
-    "Smoke Pi": {"r": 2, "s": 2, "f": 0, "eng": "pi", "note": "NEW-ENGINE smoke, 2/2 SUCCESS."},
-    "Agentic Workflow Audit Agent": {"r": 1, "ip": 1, "eng": "claude", "note": "This run."}
+    "PR Code Quality Reviewer": {
+      "r": 1,
+      "s": 0,
+      "f": 1,
+      "turns": 0,
+      "eng": "copilot",
+      "note": "FAILED (26914463847, branch copilot/add-linting-rule-bash-scripts) \u2014 copilot-sdk-driver auth: 'Session was not created with authentication info or custom provider', isAuthError=true, not retried, turns=0. ESCALATION."
+    },
+    "Copilot PR Prompt Pattern Analysis": {
+      "r": 1,
+      "s": 0,
+      "f": 1,
+      "turns": 0,
+      "eng": "copilot",
+      "note": "FAILED (26914529271, MAIN, schedule) \u2014 same copilot-sdk auth error. Production main."
+    },
+    "Daily Project Performance Summary Generator (Using MCP Scripts)": {
+      "r": 1,
+      "s": 0,
+      "f": 1,
+      "turns": 0,
+      "eng": "copilot",
+      "note": "FAILED (26914622782, MAIN, schedule) \u2014 same copilot-sdk auth error. Production main."
+    },
+    "Contribution Check": {
+      "r": 1,
+      "s": 0,
+      "f": 1,
+      "eff_tok": 9303370,
+      "turns": 36,
+      "eng": "copilot",
+      "note": "FAILED (26914897476, main) \u2014 agent SUCCEEDED, create_issue landed, but 3 add_comment target=* items lacked PR number -> safe_outputs job red. safe-output-partial-failure-intolerance."
+    },
+    "Daily Safe Output Tool Optimizer": {
+      "r": 1,
+      "s": 1,
+      "f": 0,
+      "eff_tok": 9969566,
+      "turns": 32,
+      "eng": "claude",
+      "cost": 2.52,
+      "note": "SUCCESS \u2014 day cost top $2.52."
+    },
+    "Daily Team Evolution Insights": {
+      "r": 1,
+      "s": 1,
+      "f": 0,
+      "eff_tok": 4902236,
+      "eng": "claude",
+      "cost": 1.45,
+      "note": "SUCCESS."
+    },
+    "Daily Caveman Optimizer": {
+      "r": 1,
+      "s": 1,
+      "f": 0,
+      "eff_tok": 4646870,
+      "eng": "claude",
+      "cost": 1.19,
+      "note": "SUCCESS."
+    },
+    "Lockfile Statistics Analysis Agent": {
+      "r": 1,
+      "s": 1,
+      "f": 0,
+      "eff_tok": 3344968,
+      "eng": "claude",
+      "cost": 0.94,
+      "note": "SUCCESS."
+    },
+    "Design Decision Gate": {
+      "r": 1,
+      "s": 1,
+      "f": 0,
+      "eng": "claude",
+      "cost": 0.65,
+      "note": "SUCCESS. pr-branch-deleted-race did NOT recur."
+    },
+    "PR Sous Chef": {
+      "r": 1,
+      "s": 1,
+      "f": 0,
+      "turns": 48,
+      "eng": "copilot",
+      "note": "SUCCESS this window (legacy copilot path). 06-02 had 1 update_pull_request fail; clean here."
+    },
+    "Matt Pocock Skills Reviewer": {
+      "r": 1,
+      "s": 1,
+      "f": 0,
+      "eng": "copilot",
+      "note": "SUCCESS. Firewall hotspot 12/45 (27%, by-design SNI)."
+    },
+    "Test Quality Sentinel": {
+      "r": 1,
+      "s": 1,
+      "f": 0,
+      "eng": "copilot",
+      "note": "SUCCESS."
+    },
+    "Issue Monster": {
+      "r": 1,
+      "s": 1,
+      "f": 0,
+      "eng": "copilot",
+      "note": "SUCCESS."
+    },
+    "AI Moderator": {
+      "r": 1,
+      "s": 1,
+      "f": 0,
+      "eng": "codex",
+      "note": "SUCCESS. codex stable."
+    },
+    "Smoke CI": {
+      "r": 3,
+      "s": 3,
+      "f": 0,
+      "eng": "copilot",
+      "note": "3/3 SUCCESS. Stable."
+    },
+    "Agentic Workflow Audit Agent": {
+      "r": 1,
+      "ip": 1,
+      "eng": "claude",
+      "note": "This run."
+    },
+    "Daily Regulatory Report Generator": {
+      "r": 1,
+      "ip": 1,
+      "eng": "copilot",
+      "note": "In-progress at audit time."
+    }
   }
 }

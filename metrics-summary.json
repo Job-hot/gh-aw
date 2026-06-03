@@ -1,38 +1,35 @@
 {
-  "updated": "2026-06-02T22:08Z",
-  "date": "2026-06-02",
+  "updated": "2026-06-03T22:10Z",
+  "date": "2026-06-03",
   "partial": false,
-  "latest_window": "2026-06-02 NIGHT 19:54-22:06Z: 31 runs, 28 completed, 4 failures (85.7%). NEW docker-registry-pull-timeout (2 runs: Smoke CI main + Smoke Codex branch, exit 123) + safe-output-partial-failure-intolerance (2 new variants: allowed-files rejection on Changeset Generator, dispatch_workflow no-ref on Smoke Copilot). token-budget-429 + copilot-sdk timeouts ABSENT. 3 of 4 failures on dev feature branch. 14.0M tok/63.4M eff, fw 287/1337 (21.5%), 0 missing-tools/data/mcp.",
+  "latest_window": "2026-06-03 (since 06-02 night audit): 19 runs returned, 17 completed, 2 in-progress. 13 success / 4 failures = 76.5%. DOMINANT class: copilot-sdk-session-auth ESCALATED \u2014 ALL 3 sdk-driver runs failed 'Session was not created with authentication info or custom provider' (isAuthError=true, not retried; GH_TOKEN/COPILOT_GITHUB_TOKEN/GITHUB_TOKEN all absent). Now hits PRODUCTION main (Copilot PR Prompt Pattern Analysis, Daily Project Performance Summary Generator) + a PR run (PR Code Quality Reviewer). Legacy copilot path 0 failures. +1 safe-output-partial-failure-intolerance (target=* / missing PR number on Contribution Check). 6.84M tok / 47.28M eff, fw 69/544 (12.7%, all (unknown) SNI by-design), 0 missing-tools/data/mcp.",
   "totals": {
-    "r": 57,
-    "s": 48,
-    "f": 9,
-    "in_prog": 6,
-    "rate": 84.2,
-    "tok": 32731221,
-    "eff_tok": 243565155,
-    "$": 15.05,
+    "r": 17,
+    "s": 13,
+    "f": 4,
+    "in_prog": 2,
+    "rate": 76.5,
+    "tok": 6839253,
+    "eff_tok": 47279235,
+    "$": 6.75,
     "$_partial": true,
-    "$_note": "claude-engine measured EstimatedCost; copilot/codex/gemini/pi/antigravity cost not reported in run_summary (EstimatedCost=0)",
-    "turns": 712,
-    "min": 428,
-    "errors": 0,
-    "fw_req": 3936,
-    "fw_blk": 698,
-    "fw_blk_pct": 17.6,
+    "$_note": "claude-engine measured EstimatedCost; copilot/codex EstimatedCost=0",
+    "turns": 182,
+    "min": 120,
+    "errors": 4,
+    "fw_req": 544,
+    "fw_blk": 69,
+    "fw_blk_pct": 12.7,
     "missing_tools": 0,
     "missing_data": 0,
     "mcp_failures": 0,
-    "safe_items": 52,
-    "github_api": 0
+    "safe_items": 0,
+    "github_api": 150
   },
   "engines": {
-    "copilot": 42,
-    "claude": 10,
-    "codex": 5,
-    "antigravity": 2,
-    "gemini": 2,
-    "pi": 2
+    "copilot": 12,
+    "claude": 6,
+    "codex": 1
   },
   "history": [
     {
@@ -146,6 +143,15 @@
       "$": 15.05,
       "tok": 32731221,
       "note": "full window; $ claude-measured. Success DOWN from 96.2% peak. 9 failures/3 classes: token-budget-429 RE-ESCALATED (2 wf over 25M cap), safe-output partial-failure-intolerance (3 wf), NEW copilot-sdk-session-auth (4 dev-iteration runs on 1 experimental wf). Cost outlier Semantic Function Refactoring $6.35 (success). | AFTERNOON RE-AUDIT (14:31-17:23Z, 47 completed, 89.4%, $6.27 claude-measured): token-budget-429 ABSENT (improvement). 5 failures/5 classes (2 NEW: node-missing exit127, agent-timeout Avenger opus 48min; +safe-output count-exceeded, copilot-sdk session.idle timeout, super-linter job). Complements morning #36398. | EVENING RE-AUDIT (16:51-19:34Z, 46 completed, 97.8%, 23.0M tok/140.9M eff): ONLY 1 failure = copilot-sdk session.idle 600s timeout ESCALATED to a PRODUCTION schedule/main wf (Daily Security Observability Report). safe-output partial-failure ABSENT, token-budget-429 ABSENT. sdk-driver path now ~14/48 copilot+codex runs. Firewall 513/2527 (20.3%), no smoke probes this window."
+    },
+    {
+      "d": "2026-06-03",
+      "r": 17,
+      "s": 13,
+      "rate": 76.5,
+      "$": 6.75,
+      "tok": 6839253,
+      "note": "window since 06-02 night audit (17 completed/19, 2 in-prog). $ claude-measured. 4 failures: 3x copilot-sdk-session-auth (100% of sdk-driver runs, ESCALATED to prod main) + 1 safe-output target=* (Contribution Check)."
     }
   ]
 }

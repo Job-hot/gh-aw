@@ -1,76 +1,26 @@
 {
-  "updated": "2026-06-02T22:08Z",
-  "recs": [
+  "recommendations": [
     {
-      "id": "fix-token-budget-429-heavy-workflows",
-      "p": "high",
-      "iss": "token-budget-429-effective-tokens",
-      "tracker": "#35661",
-      "s": "RE-ESCALATED to HIGH — 429 came back on 2 workflows 06-02 after one quiet window, both OVER the 25M effective-token cap (Daily Firewall Logs 25.67M RECURRENCE, Smoke Copilot 25.50M NEW). (1) Reduce the effective-token footprint of heavy daily-aggregation workflows — Daily Firewall Logs especially keeps blowing the cap; scope/chunk its log-processing so it stays comfortably under 25M. (2) Harness: on the 'CAPIError: 429 Maximum effective tokens exceeded' / isMaxEffectiveTokensExceededError=true signature, FAIL FAST instead of retrying 5x — each retry waits ~83-92s and a hard cap cannot be recovered by --continue, so today's two failures burned ~7-8 min apiece for nothing. Ties into open #35661. | 06-02 afternoon: 429 did NOT recur (top 23.79M < 25M). Stays OPEN/HIGH — intermittent across windows; the fail-fast + chunking fix is still warranted."
+      "id": "rollback-copilot-sdk-driver-rollout",
+      "sev": "critical",
+      "cat": "engine_integration",
+      "first": "2026-06-03",
+      "last": "2026-06-03",
+      "linked_issue": "copilot-sdk-session-auth",
+      "tracker": null,
+      "title": "HALT/roll back the copilot-sdk-driver rollout for production workflows \u2014 100% of sdk-path runs failing on auth pass-through",
+      "detail": "06-03: all 3 sdk-driver runs failed 'Session was not created with authentication info or custom provider' (isAuthError, not retried), now on production main + a PR run. (1) Pin production copilot workflows back to the legacy copilot CLI path (0 failures) until fixed; (2) wire the connection token / custom provider into copilot_sdk_driver.cjs session init so the SDK session is created WITH auth (COPILOT_GITHUB_TOKEN/GH_TOKEN/GITHUB_TOKEN currently all absent at session create); (3) add a pre-flight assertion that aborts the sdk path early with a clear message if no auth/provider is available, instead of an unhandled node rejection; (4) gate the rollout behind a smoke check that exercises a real prompt end-to-end."
     },
     {
-      "id": "harden-safe-output-partial-failure-tolerance",
-      "p": "high",
-      "iss": "safe-output-partial-failure-intolerance",
-      "s": "STILL HIGH — 3 of 06-02's 9 failures are this class (LintMonster, Smoke Codex, PR Sous Chef), all agent-exit-0 / safe_outputs-job-red. (1) Make 'Process Safe Outputs' treat an individual failed/invalid item as skipped-with-warning whenever >=1 item in the same batch succeeded, instead of red-failing the entire job. (2) Validate target='*' AND target='triggering' at the MCP emit boundary: reject update_issue/add_comment/create_pull_request_review_comment/set_issue_field whose triggering context cannot resolve to a concrete issue/PR number (schedule/non-issue/non-PR events) so the agent self-corrects in-loop — prompt-only guardrails have failed across 9+ workflows since 05-26. (3) For transient ERR_API on update_pull_request 'branch from base failed' (PR Sous Chef 26794554270), retry-with-backoff or treat as soft rather than red-failing. These together would have turned all 3 of today's safe-output failures into green-with-warning. | 06-02 afternoon added a COUNT-EXCEEDED variant: CLI Consistency Checker emitted 3x create_issue (cap 1) -> agent step exit 1 despite the 1 allowed issue landing. Extend the fix: when a capped safe-output type is over-emitted, KEEP the first N allowed items and emit a WARNING rather than failing the agent step.",
-      "status": "open-recurring",
-      "title": "Make the safe_outputs job tolerate per-message failures: exit non-red when >=1 message lands and remaining failures are expected/guarded (allowed-files-list rejection, dispatch no-ref-on-branch, count-exceeded, missing-issue-context). Class recurred 06-02 NIGHT with 2 new variants (Changeset Generator allowed-files rejection, Smoke Copilot dispatch_workflow no-ref). Dominant failure class across the day."
-    },
-    {
-      "id": "watch-copilot-sdk-session-auth",
-      "p": "medium",
-      "iss": "copilot-sdk-session-auth",
-      "s": "NEW WATCH: experimental Smoke Copilot SDK failed 4x at T0 on branch copilot/fix-copilot-sdk-integration with 'Session was not created with authentication info or custom provider'. This is in-development dev-iteration, not a production regression. Action: ensure the copilot-sdk session is created WITH auth info or a custom provider before sending the prompt — the headless server log 'No COPILOT_CONNECTION_TOKEN was set' points at the missing auth path. Gate the workflow from scheduled/PR triggers until the SDK integration lands so the dispatch-iteration noise does not pollute the failure metrics."
-    },
-    {
-      "id": "watch-semantic-function-refactoring-cost",
-      "p": "low",
-      "iss": "semantic-function-refactoring-cost-top",
-      "s": "NEW WATCH: Semantic Function Refactoring was 06-02's cost top at $6.35 / 14.3M eff / 43 turns (SUCCESS), well above the prior flat $2.98 band. Observation only — monitor whether it recurs at >$6 or grows; if it becomes a regular heavy tail, scope its task or cap turns. No action yet."
-    },
-    {
-      "id": "fix-threat-detection-missing-prompt",
-      "p": "medium",
-      "iss": "threat-detection-missing-prompt",
-      "s": "PREVENTIVE (did NOT recur 06-01 or 06-02). Keep open: fix the detection harness so it does NOT mask the prompt copy with 'cp ... || true'; verify the threat-detection prompt.txt exists (and is non-empty) before invoking the detection agent, and either fail with a clear actionable error or regenerate it. Shared step => protects every create_pull_request workflow from a silent missing-prompt hard-fail like 05-31's Code Simplifier."
-    },
-    {
-      "id": "guard-pr-branch-deleted-checkout",
-      "p": "low",
-      "iss": "pr-branch-deleted-race",
-      "s": "PREVENTIVE (did NOT recur 06-01 or 06-02). Optional noise-reduction: at checkout, detect a missing PR head ref and exit with a NEUTRAL/skip conclusion rather than a red failure, so a branch deleted mid-flight does not count as a workflow failure. Low priority — no code defect."
-    },
-    {
-      "id": "harden-golangci-lint-download",
-      "p": "low",
-      "iss": "golangci-lint-download-flake",
-      "s": "PREVENTIVE (no recurrence since 05-30). Keep open: harden the install-golangci-lint Makefile target (~Makefile:403) — download to a temp file, verify HTTP 200 + gzip magic bytes before extracting, retry with backoff (3x), pin+verify a checksum, prefer Actions cache / vendored binary."
-    },
-    {
-      "id": "investigate-runner-node-missing-exit127",
-      "p": "medium",
-      "iss": "runner-infra-node-missing-exit127",
-      "s": "NEW: Daily Issues Report Generator failed agent step exit 127 ('node runtime missing on this runner'). If it recurs, the workflow's runtimes.node config or the runner image is dropping node before the harness runs. Action: confirm runtimes.node is declared for this workflow and that the copilot_harness node-resolution (GH_AW_NODE_BIN / PATH) finds node on the assigned runner; add a clearer pre-flight node check in activation so this fails at setup with an actionable message rather than mid-agent exit 127. Single occurrence — monitor."
-    },
-    {
-      "id": "investigate-avenger-agent-timeout",
-      "p": "low",
-      "iss": "agent-timeout-no-output",
-      "s": "NEW WATCH: Avenger (claude/opus) ran 48.4min then failed with turns=0 and empty output while still dispatching Bash + TaskOutput. Likely the agent step time limit, or a stuck/blocking TaskOutput poll. Action: if it recurs, cap Avenger's turns/runtime and check for a TaskOutput call that blocks without progress. Single occurrence — observe."
-    },
-    {
-      "id": "gate-copilot-sdk-experimental-from-pr-triggers",
-      "p": "high",
-      "iss": "copilot-sdk-session-auth",
-      "s": "ESCALATED to HIGH (06-02 evening): the copilot-sdk session.idle 600s timeout is no longer experimental-branch-only — it hit a PRODUCTION schedule/main workflow (Daily Security Observability Report 26836111514), the evening window's ONLY failure. The sdk-driver path is now rolled out to ~14/48 copilot+codex runs (~13 prod copilot wfs), with an intermittent ~7% session.idle hang (legacy copilot CLI path 0/34). FIX (High): (1) RETRY at least once after a session.idle timeout — the current 'no output produced -> not retrying' rule is wrong here: the session WAS created and the prompt WAS sent, so it is a mid-session hang, not a startup crash, and a retry would likely succeed; (2) root-cause why the headless Copilot server never emits session.idle for some prompts (long tool-loop / lost SDK event / missing idle signal); (3) until the sdk-driver session lifecycle is stable, lower the sdk-driver rollout percentage or keep heavy/long-running production workflows (e.g. Daily Security Observability Report, 27.5m) on the legacy copilot path. Earlier variants: session-auth 'Session was not created with authentication info or custom provider' (Smoke Copilot SDK morning), session.idle timeout on ab-advisor branch (afternoon)."
-    },
-    {
-      "id": "harden-docker-registry-pull",
-      "sev": "medium",
-      "linked_issue": "docker-registry-pull-timeout",
-      "first_seen": "2026-06-02",
-      "title": "Make container base-image pulls resilient to transient Docker Hub registry timeouts (cache/pin node:lts-alpine in a warm layer, add a registry mirror, or retry-with-backoff beyond 3 attempts). Two agent-step failures (Smoke CI main + Smoke Codex branch, exit 123) in one window from registry-1.docker.io context-deadline-exceeded.",
-      "status": "new"
+      "id": "safe-output-target-star-tolerance",
+      "sev": "high",
+      "cat": "safe_output",
+      "first": "05-26",
+      "last": "2026-06-03",
+      "linked_issue": "safe-output-partial-failure-intolerance",
+      "title": "Make safe_outputs tolerate unresolvable target=* add_comment items (skip-and-warn) instead of red-failing the job",
+      "detail": "Contribution Check 06-03: create_issue landed but 3 add_comment target=* items without a PR number red-failed the whole job. Either (a) coach the agent to attach the PR number to add_comment when target=*, or (b) downgrade an unresolvable target=* comment to a warning so the job stays green when >=1 message lands."
     }
-  ]
+  ],
+  "updated": "2026-06-03T22:10Z"
 }

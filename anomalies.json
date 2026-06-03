@@ -1,6 +1,6 @@
 {
-  "updated": "2026-06-02T22:08Z",
-  "note": "06-02 EVENING re-audit (46 completed, 97.8%, 16:51-19:34Z) — third 06-02 window. ONLY 1 failure: copilot-sdk session.idle 600s timeout, now on a PRODUCTION schedule/main workflow (Daily Security Observability Report) — ESCALATION from experimental-branch-only. safe-output partial-failure ABSENT, token-budget-429 ABSENT (both positive). sdk-driver path now ~14/48 copilot+codex runs. Prior (AFTERNOON, 47 completed, 89.4%): token-budget-429 absent, 5 failures/5 classes incl runner-infra-node-missing exit127, agent-timeout Avenger opus 48min, safe-output count-exceeded.",
+  "updated": "2026-06-03T22:10Z",
+  "note": "06-03 window (17 completed, 76.5%): copilot-sdk-session-auth ESCALATED to CRITICAL \u2014 100% of sdk-driver runs (3/3) failed the auth-info error, now on production main + a PR run; legacy path 0 fail. +1 safe-output target=*. token-budget-429 ABSENT.",
   "anomalies": [
     {
       "id": "token-budget-429-effective-tokens",
@@ -11,39 +11,39 @@
     },
     {
       "id": "safe-output-partial-failure-intolerance",
-      "persist": 10,
-      "state": "persistent-dominant",
-      "last": "2026-06-02",
-      "t": "06-02 afternoon +1 variant: CLI Consistency Checker over-emitted a capped type (3x create_issue, max 1) -> agent step exit 1 despite the 1 allowed issue landing. Variants now span target=*, target=triggering, no-number, ERR_API, AND count-exceeded. Root: validation red-fails the run despite useful output."
+      "persist": 11,
+      "state": "persistent",
+      "last": "2026-06-03",
+      "t": "06-03: target=* variant recurred on Contribution Check \u2014 create_issue landed but 3 add_comment items lacked a PR number under target='*' -> job red. Class persists across windows."
     },
     {
       "id": "copilot-sdk-session-auth",
-      "persist": 3,
-      "state": "escalated-production-main",
-      "last": "2026-06-02",
-      "t": "ESCALATED (06-02 evening): the copilot-sdk session.idle 600s timeout hit a PRODUCTION schedule/main workflow — Daily Security Observability Report 26836111514 (the evening window's ONLY failure). Session created, provider resolved WITH auth, prompt sent, then 'Timeout after 600000ms waiting for session.idle', hasOutput=false, NOT retried, exit1, 10m. sdk-driver path now ~14/48 copilot+codex runs; legacy path 0/34. No longer experimental-only. Earlier variants: Smoke Copilot SDK auth-info failure 4x on copilot/fix-copilot-sdk-integration (morning); PR Code Quality Reviewer session.idle timeout on ab-advisor branch (afternoon)."
+      "persist": 4,
+      "state": "critical-100pct-sdk-path-fail-prod-main",
+      "last": "2026-06-03",
+      "t": "CRITICAL (06-03): EVERY sdk-driver run this window failed (3/3 = 100%) with the AUTH-INFO error 'Session was not created with authentication info or custom provider' \u2014 now on 2 production main schedules (Copilot PR Prompt Pattern Analysis, Daily Project Performance Summary Generator) + 1 production PR run (PR Code Quality Reviewer). isAuthError=true, not retried, turns=0. Legacy copilot CLI path 0/14 fail. The rollout is shipping broken auth pass-through. HALT/rollback recommended. Trajectory: 06-02 morning experimental-branch auth-info (4x) -> 06-02 evening session.idle timeout on 1 prod main -> 06-03 auth-info now 100% of prod sdk runs."
     },
     {
       "id": "daily-success-rate-trend",
-      "persist": 12,
+      "persist": 13,
       "state": "regression-from-peak",
-      "last": "2026-06-02",
-      "t": "06-02 afternoon window 89.4% (42/47) — back in the stable ~89-91% band after the morning window's 84.2%. 15-day daily trend (one point/day): ...89.8 -> 96.2 (06-01 peak) -> 84.2 (06-02 full-day). Afternoon slice is healthier; no 429, failures are spread across infra/experimental classes rather than one dominant mode.",
-      "summary": "06-02 NIGHT window completed-run success 85.7% (24/28). Day trended 84.2% morning -> 89.4% afternoon -> 97.8% evening -> 85.7% night. Night dip driven by 2 infra docker-pull failures + 2 safe-output partial-failure failures (3 of 4 on a dev feature branch). Not a regression of a single workflow."
+      "last": "2026-06-03",
+      "t": "06-02 afternoon window 89.4% (42/47) \u2014 back in the stable ~89-91% band after the morning window's 84.2%. 15-day daily trend (one point/day): ...89.8 -> 96.2 (06-01 peak) -> 84.2 (06-02 full-day). Afternoon slice is healthier; no 429, failures are spread across infra/experimental classes rather than one dominant mode.",
+      "summary": "06-03 window success 76.5% (13/17). Local dip driven almost entirely by the copilot-sdk auth escalation (3 of 4 failures). Daily one-point trend: 96.2 (06-01) -> 84.2 (06-02) -> 76.5 (06-03 window). NOT a broad regression: remove the 3 sdk-driver auth failures and the legacy path is 13/14 = 92.9%."
     },
     {
       "id": "high-cost-runs",
-      "persist": 15,
+      "persist": 16,
       "state": "single-outlier",
-      "last": "06-02",
-      "t": "Cost top: Semantic Function Refactoring $6.35 / 14.3M eff / 43 turns (SUCCESS) — well above 06-01's flat $2.98 top and the single largest claude run. Then Daily Documentation Healer $2.00, Smoke Claude $1.55. Total $15.05 claude-measured (copilot/codex/gemini/pi/antigravity EstimatedCost=0). Top eff_tok both 429-failures over the 25M cap (Daily Firewall Logs 25.67M, Smoke Copilot 25.22M). Watch Semantic Function Refactoring for recurrence at this magnitude."
+      "last": "2026-06-03",
+      "t": "Cost top 06-03: Daily Safe Output Tool Optimizer $2.52 / 9.97M eff / 32 turns (SUCCESS). Then Team Evolution $1.45, Caveman Optimizer $1.19, Lockfile Stats $0.94. Total $6.75 claude-measured (copilot/codex EstimatedCost=0). No >$6 outlier this window; Semantic Function Refactoring (06-02 $6.35) did not run/recur."
     },
     {
       "id": "firewall-smoke-block-rate",
       "persist": 2,
       "state": "by-design",
-      "last": "06-02",
-      "t": "Firewall blocks 698/3936 (17.6%), down from 19.3%. Hotspots all smoke probes: Smoke Copilot 56/136 (41%), Smoke Codex 38/114 (33%), Smoke Gemini 25/78 (32%), Smoke Claude 29/97 (30%) — Google telemetry + (unknown) SNI + Playwright azureedge + localhost. By-design, no failure-causing blocks. No action."
+      "last": "2026-06-03",
+      "t": "06-03: firewall 69/544 (12.7%), all 69 blocks are '(unknown)' SNI (by-design). Per-workflow hotspot matt-pocock-skills-reviewer 12/45 (27%). No new-engine smoke probes this window. No firewall-caused failures. No action."
     },
     {
       "id": "threat-detection-missing-prompt",
@@ -64,14 +64,14 @@
       "persist": 1,
       "state": "new-infra",
       "last": "2026-06-02",
-      "t": "NEW: Daily Issues Report Generator 26831132205 agent exit 127 — copilot_harness 'node runtime missing on this runner' guard fired. Runner lacked usable node. Pre-agent infra, single occurrence. Watch recurrence -> runtimes.node / runner image."
+      "t": "NEW: Daily Issues Report Generator 26831132205 agent exit 127 \u2014 copilot_harness 'node runtime missing on this runner' guard fired. Runner lacked usable node. Pre-agent infra, single occurrence. Watch recurrence -> runtimes.node / runner image."
     },
     {
       "id": "agent-timeout-no-output",
       "persist": 1,
       "state": "new",
       "last": "2026-06-02",
-      "t": "NEW: Avenger (claude/opus) ran 48.4min then failed turns=0 / empty output — agent-step time-limit while still dispatching Bash+TaskOutput. No safe output emitted. Single occurrence; watch for a stuck TaskOutput poll pattern."
+      "t": "NEW: Avenger (claude/opus) ran 48.4min then failed turns=0 / empty output \u2014 agent-step time-limit while still dispatching Bash+TaskOutput. No safe output emitted. Single occurrence; watch for a stuck TaskOutput poll pattern."
     },
     {
       "id": "docker-registry-pull-timeout",
