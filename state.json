@@ -1,7 +1,7 @@
 {
   "counts": {
     "sub_agent_decomposition": {
-      "single_agent": 29,
+      "single_agent": 30,
       "parallel_sub_agents": 37
     }
   },
@@ -466,6 +466,13 @@
       "timestamp": "2026-06-04T00:33:10.038Z",
       "assignments": {
         "sub_agent_decomposition": "parallel_sub_agents"
+      }
+    },
+    {
+      "run_id": "26927612865",
+      "timestamp": "2026-06-04T03:02:29.621Z",
+      "assignments": {
+        "sub_agent_decomposition": "single_agent"
       }
     }
   ]
