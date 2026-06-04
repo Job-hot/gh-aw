@@ -1,151 +1,103 @@
 {
-  "updated": "2026-06-03T22:10Z",
-  "note": "06-03 window: copilot-sdk-session-auth ESCALATED \u2014 100% of sdk-driver runs (3/3) failed the auth-info error, now on PRODUCTION main (2 wf) + 1 PR run. safe-output-partial-failure-intolerance recurred (target=* on Contribution Check). token-budget-429 ABSENT. 0 missing-tools/data/mcp.",
+  "updated": "2026-06-04T21:50Z",
   "issues": [
     {
       "id": "token-budget-429-effective-tokens",
-      "sev": "high",
-      "cat": "cost_budget",
-      "first": "05-30",
-      "last": "2026-06-03",
-      "n": 4,
-      "r24": 2,
-      "tracker": "#35661",
-      "title": "Did NOT recur in the 06-03 window (top eff_tok 9.97M Daily Safe Output Tool Optimizer << 25M cap). Stays OPEN #35661 \u2014 intermittent on heavy daily-aggregation workflows; light run-set this window.",
-      "detail": "06-02 afternoon (14:31-17:23Z): NO 429 / no isMaxEffectiveTokensExceededError=true. Heaviest run UK AI Operational Resilience 23.79M succeeded under the 25M cap. This is the SECOND window-level reprieve (06-01 was also quiet) but the morning 06-02 window had 2 over-cap failures (Daily Firewall Logs 25.67M, Smoke Copilot 25.50M), so the cap stays intermittently hit by heavy daily-aggregation workflows. Maps to open #35661. FIX unchanged: (1) scope/chunk heavy daily-aggregation workflows; (2) harness FAIL-FAST on the maxEffectiveTokensExceeded signature instead of 5 retries."
+      "title": "429 Maximum effective tokens exceeded (25M cap)",
+      "status": "OPEN",
+      "severity": "HIGH",
+      "ref": "#35661",
+      "first_seen": "2026-05",
+      "last_seen": "2026-06-04",
+      "recurrence": "recurred 2026-06-04 (Daily Ambient Context Optimizer 25.12M/25M, prod main) after several absent windows",
+      "affected": [
+        "Daily Ambient Context Optimizer"
+      ],
+      "note": "Heavy daily-aggregation workflows intermittently exceed the 25M effective-token cap. Intermittent; depends on run-set size."
     },
     {
       "id": "safe-output-partial-failure-intolerance",
-      "sev": "high",
-      "cat": "safe_output",
-      "first": "05-26",
-      "last": "2026-06-03",
-      "n": 13,
-      "r24": 1,
-      "title": "RECURRED 06-03 (target=* variant): Contribution Check agent SUCCEEDED & create_issue LANDED, but 3 add_comment items had target='*' with no item_number/pr_number specified -> 3 messages failed -> safe_outputs job RED despite the issue being created. add_labels(#aw_summary) then deferred unresolved. Stays OPEN/HIGH.",
-      "detail": "Night window added 2 variants. Changeset Generator 26847739151: push_to_pull_request_branch -> patch modifies files outside the allowed-files list (pkg/cli/codemod_pull_request_target_checkout_false.go) -> job red (security guard correct, no partial tolerance). Smoke Copilot 26847739375: dispatch_workflow haiku-printer -> No ref found for refs/heads/copilot/add-support-for-copilot-connection-token -> Message 3 failed -> job red while create_discussion etc. succeeded. Both on the same dev feature branch. Cumulative variants: target-triggering-not-in-context, set_issue_field no-issue-number, update_pull_request API branch-from-base, count-exceeded over-emission, allowed-files-list-rejection, dispatch_workflow no-ref-on-branch. FIX unchanged: make safe_outputs tolerate per-message failures and exit non-red when >=1 message lands and failures are expected/guarded. || 06-03: Contribution Check 26914897476 (main, schedule) emitted 5 safe items; Message 1 create_issue OK; Messages 2-4 add_comment failed: 'Target is \"*\" but no item_number/issue_number/pull_request_number specified in add_comment item' (the agent put the PR numbers only in the comment BODY text, not the target field); Message 5 add_labels deferred unresolved. 3 failed -> job red. Same root: one failed message red-fails the job even though >=1 landed. The target=* add_comment variant needs either (a) the agent to attach the PR number, or (b) safe_outputs to skip-and-warn unresolvable target=* comments rather than fail the job."
+      "title": "One failed safe-output item reds the whole safe_outputs job",
+      "status": "OPEN",
+      "severity": "HIGH",
+      "first_seen": "2026-05",
+      "last_seen": "2026-06-04",
+      "recurrence": "recurred 2026-06-04 on 2 prod wf; dominant variant = add_comment target='*' with no item_number/issue_number/pr_number",
+      "affected": [
+        "Contribution Check (2 consecutive days)",
+        "PR Sous Chef",
+        "Smoke Copilot",
+        "Smoke Claude"
+      ],
+      "note": "Agents emit add_comment with configured target='*' but omit the required explicit item_number; framework rejects the item and the partial failure reds an otherwise-successful job."
     },
     {
-      "id": "copilot-sdk-session-auth",
-      "sev": "critical",
-      "cat": "engine_integration",
-      "first": "06-02",
-      "last": "2026-06-03",
-      "n": 6,
-      "r24": 3,
-      "title": "CRITICAL ESCALATION (06-03): 100% of sdk-driver runs (3/3) failed 'Session was not created with authentication info or custom provider' \u2014 isAuthError=true, NOT retried (GH_TOKEN/COPILOT_GITHUB_TOKEN/GITHUB_TOKEN all absent/invalid). Now on PRODUCTION main (Copilot PR Prompt Pattern Analysis 26914529271, Daily Project Performance Summary Generator 26914622782) + a PR run (PR Code Quality Reviewer 26914463847). Legacy copilot path 0/14 fail. The sdk-driver rollout is broken: the SDK headless session is created WITHOUT auth being passed through.",
-      "detail": "4 workflow_dispatch runs (26792092514, 26793757607, 26795908399, 26797319253) on experimental feature branch copilot/fix-copilot-sdk-integration all failed at the agent step with T0: copilot-sdk headless server starts (port 3002), sdk-driver connects + creates a session, then on 'sending prompt' throws uncaught 'Error: Execution failed: Error: Session was not created with authentication info or custom provider' and exits 1. This is an in-development experimental Copilot SDK integration being iterated via repeated manual dispatch (4 distinct SHAs over ~3h), NOT a production-workflow regression. Watch-only: confirm the fix lands and the SDK session is created WITH auth info / a custom provider before this graduates from smoke. The headless server warns 'No COPILOT_CONNECTION_TOKEN was set' \u2014 likely the missing auth-info path. | 06-02 afternoon: PR Code Quality Reviewer 26827796547 on branch copilot/ab-advisor-experiment-campaign-max-turns hit a NEW failure mode in the same experimental copilot-sdk family: sdk-driver 'Timeout after 600000ms waiting for session.idle' (10m hard), no output, not retried. Still experimental dev-iteration (ab-advisor max-turns campaign), not a production regression. Watch-only. | 06-02 EVENING ESCALATION: the SAME session.idle 600s timeout signature now hit a PRODUCTION scheduled workflow on main \u2014 Daily Security Observability Report 26836111514 (copilot, claude-sonnet-4.6). sdk-driver created the session, custom provider resolved WITH auth (provider=copilot baseUrl=api-proxy:10002), prompt sent, then 'Timeout after 600000ms waiting for session.idle', hasOutput=false, attempt-1 not retried (no-output rule), exit 1, 10m1s. NOT firewall-caused (only 1 trivial block patch-diff.githubusercontent.com). The copilot-sdk/sdk-driver path is now progressively rolled out to ~14/48 copilot+codex runs (~13 genuine prod copilot wfs this window: Daily SPDD Spec Planner, Daily Secrets Analysis, Daily Testify, GEO Optimizer, Linter Miner, PR Code Quality Reviewer x5, PR Triage, Daily Repository Chronicle, + the failing Security Observability Report). 1/~13 prod sdk runs hung => intermittent ~7% sdk-path hang; legacy copilot CLI path 0/34. FIX (High): (1) on the session.idle wait, after the 600s hard timeout RETRY at least once (the no-output non-retry rule is wrong for a session.idle hang \u2014 the session WAS created and the prompt WAS sent, so it is not a startup crash); (2) investigate why the headless Copilot server never emits session.idle for some prompts (possible long tool-loop or a lost SDK event); (3) until the sdk-driver session lifecycle is stable, consider keeping heavy/long production workflows on the legacy copilot path or lowering the rollout percentage. || 06-03 ESCALATION: this is no longer the experimental-branch session.idle TIMEOUT variant \u2014 it is the AUTH-INFO variant (same string as the 06-02 morning Smoke Copilot SDK runs) now hitting genuine production scheduled workflows on main and a production PR-trigger workflow. All 3 sdk-driver runs this window crashed at sdk-driver attempt 1 with node unhandled rejection 'Execution failed: Error: Session was not created with authentication info or custom provider', exit 1, turns=0, no output. The harness logs 'no authentication information found \u2014 not retrying (COPILOT_GITHUB_TOKEN, GH_TOKEN, and GITHUB_TOKEN are all absent or invalid)'. The headless copilot server starts (port 3002) but the SDK session creation does not receive a token/custom provider. FIX (CRITICAL): (1) HALT / roll back the copilot-sdk-driver rollout for production workflows until auth pass-through is fixed \u2014 every sdk-path run is currently a guaranteed failure; (2) ensure the sdk-driver creates the Copilot SDK session WITH the connection token / custom provider (wire COPILOT_GITHUB_TOKEN or a custom provider into copilot_sdk_driver.cjs session init); (3) keep production copilot workflows on the legacy copilot CLI path (0 failures) until the SDK session lifecycle + auth is verified end-to-end."
+      "id": "copilot-sdk-driver-failures",
+      "title": "copilot-sdk-driver headless-path failures (auth + tool-permission + session.idle timeout)",
+      "status": "OPEN",
+      "severity": "HIGH",
+      "first_seen": "2026-06-02",
+      "last_seen": "2026-06-04",
+      "recurrence": "new variant 2026-06-04: copilot-sdk-tool-permission-lockout \u2014 ALL agent tools return 'Permission denied and could not request permission from user', then sdk-driver session.idle 600s timeout (PR Code Quality Reviewer 26968772279). Prior variants: session-auth (06-03), session.idle timeout (06-02).",
+      "affected": [
+        "PR Code Quality Reviewer"
+      ],
+      "note": "sdk-driver path keeps producing distinct failure modes (auth-info missing, tool permission lockout, idle timeout). Legacy copilot CLI path remains stable."
     },
     {
-      "id": "semantic-function-refactoring-cost-top",
-      "sev": "watch",
-      "cat": "cost",
-      "first": "06-02",
-      "last": "06-02",
-      "n": 1,
-      "r24": 1,
-      "title": "WATCH (new): Semantic Function Refactoring is the day's cost top at $6.35 / 14.3M eff-tok / 43 turns (SUCCESS)",
-      "detail": "claude-engine run, $6.35 EstimatedCost \u2014 well above 06-01's flat top of $2.98, and the single largest claude run this window. Succeeded. Not anomalous on its own (one heavy refactor), but it single-handedly lifts the claude-measured daily cost band. Watch whether it recurs at this magnitude or grows; if it becomes a regular >$6 daily tail, consider scoping its task. No action yet."
+      "id": "pr-sous-chef-update-branch-workflows-perm",
+      "title": "update_pull_request update_branch blocked: GitHub App lacks 'workflows' permission for PRs touching .lock.yml",
+      "status": "OPEN",
+      "severity": "LOW",
+      "new": true,
+      "first_seen": "2026-06-04",
+      "last_seen": "2026-06-04",
+      "recurrence": "new",
+      "affected": [
+        "PR Sous Chef"
+      ],
+      "note": "Non-fatal warning this run (PR #36900 / daily-news.lock.yml). update_branch can never succeed for PRs that modify .github/workflows/*.lock.yml without the workflows scope."
     },
     {
-      "id": "threat-detection-missing-prompt",
-      "sev": "watch",
-      "cat": "infrastructure",
-      "first": "05-31",
-      "last": "05-31",
-      "n": 1,
-      "r24": 0,
-      "title": "Did NOT recur on 06-02 \u2014 threat-detection prompt.txt missing infra failure not seen for 2 windows",
-      "detail": "No 'ERR_SYSTEM: Prompt file not found at /tmp/gh-aw/threat-detection/aw-prompts/prompt.txt' signatures in the 06-02 window. Harden-the-cp recommendation (don't mask with '|| true'; verify prompt exists before invoking detection agent) stays OPEN as a preventive since the shared detection harness still exposes every create_pull_request workflow."
+      "id": "create_discussion-missing-label-tempid",
+      "title": "create_discussion safe-output lacks label + temporary_id fields",
+      "status": "OPEN",
+      "severity": "LOW",
+      "first_seen": "2026-06-04",
+      "last_seen": "2026-06-04",
+      "recurrence": "surfaced by Smoke Copilot probe",
+      "affected": [
+        "Smoke Copilot"
+      ],
+      "note": "Product gap surfaced by smoke test: create_discussion cannot attach labels (e.g. ai-generated) or a temporary_id for cross-referencing."
     },
     {
-      "id": "pr-branch-deleted-race",
-      "sev": "resolved",
-      "cat": "infrastructure",
-      "first": "05-31",
-      "last": "05-31",
-      "n": 2,
-      "r24": 0,
-      "title": "Did NOT recur on 06-02 \u2014 Test Quality Sentinel & Design Decision Gate passed (or in-progress, no failures)",
-      "detail": "The 05-31 transient PR-head-branch-deleted race did not repeat across 2 consecutive windows. External-cause/transient; the optional checkout 'skip-cleanly on deleted branch' guard remains a low-priority noise-reduction idea."
+      "id": "serena-mcp-not-provisioned",
+      "title": "Serena MCP server absent from mcp-cli manifest",
+      "status": "INFO",
+      "severity": "INFO",
+      "first_seen": "2026-06-04",
+      "last_seen": "2026-06-04",
+      "recurrence": "surfaced by Smoke Claude probe",
+      "affected": [
+        "Smoke Claude"
+      ],
+      "note": "Environment note: manifest exposes only agenticworkflows/mcpscripts/safeoutputs/tavily. Smoke test expects serena. Likely config drift, not a regression."
     },
     {
       "id": "firewall-block-rate",
-      "sev": "watch",
-      "cat": "network",
-      "first": "05-19",
-      "last": "06-02",
-      "n": 15,
-      "r24": 15,
-      "title": "06-02 EVENING window: 513/2527 (20.3%); the single failure (Security Observability Report, 23/60=38% hotspot) was NOT firewall-caused. No smoke probes ran this evening window. By-design.",
-      "detail": "06-02 evening (16:51-19:34Z): 513 blocked / 2527 total = 20.3%. Daily Security Observability Report was the per-workflow hotspot (23/60, 38% per observability insight) but its failure was the copilot-sdk session.idle timeout, NOT a firewall block. No smoke-test workflows ran this evening window (Smoke CI only, firewall-light). Earlier 06-02 full-day block rate 17.6% (698/3936) was dominated by by-design smoke probes (Smoke Copilot 41%, Codex 33%, Gemini 32%, Claude 30%) on Google telemetry / SNI / Playwright azureedge / localhost. No firewall block has caused a run failure. No action."
-    },
-    {
-      "id": "new-engine-smoke-tests",
-      "sev": "info",
-      "cat": "coverage",
-      "first": "06-01",
-      "last": "06-02",
-      "n": 2,
-      "r24": 2,
-      "title": "Stable: new engines antigravity/gemini/pi all passed again (2/2 each) on 06-02",
-      "detail": "Smoke Antigravity 2/2, Smoke Gemini 2/2, Smoke Pi 2/2 SUCCESS this window. Engine mix: copilot 42, claude 10, codex 5, antigravity 2, gemini 2, pi 2. New-engine smokes contribute to firewall block volume (by-design telemetry/Playwright probes) but no engine-specific failures."
-    },
-    {
-      "id": "copilot-CLI-stable",
-      "sev": "resolved",
-      "cat": "harness",
-      "first": "05-24",
-      "last": "06-02",
-      "n": 10,
-      "r24": 0,
-      "title": "Stable: 42 copilot runs, 0 ENOENT / 0 anthropic-beta / 0 model-not-supported errors",
-      "detail": "Copilot CLI harness stable across 42 copilot runs. Today's copilot failures were token-budget-429 (2) and safe-output partial-failure (2) classes \u2014 not CLI harness regressions. Distinct experimental Copilot SDK (sdk-driver) auth failure is tracked separately under copilot-sdk-session-auth."
-    },
-    {
-      "id": "codex-model-not-found-alpha",
-      "sev": "resolved",
-      "cat": "model_config",
-      "first": "05-21",
-      "last": "05-30",
-      "n": 9,
-      "r24": 0,
-      "title": "RESOLVED: 5 codex runs on 06-02, no model-not-found/404. Today's Smoke Codex failure was the safe-output class",
-      "detail": "5 codex runs in the 06-02 window, no model-not-found/404 alpha-routing signatures. Smoke Codex's failure was set_issue_field safe-output partial-failure, not a model config issue. Remains fully closed."
-    },
-    {
-      "id": "runner-infra-node-missing-exit127",
-      "sev": "watch",
-      "cat": "infrastructure",
-      "first": "2026-06-02",
-      "last": "2026-06-02",
-      "n": 1,
-      "r24": 1,
-      "title": "NEW (infra): Daily Issues Report Generator failed agent step with exit 127 \u2014 'node runtime missing on this runner'",
-      "detail": "Daily Issues Report Generator 26831132205 (copilot, schedule/main): agent step exit 127. The copilot_harness guard fired: 'node runtime missing on this runner \u2014 check runtimes.node in workflow YAML; exit 127'. The runner lacked a usable node binary (GH_AW_NODE_BIN unset/non-exec and `command -v node` empty). Pre-agent INFRA failure, not agent logic. Watch for recurrence \u2014 if it repeats, the workflow's runtimes.node setup or runner image is the culprit. Single occurrence this window."
-    },
-    {
-      "id": "agent-timeout-no-output",
-      "sev": "watch",
-      "cat": "performance",
-      "first": "2026-06-02",
-      "last": "2026-06-02",
-      "n": 1,
-      "r24": 1,
-      "title": "NEW: Avenger (claude/opus) ran 48.4min then failed with turns=0 / empty output \u2014 agent-step time-limit while still working",
-      "detail": "Avenger 26831111185 (claude, opus-4-8, schedule/main): agent job ran 15:47:48->16:36:13Z (48.4min) actively making opus /v1/messages calls and dispatching Bash + TaskOutput tools, then failed with run.Turns=0, ErrorCount=0, agent_output items:[]. Hit the agent step time limit (or a stuck long-running TaskOutput/Bash) without ever emitting a safe output. Watch: if Avenger recurs at ~48min, cap its turns/time or investigate a blocking TaskOutput poll. Single occurrence."
-    },
-    {
-      "id": "docker-registry-pull-timeout",
-      "sev": "medium",
-      "cat": "infra_network",
-      "first": "2026-06-02",
-      "last": "2026-06-02",
-      "n": 2,
-      "r24": 2,
-      "tracker": null,
-      "title": "NEW (infra): 2 agent-step failures pulling node:lts-alpine from registry-1.docker.io \u2014 context deadline exceeded, exit 123. Smoke CI (main) + Smoke Codex (branch) in the same night window.",
-      "detail": "Both Smoke CI 26849511621 and Smoke Codex 26847739078 failed the agent step at container-image pull: Get https://registry-1.docker.io/v2/ context deadline exceeded for node:lts-alpine, 3 retries then exit 123. Transient Docker Hub registry reachability/network friction during the run, NOT agent logic and NOT firewall-blocked. Two runs in one window (~21:05-21:39Z) suggests a brief registry slow window. WATCH recurrence; if persistent consider (1) caching/pinning the node base image in a warm layer, (2) a registry mirror, or (3) retry-with-backoff beyond 3 attempts on pull timeouts."
+      "title": "Firewall blocked-request ratio",
+      "status": "OPEN-BY-DESIGN",
+      "severity": "INFO",
+      "first_seen": "2026-05",
+      "last_seen": "2026-06-04",
+      "recurrence": "21.1% blocked (940/4452) this window; hotspots [aw] Failure Investigator 57%, Smoke Copilot 49%",
+      "affected": [
+        "[aw] Failure Investigator (6h)",
+        "Smoke Copilot",
+        "Smoke Claude"
+      ],
+      "note": "By-design SNI/domain denials; no firewall-caused run failure this window."
     }
   ]
 }

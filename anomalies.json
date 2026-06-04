@@ -1,85 +1,38 @@
 {
-  "updated": "2026-06-03T22:10Z",
-  "note": "06-03 window (17 completed, 76.5%): copilot-sdk-session-auth ESCALATED to CRITICAL \u2014 100% of sdk-driver runs (3/3) failed the auth-info error, now on production main + a PR run; legacy path 0 fail. +1 safe-output target=*. token-budget-429 ABSENT.",
+  "updated": "2026-06-04T21:50Z",
   "anomalies": [
     {
-      "id": "token-budget-429-effective-tokens",
-      "persist": 4,
-      "state": "intermittent-window-quiet",
-      "last": "2026-06-02",
-      "t": "06-02 AFTERNOON: did NOT recur (top eff_tok 23.79M < 25M cap, SUCCESS). 2nd window-level reprieve. But the 06-02 MORNING window had 2 over-cap failures, so still intermittent. Open #35661. Heavy daily-aggregation workflows keep flirting with the cap."
+      "id": "anom-token-429-prod-main",
+      "date": "2026-06-04",
+      "wf": "Daily Ambient Context Optimizer",
+      "run": 26977176731,
+      "kind": "token-cap-exceeded",
+      "persistence": 2,
+      "escalation": "RE-ESCALATED",
+      "detail": "25.12M/25M effective tokens on prod main schedule; was absent several windows, now back. Top eff-tok of the window.",
+      "status": "ACTIVE"
     },
     {
-      "id": "safe-output-partial-failure-intolerance",
-      "persist": 11,
-      "state": "persistent",
-      "last": "2026-06-03",
-      "t": "06-03: target=* variant recurred on Contribution Check \u2014 create_issue landed but 3 add_comment items lacked a PR number under target='*' -> job red. Class persists across windows."
+      "id": "anom-sdk-tool-lockout",
+      "date": "2026-06-04",
+      "wf": "PR Code Quality Reviewer",
+      "run": 26968772279,
+      "kind": "sdk-tool-permission-lockout",
+      "persistence": 1,
+      "escalation": "NEW",
+      "detail": "All agent tools permission-denied -> 600s session.idle timeout. New failure mode on copilot-sdk path.",
+      "status": "ACTIVE"
     },
     {
-      "id": "copilot-sdk-session-auth",
-      "persist": 4,
-      "state": "critical-100pct-sdk-path-fail-prod-main",
-      "last": "2026-06-03",
-      "t": "CRITICAL (06-03): EVERY sdk-driver run this window failed (3/3 = 100%) with the AUTH-INFO error 'Session was not created with authentication info or custom provider' \u2014 now on 2 production main schedules (Copilot PR Prompt Pattern Analysis, Daily Project Performance Summary Generator) + 1 production PR run (PR Code Quality Reviewer). isAuthError=true, not retried, turns=0. Legacy copilot CLI path 0/14 fail. The rollout is shipping broken auth pass-through. HALT/rollback recommended. Trajectory: 06-02 morning experimental-branch auth-info (4x) -> 06-02 evening session.idle timeout on 1 prod main -> 06-03 auth-info now 100% of prod sdk runs."
-    },
-    {
-      "id": "daily-success-rate-trend",
-      "persist": 13,
-      "state": "regression-from-peak",
-      "last": "2026-06-03",
-      "t": "06-02 afternoon window 89.4% (42/47) \u2014 back in the stable ~89-91% band after the morning window's 84.2%. 15-day daily trend (one point/day): ...89.8 -> 96.2 (06-01 peak) -> 84.2 (06-02 full-day). Afternoon slice is healthier; no 429, failures are spread across infra/experimental classes rather than one dominant mode.",
-      "summary": "06-03 window success 76.5% (13/17). Local dip driven almost entirely by the copilot-sdk auth escalation (3 of 4 failures). Daily one-point trend: 96.2 (06-01) -> 84.2 (06-02) -> 76.5 (06-03 window). NOT a broad regression: remove the 3 sdk-driver auth failures and the legacy path is 13/14 = 92.9%."
-    },
-    {
-      "id": "high-cost-runs",
-      "persist": 16,
-      "state": "single-outlier",
-      "last": "2026-06-03",
-      "t": "Cost top 06-03: Daily Safe Output Tool Optimizer $2.52 / 9.97M eff / 32 turns (SUCCESS). Then Team Evolution $1.45, Caveman Optimizer $1.19, Lockfile Stats $0.94. Total $6.75 claude-measured (copilot/codex EstimatedCost=0). No >$6 outlier this window; Semantic Function Refactoring (06-02 $6.35) did not run/recur."
-    },
-    {
-      "id": "firewall-smoke-block-rate",
-      "persist": 2,
-      "state": "by-design",
-      "last": "2026-06-03",
-      "t": "06-03: firewall 69/544 (12.7%), all 69 blocks are '(unknown)' SNI (by-design). Per-workflow hotspot matt-pocock-skills-reviewer 12/45 (27%). No new-engine smoke probes this window. No firewall-caused failures. No action."
-    },
-    {
-      "id": "threat-detection-missing-prompt",
-      "persist": 1,
-      "state": "quiet",
-      "last": "05-31",
-      "t": "Did NOT recur 06-02 (2 consecutive quiet windows). Harden-the-cp preventive stays open (shared detection harness exposes every create_pull_request workflow)."
-    },
-    {
-      "id": "pr-branch-deleted-race",
-      "persist": 1,
-      "state": "resolved-transient",
-      "last": "05-31",
-      "t": "Did NOT recur 06-02 (2 consecutive quiet windows). External-cause transient; checkout skip-cleanly guard remains a low-priority idea."
-    },
-    {
-      "id": "runner-infra-node-missing-exit127",
-      "persist": 1,
-      "state": "new-infra",
-      "last": "2026-06-02",
-      "t": "NEW: Daily Issues Report Generator 26831132205 agent exit 127 \u2014 copilot_harness 'node runtime missing on this runner' guard fired. Runner lacked usable node. Pre-agent infra, single occurrence. Watch recurrence -> runtimes.node / runner image."
-    },
-    {
-      "id": "agent-timeout-no-output",
-      "persist": 1,
-      "state": "new",
-      "last": "2026-06-02",
-      "t": "NEW: Avenger (claude/opus) ran 48.4min then failed turns=0 / empty output \u2014 agent-step time-limit while still dispatching Bash+TaskOutput. No safe output emitted. Single occurrence; watch for a stuck TaskOutput poll pattern."
-    },
-    {
-      "id": "docker-registry-pull-timeout",
-      "first_seen": "2026-06-02T22:08Z",
-      "persistence_score": 1,
-      "status": "new-watch",
-      "title": "Docker Hub registry pull timeout cluster (night window)",
-      "summary": "2 agent-step failures (Smoke CI main, Smoke Codex branch) pulling node:lts-alpine from registry-1.docker.io with context-deadline-exceeded, exit 123, within ~21:05-21:39Z. Transient infra/network, not agent logic. Persistence 1 (single window). Escalate only if it recurs in a future window."
+      "id": "anom-safeoutput-targetstar",
+      "date": "2026-06-04",
+      "wf": "Contribution Check / PR Sous Chef",
+      "run": "26980232370,26979726834",
+      "kind": "safe-output-target-star-no-itemnumber",
+      "persistence": 3,
+      "escalation": "ONGOING",
+      "detail": "add_comment target=* without item_number reds safe_outputs job; 2 prod wf same window, Contribution Check 2nd consecutive day.",
+      "status": "ACTIVE"
     }
   ]
 }

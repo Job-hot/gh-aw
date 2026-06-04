@@ -1,140 +1,36 @@
 {
-  "u": "2026-06-03",
-  "partial": false,
-  "window_note": "06-03 window (since 06-02 night audit): 17 completed (13 success, 4 failure = 76.5%), 2 in-progress. ALL failures copilot. 3/4 are the copilot-sdk-session-auth escalation (100% of sdk-driver runs). Cost claude-only.",
-  "w": {
-    "PR Code Quality Reviewer": {
-      "r": 1,
-      "s": 0,
-      "f": 1,
-      "turns": 0,
-      "eng": "copilot",
-      "note": "FAILED (26914463847, branch copilot/add-linting-rule-bash-scripts) \u2014 copilot-sdk-driver auth: 'Session was not created with authentication info or custom provider', isAuthError=true, not retried, turns=0. ESCALATION."
-    },
-    "Copilot PR Prompt Pattern Analysis": {
-      "r": 1,
-      "s": 0,
-      "f": 1,
-      "turns": 0,
-      "eng": "copilot",
-      "note": "FAILED (26914529271, MAIN, schedule) \u2014 same copilot-sdk auth error. Production main."
-    },
-    "Daily Project Performance Summary Generator (Using MCP Scripts)": {
-      "r": 1,
-      "s": 0,
-      "f": 1,
-      "turns": 0,
-      "eng": "copilot",
-      "note": "FAILED (26914622782, MAIN, schedule) \u2014 same copilot-sdk auth error. Production main."
+  "updated": "2026-06-04T21:50Z",
+  "workflows": {
+    "Daily Ambient Context Optimizer": {
+      "last": "2026-06-04",
+      "last_concl": "failure",
+      "eff_tok": 25119308,
+      "class": "token-budget-429",
+      "note": "hit 25M cap on prod main"
     },
     "Contribution Check": {
-      "r": 1,
-      "s": 0,
-      "f": 1,
-      "eff_tok": 9303370,
-      "turns": 36,
-      "eng": "copilot",
-      "note": "FAILED (26914897476, main) \u2014 agent SUCCEEDED, create_issue landed, but 3 add_comment target=* items lacked PR number -> safe_outputs job red. safe-output-partial-failure-intolerance."
-    },
-    "Daily Safe Output Tool Optimizer": {
-      "r": 1,
-      "s": 1,
-      "f": 0,
-      "eff_tok": 9969566,
-      "turns": 32,
-      "eng": "claude",
-      "cost": 2.52,
-      "note": "SUCCESS \u2014 day cost top $2.52."
-    },
-    "Daily Team Evolution Insights": {
-      "r": 1,
-      "s": 1,
-      "f": 0,
-      "eff_tok": 4902236,
-      "eng": "claude",
-      "cost": 1.45,
-      "note": "SUCCESS."
-    },
-    "Daily Caveman Optimizer": {
-      "r": 1,
-      "s": 1,
-      "f": 0,
-      "eff_tok": 4646870,
-      "eng": "claude",
-      "cost": 1.19,
-      "note": "SUCCESS."
-    },
-    "Lockfile Statistics Analysis Agent": {
-      "r": 1,
-      "s": 1,
-      "f": 0,
-      "eff_tok": 3344968,
-      "eng": "claude",
-      "cost": 0.94,
-      "note": "SUCCESS."
-    },
-    "Design Decision Gate": {
-      "r": 1,
-      "s": 1,
-      "f": 0,
-      "eng": "claude",
-      "cost": 0.65,
-      "note": "SUCCESS. pr-branch-deleted-race did NOT recur."
+      "last": "2026-06-04",
+      "last_concl": "failure",
+      "eff_tok": 23861144,
+      "class": "safe-output target=*",
+      "note": "2nd consecutive day same failure"
     },
     "PR Sous Chef": {
-      "r": 1,
-      "s": 1,
-      "f": 0,
-      "turns": 48,
-      "eng": "copilot",
-      "note": "SUCCESS this window (legacy copilot path). 06-02 had 1 update_pull_request fail; clean here."
+      "last": "2026-06-04",
+      "last_concl": "failure",
+      "class": "safe-output target=* + update_branch perm"
     },
-    "Matt Pocock Skills Reviewer": {
-      "r": 1,
-      "s": 1,
-      "f": 0,
-      "eng": "copilot",
-      "note": "SUCCESS. Firewall hotspot 12/45 (27%, by-design SNI)."
+    "PR Code Quality Reviewer": {
+      "last": "2026-06-04",
+      "last_concl": "failure",
+      "class": "copilot-sdk-tool-permission-lockout"
     },
-    "Test Quality Sentinel": {
-      "r": 1,
-      "s": 1,
-      "f": 0,
-      "eng": "copilot",
-      "note": "SUCCESS."
-    },
-    "Issue Monster": {
-      "r": 1,
-      "s": 1,
-      "f": 0,
-      "eng": "copilot",
-      "note": "SUCCESS."
-    },
-    "AI Moderator": {
-      "r": 1,
-      "s": 1,
-      "f": 0,
-      "eng": "codex",
-      "note": "SUCCESS. codex stable."
-    },
-    "Smoke CI": {
-      "r": 3,
-      "s": 3,
-      "f": 0,
-      "eng": "copilot",
-      "note": "3/3 SUCCESS. Stable."
-    },
-    "Agentic Workflow Audit Agent": {
-      "r": 1,
-      "ip": 1,
-      "eng": "claude",
-      "note": "This run."
-    },
-    "Daily Regulatory Report Generator": {
-      "r": 1,
-      "ip": 1,
-      "eng": "copilot",
-      "note": "In-progress at audit time."
+    "Daily Safe Output Tool Optimizer": {
+      "last": "2026-06-04",
+      "last_concl": "success",
+      "cost": 3.97,
+      "eff_tok": 18176392,
+      "note": "window cost top (success)"
     }
   }
 }

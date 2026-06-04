@@ -1,26 +1,59 @@
 {
+  "updated": "2026-06-04T21:50Z",
   "recommendations": [
     {
-      "id": "rollback-copilot-sdk-driver-rollout",
-      "sev": "critical",
-      "cat": "engine_integration",
-      "first": "2026-06-03",
-      "last": "2026-06-03",
-      "linked_issue": "copilot-sdk-session-auth",
-      "tracker": null,
-      "title": "HALT/roll back the copilot-sdk-driver rollout for production workflows \u2014 100% of sdk-path runs failing on auth pass-through",
-      "detail": "06-03: all 3 sdk-driver runs failed 'Session was not created with authentication info or custom provider' (isAuthError, not retried), now on production main + a PR run. (1) Pin production copilot workflows back to the legacy copilot CLI path (0 failures) until fixed; (2) wire the connection token / custom provider into copilot_sdk_driver.cjs session init so the SDK session is created WITH auth (COPILOT_GITHUB_TOKEN/GH_TOKEN/GITHUB_TOKEN currently all absent at session create); (3) add a pre-flight assertion that aborts the sdk path early with a clear message if no auth/provider is available, instead of an unhandled node rejection; (4) gate the rollout behind a smoke check that exercises a real prompt end-to-end."
+      "id": "rec-safeoutput-tolerance",
+      "linked_issue": "safe-output-partial-failure-intolerance",
+      "priority": "HIGH",
+      "text": "Make the safe_outputs job tolerant of per-item failures: when the agent succeeded and \u22651 item landed, exit non-red with a partial-success summary instead of failing the whole job on a single rejected item. Two recurrence-heavy variants: (a) add_comment target='*' without item_number \u2014 validate/auto-skip or surface as a warning; (b) reject before run so the agent can self-correct.",
+      "first_seen": "2026-06-02",
+      "last_seen": "2026-06-04",
+      "recurrence": 4
     },
     {
-      "id": "safe-output-target-star-tolerance",
-      "sev": "high",
-      "cat": "safe_output",
-      "first": "05-26",
-      "last": "2026-06-03",
+      "id": "rec-addcomment-targetstar-guidance",
       "linked_issue": "safe-output-partial-failure-intolerance",
-      "title": "Make safe_outputs tolerate unresolvable target=* add_comment items (skip-and-warn) instead of red-failing the job",
-      "detail": "Contribution Check 06-03: create_issue landed but 3 add_comment target=* items without a PR number red-failed the whole job. Either (a) coach the agent to attach the PR number to add_comment when target=*, or (b) downgrade an unresolvable target=* comment to a warning so the job stays green when >=1 message lands."
+      "priority": "HIGH",
+      "text": "For add_comment with target='*', require/inject the item_number at emit-time or give the agent a clearer schema hint. Contribution Check + PR Sous Chef both emit target='*' add_comment with no item_number repeatedly.",
+      "first_seen": "2026-06-03",
+      "last_seen": "2026-06-04",
+      "recurrence": 2
+    },
+    {
+      "id": "rec-token-cap-guard",
+      "linked_issue": "token-budget-429-effective-tokens",
+      "priority": "HIGH",
+      "text": "Add a soft pre-cap guard for heavy daily-aggregation workflows (e.g. Daily Ambient Context Optimizer): chunk/stream the context or set a 22-23M effective-token budget ceiling that triggers graceful summarization before hitting the hard 25M 429. #35661.",
+      "first_seen": "2026-05",
+      "last_seen": "2026-06-04",
+      "recurrence": 3
+    },
+    {
+      "id": "rec-sdk-driver-stability",
+      "linked_issue": "copilot-sdk-driver-failures",
+      "priority": "HIGH",
+      "text": "Investigate copilot-sdk-driver tool-permission lockout: when the headless session has no tool permissions, fail fast with a clear error instead of looping until the 600s session.idle timeout. Add a startup self-check that aborts within seconds if all tools return permission-denied.",
+      "first_seen": "2026-06-02",
+      "last_seen": "2026-06-04",
+      "recurrence": 3
+    },
+    {
+      "id": "rec-sous-chef-workflows-perm",
+      "linked_issue": "pr-sous-chef-update-branch-workflows-perm",
+      "priority": "LOW",
+      "text": "For PR Sous Chef, skip update_branch when the PR modifies .github/workflows/** (App lacks workflows scope) instead of attempting and warning.",
+      "first_seen": "2026-06-04",
+      "last_seen": "2026-06-04",
+      "recurrence": 1
+    },
+    {
+      "id": "rec-create-discussion-fields",
+      "linked_issue": "create_discussion-missing-label-tempid",
+      "priority": "MEDIUM",
+      "text": "Add label + temporary_id support to the create_discussion safe-output surface (requested by Smoke Copilot probe).",
+      "first_seen": "2026-06-04",
+      "last_seen": "2026-06-04",
+      "recurrence": 1
     }
-  ],
-  "updated": "2026-06-03T22:10Z"
+  ]
 }

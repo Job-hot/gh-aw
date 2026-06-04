@@ -1,35 +1,37 @@
 {
-  "updated": "2026-06-03T22:10Z",
-  "date": "2026-06-03",
-  "partial": false,
-  "latest_window": "2026-06-03 (since 06-02 night audit): 19 runs returned, 17 completed, 2 in-progress. 13 success / 4 failures = 76.5%. DOMINANT class: copilot-sdk-session-auth ESCALATED \u2014 ALL 3 sdk-driver runs failed 'Session was not created with authentication info or custom provider' (isAuthError=true, not retried; GH_TOKEN/COPILOT_GITHUB_TOKEN/GITHUB_TOKEN all absent). Now hits PRODUCTION main (Copilot PR Prompt Pattern Analysis, Daily Project Performance Summary Generator) + a PR run (PR Code Quality Reviewer). Legacy copilot path 0 failures. +1 safe-output-partial-failure-intolerance (target=* / missing PR number on Contribution Check). 6.84M tok / 47.28M eff, fw 69/544 (12.7%, all (unknown) SNI by-design), 0 missing-tools/data/mcp.",
+  "updated": "2026-06-04T21:50Z",
+  "date": "2026-06-04",
+  "partial": true,
+  "latest_window": "2026-06-04 PARTIAL window (17:13-21:18Z, last ~4h; logs tool timed out at 120s, 64/~155 dirs had full run_summary). 57 success / 7 fail = 89.1%. 4 prod/PR failures + 3 by-design smoke probes. KEY: token-budget-429 RECURRED on prod main (Daily Ambient Context Optimizer 25.12M/25M, #35661) after several absent windows; safe-output-partial-failure-intolerance (add_comment target=* no item_number) RECURRED on 2 prod wf (Contribution Check 2nd day + PR Sous Chef); NEW copilot-sdk-tool-permission-lockout (PR Code Quality Reviewer: all tools permission-denied -> session.idle 600s timeout). 31.7M tok / 236.8M eff, fw 940/4452 (21.1%), 0 errors/mcp/missing-data.",
   "totals": {
-    "r": 17,
-    "s": 13,
-    "f": 4,
-    "in_prog": 2,
-    "rate": 76.5,
-    "tok": 6839253,
-    "eff_tok": 47279235,
-    "$": 6.75,
+    "r": 64,
+    "s": 57,
+    "f": 7,
+    "in_prog": 0,
+    "rate": 89.1,
+    "tok": 31739017,
+    "eff_tok": 236818261,
+    "$": 19.23,
     "$_partial": true,
-    "$_note": "claude-engine measured EstimatedCost; copilot/codex EstimatedCost=0",
-    "turns": 182,
-    "min": 120,
-    "errors": 4,
-    "fw_req": 544,
-    "fw_blk": 69,
-    "fw_blk_pct": 12.7,
-    "missing_tools": 0,
+    "$_note": "claude-measured; copilot/codex EstimatedCost=0",
+    "turns": 769,
+    "min": 533,
+    "errors": 0,
+    "fw_req": 4452,
+    "fw_blk": 940,
+    "fw_blk_pct": 21.1,
+    "missing_tools": 3,
     "missing_data": 0,
     "mcp_failures": 0,
-    "safe_items": 0,
-    "github_api": 150
+    "safe_items": 27
   },
   "engines": {
-    "copilot": 12,
-    "claude": 6,
-    "codex": 1
+    "copilot": 45,
+    "claude": 11,
+    "codex": 4,
+    "gemini": 2,
+    "antigravity": 1,
+    "pi": 1
   },
   "history": [
     {
@@ -152,6 +154,16 @@
       "$": 6.75,
       "tok": 6839253,
       "note": "window since 06-02 night audit (17 completed/19, 2 in-prog). $ claude-measured. 4 failures: 3x copilot-sdk-session-auth (100% of sdk-driver runs, ESCALATED to prod main) + 1 safe-output target=* (Contribution Check)."
+    },
+    {
+      "d": "2026-06-04",
+      "r": 64,
+      "s": 57,
+      "rate": 89.1,
+      "$": 19.23,
+      "tok": 31739017,
+      "partial": true,
+      "note": "PARTIAL ~4h window (logs timeout). 7 fail: token-budget-429 RECUR prod main + safe-output target=* x2 (Contribution Check/PR Sous Chef) + copilot-sdk-tool-permission-lockout (PR Code Quality Reviewer) + 3 by-design smoke probes."
     }
   ]
 }
