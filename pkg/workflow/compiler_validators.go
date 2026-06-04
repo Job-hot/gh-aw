@@ -139,8 +139,10 @@ func shouldEmitTokenPerformanceTip(workflowData *WorkflowData) bool {
 	if isGitHubCLIModeEnabled(workflowData) {
 		return false
 	}
-	if hasGitHubTool(workflowData.ParsedTools) {
-		return true
+	// Prefer parsed tools when available; fall back to raw frontmatter only when
+	// ParsedTools is not populated (for validator unit tests and partial call paths).
+	if workflowData.ParsedTools != nil {
+		return hasGitHubTool(workflowData.ParsedTools)
 	}
 	githubTool, hasGitHub := workflowData.Tools["github"]
 	return hasGitHub && githubTool != false

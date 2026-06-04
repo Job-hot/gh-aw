@@ -210,10 +210,10 @@ func TestValidateFeatureConfig_TokenPerformanceTip(t *testing.T) {
 				assert.Contains(t, stderr, tokenOptimizationInstructionsURL)
 				assert.Contains(t, stderr, "gh-proxy")
 				assert.Contains(t, stderr, "cli-proxy")
-				return
+			} else {
+				assert.NotContains(t, stderr, "Token performance tip")
+				assert.NotContains(t, stderr, tokenOptimizationInstructionsURL)
 			}
-			assert.NotContains(t, stderr, "Token performance tip")
-			assert.NotContains(t, stderr, tokenOptimizationInstructionsURL)
 		})
 	}
 }
