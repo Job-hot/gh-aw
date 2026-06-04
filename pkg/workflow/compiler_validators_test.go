@@ -149,10 +149,11 @@ func TestValidateFeatureConfig(t *testing.T) {
 
 func TestValidateFeatureConfig_TokenPerformanceTip(t *testing.T) {
 	tests := []struct {
-		name      string
-		tools     map[string]any
-		features  map[string]any
-		expectTip bool
+		name           string
+		tools          map[string]any
+		features       map[string]any
+		rawFrontmatter map[string]any
+		expectTip      bool
 	}{
 		{
 			name: "emits tip when github tool is not using proxy mode",
@@ -181,6 +182,15 @@ func TestValidateFeatureConfig_TokenPerformanceTip(t *testing.T) {
 			tools:     nil,
 			expectTip: false,
 		},
+		{
+			name: "does not emit tip when merged frontmatter sets github gh-proxy",
+			rawFrontmatter: map[string]any{
+				"tools": map[string]any{
+					"github": map[string]any{"mode": "gh-proxy"},
+				},
+			},
+			expectTip: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -190,10 +200,11 @@ func TestValidateFeatureConfig_TokenPerformanceTip(t *testing.T) {
 
 			compiler := NewCompiler()
 			workflowData := &WorkflowData{
-				Name:     "Test",
-				AI:       "copilot",
-				Tools:    tt.tools,
-				Features: tt.features,
+				Name:           "Test",
+				AI:             "copilot",
+				Tools:          tt.tools,
+				Features:       tt.features,
+				RawFrontmatter: tt.rawFrontmatter,
 			}
 			workflowData.ParsedTools = NewTools(tt.tools)
 

@@ -139,8 +139,9 @@ func shouldEmitTokenPerformanceTip(workflowData *WorkflowData) bool {
 	if workflowData.ParsedTools != nil && workflowData.ParsedTools.CLIProxy {
 		return false
 	}
-	// Keep raw Tools fallback for partial/test call paths where ParsedTools is not populated.
-	if cliProxyEnabled, ok := workflowData.Tools["cli-proxy"].(bool); ok && cliProxyEnabled {
+	toolsConfig := effectiveToolsConfig(workflowData)
+	// Keep raw tools fallback for partial/test call paths where ParsedTools is not populated.
+	if cliProxyEnabled, ok := toolsConfig["cli-proxy"].(bool); ok && cliProxyEnabled {
 		return false
 	}
 	if isGitHubCLIModeEnabled(workflowData) {
@@ -151,8 +152,22 @@ func shouldEmitTokenPerformanceTip(workflowData *WorkflowData) bool {
 	if workflowData.ParsedTools != nil {
 		return hasGitHubTool(workflowData.ParsedTools)
 	}
-	githubTool, hasGitHub := workflowData.Tools["github"]
+	githubTool, hasGitHub := toolsConfig["github"]
 	return hasGitHub && githubTool != false
+}
+
+func effectiveToolsConfig(workflowData *WorkflowData) map[string]any {
+	if workflowData == nil {
+		return nil
+	}
+	if len(workflowData.Tools) > 0 {
+		return workflowData.Tools
+	}
+	if workflowData.RawFrontmatter == nil {
+		return nil
+	}
+	toolsConfig, _ := workflowData.RawFrontmatter["tools"].(map[string]any)
+	return toolsConfig
 }
 
 // validateToolConfiguration validates safe-outputs settings, on.needs and safe-job

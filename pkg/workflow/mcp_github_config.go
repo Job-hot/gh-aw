@@ -99,7 +99,8 @@ func isGitHubCLIModeEnabled(data *WorkflowData) bool {
 	if data == nil {
 		return false
 	}
-	githubTool, hasGitHub := data.Tools["github"]
+	toolsConfig := effectiveToolsConfig(data)
+	githubTool, hasGitHub := toolsConfig["github"]
 	if hasGitHub && githubTool == false {
 		return false
 	}
