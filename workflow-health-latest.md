@@ -1,34 +1,37 @@
-# Workflow Health — 2026-06-03T06:09Z
+# Workflow Health — 2026-06-04T06:09Z
 
-Score: 82/100 (↑1 from 81)
-Workflows: 238 | Lock files: 238/238 (100% ✅) | Run: §26866961274
+Score: 81/100 (↓1 from 82)
+Workflows: 240 | Lock files: 240/240 (100% ✅) | Run: §26934079906
 
 ## KEY FINDINGS
 
-### Status (June 3)
-- **Compilation:** 238/238 workflows have lock files (100% ✅)
-- **CJS typecheck IMPROVING:** Was 0% yesterday; today CI is 9/15 successes (60%). Still 2 failures, issue #36410 open
-- **CGO:** Still 100% failing (issue #35028 open) — 2 failures + 1 pending today
-- **Daily Firewall Logs Collector:** 4th consecutive failure (issue #36561 open) — escalating
-- **Smoke tests:** RESOLVED — Smoke Pi and others back to success ✅
-- **Auto-Triage:** RESOLVED — passing today ✅
-- **Sergo:** 1 failure today, issue #36574 filed
+### Status (June 4)
+- **Compilation:** 240/240 workflows have lock files (100% ✅) — 2 new workflows added
+- **Daily Firewall Logs Collector:** 6th consecutive failure (token budget exhaustion) — NEW ISSUE filed (DO NOT RE-FILE)
+- **Daily BYOK Ollama Test:** 5 consecutive failures — NEW ISSUE filed (DO NOT RE-FILE)
+- **CGO unit tests** (#35028 OPEN): No run today yet, still tracking
+- **Code Simplifier** (#36829 OPEN): Failure today, already tracked
+- **Workflow Skill Extractor** (#36837 OPEN): Failure today, already tracked
+- **PR Triage Agent**: 2 failures today (intermittent, Jun 3 was mixed) — monitoring, no issue yet
+- **Daily Sentrux Report**: 1 failure today (Jun 4), was reliable — likely transient
+- **Daily Model Inventory Checker**: 1 failure today — likely transient
+- **Daily Safe Output Integrator**: 1 failure today — likely transient
+- **Linter Miner**: 2/7 days failing — intermittent, monitoring
 
 ### Critical Issues (P1) 🚨
-- **CGO unit tests** (#35028 OPEN): 100% fail today (2+1 runs), unchanged since May 27. DO NOT RE-FILE.
-- **Daily Firewall Logs Collector** (#36561 OPEN): 4 consecutive failures (May 31–Jun 3). DO NOT RE-FILE.
-- **CJS typecheck** (#36410 OPEN): Improving (60% today vs 0% yesterday). Monitor.
+- **Daily Firewall Logs Collector**: NEW ISSUE filed today. 6 consecutive failures. Token budget. DO NOT RE-FILE.
+- **Daily BYOK Ollama Test**: NEW ISSUE filed today. 5 consecutive failures. DO NOT RE-FILE.
+- **CGO unit tests** (#35028 OPEN): Persistent since May 27. DO NOT RE-FILE.
+- **Code Simplifier** (#36829 OPEN): DO NOT RE-FILE.
 
 ### P2 Issues ⚠️
-- **Sergo** (#36574 OPEN): 1 failure today, typically reliable
-- **chaos-test PR stall**: 10+ open PRs still pending merge
+- **PR Triage Agent**: 2 failures on Jun 4, inconsistent. Monitor tomorrow.
+- **Linter Miner**: Intermittent (~2/7). Monitor.
 
-### Improvements ✅
-- CJS typecheck: 60% success today (was 0% June 2) — showing recovery
-- Smoke Pi, Smoke Antigravity, Smoke Codex: back to success
-- Auto-Triage Issues: passing
+### Resolved Since Last Run ✅
+- Sergo: back to success today
+- All smoke tests: still healthy
 
 ### Actions Taken This Run
-- Updated shared memory with June 3 assessment
-- Added comment to #36561 (Firewall — 4th day)
-- No new issues created (all tracked)
+- Created 2 new P1 issues: Firewall (6-day streak) + BYOK Ollama (5-day streak)
+- Updated shared memory

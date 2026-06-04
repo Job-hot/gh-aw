@@ -1,39 +1,27 @@
-# Shared Alerts — 2026-06-02T06:03Z
+# Shared Alerts — 2026-06-04T06:09Z
 
 ## P0 (Critical) 🚨
 _None active_
 
 ## P1 (High) 🚨
-- **CJS typecheck broken** (NEW - issue filed 2026-06-02): 100% fail on main, triggered by PR #36358. DO NOT re-file.
-- **CGO unit tests** (#35028 OPEN): Escalated to 100% failing today (20 runs). Auto-notifier already tracking. DO NOT re-file.
-- **Step Name Alignment** (#36062 OPEN): Passed today — possibly resolved. Monitor.
-- **LintMonster backlog** (#36050 open): Intermittent failures. DO NOT re-file.
-- **Failure-reporters duplication**: #35984 (dedup gate unimplemented). DO NOT re-file.
+- **Daily Firewall Logs Collector** (NEW - Jun 4): 6 consecutive failures, token budget exhaustion. Issue filed today. DO NOT re-file.
+- **Daily BYOK Ollama Test** (NEW - Jun 4): 5 consecutive failures, agent execution failure. Issue filed today. DO NOT re-file.
+- **CGO unit tests** (#35028 OPEN): Persistent 100% failure since May 27. DO NOT re-file.
+- **Code Simplifier** (#36829 OPEN): Failure Jun 4. DO NOT re-file.
+- **Workflow Skill Extractor** (#36837 OPEN): Failure Jun 4. DO NOT re-file.
 
 ## P2 (Watch) ⚠️
-- **Token budget exhaustion (systemic)**: jsweep (#36183) + daily-compiler (#36172) — watch for escalation
-- **chaos-test PR stall**: 10+ open PRs (#36120–#36124, #36251–#36256), 0 merges — worsening
-- **Daily Safe Output Tool Optimizer** (#35316): runaway token usage
-- **Daily Firewall Logs Collector** (#36171): Recurring failure
-- **Daily SPDD Spec Planner** (#36138): Failed May 31
-- **Safe Outputs Conformance SEC-005** (#36079): update_activation_comment.cjs allowlist gap
-- **CLI Tools Test** (#36076): compile --workflow-name flag undocumented
+- **PR Triage Agent**: 2 failures on Jun 4. Inconsistent — monitor for pattern.
+- **Linter Miner**: Intermittent (~2/7 days). Monitor.
+- **Daily Sentrux Report**: 1 failure Jun 4 (was reliable). Likely transient.
+- **Daily Model Inventory Checker**: 1 failure Jun 4. Likely transient.
+- **chaos-test PR stall**: 10+ open PRs pending merge — still unresolved
+- **Safe Outputs Conformance SEC-005** (#36591 OPEN): update_activation_comment.cjs allowlist gap
 
-## Resolved ✅ (since May 30)
-- **Smoke tests**: #35959, #36018, #36019, #35955, #35954 all CLOSED
-- **Daily Syntax Error Check** (#36089): CLOSED
-- **Lint batches** #36051, #36052: CLOSED
-- **Daily Firewall Logs Collector** #36047: CLOSED (recurred as #36171)
-- **Design Decision Gate** #36044: CLOSED
-- **Test Quality Sentinel** #36043: CLOSED
-- **safe_outputs add_comment** (#35351): CLOSED
-- **Copilot CLI engine** (#35388): CLOSED
+## Resolved ✅ (since Jun 3)
+- **Sergo** (#36574 CLOSED): back to success today
+- **Auto-Triage Issues**: passing
 
-## Do Not Re-File
-- CJS typecheck: filed 2026-06-02
-- CGO unit tests: #35028
-- Smoke tests: #35964, #35959, #36018, #36019, #35955, #35954
-- LintMonster: #36050, #36051, #36052, #36175, #36173
-- Step Name Alignment: #36062, #36187
-- Failure-reporters dedup: #35984
-- Token budget exhaustion (jsweep, daily-compiler): #36183, #36172
+## Systemic Notes
+- Token budget exhaustion is a recurring theme (Firewall, CGO, potentially others)
+- Compilation health excellent: 240/240 lock files
