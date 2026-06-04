@@ -124,7 +124,7 @@ func (c *Compiler) validateFeatureConfig(workflowData *WorkflowData, markdownPat
 	}
 
 	if shouldEmitTokenPerformanceTip(workflowData) {
-		tip := "Token performance tip: enable tools.github.mode: gh-proxy or features.cli-proxy: true to reduce token usage. " +
+		tip := "Token performance tip: enable tools.github.mode: gh-proxy or tools.cli-proxy: true to reduce token usage. " +
 			"See: " + tokenOptimizationInstructionsURL
 		fmt.Fprintln(os.Stderr, formatCompilerMessage(markdownPath, "info", tip))
 	}
@@ -134,6 +134,12 @@ func (c *Compiler) validateFeatureConfig(workflowData *WorkflowData, markdownPat
 
 func shouldEmitTokenPerformanceTip(workflowData *WorkflowData) bool {
 	if workflowData == nil {
+		return false
+	}
+	if workflowData.ParsedTools != nil && workflowData.ParsedTools.CLIProxy {
+		return false
+	}
+	if cliProxyEnabled, ok := workflowData.Tools["cli-proxy"].(bool); ok && cliProxyEnabled {
 		return false
 	}
 	if isGitHubCLIModeEnabled(workflowData) {

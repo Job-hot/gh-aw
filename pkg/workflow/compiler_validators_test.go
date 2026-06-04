@@ -169,11 +169,9 @@ func TestValidateFeatureConfig_TokenPerformanceTip(t *testing.T) {
 			expectTip: false,
 		},
 		{
-			name: "does not emit tip when legacy cli-proxy feature is enabled",
+			name: "does not emit tip when tools cli-proxy is enabled",
 			tools: map[string]any{
-				"github": map[string]any{},
-			},
-			features: map[string]any{
+				"github":    map[string]any{},
 				"cli-proxy": true,
 			},
 			expectTip: false,
@@ -209,7 +207,7 @@ func TestValidateFeatureConfig_TokenPerformanceTip(t *testing.T) {
 				assert.Contains(t, stderr, "Token performance tip")
 				assert.Contains(t, stderr, tokenOptimizationInstructionsURL)
 				assert.Contains(t, stderr, "gh-proxy")
-				assert.Contains(t, stderr, "cli-proxy")
+				assert.Contains(t, stderr, "tools.cli-proxy")
 			} else {
 				assert.NotContains(t, stderr, "Token performance tip")
 				assert.NotContains(t, stderr, tokenOptimizationInstructionsURL)
