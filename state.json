@@ -1,7 +1,7 @@
 {
   "counts": {
     "output_format": {
-      "collapsible": 12,
+      "collapsible": 13,
       "inline": 16
     }
   },
@@ -205,6 +205,13 @@
     {
       "run_id": "26896690256",
       "timestamp": "2026-06-03T15:57:54.874Z",
+      "assignments": {
+        "output_format": "collapsible"
+      }
+    },
+    {
+      "run_id": "26962268760",
+      "timestamp": "2026-06-04T15:38:30.145Z",
       "assignments": {
         "output_format": "collapsible"
       }
