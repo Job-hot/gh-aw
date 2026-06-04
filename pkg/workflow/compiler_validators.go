@@ -139,6 +139,7 @@ func shouldEmitTokenPerformanceTip(workflowData *WorkflowData) bool {
 	if workflowData.ParsedTools != nil && workflowData.ParsedTools.CLIProxy {
 		return false
 	}
+	// Keep raw Tools fallback for partial/test call paths where ParsedTools is not populated.
 	if cliProxyEnabled, ok := workflowData.Tools["cli-proxy"].(bool); ok && cliProxyEnabled {
 		return false
 	}
