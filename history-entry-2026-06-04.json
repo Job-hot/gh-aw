@@ -1,0 +1,20 @@
+{
+  "date": "2026-06-04",
+  "sessions_analyzed": 50,
+  "completion_rate": 8.0,
+  "average_duration_minutes": 1.012,
+  "orphaned_rate": 0.0,
+  "orphan_candidates": 0,
+  "experimental_strategy": "Approval-Gated Branch Bifurcation Index",
+  "key_insights": [
+    "completion 4%->8% (modest rebound from 06-03 collapse); below 7d avg 17.7%",
+    "PERFECT BRANCH BIFURCATION: all 6 substantive sessions + all 4 successes + both failures on copilot/update-install-copilot-cli-script (the only approved branch)",
+    "4 other branches (ab-advisor, ambient-context, debug-workflow, fix-tolowerequalfold) = 100% action_required gate sweeps, all <1min",
+    "action_required 86% (43/50); failure 2, skipped 1",
+    "LOW concentration: 5 even branches (9-12 each), top branch only 24% — most dispersed productive set in window",
+    "bimodal: 43 sweeps <1min + 7 substantive @5.78-9m; success_duration_floor holds (all successes 5.78-8.7m)",
+    "orphan escalation: 0 candidates; only 2 in-progress runs repo-wide (both analysis workflow on main); 8 unassigned PRs all idle dependabot (0 gates)",
+    "conversation logs missing again (OAuth re-auth error) — 12th+ consecutive day",
+    "confirms burst_outcome_branch_dependence: outcome set by branch approval state, not burst"
+  ]
+}
