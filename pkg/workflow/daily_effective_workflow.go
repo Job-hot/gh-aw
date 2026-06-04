@@ -2,8 +2,10 @@ package workflow
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/typeutil"
 	"github.com/github/gh-aw/pkg/workflow/compilerenv"
@@ -75,13 +77,13 @@ func resolveMaxDailyEffectiveTokens(frontmatter map[string]any, importedJSON str
 	}
 	if importedJSON == "" {
 		dailyEffectiveWorkflowLog.Print("No frontmatter value and no imported config; falling back to default max-daily-effective-tokens")
-		defaultValue := compilerenv.ResolveDefaultMaxDailyEffectiveTokens("")
+		defaultValue := compilerenv.ResolveDefaultMaxDailyEffectiveTokens(strconv.FormatInt(constants.DefaultMaxDailyEffectiveTokens, 10))
 		return parseMaxDailyEffectiveTokensValue(defaultValue)
 	}
 	var imported any
 	if err := json.Unmarshal([]byte(importedJSON), &imported); err != nil {
 		dailyEffectiveWorkflowLog.Printf("Failed to unmarshal imported max-daily-effective-tokens JSON, using default: %v", err)
-		defaultValue := compilerenv.ResolveDefaultMaxDailyEffectiveTokens("")
+		defaultValue := compilerenv.ResolveDefaultMaxDailyEffectiveTokens(strconv.FormatInt(constants.DefaultMaxDailyEffectiveTokens, 10))
 		return parseMaxDailyEffectiveTokensValue(defaultValue)
 	}
 	if value, found := resolveMaxDailyEffectiveTokensFromRaw(imported); found {
@@ -89,7 +91,7 @@ func resolveMaxDailyEffectiveTokens(frontmatter map[string]any, importedJSON str
 		return value
 	}
 	dailyEffectiveWorkflowLog.Print("Imported config did not provide a usable value; falling back to default max-daily-effective-tokens")
-	defaultValue := compilerenv.ResolveDefaultMaxDailyEffectiveTokens("")
+	defaultValue := compilerenv.ResolveDefaultMaxDailyEffectiveTokens(strconv.FormatInt(constants.DefaultMaxDailyEffectiveTokens, 10))
 	return parseMaxDailyEffectiveTokensValue(defaultValue)
 }
 

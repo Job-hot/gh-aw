@@ -5,9 +5,11 @@ package workflow
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/stringutil"
 	"github.com/github/gh-aw/pkg/testutil"
 	"github.com/github/gh-aw/pkg/workflow/compilerenv"
@@ -36,6 +38,15 @@ func TestResolveMaxDailyEffectiveTokens(t *testing.T) {
 		got := resolveMaxDailyEffectiveTokens(map[string]any{}, "")
 		if got == nil || *got != "2222" {
 			t.Fatalf("expected enterprise default, got %v", got)
+		}
+	})
+
+	t.Run("uses built-in default when unset", func(t *testing.T) {
+		t.Setenv(compilerenv.DefaultMaxDailyEffectiveTokens, "")
+		got := resolveMaxDailyEffectiveTokens(map[string]any{}, "")
+		want := strconv.FormatInt(constants.DefaultMaxDailyEffectiveTokens, 10)
+		if got == nil || *got != want {
+			t.Fatalf("expected built-in default %q, got %v", want, got)
 		}
 	})
 

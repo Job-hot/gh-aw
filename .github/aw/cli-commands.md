@@ -249,7 +249,8 @@ gh aw env update file.yml --scope repo --dry-run  # Preview without applying
 Example file:
 
 ```yaml
-default_max_effective_tokens: "5000000"
+default_max_effective_tokens: "10000000"
+default_max_daily_effective_tokens: "50000000"
 default_max_turns: "12"
 default_model_copilot: "gpt-5-mini"
 default_model_codex: null   # delete this variable

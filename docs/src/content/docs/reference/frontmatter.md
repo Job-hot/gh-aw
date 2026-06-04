@@ -229,7 +229,7 @@ Environment variables can be defined at multiple scopes (workflow, job, step, en
 
 ### Effective Token Budget (`max-effective-tokens:`)
 
-Sets the AWF effective-token budget used for cost enforcement. Defaults to `25M` when omitted. Token steering (budget-warning messages at 80%, 90%, 95%, and 99% of the budget) is enabled by default. Use plain integers or `K`/`M` suffixes such as `100000K` or `100M`. Set to a negative value to disable both budget enforcement and token steering.
+Sets the AWF effective-token budget used for cost enforcement. Defaults to `10M` when omitted. Token steering (budget-warning messages at 80%, 90%, 95%, and 99% of the budget) is enabled by default. Use plain integers or `K`/`M` suffixes such as `100000K` or `100M`. Set to a negative value to disable both budget enforcement and token steering.
 
 ```yaml wrap
 max-effective-tokens: 5M
@@ -249,7 +249,7 @@ max-effective-tokens: -1
 
 Sets a 24-hour effective-token cap for a single workflow, aggregated across recent runs of the same workflow started by the triggering user. When the activation job detects that the previous 24 hours already exceed this threshold, it warns, creates an issue, skips the agent job, and lets the conclusion job report the specialized failure context. Use plain integers or `K`/`M` suffixes such as `100000K` or `100M`.
 
-This guardrail is disabled by default when omitted, and `-1` explicitly disables it. This guardrail is skipped for `workflow_call`, `repository_dispatch`, and `workflow_dispatch` runs that carry internal `aw_context` dispatch metadata.
+Defaults to `50M` when omitted, and `-1` explicitly disables it. This guardrail is skipped for `workflow_call`, `repository_dispatch`, and `workflow_dispatch` runs that carry internal `aw_context` dispatch metadata.
 
 ```yaml wrap
 max-daily-effective-tokens: 15M

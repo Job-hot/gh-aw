@@ -493,7 +493,7 @@ A short human-friendly name (such as `sonnet` or `mini`) that gh-aw resolves to 
 
 ### Max Effective Tokens (`max-effective-tokens`)
 
-A top-level frontmatter field that caps the total effective-token (ET) budget the AWF proxy will spend within a single workflow run. Effective tokens are weighted by model multipliers and are the primary cost proxy for Copilot. Applies to all engines and maps to `apiProxy.maxEffectiveTokens` in the compiled lock file. Defaults to `25M` when omitted. Accepts an integer, an optional `K`/`M` suffix string (for example, `100M`), or a GitHub Actions expression that resolves to an integer at runtime. Example:
+A top-level frontmatter field that caps the total effective-token (ET) budget the AWF proxy will spend within a single workflow run. Effective tokens are weighted by model multipliers and are the primary cost proxy for Copilot. Applies to all engines and maps to `apiProxy.maxEffectiveTokens` in the compiled lock file. Defaults to `10M` when omitted. Accepts an integer, an optional `K`/`M` suffix string (for example, `100M`), or a GitHub Actions expression that resolves to an integer at runtime. Example:
 
 ```aw wrap
 max-effective-tokens: 5M
@@ -503,7 +503,7 @@ See [Effective Tokens Specification](/gh-aw/reference/effective-tokens-specifica
 
 ### Max Daily Effective Tokens (`max-daily-effective-tokens`)
 
-A top-level frontmatter field that sets a 24-hour effective-token cap for a single workflow, aggregated across recent runs of the same workflow triggered by the same user. When the activation job detects that the previous 24 hours already exceed this threshold, it warns, creates an issue, skips the agent job, and reports a specialized failure. Disabled by default when omitted. Set to `-1` to explicitly disable it. Accepts plain integers or `K`/`M` suffixes (e.g., `100M`). Skipped for `workflow_call`, `repository_dispatch`, and `workflow_dispatch` runs carrying internal `aw_context` dispatch metadata. Example:
+A top-level frontmatter field that sets a 24-hour effective-token cap for a single workflow, aggregated across recent runs of the same workflow triggered by the same user. When the activation job detects that the previous 24 hours already exceed this threshold, it warns, creates an issue, skips the agent job, and reports a specialized failure. Defaults to `50M` when omitted. Set to `-1` to explicitly disable it. Accepts plain integers or `K`/`M` suffixes (e.g., `100M`). Skipped for `workflow_call`, `repository_dispatch`, and `workflow_dispatch` runs carrying internal `aw_context` dispatch metadata. Example:
 
 ```aw wrap
 max-daily-effective-tokens: 15M

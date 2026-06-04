@@ -2534,7 +2534,7 @@ engine:
   # the default engine when engine.id is not specified.
   model: "example-value"
 
-# Explicit ET budget control for firewall cost enforcement. Defaults to 25M
+# Explicit ET budget control for firewall cost enforcement. Defaults to 10M
 # when omitted. Set to a negative value to disable budget enforcement and token
 # steering.
 # (optional)

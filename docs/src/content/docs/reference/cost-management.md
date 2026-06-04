@@ -263,7 +263,7 @@ When the total from the past 24 hours already meets or exceeds this threshold, t
 job warns, creates an issue, skips the agent job, and lets the
 conclusion job report the failure context.
 
-The guardrail is disabled by default when omitted. Set `-1` to disable
+The guardrail defaults to `50M` when omitted. Set `-1` to disable
 it explicitly. Positive values accept plain integers or `K`/`M`
 suffixes such as `100M`.
 
@@ -286,8 +286,8 @@ gh aw env get defaults.yml --scope org --org MY_ORG
 2. Update and apply shared defaults in batch:
 
 ```yaml
-default_max_effective_tokens: "5M"
-default_max_daily_effective_tokens: "15M"
+default_max_effective_tokens: "10M"
+default_max_daily_effective_tokens: "50M"
 default_model_copilot: "gpt-5-mini"
 default_model_claude: "claude-haiku-4-5"
 default_model_codex: "gpt-5.4-mini"

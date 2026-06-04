@@ -270,7 +270,10 @@ const DefaultMCPStartupTimeout = 120 * time.Second
 const DefaultHTTPClientTimeout = 30 * time.Second
 
 // DefaultMaxEffectiveTokens is the default ET budget enforced by the AWF API proxy.
-const DefaultMaxEffectiveTokens int64 = 25000000
+const DefaultMaxEffectiveTokens int64 = 10000000
+
+// DefaultMaxDailyEffectiveTokens is the default 24-hour per-workflow ET guardrail.
+const DefaultMaxDailyEffectiveTokens int64 = 50000000
 
 // DefaultMaxRuns is the default AWF invocation cap enforced by the AWF API proxy.
 const DefaultMaxRuns = 500
