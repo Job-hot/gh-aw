@@ -156,6 +156,9 @@ func shouldEmitTokenPerformanceTip(workflowData *WorkflowData) bool {
 	return hasGitHub && githubTool != false
 }
 
+// effectiveToolsConfig returns the effective tools map for validator checks.
+// It prefers WorkflowData.Tools (which is merged with imports) and falls back
+// to RawFrontmatter.tools for partial/test paths where Tools is not populated.
 func effectiveToolsConfig(workflowData *WorkflowData) map[string]any {
 	if workflowData == nil {
 		return nil
