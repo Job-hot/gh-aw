@@ -58,6 +58,8 @@ const tmpNeedle = "/tmp/"
 // repo-memory, comment-memory, aw-mcp, mcp-scripts, etc.).
 const tmpSafePrefix = "/tmp/gh-aw/"
 
+const tokenOptimizationInstructionsURL = "https://github.com/github/gh-aw/blob/main/.github/aw/token-optimization.md"
+
 // warnPromptTmpPaths returns a non-empty advisory message when content contains
 // /tmp/ references that are not under /tmp/gh-aw/.
 // Returns an empty string when no problematic patterns are found.
@@ -121,7 +123,27 @@ func (c *Compiler) validateFeatureConfig(workflowData *WorkflowData, markdownPat
 		}
 	}
 
+	if shouldEmitTokenPerformanceTip(workflowData) {
+		tip := "Token performance tip: enable tools.github.mode: gh-proxy or features.cli-proxy: true to reduce token usage. " +
+			"See: " + tokenOptimizationInstructionsURL
+		fmt.Fprintln(os.Stderr, formatCompilerMessage(markdownPath, "info", tip))
+	}
+
 	return nil
+}
+
+func shouldEmitTokenPerformanceTip(workflowData *WorkflowData) bool {
+	if workflowData == nil {
+		return false
+	}
+	if isGitHubCLIModeEnabled(workflowData) {
+		return false
+	}
+	if hasGitHubTool(workflowData.ParsedTools) {
+		return true
+	}
+	githubTool, hasGitHub := workflowData.Tools["github"]
+	return hasGitHub && githubTool != false
 }
 
 // validateToolConfiguration validates safe-outputs settings, on.needs and safe-job
