@@ -208,20 +208,18 @@ func TestValidateFeatureConfig_TokenPerformanceTip(t *testing.T) {
 			}
 			workflowData.ParsedTools = NewTools(tt.tools)
 
-			var validateErr error
-			stderr := testutil.CaptureStderr(t, func() {
-				validateErr = compiler.validateFeatureConfig(workflowData, markdownPath)
-			})
+			validateErr := compiler.validateFeatureConfig(workflowData, markdownPath)
 			require.NoError(t, validateErr)
 
+			tips := compiler.GetPerformanceTips()
 			if tt.expectTip {
-				assert.Contains(t, stderr, "Token performance tip")
-				assert.Contains(t, stderr, tokenOptimizationInstructionsURL)
-				assert.Contains(t, stderr, "gh-proxy")
-				assert.Contains(t, stderr, "tools.cli-proxy")
+				require.Len(t, tips, 1)
+				assert.Contains(t, tips[0], "Token performance tip")
+				assert.Contains(t, tips[0], tokenOptimizationInstructionsURL)
+				assert.Contains(t, tips[0], "gh-proxy")
+				assert.Contains(t, tips[0], "tools.cli-proxy")
 			} else {
-				assert.NotContains(t, stderr, "Token performance tip")
-				assert.NotContains(t, stderr, tokenOptimizationInstructionsURL)
+				assert.Empty(t, tips)
 			}
 		})
 	}

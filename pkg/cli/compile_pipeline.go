@@ -216,6 +216,9 @@ func compileSpecificFiles(
 	// Display safe update warnings (emitted as prompts for the calling agent)
 	displaySafeUpdateWarnings(compiler, config.JSONOutput)
 
+	// Display accumulated performance tips.
+	displayPerformanceTips(compiler, config.JSONOutput)
+
 	// Post-processing
 	if err := runPostProcessing(compiler, workflowDataList, config, compiledCount); err != nil {
 		return workflowDataList, err
@@ -422,6 +425,9 @@ func compileAllFilesInDirectory(
 
 	// Display safe update warnings (emitted as prompts for the calling agent)
 	displaySafeUpdateWarnings(compiler, config.JSONOutput)
+
+	// Display accumulated performance tips.
+	displayPerformanceTips(compiler, config.JSONOutput)
 
 	if config.Verbose {
 		fmt.Fprintln(os.Stderr, console.FormatSuccessMessage(fmt.Sprintf("Successfully compiled %d out of %d workflow files", successCount, len(mdFiles))))

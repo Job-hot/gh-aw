@@ -3,6 +3,7 @@ package workflow
 import (
 	"context"
 	"os"
+	"slices"
 
 	actionpins "github.com/github/gh-aw/pkg/actionpins"
 	"github.com/github/gh-aw/pkg/logger"
@@ -91,6 +92,7 @@ type Compiler struct {
 	workflowIdentifier      string                   // Identifier for the current workflow being compiled (for schedule scattering)
 	scheduleWarnings        []string                 // Accumulated schedule warnings for this compiler instance
 	safeUpdateWarnings      []string                 // Accumulated safe update warnings (new secrets/actions requiring review)
+	performanceTips         []string                 // Accumulated performance tips for this compiler instance
 	repositorySlug          string                   // Repository slug (owner/repo) used as seed for scattering
 	repositorySlugLocked    bool                     // If true, repositorySlug was set via --schedule-seed and must not be overridden by per-file detection
 	artifactManager         *ArtifactManager         // Tracks artifact uploads/downloads for validation
@@ -349,6 +351,22 @@ func (c *Compiler) AddSafeUpdateWarning(warning string) {
 // GetSafeUpdateWarnings returns all accumulated safe update warnings for this compiler instance.
 func (c *Compiler) GetSafeUpdateWarnings() []string {
 	return c.safeUpdateWarnings
+}
+
+// AddPerformanceTip appends a performance tip if it has not already been added.
+func (c *Compiler) AddPerformanceTip(tip string) {
+	if tip == "" {
+		return
+	}
+	if slices.Contains(c.performanceTips, tip) {
+		return
+	}
+	c.performanceTips = append(c.performanceTips, tip)
+}
+
+// GetPerformanceTips returns all accumulated performance tips for this compiler instance.
+func (c *Compiler) GetPerformanceTips() []string {
+	return c.performanceTips
 }
 
 // SetPriorManifests replaces the entire pre-cached manifest map.

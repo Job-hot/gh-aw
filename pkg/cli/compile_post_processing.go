@@ -247,6 +247,16 @@ func displaySafeUpdateWarnings(compiler *workflow.Compiler, jsonOutput bool) {
 	}
 }
 
+// displayPerformanceTips displays accumulated performance tips as a single info message.
+func displayPerformanceTips(compiler *workflow.Compiler, jsonOutput bool) {
+	tips := compiler.GetPerformanceTips()
+	if len(tips) == 0 || jsonOutput {
+		return
+	}
+	message := "Performance tips:\n- " + strings.Join(tips, "\n- ")
+	fmt.Fprintln(os.Stderr, console.FormatInfoMessage(message))
+}
+
 // displayCentralizedSlashCommandRecommendation warns when a repository has many
 // slash commands still using non-centralized strategy.
 func displayCentralizedSlashCommandRecommendation(compiler *workflow.Compiler, workflowDataList []*workflow.WorkflowData, jsonOutput bool) {

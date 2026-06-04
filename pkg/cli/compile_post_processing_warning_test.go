@@ -3,10 +3,12 @@
 package cli
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/github/gh-aw/pkg/testutil"
 	"github.com/github/gh-aw/pkg/workflow"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -59,7 +61,6 @@ func TestDisplayCentralizedSlashCommandRecommendation(t *testing.T) {
 			expectedWarnCount: 0,
 		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			compiler := workflow.NewCompiler()
@@ -78,4 +79,31 @@ func TestDisplayCentralizedSlashCommandRecommendation(t *testing.T) {
 			require.Equal(t, tt.expectedWarnCount, compiler.GetWarningCount())
 		})
 	}
+}
+
+func TestDisplayPerformanceTips(t *testing.T) {
+	compiler := workflow.NewCompiler()
+	compiler.AddPerformanceTip("Use gh-proxy mode for lower token usage")
+	compiler.AddPerformanceTip("Use gh-proxy mode for lower token usage") // duplicate should be collapsed
+	compiler.AddPerformanceTip("Tune max-daily-effective-tokens for budget control")
+
+	stderrOutput := testutil.CaptureStderr(t, func() {
+		displayPerformanceTips(compiler, false)
+	})
+
+	require.Contains(t, stderrOutput, "Performance tips:")
+	assert.Equal(t, 1, strings.Count(stderrOutput, "Performance tips:"))
+	require.Contains(t, stderrOutput, "- Use gh-proxy mode for lower token usage")
+	require.Contains(t, stderrOutput, "- Tune max-daily-effective-tokens for budget control")
+}
+
+func TestDisplayPerformanceTips_JSONOutputSuppresses(t *testing.T) {
+	compiler := workflow.NewCompiler()
+	compiler.AddPerformanceTip("Use gh-proxy mode for lower token usage")
+
+	stderrOutput := testutil.CaptureStderr(t, func() {
+		displayPerformanceTips(compiler, true)
+	})
+
+	assert.Empty(t, stderrOutput)
 }
