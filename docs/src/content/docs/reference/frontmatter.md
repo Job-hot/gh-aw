@@ -392,6 +392,19 @@ runtimes:
 
 Omitted runtimes use the defaults above. Runtimes from imported shared workflows are merged with your workflow's configuration.
 
+### `run-install-scripts`
+
+A per-runtime option under [`runtimes:`](#runtimes-runtimes) that allows a package manager to run `pre`/`post` install scripts during package installation. It defaults to `false` because install scripts are a common supply-chain attack vector.
+
+```aw wrap
+runtimes:
+  node:
+    version: "24"
+    run-install-scripts: true
+```
+
+Enabling install scripts emits a supply-chain security warning at compile time, and is an error under [strict mode](#strict-mode-strict). Enable it only when a trusted dependency requires install scripts to build.
+
 ### Source Tracking (`source:`)
 
 Tracks workflow origin in format `owner/repo/path@ref`. Automatically populated when using `gh aw add` to install workflows from external repositories. Optional for manually created workflows.
@@ -442,6 +455,24 @@ private: true
 Adding the workflow from another repository then fails with `workflow 'owner/repo/internal-tooling' is private and cannot be added to other repositories`. Use this for internal tooling, sensitive automation, or repository-specific workflows not intended for reuse.
 
 This only blocks installation via `gh aw add`; the visibility of the workflow file itself is controlled by your repository's access settings.
+
+### `check-for-updates`
+
+Controls whether the activation job runs the compiled-version update check. When `true` (the default), the activation job downloads `config.json` from the gh-aw repository and verifies that the compiled workflow version is not blocked and meets the minimum supported version. Set it to `false` to skip the check — for example, on isolated runners without network access to the gh-aw repository.
+
+```aw wrap
+check-for-updates: false
+```
+
+Disabling the check is not allowed in [strict mode](#strict-mode-strict): a workflow compiled with `check-for-updates: false` fails strict validation.
+
+### `disable-model-invocation`
+
+Prevents a custom agent from making additional model calls. When set to `true`, the agent runs without invoking the model, which suits deterministic, tool-only agents that execute their configured steps without further model reasoning.
+
+```aw wrap
+disable-model-invocation: true
+```
 
 ### Feature Flags (`features:`)
 
