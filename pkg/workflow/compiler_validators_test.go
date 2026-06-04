@@ -5,7 +5,6 @@ package workflow
 import (
 	"errors"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/github/gh-aw/pkg/testutil"
@@ -121,77 +120,6 @@ func TestValidateFeatureConfig(t *testing.T) {
 		},
 	}
 
-	func TestValidateFeatureConfig_TokenPerformanceTip(t *testing.T) {
-		tests := []struct {
-			name      string
-			tools     map[string]any
-			features  map[string]any
-			expectTip bool
-		}{
-			{
-				name: "emits tip when github tool is not using proxy mode",
-				tools: map[string]any{
-					"github": map[string]any{"mode": "remote"},
-				},
-				expectTip: true,
-			},
-			{
-				name: "does not emit tip when github mode is gh-proxy",
-				tools: map[string]any{
-					"github": map[string]any{"mode": "gh-proxy"},
-				},
-				expectTip: false,
-			},
-			{
-				name: "does not emit tip when legacy cli-proxy feature is enabled",
-				tools: map[string]any{
-					"github": map[string]any{"mode": "remote"},
-				},
-				features: map[string]any{
-					"cli-proxy": true,
-				},
-				expectTip: false,
-			},
-			{
-				name:      "does not emit tip without github tool",
-				tools:     nil,
-				expectTip: false,
-			},
-		}
-
-		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
-				tmpDir := testutil.TempDir(t, "feature-tip-test")
-				markdownPath := filepath.Join(tmpDir, "test.md")
-
-				compiler := NewCompiler()
-				workflowData := &WorkflowData{
-					Name:     "Test",
-					AI:       "copilot",
-					Tools:    tt.tools,
-					Features: tt.features,
-				}
-				workflowData.ParsedTools = NewTools(tt.tools)
-
-				var validateErr error
-				stderr := testutil.CaptureStderr(t, func() {
-					validateErr = compiler.validateFeatureConfig(workflowData, markdownPath)
-				})
-				require.NoError(t, validateErr)
-
-				if tt.expectTip {
-					assert.Contains(t, stderr, "Token performance tip")
-					assert.Contains(t, stderr, tokenOptimizationInstructionsURL)
-					assert.Contains(t, stderr, "gh-proxy")
-					assert.Contains(t, stderr, "cli-proxy")
-					return
-				}
-				assert.NotContains(t, stderr, "Token performance tip")
-				assert.False(t, strings.Contains(stderr, tokenOptimizationInstructionsURL))
-			})
-		}
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tmpDir := testutil.TempDir(t, "feature-test")
@@ -215,6 +143,77 @@ func TestValidateFeatureConfig(t *testing.T) {
 			} else {
 				assert.NoError(t, err, "validateFeatureConfig should not return an error")
 			}
+		})
+	}
+}
+
+func TestValidateFeatureConfig_TokenPerformanceTip(t *testing.T) {
+	tests := []struct {
+		name      string
+		tools     map[string]any
+		features  map[string]any
+		expectTip bool
+	}{
+		{
+			name: "emits tip when github tool is not using proxy mode",
+			tools: map[string]any{
+				"github": map[string]any{"mode": "remote"},
+			},
+			expectTip: true,
+		},
+		{
+			name: "does not emit tip when github mode is gh-proxy",
+			tools: map[string]any{
+				"github": map[string]any{"mode": "gh-proxy"},
+			},
+			expectTip: false,
+		},
+		{
+			name: "does not emit tip when legacy cli-proxy feature is enabled",
+			tools: map[string]any{
+				"github": map[string]any{},
+			},
+			features: map[string]any{
+				"cli-proxy": true,
+			},
+			expectTip: false,
+		},
+		{
+			name:      "does not emit tip without github tool",
+			tools:     nil,
+			expectTip: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tmpDir := testutil.TempDir(t, "feature-tip-test")
+			markdownPath := filepath.Join(tmpDir, "test.md")
+
+			compiler := NewCompiler()
+			workflowData := &WorkflowData{
+				Name:     "Test",
+				AI:       "copilot",
+				Tools:    tt.tools,
+				Features: tt.features,
+			}
+			workflowData.ParsedTools = NewTools(tt.tools)
+
+			var validateErr error
+			stderr := testutil.CaptureStderr(t, func() {
+				validateErr = compiler.validateFeatureConfig(workflowData, markdownPath)
+			})
+			require.NoError(t, validateErr)
+
+			if tt.expectTip {
+				assert.Contains(t, stderr, "Token performance tip")
+				assert.Contains(t, stderr, tokenOptimizationInstructionsURL)
+				assert.Contains(t, stderr, "gh-proxy")
+				assert.Contains(t, stderr, "cli-proxy")
+				return
+			}
+			assert.NotContains(t, stderr, "Token performance tip")
+			assert.NotContains(t, stderr, tokenOptimizationInstructionsURL)
 		})
 	}
 }
