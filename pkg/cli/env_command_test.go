@@ -71,15 +71,15 @@ func TestResolveDefaultsTarget(t *testing.T) {
 
 func TestDefaultsFileYAMLKeys(t *testing.T) {
 	file := defaultsFile{
-		DefaultMaxEffectiveTokens:      new("10000"),
-		DefaultMaxDailyAICredits:       new("500000"),
-		DefaultMaxTurns:                new("42"),
-		DefaultTimeoutMinutes:          new("90"),
-		DefaultDetectionModel:          new("claude-sonnet-4.6"),
-		DefaultUTC:                     new("-08:00"),
-		DefaultModelCopilot:            new("claude-sonnet-4.7"),
-		DefaultModelClaude:             new("claude-opus-4.7"),
-		DefaultModelCodex:              new("gpt-5.5"),
+		DefaultMaxEffectiveTokens: new("10000"),
+		DefaultMaxDailyAICredits:  new("500000"),
+		DefaultMaxTurns:           new("42"),
+		DefaultTimeoutMinutes:     new("90"),
+		DefaultDetectionModel:     new("claude-sonnet-4.6"),
+		DefaultUTC:                new("-08:00"),
+		DefaultModelCopilot:       new("claude-sonnet-4.7"),
+		DefaultModelClaude:        new("claude-opus-4.7"),
+		DefaultModelCodex:         new("gpt-5.5"),
 	}
 
 	data, err := yaml.Marshal(&file)
@@ -147,12 +147,12 @@ func TestDefaultsValidateFile(t *testing.T) {
 
 	t.Run("rejects invalid numeric and empty model values", func(t *testing.T) {
 		err := defaultsValidateFile(&defaultsFile{
-			DefaultMaxEffectiveTokens:      new("0"),
-			DefaultMaxDailyAICredits:       new("0"),
-			DefaultMaxTurns:                new("abc"),
-			DefaultTimeoutMinutes:          new("0"),
-			DefaultUTC:                     new("west"),
-			DefaultModelCopilot:            new("   "),
+			DefaultMaxEffectiveTokens: new("0"),
+			DefaultMaxDailyAICredits:  new("0"),
+			DefaultMaxTurns:           new("abc"),
+			DefaultTimeoutMinutes:     new("0"),
+			DefaultUTC:                new("west"),
+			DefaultModelCopilot:       new("   "),
 		})
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "default_max_effective_tokens must be a non-zero integer when set")
