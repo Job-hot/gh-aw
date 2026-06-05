@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "model_size": {
+      "small-agent": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "27034341100",
+      "timestamp": "2026-06-05T19:01:42.479Z",
+      "assignments": {
+        "model_size": "small-agent"
+      }
+    }
+  ]
+}
