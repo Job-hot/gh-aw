@@ -1,37 +1,45 @@
-# Workflow Health — 2026-06-04T06:09Z
+# Workflow Health — 2026-06-05T05:56Z
 
-Score: 81/100 (↓1 from 82)
-Workflows: 240 | Lock files: 240/240 (100% ✅) | Run: §26934079906
+Score: 78/100 (↓3 from 81)
+Workflows: 240 | Lock files: 240/240 (100% ✅) | Run: §26998143442
 
 ## KEY FINDINGS
 
-### Status (June 4)
-- **Compilation:** 240/240 workflows have lock files (100% ✅) — 2 new workflows added
-- **Daily Firewall Logs Collector:** 6th consecutive failure (token budget exhaustion) — NEW ISSUE filed (DO NOT RE-FILE)
-- **Daily BYOK Ollama Test:** 5 consecutive failures — NEW ISSUE filed (DO NOT RE-FILE)
-- **CGO unit tests** (#35028 OPEN): No run today yet, still tracking
-- **Code Simplifier** (#36829 OPEN): Failure today, already tracked
-- **Workflow Skill Extractor** (#36837 OPEN): Failure today, already tracked
-- **PR Triage Agent**: 2 failures today (intermittent, Jun 3 was mixed) — monitoring, no issue yet
-- **Daily Sentrux Report**: 1 failure today (Jun 4), was reliable — likely transient
-- **Daily Model Inventory Checker**: 1 failure today — likely transient
-- **Daily Safe Output Integrator**: 1 failure today — likely transient
-- **Linter Miner**: 2/7 days failing — intermittent, monitoring
+### Status (June 5)
+- **Compilation:** 240/240 workflows have lock files (100% ✅)
+- **CJS typecheck** (#36410 OPEN): 100% failure since Jun 1 — DO NOT RE-FILE
+- **CGO unit tests** (#35028 OPEN): 100% failure since May 27 — DO NOT RE-FILE
+- **Daily Firewall Logs Collector**: 7th consecutive failure (token budget) — issue filed Jun 4. DO NOT RE-FILE
+- **Daily BYOK Ollama Test**: Consecutive failures (auth) — issue filed Jun 4. DO NOT RE-FILE
+- **Daily Documentation Healer**: NEW regression Jun 5 (effort param rejected). #37039 filed today. DO NOT RE-FILE
+- **Daily Model Inventory Checker**: 2nd consecutive failure (BYOK auth). #37039 filed today. DO NOT RE-FILE
+- **PR Triage Agent**: 3rd consecutive failure (#37035 filed today by notifier)
+- **Daily Sentrux Report**: 2nd consecutive failure (#37019 filed today) — ESCALATING
+- **Code Simplifier**: Recurring (#36829, #37057 filed today)
+- **Designer Drift Audit**: New failure (#37059 filed today)
+- **DataFlow PR & Discussion Dataset Builder**: New failure (#37054 filed today)
+- **Smoke tests (PR #37004 branch)**: 5/5 failing (#37015, #37016, #37020, #37022, #37026 filed today)
 
 ### Critical Issues (P1) 🚨
-- **Daily Firewall Logs Collector**: NEW ISSUE filed today. 6 consecutive failures. Token budget. DO NOT RE-FILE.
-- **Daily BYOK Ollama Test**: NEW ISSUE filed today. 5 consecutive failures. DO NOT RE-FILE.
-- **CGO unit tests** (#35028 OPEN): Persistent since May 27. DO NOT RE-FILE.
-- **Code Simplifier** (#36829 OPEN): DO NOT RE-FILE.
+- **CJS typecheck**: #36410 OPEN. DO NOT RE-FILE.
+- **CGO unit tests**: #35028 OPEN. DO NOT RE-FILE.
+- **Daily Firewall Logs Collector**: Filed Jun 4. DO NOT RE-FILE.
+- **Daily BYOK Ollama Test**: Filed Jun 4. DO NOT RE-FILE.
+- **Daily Documentation Healer**: #37039 filed today. DO NOT RE-FILE.
+- **Daily Model Inventory Checker**: #37039 filed today. DO NOT RE-FILE.
 
 ### P2 Issues ⚠️
-- **PR Triage Agent**: 2 failures on Jun 4, inconsistent. Monitor tomorrow.
-- **Linter Miner**: Intermittent (~2/7). Monitor.
+- **PR Triage Agent**: 3rd consecutive. #37035. Monitor for P1 escalation.
+- **Daily Sentrux Report**: 2nd consecutive. #37019. Was transient, now pattern.
+- **Smoke tests on PR #37004**: 5/5 failing — regression in PR branch. Monitor PR.
+- **Linter Miner**: Still intermittent (~2/7) — monitoring.
 
-### Resolved Since Last Run ✅
-- Sergo: back to success today
-- All smoke tests: still healthy
+### Systemic Pattern
+- Model/auth config cluster (4 workflows): Documentation Healer + Model Inventory + BYOK Ollama + Firewall Logs
+- CI blockage (CJS + CGO)
 
 ### Actions Taken This Run
-- Created 2 new P1 issues: Firewall (6-day streak) + BYOK Ollama (5-day streak)
+- 0 new issues created (auto-notifiers and aw-failure-investigator covered all)
+- Dashboard issue created
 - Updated shared memory
+- Dashboard issue created (workflow-health + report labels)
