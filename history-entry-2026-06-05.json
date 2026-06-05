@@ -1,0 +1,19 @@
+{
+  "date": "2026-06-05",
+  "sessions_analyzed": 50,
+  "completion_rate": 8.0,
+  "average_duration_minutes": 0.732,
+  "orphaned_rate": 0.0,
+  "orphan_candidates": 0,
+  "experimental_strategy": "Branch-Symmetric Success Distribution",
+  "key_insights": [
+    "completion flat 8%->8% (2nd day at floor); below 7d avg 14.0%",
+    "SYMMETRY REVERSAL vs 06-04 bifurcation: all 3 active branches scored >=1 success (yaml-outputs 1/21, close-pr 1/18, cost-mgmt 2/11) — no single approved branch monopolized success",
+    "action_required 92% (46/50); success 8% (4/50); zero failures/skips today",
+    "HIGH concentration: only 3 branches, top yaml-outputs 42%, top-2 78%, top-3 100% (all copilot/*)",
+    "bimodal holds: 46 sweeps =0min + 4 substantive @4.82-15m; success_duration_floor holds (all successes >=4.82m)",
+    "success workflow provenance: cloud-agent 15m, 2x Addressing-comment-PR#37072 (7.9/8.9m), Copilot-Code-Review 4.82m",
+    "orphan escalation: 0 candidates; only 2 in-progress runs repo-wide (both on main); 4 open PRs all Copilot+pelikhan/dsyme assigned, 0 PR-branch gates",
+    "conversation logs missing (13th+ consecutive day, OAuth)"
+  ]
+}
