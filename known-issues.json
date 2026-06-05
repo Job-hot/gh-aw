@@ -1,6 +1,21 @@
 {
-  "updated": "2026-06-04T21:50Z",
+  "updated": "2026-06-05T21:50Z",
   "issues": [
+    {
+      "id": "model-param-config-incompatibility",
+      "title": "Prod-main workflows hard-fail instantly on model/param config drift (effort unsupported / model not found)",
+      "status": "OPEN",
+      "severity": "HIGH",
+      "new": true,
+      "first_seen": "2026-06-05",
+      "last_seen": "2026-06-05",
+      "recurrence": "new this window; 2 distinct prod-main schedules, both all-retries-exhausted with 0 tokens consumed",
+      "affected": [
+        "Daily Caveman Optimizer",
+        "Daily Cache Strategy Analyzer"
+      ],
+      "note": "Two variants: (a) Daily Caveman Optimizer [claude] run 27040285267 -> 400 invalid_request_error 'This model does not support the effort parameter' (claude model pinned with a reasoning-effort param it rejects); (b) Daily Cache Strategy Analyzer [codex] run 27034341100 -> 404 'Model not found adelie-alpha-2026-02-19' (codex model id deprecated/removed at the responses endpoint). Both fail fast on every retry, cheap but total. Likely config drift after a model/param change."
+    },
     {
       "id": "token-budget-429-effective-tokens",
       "title": "429 Maximum effective tokens exceeded (25M cap)",
@@ -9,11 +24,11 @@
       "ref": "#35661",
       "first_seen": "2026-05",
       "last_seen": "2026-06-04",
-      "recurrence": "recurred 2026-06-04 (Daily Ambient Context Optimizer 25.12M/25M, prod main) after several absent windows",
+      "recurrence": "ABSENT 2026-06-05 but BORDERLINE: Daily Ambient Context Optimizer ran 25.37M effective tokens (OVER the 25M cap) and SUCCEEDED this window. Cap edge unresolved; one bad run-set away from re-failing.",
       "affected": [
         "Daily Ambient Context Optimizer"
       ],
-      "note": "Heavy daily-aggregation workflows intermittently exceed the 25M effective-token cap. Intermittent; depends on run-set size."
+      "note": "Heavy daily-aggregation workflows hover at/over the 25M effective-token cap. Intermittent; depends on run-set size. Soft pre-cap guard still not in place."
     },
     {
       "id": "safe-output-partial-failure-intolerance",
@@ -22,14 +37,14 @@
       "severity": "HIGH",
       "first_seen": "2026-05",
       "last_seen": "2026-06-04",
-      "recurrence": "recurred 2026-06-04 on 2 prod wf; dominant variant = add_comment target='*' with no item_number/issue_number/pr_number",
+      "recurrence": "ABSENT 2026-06-05: PR Sous Chef 5/5 success, Contribution Check 1/1 success. No add_comment target=* failures this window.",
       "affected": [
-        "Contribution Check (2 consecutive days)",
+        "Contribution Check",
         "PR Sous Chef",
         "Smoke Copilot",
         "Smoke Claude"
       ],
-      "note": "Agents emit add_comment with configured target='*' but omit the required explicit item_number; framework rejects the item and the partial failure reds an otherwise-successful job."
+      "note": "Agents emit add_comment with configured target='*' but omit the required explicit item_number; framework rejects the item and the partial failure reds an otherwise-successful job. Quiet this window."
     },
     {
       "id": "copilot-sdk-driver-failures",
@@ -38,25 +53,38 @@
       "severity": "HIGH",
       "first_seen": "2026-06-02",
       "last_seen": "2026-06-04",
-      "recurrence": "new variant 2026-06-04: copilot-sdk-tool-permission-lockout \u2014 ALL agent tools return 'Permission denied and could not request permission from user', then sdk-driver session.idle 600s timeout (PR Code Quality Reviewer 26968772279). Prior variants: session-auth (06-03), session.idle timeout (06-02).",
+      "recurrence": "ABSENT 2026-06-05: PR Code Quality Reviewer 2/2 success. No sdk-driver lockout/auth/idle-timeout failures this window.",
       "affected": [
         "PR Code Quality Reviewer"
       ],
-      "note": "sdk-driver path keeps producing distinct failure modes (auth-info missing, tool permission lockout, idle timeout). Legacy copilot CLI path remains stable."
+      "note": "sdk-driver path historically produces distinct failure modes (auth-info missing, tool permission lockout, idle timeout). Quiet this window; legacy copilot CLI path remains stable."
+    },
+    {
+      "id": "copilot-agent-job-redden-with-valid-output",
+      "title": "Copilot agent job concludes failure despite producing a valid agent_output report",
+      "status": "OPEN",
+      "severity": "MEDIUM",
+      "new": true,
+      "first_seen": "2026-06-05",
+      "last_seen": "2026-06-05",
+      "recurrence": "new/inconclusive this window",
+      "affected": [
+        "Test Quality Sentinel"
+      ],
+      "note": "Test Quality Sentinel [copilot] run 27036058696 (PR event, 27 turns, 11.6M eff) generated a complete 77/100 report in agent_output.json yet the agent job reddened with no crash marker, error_count=0, 20.6m duration. Root cause not isolated from stdio (log appears truncated to report markdown). Watch for recurrence to distinguish from copilot-sdk-driver class."
     },
     {
       "id": "pr-sous-chef-update-branch-workflows-perm",
       "title": "update_pull_request update_branch blocked: GitHub App lacks 'workflows' permission for PRs touching .lock.yml",
       "status": "OPEN",
       "severity": "LOW",
-      "new": true,
       "first_seen": "2026-06-04",
       "last_seen": "2026-06-04",
-      "recurrence": "new",
+      "recurrence": "not observed 2026-06-05 (PR Sous Chef 5/5 success)",
       "affected": [
         "PR Sous Chef"
       ],
-      "note": "Non-fatal warning this run (PR #36900 / daily-news.lock.yml). update_branch can never succeed for PRs that modify .github/workflows/*.lock.yml without the workflows scope."
+      "note": "Non-fatal warning. update_branch can never succeed for PRs that modify .github/workflows/*.lock.yml without the workflows scope."
     },
     {
       "id": "create_discussion-missing-label-tempid",
@@ -64,8 +92,8 @@
       "status": "OPEN",
       "severity": "LOW",
       "first_seen": "2026-06-04",
-      "last_seen": "2026-06-04",
-      "recurrence": "surfaced by Smoke Copilot probe",
+      "last_seen": "2026-06-05",
+      "recurrence": "re-surfaced by Smoke Copilot probe 2026-06-05",
       "affected": [
         "Smoke Copilot"
       ],
@@ -77,12 +105,13 @@
       "status": "INFO",
       "severity": "INFO",
       "first_seen": "2026-06-04",
-      "last_seen": "2026-06-04",
-      "recurrence": "surfaced by Smoke Claude probe",
+      "last_seen": "2026-06-05",
+      "recurrence": "re-surfaced by Smoke Claude probe 2026-06-05 (also Smoke Codex web-fetch)",
       "affected": [
-        "Smoke Claude"
+        "Smoke Claude",
+        "Smoke Codex"
       ],
-      "note": "Environment note: manifest exposes only agenticworkflows/mcpscripts/safeoutputs/tavily. Smoke test expects serena. Likely config drift, not a regression."
+      "note": "Environment note: manifest exposes only agenticworkflows/mcpscripts/safeoutputs/tavily. Smoke tests expect serena (Claude) and web-fetch MCP (Codex). Likely config drift, not a regression."
     },
     {
       "id": "firewall-block-rate",
@@ -90,11 +119,11 @@
       "status": "OPEN-BY-DESIGN",
       "severity": "INFO",
       "first_seen": "2026-05",
-      "last_seen": "2026-06-04",
-      "recurrence": "21.1% blocked (940/4452) this window; hotspots [aw] Failure Investigator 57%, Smoke Copilot 49%",
+      "last_seen": "2026-06-05",
+      "recurrence": "17.9% blocked (701/3909) this window, DOWN from 21.1% prior. Hotspots: Smoke Copilot 67/157 (43%), Smoke Antigravity 10/12 (83%), Smoke Claude 36/147 (24%)",
       "affected": [
-        "[aw] Failure Investigator (6h)",
         "Smoke Copilot",
+        "Smoke Antigravity",
         "Smoke Claude"
       ],
       "note": "By-design SNI/domain denials; no firewall-caused run failure this window."

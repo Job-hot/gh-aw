@@ -1,35 +1,34 @@
 {
-  "updated": "2026-06-04T21:50Z",
-  "date": "2026-06-04",
-  "partial": true,
-  "latest_window": "2026-06-04 PARTIAL window (17:13-21:18Z, last ~4h; logs tool timed out at 120s, 64/~155 dirs had full run_summary). 57 success / 7 fail = 89.1%. 4 prod/PR failures + 3 by-design smoke probes. KEY: token-budget-429 RECURRED on prod main (Daily Ambient Context Optimizer 25.12M/25M, #35661) after several absent windows; safe-output-partial-failure-intolerance (add_comment target=* no item_number) RECURRED on 2 prod wf (Contribution Check 2nd day + PR Sous Chef); NEW copilot-sdk-tool-permission-lockout (PR Code Quality Reviewer: all tools permission-denied -> session.idle 600s timeout). 31.7M tok / 236.8M eff, fw 940/4452 (21.1%), 0 errors/mcp/missing-data.",
+  "updated": "2026-06-05T21:50Z",
+  "date": "2026-06-05",
+  "partial": false,
+  "latest_window": "2026-06-05 17:55-21:37Z (~4h dense evening cluster; continuation back to 06-04 21:42 returned 0 runs, so this is the full 24h window). 48 success / 5 fail of 53 completed = 90.6% (+1 in-progress audit agent itself). NEW dominant class = MODEL/PARAM CONFIG INCOMPATIBILITY on 2 prod-main schedules (all retries exhausted, 0 tokens): Daily Caveman Optimizer [claude] 400 'does not support the effort parameter'; Daily Cache Strategy Analyzer [codex] 404 'Model not found adelie-alpha-2026-02-19'. ALL prior recurring classes ABSENT/RECOVERED: safe-output target=* (PR Sous Chef 5/5, Contribution Check 1/1 success), copilot-sdk lockout (PR Code Quality Reviewer 2/2 success), token-429 (Daily Ambient 25.37M eff OVER cap but SUCCEEDED). TQS [copilot] valid report yet job reddened. 2 by-design smoke probes (Smoke Claude serena, Smoke Copilot create_discussion). 30.4M tok / 223.0M eff, fw 701/3909 (17.9%, DOWN from 21.1%), 0 mcp/missing-data.",
   "totals": {
-    "r": 64,
-    "s": 57,
-    "f": 7,
-    "in_prog": 0,
-    "rate": 89.1,
-    "tok": 31739017,
-    "eff_tok": 236818261,
-    "$": 19.23,
-    "$_partial": true,
-    "$_note": "claude-measured; copilot/codex EstimatedCost=0",
-    "turns": 769,
-    "min": 533,
-    "errors": 0,
-    "fw_req": 4452,
-    "fw_blk": 940,
-    "fw_blk_pct": 21.1,
+    "r": 53,
+    "s": 48,
+    "f": 5,
+    "in_prog": 1,
+    "rate": 90.6,
+    "tok": 30404314,
+    "eff_tok": 222968388,
+    "aic": 6065.76,
+    "$_note": "AIC (agent inference credits) reported this window; per-engine USD not emitted",
+    "turns": 738,
+    "min": 511,
+    "errors": 5,
+    "fw_req": 3909,
+    "fw_blk": 701,
+    "fw_blk_pct": 17.9,
     "missing_tools": 3,
     "missing_data": 0,
     "mcp_failures": 0,
-    "safe_items": 27
+    "safe_items": 32
   },
   "engines": {
-    "copilot": 45,
+    "copilot": 37,
     "claude": 11,
-    "codex": 4,
-    "gemini": 2,
+    "codex": 3,
+    "gemini": 1,
     "antigravity": 1,
     "pi": 1
   },
@@ -164,6 +163,14 @@
       "tok": 31739017,
       "partial": true,
       "note": "PARTIAL ~4h window (logs timeout). 7 fail: token-budget-429 RECUR prod main + safe-output target=* x2 (Contribution Check/PR Sous Chef) + copilot-sdk-tool-permission-lockout (PR Code Quality Reviewer) + 3 by-design smoke probes."
+    },
+    {
+      "d": "2026-06-05",
+      "r": 53,
+      "s": 48,
+      "rate": 90.6,
+      "tok": 30404314,
+      "note": "full window (~4h evening cluster; continuation returned 0 older runs). 5 fail: NEW model/param config-incompatibility x2 prod-main (Caveman effort-unsupported 400, Cache Strategy model-not-found 404) + TQS copilot agent-job redden w/ valid output + 2 by-design smoke probes. ALL prior recurring classes recovered. Ambient 25.37M eff over-cap-but-survived. fw 17.9%. AIC 6065.76."
     }
   ]
 }

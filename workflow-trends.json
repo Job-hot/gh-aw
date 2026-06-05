@@ -1,36 +1,62 @@
 {
-  "updated": "2026-06-04T21:50Z",
+  "updated": "2026-06-05T21:50Z",
   "workflows": {
+    "Daily Caveman Optimizer": {
+      "last": "2026-06-05",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "model-config-effort-unsupported",
+      "note": "400 'does not support the effort parameter'; all retries exhausted, 0 tokens (claude)"
+    },
+    "Daily Cache Strategy Analyzer": {
+      "last": "2026-06-05",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "model-config-model-not-found",
+      "note": "404 'Model not found adelie-alpha-2026-02-19' (codex); 100% failure hotspot"
+    },
     "Daily Ambient Context Optimizer": {
-      "last": "2026-06-04",
-      "last_concl": "failure",
-      "eff_tok": 25119308,
-      "class": "token-budget-429",
-      "note": "hit 25M cap on prod main"
-    },
-    "Contribution Check": {
-      "last": "2026-06-04",
-      "last_concl": "failure",
-      "eff_tok": 23861144,
-      "class": "safe-output target=*",
-      "note": "2nd consecutive day same failure"
-    },
-    "PR Sous Chef": {
-      "last": "2026-06-04",
-      "last_concl": "failure",
-      "class": "safe-output target=* + update_branch perm"
-    },
-    "PR Code Quality Reviewer": {
-      "last": "2026-06-04",
-      "last_concl": "failure",
-      "class": "copilot-sdk-tool-permission-lockout"
+      "last": "2026-06-05",
+      "last_concl": "success",
+      "eff_tok": 25368017,
+      "class": "token-cap-borderline",
+      "note": "25.37M eff OVER 25M cap but SUCCEEDED (was 429 failure 06-04). Top eff-tok of window."
     },
     "Daily Safe Output Tool Optimizer": {
-      "last": "2026-06-04",
+      "last": "2026-06-05",
       "last_concl": "success",
-      "cost": 3.97,
-      "eff_tok": 18176392,
-      "note": "window cost top (success)"
+      "eff_tok": 21816797,
+      "aic": 442.07,
+      "note": "2nd-highest eff-tok this window (claude), success"
+    },
+    "Test Quality Sentinel": {
+      "last": "2026-06-05",
+      "last_concl": "failure",
+      "eff_tok": 11642530,
+      "class": "copilot-agent-job-redden-with-valid-output",
+      "note": "27 turns, valid 77/100 report in agent_output, no crash, job reddened"
+    },
+    "Contribution Check": {
+      "last": "2026-06-05",
+      "last_concl": "success",
+      "eff_tok": 12546000,
+      "note": "RECOVERED: was safe-output target=* failure 06-04, success 06-05"
+    },
+    "PR Sous Chef": {
+      "last": "2026-06-05",
+      "last_concl": "success",
+      "note": "RECOVERED: 5/5 success this window"
+    },
+    "PR Code Quality Reviewer": {
+      "last": "2026-06-05",
+      "last_concl": "success",
+      "note": "RECOVERED: 2/2 success, sdk-driver lockout absent"
+    },
+    "Matt Pocock Skills Reviewer": {
+      "last": "2026-06-05",
+      "last_concl": "success",
+      "eff_tok": 19905000,
+      "note": "high eff-tok (copilot), execution drift noted by observability"
     }
   }
 }

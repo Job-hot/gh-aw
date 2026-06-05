@@ -1,6 +1,39 @@
 {
-  "updated": "2026-06-04T21:50Z",
+  "updated": "2026-06-05T21:50Z",
   "anomalies": [
+    {
+      "id": "anom-model-config-effort",
+      "date": "2026-06-05",
+      "wf": "Daily Caveman Optimizer",
+      "run": 27040285267,
+      "kind": "model-config-effort-unsupported",
+      "persistence": 1,
+      "escalation": "NEW",
+      "detail": "400 'This model does not support the effort parameter' on prod main schedule; all retries exhausted, 0 tokens. New model/param config-drift failure class.",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "anom-model-config-notfound",
+      "date": "2026-06-05",
+      "wf": "Daily Cache Strategy Analyzer",
+      "run": 27034341100,
+      "kind": "model-config-model-not-found",
+      "persistence": 1,
+      "escalation": "NEW",
+      "detail": "404 'Model not found adelie-alpha-2026-02-19' (codex) on prod main schedule; all retries exhausted. Flagged by observability as 100% failure hotspot.",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "anom-ambient-over-cap-survived",
+      "date": "2026-06-05",
+      "wf": "Daily Ambient Context Optimizer",
+      "run": null,
+      "kind": "effective-token-over-cap-survived",
+      "persistence": 3,
+      "escalation": "WATCH",
+      "detail": "25.37M effective tokens (OVER the 25M cap) yet SUCCEEDED. Top eff-tok of the window. token-budget-429 did not trigger but the workflow sits at the cap edge across multiple windows.",
+      "status": "ACTIVE"
+    },
     {
       "id": "anom-token-429-prod-main",
       "date": "2026-06-04",
@@ -8,9 +41,9 @@
       "run": 26977176731,
       "kind": "token-cap-exceeded",
       "persistence": 2,
-      "escalation": "RE-ESCALATED",
-      "detail": "25.12M/25M effective tokens on prod main schedule; was absent several windows, now back. Top eff-tok of the window.",
-      "status": "ACTIVE"
+      "escalation": "RESOLVED-THIS-WINDOW",
+      "detail": "Was 25.12M/25M 429 failure on 06-04; on 06-05 the same workflow ran 25.37M and succeeded. Folded into anom-ambient-over-cap-survived.",
+      "status": "RESOLVED"
     },
     {
       "id": "anom-sdk-tool-lockout",
@@ -19,9 +52,9 @@
       "run": 26968772279,
       "kind": "sdk-tool-permission-lockout",
       "persistence": 1,
-      "escalation": "NEW",
-      "detail": "All agent tools permission-denied -> 600s session.idle timeout. New failure mode on copilot-sdk path.",
-      "status": "ACTIVE"
+      "escalation": "RESOLVED-THIS-WINDOW",
+      "detail": "06-04 all-tools-denied -> 600s idle timeout. 06-05: PR Code Quality Reviewer 2/2 success. Not observed.",
+      "status": "RESOLVED"
     },
     {
       "id": "anom-safeoutput-targetstar",
@@ -30,9 +63,9 @@
       "run": "26980232370,26979726834",
       "kind": "safe-output-target-star-no-itemnumber",
       "persistence": 3,
-      "escalation": "ONGOING",
-      "detail": "add_comment target=* without item_number reds safe_outputs job; 2 prod wf same window, Contribution Check 2nd consecutive day.",
-      "status": "ACTIVE"
+      "escalation": "RESOLVED-THIS-WINDOW",
+      "detail": "06-04 reddened 2 prod wf. 06-05: PR Sous Chef 5/5 + Contribution Check 1/1 success. Not observed.",
+      "status": "RESOLVED"
     }
   ]
 }

@@ -1,11 +1,29 @@
 {
-  "updated": "2026-06-04T21:50Z",
+  "updated": "2026-06-05T21:50Z",
   "recommendations": [
+    {
+      "id": "rec-model-config-preflight",
+      "linked_issue": "model-param-config-incompatibility",
+      "priority": "HIGH",
+      "text": "Add a model/param preflight validation at compile or activation time: (1) reject or warn when an engine config pins a model that does not exist at the provider endpoint (e.g. codex 'adelie-alpha-2026-02-19' -> 404); (2) reject or strip params the chosen model does not support (e.g. 'effort'/reasoning-effort on a claude model that returns 400 'does not support the effort parameter'). These currently waste an entire prod-main scheduled run (all retries exhausted, 0 tokens) on what is a static config error. Audit Daily Caveman Optimizer and Daily Cache Strategy Analyzer frontmatter for stale model ids/params.",
+      "first_seen": "2026-06-05",
+      "last_seen": "2026-06-05",
+      "recurrence": 1
+    },
+    {
+      "id": "rec-token-cap-guard",
+      "linked_issue": "token-budget-429-effective-tokens",
+      "priority": "HIGH",
+      "text": "Add a soft pre-cap guard for heavy daily-aggregation workflows (Daily Ambient Context Optimizer ran 25.37M eff this window, OVER the 25M cap, and only narrowly succeeded): chunk/stream the context or set a 22-23M effective-token ceiling that triggers graceful summarization before hitting the hard 25M 429. #35661.",
+      "first_seen": "2026-05",
+      "last_seen": "2026-06-05",
+      "recurrence": 4
+    },
     {
       "id": "rec-safeoutput-tolerance",
       "linked_issue": "safe-output-partial-failure-intolerance",
       "priority": "HIGH",
-      "text": "Make the safe_outputs job tolerant of per-item failures: when the agent succeeded and \u22651 item landed, exit non-red with a partial-success summary instead of failing the whole job on a single rejected item. Two recurrence-heavy variants: (a) add_comment target='*' without item_number \u2014 validate/auto-skip or surface as a warning; (b) reject before run so the agent can self-correct.",
+      "text": "Make the safe_outputs job tolerant of per-item failures: when the agent succeeded and >=1 item landed, exit non-red with a partial-success summary instead of failing the whole job on a single rejected item. Quiet this window but structurally unresolved.",
       "first_seen": "2026-06-02",
       "last_seen": "2026-06-04",
       "recurrence": 4
@@ -13,47 +31,38 @@
     {
       "id": "rec-addcomment-targetstar-guidance",
       "linked_issue": "safe-output-partial-failure-intolerance",
-      "priority": "HIGH",
-      "text": "For add_comment with target='*', require/inject the item_number at emit-time or give the agent a clearer schema hint. Contribution Check + PR Sous Chef both emit target='*' add_comment with no item_number repeatedly.",
+      "priority": "MEDIUM",
+      "text": "For add_comment with target='*', require/inject item_number at emit-time or give the agent a clearer schema hint. Not triggered 2026-06-05 but fix not yet shipped.",
       "first_seen": "2026-06-03",
       "last_seen": "2026-06-04",
       "recurrence": 2
     },
     {
-      "id": "rec-token-cap-guard",
-      "linked_issue": "token-budget-429-effective-tokens",
-      "priority": "HIGH",
-      "text": "Add a soft pre-cap guard for heavy daily-aggregation workflows (e.g. Daily Ambient Context Optimizer): chunk/stream the context or set a 22-23M effective-token budget ceiling that triggers graceful summarization before hitting the hard 25M 429. #35661.",
-      "first_seen": "2026-05",
-      "last_seen": "2026-06-04",
-      "recurrence": 3
-    },
-    {
       "id": "rec-sdk-driver-stability",
       "linked_issue": "copilot-sdk-driver-failures",
-      "priority": "HIGH",
-      "text": "Investigate copilot-sdk-driver tool-permission lockout: when the headless session has no tool permissions, fail fast with a clear error instead of looping until the 600s session.idle timeout. Add a startup self-check that aborts within seconds if all tools return permission-denied.",
+      "priority": "MEDIUM",
+      "text": "Investigate copilot-sdk-driver tool-permission lockout: fail fast with a clear error instead of looping until the 600s session.idle timeout. Quiet 2026-06-05 (PR Code Quality Reviewer 2/2 success) but keep the startup self-check on the roadmap.",
       "first_seen": "2026-06-02",
       "last_seen": "2026-06-04",
       "recurrence": 3
     },
     {
-      "id": "rec-sous-chef-workflows-perm",
-      "linked_issue": "pr-sous-chef-update-branch-workflows-perm",
-      "priority": "LOW",
-      "text": "For PR Sous Chef, skip update_branch when the PR modifies .github/workflows/** (App lacks workflows scope) instead of attempting and warning.",
-      "first_seen": "2026-06-04",
-      "last_seen": "2026-06-04",
+      "id": "rec-copilot-agent-job-redden",
+      "linked_issue": "copilot-agent-job-redden-with-valid-output",
+      "priority": "MEDIUM",
+      "text": "Investigate why Test Quality Sentinel [copilot] reddened the agent job despite producing a complete valid agent_output report (27 turns, no crash, error_count=0). Capture full harness stdio (the log appeared truncated to report markdown) to isolate the nonzero exit. Distinguish from the copilot-sdk-driver class.",
+      "first_seen": "2026-06-05",
+      "last_seen": "2026-06-05",
       "recurrence": 1
     },
     {
       "id": "rec-create-discussion-fields",
       "linked_issue": "create_discussion-missing-label-tempid",
       "priority": "MEDIUM",
-      "text": "Add label + temporary_id support to the create_discussion safe-output surface (requested by Smoke Copilot probe).",
+      "text": "Add label + temporary_id support to the create_discussion safe-output surface (re-requested by Smoke Copilot probe 2026-06-05).",
       "first_seen": "2026-06-04",
-      "last_seen": "2026-06-04",
-      "recurrence": 1
+      "last_seen": "2026-06-05",
+      "recurrence": 2
     }
   ]
 }
