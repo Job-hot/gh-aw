@@ -233,5 +233,11 @@
     "total_tokens": 93381234,
     "total_runs": 91,
     "total_action_minutes": 888.0
+  },
+  {
+    "date": "2026-06-05",
+    "total_tokens": 87294844,
+    "total_runs": 95,
+    "total_action_minutes": 942
   }
 ]
