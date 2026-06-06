@@ -80,6 +80,9 @@ func TestRateLimitResourceIsBelowThreshold(t *testing.T) {
 
 // jsonInt is a helper that converts an int64 to its JSON number representation.
 func jsonInt(n int64) string {
-	b, _ := json.Marshal(n)
+	b, err := json.Marshal(n)
+	if err != nil {
+		return ""
+	}
 	return string(b)
 }
