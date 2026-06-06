@@ -1,23 +1,24 @@
 # Copilot Session Insights — repo memory
 
-## 2026-06-05 snapshot
-- 50 sessions; **8% completion (4/50)** — flat vs 06-04; 2nd day at floor; below 7d avg 14.0%
-- **92% action_required (46/50)**; 0 failures/skips
-- **Symmetry reversal vs 06-04 bifurcation**: all 3 branches scored ≥1 success → new pattern `branch_symmetric_success_distribution` (yaml-outputs 1/21, close-pr 1/18, cost-mgmt 2/11)
-- success_duration_floor holds (4.82/7.9/8.9/15min, all ≥4.82); 46 zero-dur sweeps
-- Provenance: cloud-agent 15m, 2× Addressing-comment-PR#37072, Copilot-Code-Review 4.82m
-- Concentration: 3 branches; top 42%, top-3 100% (all copilot/*)
-- Orphans: **0**; 2 in-progress runs both on main; 4 open PRs all Copilot-assigned, 0 PR gates → orphaned_rate 0% (vs 40% baseline)
-- Conversation logs empty 13th+ day (OAuth) — behavioral analysis blocked
-- Experimental: `Branch-Symmetric Success Distribution`
+## 2026-06-06 snapshot
+- 50 sessions; **2% completion (1/50)** — NEW non-zero window low; down from 8% (06-05); 7d avg fell 14.0%→**10.6%**
+- **98% action_required (49/50)**; 0 failures, 0 skips — pure gate-sweep day
+- **SUSTAINED COMPLETION FLOOR (new pattern)**: 4 consecutive days ≤8% (06-03..06-06) — `recovery_regression_oscillation` has flattened into a low-productivity regime
+- Single success = `Running Copilot cloud agent` @13.97m on copilot/aw-failures-doc-healer-model-inventory-sentrux → confirms `copilot_cloud_agent_reliability` + `success_duration_floor` (≥~14m)
+- bimodal holds: 49 sweeps ~0min + 1 substantive @13.97m
+- Synchronized burst: all 50 in 15-min window 05:56–06:11; 5 copilot/* branches × ~10 CI gate workflows (Q, Agentic Commands, Smoke CI, CJS, CGO)
+- Concentration: top fix-safe-output-health-monitor=15 (30%), top-2 56%, top-3 78%; all 5 branches copilot/*
+- Orphans: **0**; 9 open PRs ALL Copilot-assigned; only 1 in-progress run repo-wide (this analysis workflow on main); 0 PR gates → orphaned_rate 0% (vs 40% baseline, healthy)
+- Conversation logs empty **14th+ day** — behavioral/loop/context analysis still blocked
+- Experimental: none (standard run, roll=55)
 
 ## Active patterns
-- success_duration_floor: robust (all successes ≥4.82 min)
-- branch_symmetric_success_distribution: NEW (06-05), inverse of 06-04 bifurcation
-- inverse_gate_count_to_conclusiveness: reconfirmed (Copilot-assigned ⇒ never orphaned)
-- recovery_regression_oscillation: completion oscillates 4–46%, no trend
-- conversation_log_fetch_failure: 13th+ day (longest unresolved risk)
+- sustained_completion_floor: NEW (06-03..06-06), supersedes oscillation framing
+- success_duration_floor: robust (all successes ≥~14min on cloud-agent days)
+- copilot_cloud_agent_reliability: only workflow producing successes
+- inverse_gate_count_to_conclusiveness: Copilot-assigned ⇒ never orphaned
+- conversation_log_fetch_failure: 14th+ day (longest unresolved risk)
 
 ## Files
-- cache history.json — 17 analyses; patterns.json — 16 patterns
-- history-entry-2026-06-05.json — today's entry
+- cache history.json — 18 analyses; patterns.json — 17 patterns
+- history-entry-2026-06-06.json — today's entry
