@@ -1,10 +1,10 @@
-## PR Triage Summary - 2026-06-06
+## PR Triage Summary - 2026-06-06 (Run 2)
 
 ### Status
 **No fork PRs to triage**
 
 ### Details
-- **Run ID**: 27056031198
+- **Run ID**: 27062608083
 - **Open Agent PRs Found**: 9 (all branch-based)
 - **Fork PRs Found**: 0
 - **PRs Triaged**: 0
@@ -27,4 +27,5 @@ This triage agent only processes PRs opened from forks (head_repo ≠ base_repo)
 ### Trend
 - 2026-05-22: 0 fork PRs (4 branch PRs)
 - 2026-06-03: 0 fork PRs (4 branch PRs)
-- 2026-06-06: 0 fork PRs (9 branch PRs)
+- 2026-06-06 (run 1, 07:21Z): 0 fork PRs (9 branch PRs)
+- 2026-06-06 (run 2, 12:45Z): 0 fork PRs (9 branch PRs) — no change
