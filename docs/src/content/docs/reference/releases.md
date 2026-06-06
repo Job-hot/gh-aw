@@ -39,7 +39,7 @@ gh extension install github/gh-aw@v0.64.5  # pinned version
 gh aw version                   # Show currently installed version
 
 gh extension upgrade gh-aw      # Upgrade to the latest release
-gh aw upgrade --pre-releases    # Also consider newer pre-releases
+gh aw upgrade --pre-release     # Install the latest pre-release build
 gh extension install github/gh-aw --force --pin v0.75.3-beta.1  # Install an exact pre-release tag
 ```
 
