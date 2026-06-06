@@ -197,7 +197,7 @@ function isModelAvailableInReflectData(model, reflectData) {
     if (String(endpoint?.provider || "").toLowerCase() !== "copilot") {
       continue;
     }
-    if (!endpoint || endpoint.configured !== true || !Array.isArray(endpoint.models)) {
+    if (endpoint.configured !== true || !Array.isArray(endpoint.models)) {
       continue;
     }
     if (endpoint.models.includes(normalizedModel)) {
@@ -244,7 +244,8 @@ function validateConfiguredCopilotModelBeforeLaunch(options) {
     return { ok: true };
   }
 
-  const replacementModel = RETIRED_COPILOT_MODELS[configuredModel.toLowerCase()];
+  const normalizedModelKey = configuredModel.toLowerCase();
+  const replacementModel = Object.prototype.hasOwnProperty.call(RETIRED_COPILOT_MODELS, normalizedModelKey) ? RETIRED_COPILOT_MODELS[normalizedModelKey] : "";
   if (replacementModel) {
     return {
       ok: false,
