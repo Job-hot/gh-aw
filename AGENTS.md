@@ -23,9 +23,10 @@ Everything else should be loaded **lazily** through skills only when needed.
 
 1. If you changed files, use `report_progress` to commit and push.
 2. Before `report_progress`, run `make agent-report-progress` and ensure it passes.
-3. After Go changes, run `make fmt`.
-4. After workflow markdown changes (`.md` under `.github/workflows/`), run `make recompile`.
-5. Do not add `.lock.yml` files to `.gitignore`.
+3. **Copaldarn-specific mandatory requirement:** Before finishing a task and returning control to the user, the Copaldarn agent must run `make agent-report-progress` and verify formatting, linting, and lightweight tests all pass cleanly.
+4. After Go changes, run `make fmt`.
+5. After workflow markdown changes (`.md` under `.github/workflows/`), run `make recompile`.
+6. Do not add `.lock.yml` files to `.gitignore`.
 
 ## Lazy Skill Loading Policy
 
