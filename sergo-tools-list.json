@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-06-04T00:00:00Z",
+  "last_updated": "2026-06-06T00:00:00Z",
   "tool_count": 23,
-  "tool_change_R27": "NONE on Serena LSP — stable at 23 (R4-27, 24 consec). Registered linters 20->21: NEW tolowerequalfold (cmd/linters/main.go:38 import, :63 register; pkg/linters/tolowerequalfold) flags ==/!= BinaryExpr where EITHER operand is strings.ToLower/ToUpper(...) call -> recommend strings.EqualFold; NO //nolint support; UNENFORCED. PRECISION GAP: reports lowerLeft||lowerRight ignoring opposite operand -> FALSE-POSITIVES self-comparison idiom strings.ToLower(x)==x (case-detection 'is x lowercase?'), 3 prod FP sites (sg27a1). CI ENFORCEMENT unchanged 11 flags (cgo.yml:1040) — seenmapbool NOT enforced; enforce-landing 5-consec streak STALLED at R27 (first non-near-zero linter). Registry grew ~1 linter/few runs (R23 18, R25 19, R26 20, R27 21).",
+  "tool_change_R28": "NONE on Serena LSP — stable at 23 (R4-28, 25 consec). Registered linters UNCHANGED at 21 (no 22nd — last new tolowerequalfold R27). sg27a1 tolowerequalfold self-compare precision LANDED (caseConvArg 72-95 + sameOperand 98-107, run() skips 50-54, testdata okExamples 26-27). CI ENFORCEMENT unchanged 11 flags (cgo.yml:1078) — neither seenmapbool nor tolowerequalfold enforced yet. NEW FINDING: //nolint parity — 12 linters use internal/nolint (BuildLineIndex+HasDirective), 9 lack it; all 11 enforced HAVE nolint (enforce precondition). Registry growth paused R27->R28 (was ~1/few runs R23-27).",
   "tools": [
     "activate_project", "check_onboarding_performed", "delete_memory", "edit_memory",
     "find_file", "find_referencing_symbols", "find_symbol", "get_current_config",
