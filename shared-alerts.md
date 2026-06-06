@@ -29,3 +29,14 @@ _None resolved today_
 - **CI blockage**: CJS + CGO both 100% failing — affects ALL PR validation.
 - **Health score trending down**: 82 → 81 → 78 → 74 (4-day drop). No resolutions, new failures accumulating.
 - **Monitoring gap**: Safe Output Health Monitor itself failing → observability degraded.
+
+---
+# Agent Performance — Update 2026-06-06T13:02Z
+
+## Coordination Notes (from agent-performance-analyzer)
+- **CJS (#36410):** 85% success in latest runs (was P1). WH: recommend confirming resolution and closing.
+- **CGO (#35028):** 67% success (improving from 0%). Still 2 failures in 12 runs.
+- **Safe Outputs P0:** CONFIRMED RESOLVED (PR #37299 merged June 6).
+- **copilot-swe-agent:** 26/30 PR merges this week. Healthy throughput. Chaos-test stall resolved.
+- **Token guard #37145:** Still unimplemented. Token exhaustion cluster (4 workflows) now 4+ days static — escalate if no action by June 8.
+- **Doc Build - Deploy:** 62% success (3/8 failures). Not previously tracked. Monitor.

@@ -1,76 +1,56 @@
 # Agent Performance Analyzer — Latest Run
 
-**Timestamp:** 2026-06-02T14:03:32Z  
+**Timestamp:** 2026-06-06T13:02:11Z  
 **Workflow:** Agent Performance Analyzer  
-**Run ID:** 26824629412  
-**Run URL:** https://github.com/github/gh-aw/actions/runs/26824629412
+**Run ID:** 27062936303  
+**Run URL:** https://github.com/github/gh-aw/actions/runs/27062936303
 
 ## Executive Summary
 
-- **Agents analyzed:** 23 active workflow groups (~237 total workflows)
-- **Quality score:** 72/100 (↓1 from 73 — new failures offset improvements)
-- **Effectiveness:** 66/100 (↓1 — Agentic Commands degraded further)
-- **Ecosystem health:** 81/100 (unchanged — CJS P1 still open)
+- **Agents analyzed:** 26 active workflow types (100 runs)
+- **Quality score:** 70/100 (↓2 from 72)
+- **Effectiveness:** 64/100 (↓2 from 66)
+- **Ecosystem health:** 74/100 (↓7 from 81 — 4-day declining trend)
 
-## Key Changes Since Yesterday (June 1)
+## Key Events This Period (June 2–6)
 
-### Improvements ✅
-- **Step Name Alignment** (#36062): PASSED today — likely resolved, monitor
-- **Agentic Maintenance**: 75% ok (4 runs) — healthy
-- **copilot-swe-agent**: 22 merged PRs recently, 5 open WIP PRs — high throughput
+### Resolved ✅
+- **Safe Outputs MCP P0** (June 6): `create_pull_request` path bug fixed PR #37299. RESOLVED.
+- **CJS typecheck** (#36410): Was 0% P1, now **85% success (11/13 runs)** — LIKELY RESOLVED. WH: confirm closure.
 
-### New Issues / Regressions 🚨
-- **CJS typecheck P1** (#36410, filed June 2): Still 100% failing (4 failed + more cancelled)
-- **CGO** (2 runs, 0% success, 2 failures): continuing 100% failure
-- **Typist - Go Type Analysis failed** (#36443): new failure report
-- **Failure Investigator (6h) failed** (#36424): recurring failure reporter
-- **Q workflow**: 0% ok in 18 runs — fully blocked (pattern unchanged)
-- **Agentic Commands**: 22% ok in 18 runs — degraded from prior period
+### Improving ⬆️
+- **CGO unit tests** (#35028): Was 0%, now 67% success (8/12 runs). Still 2 failures.
 
-## Critical Findings (No Change — Do Not Re-File)
+### New Issues (Do Not Re-File)
+- **max-ai-credits migration** (#37282, #37284): 6 workflows using deprecated `max-effective-tokens`. Migration tracked.
+- All other critical issues unchanged from shared-alerts.md.
 
-### P1 - High Priority
-1. **CJS typecheck broken** (#36410, filed June 2): 100% fail since June 1 ~23:32Z
-2. **CGO unit tests** (#35028): Escalated to 100% failure (20+ runs)
-3. **Q workflow**: 0% success rate (18 runs, all cancelled) — fully blocked
-4. **LintMonster backlog** (#36050): intermittent failures
-5. **Failure-reporters duplication** (#35984): 60% duplicate rate
+## Agent Rankings
 
-### P2 - Watch
-- **Token budget exhaustion**: jsweep (#36183) + daily-compiler (#36172)
-- **chaos-test PR stall**: 10+ open PRs, 0 merges
-- **Agentic Commands degradation**: 22% ok (18 runs) — was higher previously
-- **Typist workflow failing**: #36443 (new)
+### Top Performers
+1. copilot-swe-agent (Q:90, E:92) — 26/30 PR merges, 8 WIP PRs, major platform fixes
+2. Agentic Maintenance (Q:85, E:90) — 100% success, proactive migrations
+3. License Compliance Check (Q:83, E:88) — 100% success (3/3)
+4. Auto-Close Parent Issues (Q:80, E:85) — 100% success (2/2)
+5. Smoke CI (Q:78, E:82) — 93% success (14/15)
 
-## Top Performers (unchanged)
-
-1. spec-enforcer (85/100 quality, 88/100 effectiveness)
-2. copilot-swe-agent (84/100 quality, 82/100 effectiveness, 22 merged PRs vs 8 open)
-3. License Compliance Check (100% success rate)
-4. Auto-Close Parent Issues (100% success rate)
+### Needing Improvement
+- AI Moderator (Q:35, E:20) — 0% success, no fix path (persistent)
+- Safe Output Health Monitor (Q:30, E:25) — token budget, #37264 OPEN
+- Daily BYOK Ollama Test (E:15) — auth failures, #37211 OPEN
+- Doc Build - Deploy (E:62) — 62% success (3/8 failures), watch list
 
 ## Pattern Detection
 
-- **blocked**: Q (0%, 18 runs), CGO (0%, 5 runs), CJS (0%, 6 runs), AI Moderator (0%)
-- **degraded**: Agentic Commands (22%, 18 runs), Smoke CI (9%, 11 runs)
-- **over-creation/stall**: chaos-test flooding (10+ PRs, 0 merges)
-- **token-exhaustion**: jsweep + daily-compiler (systemic)
-- **healthy**: copilot-swe-agent, License Compliance, Auto-Close, Agentic Maintenance
+- **Productive:** copilot-swe-agent fast iteration, Agentic Maintenance proactive hygiene
+- **Token exhaustion cluster (static):** Safe Output Health Monitor + jsweep + Daily Compiler + Firewall Logs — 4 days no improvement
+- **Auth config cluster:** Doc Healer + Model Inventory + BYOK Ollama — #37039 fix insufficient; #37271 filed
+- **Failure reporter duplication** (#35984): 60% duplicate rate — unresolved
 
-## Issues Created This Run
-
-None — all critical issues already tracked per Do Not Re-File list.
+## No New Issues Created
+All critical issues already tracked in shared-alerts.md.
 
 ## Coordination Notes
-
-### For Campaign Manager
-- chaos-test stall persists (10+ open PRs, 0 merges) — should pause or escalate
-- copilot-swe-agent throughput high (22 merged), consider assigning more complex tasks
-- Typist workflow (#36443) needs investigation — new failure
-
-### For Workflow Health Manager
-- CJS typecheck P1 (#36410) filed June 2 — track resolution
-- CGO escalating — auto-notifier #35028 open
-- Step Name Alignment possibly resolved — confirm and close #36062/#36187 if confirmed
-
-Last updated: 2026-06-02T14:03:32Z by agent-performance-analyzer
+- For WH: CJS at 85% — recommend closing/updating #36410
+- For Campaign Manager: copilot-swe-agent throughput high (26 merges) — consider more complex tasks
+- Token guard #37145 still not implemented — token exhaustion cluster growing risk
