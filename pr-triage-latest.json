@@ -1,15 +1,20 @@
 {
-  "run_date": "2026-06-03T08:03:46Z",
-  "run_id": "26871722704",
+  "run_date": "2026-06-06T07:21:47Z",
+  "run_id": "27056031198",
   "fork_prs": 0,
-  "agent_prs_found": 4,
+  "agent_prs_found": 9,
   "prs_found": [
-    {"number": 36587, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Refactor duplicated markdown body/footer assembly into shared helper"},
-    {"number": 36584, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Implement `experiments.notify` notification routing in daily experiment reporting"},
-    {"number": 36583, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Add `license` string support in `aw.yml` manifest parsing and schema"},
-    {"number": 36549, "author": "app/copilot-swe-agent", "is_fork": false, "title": "Refactor copilot SDK driver into self-contained Node program"}
+    {"number": 37273, "author": "Copilot", "is_fork": false, "title": "feat: track cap-exceeded failures via centralized rollup issue, raise cap to 50/24h"},
+    {"number": 37272, "author": "Copilot", "is_fork": false, "title": "Prevent safe-outputs startup regressions in daily workflows"},
+    {"number": 37269, "author": "Copilot", "is_fork": false, "title": "Increase per-run AI budget for Agentic Token Optimizer to prevent ET cap aborts"},
+    {"number": 37268, "author": "Copilot", "is_fork": false, "title": "fix(code-simplifier): eliminate python3 bash-policy failures, fix jq split bug, add guardrails"},
+    {"number": 37265, "author": "Copilot", "is_fork": false, "title": "Update safe-output health failure messaging to AI Credits"},
+    {"number": 37257, "author": "Copilot", "is_fork": false, "title": "Replace test set-style map[string]bool usage with map[string]struct{}"},
+    {"number": 37187, "author": "Copilot", "is_fork": false, "title": "Route centralized command dispatches to the triggering PR branch"},
+    {"number": 37133, "author": "Copilot", "is_fork": false, "title": "feat: two-phase Copilot SDK driver for threat detection job"},
+    {"number": 36937, "author": "Copilot", "is_fork": false, "title": "Prevent stale-base signed replay from synthesizing unrelated changes; enforce policy on GraphQL payload"}
   ],
-  "notes": "4 open bot-authored PRs found but all originate from internal branches (isCrossRepository=false). Fork-only policy excludes all. No PRs to triage.",
+  "notes": "9 open bot-authored PRs found but all originate from internal branches (isCrossRepository=false). Fork-only policy excludes all. No PRs to triage.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
