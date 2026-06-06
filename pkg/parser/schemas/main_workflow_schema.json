@@ -1695,6 +1695,11 @@
                         }
                       ]
                     },
+                    "max-age-days": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "description": "Only count matches created within the last N days. When omitted, no age filter is applied."
+                    },
                     "scope": {
                       "type": "string",
                       "enum": ["none"],
@@ -1702,10 +1707,10 @@
                     }
                   },
                   "additionalProperties": false,
-                  "description": "Skip-if-match configuration object with query, maximum match count, and optional scope. For custom authentication use the top-level on.github-token or on.github-app fields."
+                  "description": "Skip-if-match configuration object with query, optional maximum match count, optional max-age-days filter, and optional scope. For custom authentication use the top-level on.github-token or on.github-app fields."
                 }
               ],
-              "description": "Conditionally skip workflow execution when a GitHub search query has matches. Can be a string (query only, implies max=1) or an object with 'query', optional 'max', and 'scope' fields. Use top-level on.github-token or on.github-app for custom authentication."
+              "description": "Conditionally skip workflow execution when a GitHub search query has matches. Can be a string (query only, implies max=1) or an object with 'query', optional 'max', optional 'max-age-days', and 'scope' fields. Use top-level on.github-token or on.github-app for custom authentication."
             },
             "skip-if-no-match": {
               "oneOf": [

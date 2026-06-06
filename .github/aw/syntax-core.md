@@ -36,6 +36,7 @@ The YAML frontmatter supports these fields:
       skip-if-match:
         query: "is:issue is:open label:in-progress"
         max: 3      # Skip if 3 or more matches (default: 1)
+        max-age-days: 7 # Optional: only count matches created within the last N days
         scope: none # Optional: disable automatic repo:owner/repo scoping for org-wide queries
       ```
 

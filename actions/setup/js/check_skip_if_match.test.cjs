@@ -49,6 +49,7 @@ describe("check_skip_if_match.cjs", () => {
       GH_AW_SKIP_QUERY: process.env.GH_AW_SKIP_QUERY,
       GH_AW_WORKFLOW_NAME: process.env.GH_AW_WORKFLOW_NAME,
       GH_AW_SKIP_MAX_MATCHES: process.env.GH_AW_SKIP_MAX_MATCHES,
+      GH_AW_SKIP_MAX_AGE_DAYS: process.env.GH_AW_SKIP_MAX_AGE_DAYS,
     };
     const scriptPath = path.join(process.cwd(), "check_skip_if_match.cjs");
     checkSkipIfMatchScript = fs.readFileSync(scriptPath, "utf8");
@@ -69,6 +70,11 @@ describe("check_skip_if_match.cjs", () => {
       process.env.GH_AW_SKIP_MAX_MATCHES = originalEnv.GH_AW_SKIP_MAX_MATCHES;
     } else {
       delete process.env.GH_AW_SKIP_MAX_MATCHES;
+    }
+    if (originalEnv.GH_AW_SKIP_MAX_AGE_DAYS !== undefined) {
+      process.env.GH_AW_SKIP_MAX_AGE_DAYS = originalEnv.GH_AW_SKIP_MAX_AGE_DAYS;
+    } else {
+      delete process.env.GH_AW_SKIP_MAX_AGE_DAYS;
     }
   });
 
@@ -247,6 +253,31 @@ describe("check_skip_if_match.cjs", () => {
       expect(mockCore.setFailed).toHaveBeenCalledWith(expect.stringContaining("must be a positive integer"));
       expect(mockCore.setOutput).not.toHaveBeenCalled();
     });
+
+    describe("max age parameter", () => {
+      it("should append created cutoff qualifier when GH_AW_SKIP_MAX_AGE_DAYS is set", async () => {
+        process.env.GH_AW_SKIP_QUERY = 'is:issue is:open in:title "[file-diet]"';
+        process.env.GH_AW_WORKFLOW_NAME = "test-workflow";
+        process.env.GH_AW_SKIP_MAX_AGE_DAYS = "7";
+        mockGithub.rest.search.issuesAndPullRequests.mockResolvedValue({ data: { total_count: 0, items: [] } });
+
+        await eval(`(async () => { ${checkSkipIfMatchScript}; await main(); })()`);
+
+        const callArgs = mockGithub.rest.search.issuesAndPullRequests.mock.calls[0][0];
+        expect(callArgs.q).toMatch(/created:>=\d{4}-\d{2}-\d{2}$/);
+      });
+
+      it("should fail with non-numeric max age value", async () => {
+        process.env.GH_AW_SKIP_QUERY = "is:issue is:open";
+        process.env.GH_AW_WORKFLOW_NAME = "test-workflow";
+        process.env.GH_AW_SKIP_MAX_AGE_DAYS = "invalid";
+
+        await eval(`(async () => { ${checkSkipIfMatchScript}; await main(); })()`);
+
+        expect(mockCore.setFailed).toHaveBeenCalledWith(expect.stringContaining("GH_AW_SKIP_MAX_AGE_DAYS must be a positive integer"));
+        expect(mockCore.setOutput).not.toHaveBeenCalled();
+      });
+    });
   });
 });
 
@@ -276,6 +307,7 @@ describe("check_skip_if_match.cjs - scope support", () => {
     delete process.env.GH_AW_SKIP_QUERY;
     delete process.env.GH_AW_WORKFLOW_NAME;
     delete process.env.GH_AW_SKIP_MAX_MATCHES;
+    delete process.env.GH_AW_SKIP_MAX_AGE_DAYS;
     delete process.env.GH_AW_SKIP_SCOPE;
   });
 

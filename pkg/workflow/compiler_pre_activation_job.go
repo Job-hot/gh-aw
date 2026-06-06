@@ -122,6 +122,9 @@ func (c *Compiler) buildPreActivationJob(data *WorkflowData, needsPermissionChec
 		steps = append(steps, fmt.Sprintf("          GH_AW_SKIP_QUERY: %q\n", data.SkipIfMatch.Query))
 		steps = append(steps, fmt.Sprintf("          GH_AW_WORKFLOW_NAME: %q\n", workflowName))
 		steps = append(steps, fmt.Sprintf("          GH_AW_SKIP_MAX_MATCHES: \"%d\"\n", data.SkipIfMatch.Max))
+		if data.SkipIfMatch.MaxAgeDays > 0 {
+			steps = append(steps, fmt.Sprintf("          GH_AW_SKIP_MAX_AGE_DAYS: \"%d\"\n", data.SkipIfMatch.MaxAgeDays))
+		}
 		if data.SkipIfMatch.Scope != "" {
 			steps = append(steps, fmt.Sprintf("          GH_AW_SKIP_SCOPE: %q\n", data.SkipIfMatch.Scope))
 		}

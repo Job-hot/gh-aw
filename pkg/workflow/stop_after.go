@@ -257,6 +257,27 @@ func (c *Compiler) extractSkipIfMatchFromOn(frontmatter map[string]any, workflow
 					}
 				}
 
+				// Extract max-age-days value (optional, defaults to 0 = disabled)
+				maxAgeDays := 0
+				if maxAgeRaw, hasMaxAge := skip["max-age-days"]; hasMaxAge {
+					switch d := maxAgeRaw.(type) {
+					case int:
+						maxAgeDays = d
+					case int64:
+						maxAgeDays = int(d)
+					case uint64:
+						maxAgeDays = int(d)
+					case float64:
+						maxAgeDays = int(d)
+					default:
+						return nil, fmt.Errorf("skip-if-match 'max-age-days' field must be an integer, got %T. Example: max-age-days: 7", maxAgeRaw)
+					}
+
+					if maxAgeDays < 1 {
+						return nil, fmt.Errorf("skip-if-match 'max-age-days' field must be at least 1, got %d", maxAgeDays)
+					}
+				}
+
 				// Extract scope (auth is now configured via top-level on.github-app / on.github-token)
 				scope, err := extractSkipIfScope(skip, "skip-if-match")
 				if err != nil {
@@ -264,9 +285,10 @@ func (c *Compiler) extractSkipIfMatchFromOn(frontmatter map[string]any, workflow
 				}
 
 				return &SkipIfMatchConfig{
-					Query: queryStr,
-					Max:   maxVal,
-					Scope: scope,
+					Query:      queryStr,
+					Max:        maxVal,
+					MaxAgeDays: maxAgeDays,
+					Scope:      scope,
 				}, nil
 			default:
 				return nil, fmt.Errorf("skip-if-match value must be a string or object, got %T. Examples:\n  skip-if-match: \"is:issue is:open\"\n  skip-if-match:\n    query: \"is:pr is:open\"\n    max: 3", skipIfMatch)

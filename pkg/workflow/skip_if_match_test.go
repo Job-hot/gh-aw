@@ -286,6 +286,41 @@ This workflow uses object format but omits max (defaults to 1).
 		}
 	})
 
+	t.Run("skip_if_match_object_format_with_max_age_days", func(t *testing.T) {
+		workflowContent := `---
+on:
+  workflow_dispatch:
+  skip-if-match:
+    query: "is:issue is:open in:title \"[file-diet]\""
+    max-age-days: 7
+engine: claude
+---
+
+# Skip If Match Object Format With Max Age
+`
+		workflowFile := filepath.Join(tmpDir, "skip-object-max-age-workflow.md")
+		if err := os.WriteFile(workflowFile, []byte(workflowContent), 0644); err != nil {
+			t.Fatal(err)
+		}
+
+		err := compiler.CompileWorkflow(workflowFile)
+		if err != nil {
+			t.Fatalf("Compilation failed: %v", err)
+		}
+
+		lockFile := stringutil.MarkdownToLockFile(workflowFile)
+		lockContent, err := os.ReadFile(lockFile)
+		if err != nil {
+			t.Fatalf("Failed to read lock file: %v", err)
+		}
+
+		lockContentStr := string(lockContent)
+
+		if !strings.Contains(lockContentStr, `GH_AW_SKIP_MAX_AGE_DAYS: "7"`) {
+			t.Error("Expected GH_AW_SKIP_MAX_AGE_DAYS environment variable with value 7")
+		}
+	})
+
 	t.Run("skip_if_match_with_scope_none", func(t *testing.T) {
 		workflowContent := `---
 on:

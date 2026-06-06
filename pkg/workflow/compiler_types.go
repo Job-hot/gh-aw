@@ -420,9 +420,10 @@ func (c *Compiler) GetSharedActionCache() *ActionCache {
 
 // SkipIfMatchConfig holds the configuration for skip-if-match conditions
 type SkipIfMatchConfig struct {
-	Query string // GitHub search query to check before running workflow
-	Max   int    // Maximum number of matches before skipping (defaults to 1)
-	Scope string // Scope for the query: "none" disables auto repo:owner/repo scoping
+	Query      string // GitHub search query to check before running workflow
+	Max        int    // Maximum number of matches before skipping (defaults to 1)
+	MaxAgeDays int    // Optional maximum item age in days; 0 disables age filtering
+	Scope      string // Scope for the query: "none" disables auto repo:owner/repo scoping
 	// Auth (github-token / github-app) is taken from on.github-token / on.github-app at the top level.
 }
 

@@ -7,7 +7,7 @@ const { buildSearchQuery } = require("./check_skip_if_helpers.cjs");
 const { writeDenialSummary } = require("./pre_activation_summary.cjs");
 
 async function main() {
-  const { GH_AW_SKIP_QUERY: skipQuery, GH_AW_WORKFLOW_NAME: workflowName, GH_AW_SKIP_MAX_MATCHES: maxMatchesStr = "1", GH_AW_SKIP_SCOPE: skipScope } = process.env;
+  const { GH_AW_SKIP_QUERY: skipQuery, GH_AW_WORKFLOW_NAME: workflowName, GH_AW_SKIP_MAX_MATCHES: maxMatchesStr = "1", GH_AW_SKIP_MAX_AGE_DAYS: maxAgeDaysStr, GH_AW_SKIP_SCOPE: skipScope } = process.env;
 
   if (!skipQuery) {
     core.setFailed(`${ERR_CONFIG}: Configuration error: GH_AW_SKIP_QUERY not specified.`);
@@ -25,10 +25,27 @@ async function main() {
     return;
   }
 
+  let maxAgeDays = 0;
+  if (typeof maxAgeDaysStr === "string" && maxAgeDaysStr.trim() !== "") {
+    maxAgeDays = parseInt(maxAgeDaysStr, 10);
+    if (isNaN(maxAgeDays) || maxAgeDays < 1) {
+      core.setFailed(`${ERR_CONFIG}: Configuration error: GH_AW_SKIP_MAX_AGE_DAYS must be a positive integer, got "${maxAgeDaysStr}".`);
+      return;
+    }
+  }
+
   core.info(`Checking skip-if-match query: ${skipQuery}`);
   core.info(`Maximum matches threshold: ${maxMatches}`);
 
-  const searchQuery = buildSearchQuery(skipQuery, skipScope);
+  const scopedQuery = buildSearchQuery(skipQuery, skipScope);
+  let searchQuery = scopedQuery;
+  if (maxAgeDays > 0) {
+    const cutoffDate = new Date();
+    cutoffDate.setUTCDate(cutoffDate.getUTCDate() - maxAgeDays);
+    const cutoffDateStr = cutoffDate.toISOString().slice(0, 10);
+    searchQuery = `${scopedQuery} created:>=${cutoffDateStr}`;
+    core.info(`Applying max age filter: ${maxAgeDays} day(s), cutoff=${cutoffDateStr}`);
+  }
 
   try {
     const {

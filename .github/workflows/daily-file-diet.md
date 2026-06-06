@@ -3,6 +3,9 @@ on:
   schedule:
   - cron: daily around 13:00 on weekdays
   workflow_dispatch: null
+  skip-if-match:
+    query: 'is:issue is:open in:title "[file-diet]"'
+    max-age-days: 7
 max-daily-ai-credits: 100M
 permissions:
   contents: read
@@ -10,9 +13,6 @@ permissions:
   pull-requests: read
   copilot-requests: write
 imports:
-- uses: shared/skip-if-issue-open.md
-  with:
-    title-prefix: "[file-diet]"
 - uses: shared/daily-issue-base.md
   with:
     expires: 2d
