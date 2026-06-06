@@ -337,7 +337,7 @@ For example, if you're cleaning `validation-timing.md`, create branch `docs/unbl
 
 After improving the file, update the cache memory to track the cleanup:
 ```bash
-echo "$(date -u +%Y-%m-%d) - Cleaned: <filename>" >> /tmp/gh-aw/cache-memory/cleaned-files.txt
+python3 -c "from datetime import datetime, timezone; open('/tmp/gh-aw/cache-memory/cleaned-files.txt', 'a', encoding='utf-8').write(f'{datetime.now(timezone.utc):%Y-%m-%d} - Cleaned: <filename>\\n')"
 ```
 
 This helps future runs avoid re-cleaning the same files.
@@ -431,4 +431,3 @@ Return a JSON object only — no prose, no extra text:
   "top_bloat_reason": "Excessive bullet lists in Tool Configuration and Features sections with repetitive What/Why/How patterns."
 }
 ```
-
