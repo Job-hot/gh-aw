@@ -1,26 +1,70 @@
 {
-  "updated": "2026-06-05T21:50Z",
+  "updated": "2026-06-06T21:40Z",
   "anomalies": [
     {
-      "id": "anom-model-config-effort",
-      "date": "2026-06-05",
-      "wf": "Daily Caveman Optimizer",
-      "run": 27040285267,
-      "kind": "model-config-effort-unsupported",
+      "id": "anom-sdk-minimatch-crash",
+      "date": "2026-06-06",
+      "wf": "6 copilot workflows",
+      "run": "27069431407,27069682890,27069819378,27069914133,27070138441,27070604747",
+      "kind": "sdk-driver-minimatch-module-not-found",
+      "persistence": 1,
+      "escalation": "NEW-HIGH",
+      "detail": "copilot_sdk_driver.cjs MODULE_NOT_FOUND 'minimatch' on all 4 retries, 0 turns/0 tokens. 6 distinct workflows same window = packaging regression. Single biggest failure driver this window (6/16).",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "anom-sdk-toolperm-reescalate",
+      "date": "2026-06-06",
+      "wf": "Daily SPDD Spec Planner / GEO Optimizer / Daily Safe Output Integrator",
+      "run": "27067363723,27067987828,27071016066",
+      "kind": "sdk-driver-tool-permission-lockout",
+      "persistence": 2,
+      "escalation": "RE-ESCALATED",
+      "detail": "3 prod-main schedules aborted after 5 tool denials (SPDD permDenied=10). Was RESOLVED 06-05; back 06-06. Combined with minimatch, copilot sdk-driver path accounts for 9/16 fails.",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "anom-detection-parse-fail",
+      "date": "2026-06-06",
+      "wf": "Design Decision Gate",
+      "run": 27065879421,
+      "kind": "detection-no-threat-result-parse-fail",
       "persistence": 1,
       "escalation": "NEW",
-      "detail": "400 'This model does not support the effort parameter' on prod main schedule; all retries exhausted, 0 tokens. New model/param config-drift failure class.",
+      "detail": "Agent OK (turns=3) but detection job reddened: ERR_PARSE no THREAT_DETECTION_RESULT despite continue-on-error=true.",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "anom-ambient-back-under-cap",
+      "date": "2026-06-06",
+      "wf": "Daily Ambient Context Optimizer",
+      "run": null,
+      "kind": "effective-token-back-under-cap",
+      "persistence": 4,
+      "escalation": "DE-ESCALATED",
+      "detail": "21.48M eff this window, comfortably UNDER the 25M cap (was 25.37M over-cap 06-05, 25.12M 429-fail 06-04). token-budget-429 quiet. Watch continues but trending safe.",
+      "status": "WATCH"
+    },
+    {
+      "id": "anom-model-config-effort",
+      "date": "2026-06-06",
+      "wf": "Daily Caveman Optimizer",
+      "run": 27073730816,
+      "kind": "model-config-effort-unsupported",
+      "persistence": 2,
+      "escalation": "PERSISTING",
+      "detail": "RECUR: 400 'does not support the effort parameter' again (run 27073730816, 34 hits) on prod main schedule; all retries exhausted, 0 tokens. Unfixed 2 days.",
       "status": "ACTIVE"
     },
     {
       "id": "anom-model-config-notfound",
-      "date": "2026-06-05",
+      "date": "2026-06-06",
       "wf": "Daily Cache Strategy Analyzer",
-      "run": 27034341100,
+      "run": 27070791283,
       "kind": "model-config-model-not-found",
-      "persistence": 1,
-      "escalation": "NEW",
-      "detail": "404 'Model not found adelie-alpha-2026-02-19' (codex) on prod main schedule; all retries exhausted. Flagged by observability as 100% failure hotspot.",
+      "persistence": 2,
+      "escalation": "PERSISTING",
+      "detail": "RECUR: 404 'Model not found adelie-alpha-2026-02-19' again (run 27070791283, 28 hits) on prod main schedule. Unfixed 2 days.",
       "status": "ACTIVE"
     },
     {

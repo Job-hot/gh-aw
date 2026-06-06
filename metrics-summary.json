@@ -1,33 +1,33 @@
 {
-  "updated": "2026-06-05T21:50Z",
-  "date": "2026-06-05",
-  "partial": false,
-  "latest_window": "2026-06-05 17:55-21:37Z (~4h dense evening cluster; continuation back to 06-04 21:42 returned 0 runs, so this is the full 24h window). 48 success / 5 fail of 53 completed = 90.6% (+1 in-progress audit agent itself). NEW dominant class = MODEL/PARAM CONFIG INCOMPATIBILITY on 2 prod-main schedules (all retries exhausted, 0 tokens): Daily Caveman Optimizer [claude] 400 'does not support the effort parameter'; Daily Cache Strategy Analyzer [codex] 404 'Model not found adelie-alpha-2026-02-19'. ALL prior recurring classes ABSENT/RECOVERED: safe-output target=* (PR Sous Chef 5/5, Contribution Check 1/1 success), copilot-sdk lockout (PR Code Quality Reviewer 2/2 success), token-429 (Daily Ambient 25.37M eff OVER cap but SUCCEEDED). TQS [copilot] valid report yet job reddened. 2 by-design smoke probes (Smoke Claude serena, Smoke Copilot create_discussion). 30.4M tok / 223.0M eff, fw 701/3909 (17.9%, DOWN from 21.1%), 0 mcp/missing-data.",
+  "updated": "2026-06-06T21:40Z",
+  "date": "2026-06-06",
+  "partial": true,
+  "latest_window": "2026-06-06 15:11-21:29Z (~6h evening cluster ONLY; logs MCP tool timed out at 120s and returned just the newest 100 runs, so the prior 06-05 21:30 -> 06-06 15:11 ~18h is UNOBSERVED this cycle). 81 success / 16 fail of 97 completed = 83.5% (+3 in-progress incl audit agent). DOMINANT NEW class = COPILOT SDK-DRIVER PATH BROKEN: 9 of 16 fails are sdk-driver-related. (a) NEW copilot_sdk_driver.cjs 'Cannot find module minimatch' MODULE_NOT_FOUND x6 (Linter Miner, Daily Secrets Analysis Agent, PR Code Quality Reviewer x2, Daily Testify Uber Super Expert, PR Triage Agent) — all 4 retries exhausted, 0 turns/0 tokens, static packaging bug; (b) RECUR sdk-driver tool-permission lockout x3 (Daily SPDD Spec Planner permDenied=10, GEO Optimizer Daily Audit, Daily Safe Output Integrator) — denies shell/read on cache-memory, 5-denial abort. Other fails: model/param config RECUR x2 (Caveman effort-400, Cache Strategy model-not-found-404), NEW detection-parse-failure (Design Decision Gate: ERR_PARSE no THREAT_DETECTION_RESULT, agent OK but detection job reddened), safe-output partial-fail RECUR (PR Sous Chef safe_outputs job, sub_agent_error), TQS empty agent_output redden, 2 by-design smoke probes (Smoke Claude/Copilot). token-budget-429 ABSENT (Daily Ambient 21.48M eff, back UNDER cap). fw 838/4457 (18.8%), 0 mcp-fail/missing-tool/missing-data.",
   "totals": {
-    "r": 53,
-    "s": 48,
-    "f": 5,
-    "in_prog": 1,
-    "rate": 90.6,
-    "tok": 30404314,
-    "eff_tok": 222968388,
-    "aic": 6065.76,
-    "$_note": "AIC (agent inference credits) reported this window; per-engine USD not emitted",
-    "turns": 738,
-    "min": 511,
-    "errors": 5,
-    "fw_req": 3909,
-    "fw_blk": 701,
-    "fw_blk_pct": 17.9,
-    "missing_tools": 3,
+    "r": 97,
+    "s": 81,
+    "f": 16,
+    "in_prog": 3,
+    "rate": 83.5,
+    "tok": 41627101,
+    "eff_tok": 329991371,
+    "aic": 8648.75,
+    "$_note": "AIC (agent inference credits); partial ~6h window only",
+    "turns": 1001,
+    "min": 908,
+    "errors": 0,
+    "fw_req": 4457,
+    "fw_blk": 838,
+    "fw_blk_pct": 18.8,
+    "missing_tools": 0,
     "missing_data": 0,
     "mcp_failures": 0,
-    "safe_items": 32
+    "safe_items": 24
   },
   "engines": {
-    "copilot": 37,
-    "claude": 11,
-    "codex": 3,
+    "copilot": 76,
+    "claude": 17,
+    "codex": 4,
     "gemini": 1,
     "antigravity": 1,
     "pi": 1
@@ -171,6 +171,15 @@
       "rate": 90.6,
       "tok": 30404314,
       "note": "full window (~4h evening cluster; continuation returned 0 older runs). 5 fail: NEW model/param config-incompatibility x2 prod-main (Caveman effort-unsupported 400, Cache Strategy model-not-found 404) + TQS copilot agent-job redden w/ valid output + 2 by-design smoke probes. ALL prior recurring classes recovered. Ambient 25.37M eff over-cap-but-survived. fw 17.9%. AIC 6065.76."
+    },
+    {
+      "d": "2026-06-06",
+      "r": 97,
+      "s": 81,
+      "rate": 83.5,
+      "tok": 41627101,
+      "partial": true,
+      "note": "PARTIAL ~6h window (15:11-21:29Z; logs tool timed out at 120s, newest 100 runs only, ~18h unobserved). 16 fail. DOMINANT: copilot SDK-driver path broken = 9/16 (NEW minimatch MODULE_NOT_FOUND x6 + RECUR tool-perm-lockout x3). Also: model/param config RECUR x2 (Caveman/Cache), NEW detection-parse-fail (Design Decision Gate), safe-output partial-fail RECUR (PR Sous Chef), TQS empty-output redden, 2 smoke probes. token-429 ABSENT (Ambient 21.48M under cap). fw 18.8%. AIC 8648.75."
     }
   ]
 }

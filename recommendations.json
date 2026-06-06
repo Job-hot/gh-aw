@@ -1,14 +1,32 @@
 {
-  "updated": "2026-06-05T21:50Z",
+  "updated": "2026-06-06T21:40Z",
   "recommendations": [
+    {
+      "id": "rec-sdk-driver-minimatch-dep",
+      "linked_issue": "copilot-sdk-driver-minimatch-module-not-found",
+      "priority": "HIGH",
+      "text": "URGENT packaging fix: copilot_sdk_driver.cjs requires 'minimatch' at runtime (copilot_sdk_driver.cjs:42) but the module is not bundled/installed in the action's node_modules, so it throws MODULE_NOT_FOUND and every retry fails. Either (a) bundle minimatch into the sdk-driver build / add it to the action's dependencies, or (b) inline-vendor the glob matching it needs. This single bug killed 6 distinct copilot workflows (Linter Miner, Daily Secrets Analysis Agent, PR Code Quality Reviewer x2, Daily Testify Uber Super Expert, PR Triage Agent) with 0 useful work. Add a CI smoke test that node-requires the built sdk-driver to catch missing deps before release.",
+      "first_seen": "2026-06-06",
+      "last_seen": "2026-06-06",
+      "recurrence": 1
+    },
+    {
+      "id": "rec-detection-parse-tolerance",
+      "linked_issue": "detection-model-no-threat-result-parse-fail",
+      "priority": "MEDIUM",
+      "text": "Make the detection (prompt-injection scan) result parser tolerant of a missing THREAT_DETECTION_RESULT marker: when continue-on-error=true and the marker is absent, treat as 'no threat detected / inconclusive' and exit non-red instead of ERR_PARSE failing the detection job (which reddens the whole run even though the agent succeeded). Optionally retry the detection prompt once. Seen on Design Decision Gate 27065879421.",
+      "first_seen": "2026-06-06",
+      "last_seen": "2026-06-06",
+      "recurrence": 1
+    },
     {
       "id": "rec-model-config-preflight",
       "linked_issue": "model-param-config-incompatibility",
       "priority": "HIGH",
       "text": "Add a model/param preflight validation at compile or activation time: (1) reject or warn when an engine config pins a model that does not exist at the provider endpoint (e.g. codex 'adelie-alpha-2026-02-19' -> 404); (2) reject or strip params the chosen model does not support (e.g. 'effort'/reasoning-effort on a claude model that returns 400 'does not support the effort parameter'). These currently waste an entire prod-main scheduled run (all retries exhausted, 0 tokens) on what is a static config error. Audit Daily Caveman Optimizer and Daily Cache Strategy Analyzer frontmatter for stale model ids/params.",
       "first_seen": "2026-06-05",
-      "last_seen": "2026-06-05",
-      "recurrence": 1
+      "last_seen": "2026-06-06",
+      "recurrence": 2
     },
     {
       "id": "rec-token-cap-guard",
@@ -23,10 +41,10 @@
       "id": "rec-safeoutput-tolerance",
       "linked_issue": "safe-output-partial-failure-intolerance",
       "priority": "HIGH",
-      "text": "Make the safe_outputs job tolerant of per-item failures: when the agent succeeded and >=1 item landed, exit non-red with a partial-success summary instead of failing the whole job on a single rejected item. Quiet this window but structurally unresolved.",
+      "text": "Make the safe_outputs job tolerant of per-item failures: when the agent succeeded and >=1 item landed, exit non-red with a partial-success summary instead of failing the whole job on a single rejected item. RECUR 2026-06-06 (PR Sous Chef sub_agent_error reddened the job after a 34-turn successful agent run).",
       "first_seen": "2026-06-02",
-      "last_seen": "2026-06-04",
-      "recurrence": 4
+      "last_seen": "2026-06-06",
+      "recurrence": 5
     },
     {
       "id": "rec-addcomment-targetstar-guidance",
@@ -41,10 +59,10 @@
       "id": "rec-sdk-driver-stability",
       "linked_issue": "copilot-sdk-driver-failures",
       "priority": "MEDIUM",
-      "text": "Investigate copilot-sdk-driver tool-permission lockout: fail fast with a clear error instead of looping until the 600s session.idle timeout. Quiet 2026-06-05 (PR Code Quality Reviewer 2/2 success) but keep the startup self-check on the roadmap.",
+      "text": "Fix copilot-sdk-driver tool-permission mapping: the sdk-driver denies shell(ls/cat) and read on /tmp/gh-aw/cache-memory that the workflow legitimately configures, aborting after 5 denials. Reconcile the 23 allow-tool entries derived from GH_AW_COPILOT_SDK_SERVER_ARGS with the workflow's declared tools so legitimate cache-memory/read access is granted. RE-ESCALATED 2026-06-06: 3 prod-main schedules (Daily SPDD Spec Planner permDenied=10, GEO Optimizer, Daily Safe Output Integrator).",
       "first_seen": "2026-06-02",
-      "last_seen": "2026-06-04",
-      "recurrence": 3
+      "last_seen": "2026-06-06",
+      "recurrence": 4
     },
     {
       "id": "rec-copilot-agent-job-redden",

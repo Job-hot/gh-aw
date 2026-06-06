@@ -1,62 +1,122 @@
 {
-  "updated": "2026-06-05T21:50Z",
+  "updated": "2026-06-06T21:40Z",
   "workflows": {
+    "Linter Miner": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "copilot-sdk-driver-minimatch",
+      "note": "MODULE_NOT_FOUND minimatch, all 4 retries, 0 turns (run 27069431407)"
+    },
+    "Daily Secrets Analysis Agent": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "copilot-sdk-driver-minimatch",
+      "note": "MODULE_NOT_FOUND minimatch (run 27069682890)"
+    },
+    "PR Code Quality Reviewer": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "copilot-sdk-driver-minimatch",
+      "note": "REGRESSED: was 2/2 success 06-05. 2 runs 06-06 both minimatch MODULE_NOT_FOUND (27069819378, 27069914133)"
+    },
+    "Daily Testify Uber Super Expert": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "copilot-sdk-driver-minimatch",
+      "note": "MODULE_NOT_FOUND minimatch (run 27070138441)"
+    },
+    "PR Triage Agent": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "copilot-sdk-driver-minimatch",
+      "note": "MODULE_NOT_FOUND minimatch (run 27070604747); observability flagged as overkill_for_agentic"
+    },
+    "Daily SPDD Spec Planner": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 43605,
+      "class": "copilot-sdk-driver-tool-permission-lockout",
+      "note": "permissionDeniedCount=10; sdk-driver denied shell/read on cache-memory (run 27067363723)"
+    },
+    "GEO Optimizer Daily Audit": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 354408,
+      "class": "copilot-sdk-driver-tool-permission-lockout",
+      "note": "tool-permission lockout, turns=1 (run 27067987828)"
+    },
+    "Daily Safe Output Integrator": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 52465,
+      "class": "copilot-sdk-driver-tool-permission-lockout",
+      "note": "tool-permission lockout, turns=1 (run 27071016066)"
+    },
     "Daily Caveman Optimizer": {
-      "last": "2026-06-05",
+      "last": "2026-06-06",
       "last_concl": "failure",
       "eff_tok": 0,
       "class": "model-config-effort-unsupported",
-      "note": "400 'does not support the effort parameter'; all retries exhausted, 0 tokens (claude)"
+      "note": "RECUR day 2: 400 'does not support the effort parameter' (run 27073730816, 34 hits)"
     },
     "Daily Cache Strategy Analyzer": {
-      "last": "2026-06-05",
+      "last": "2026-06-06",
       "last_concl": "failure",
       "eff_tok": 0,
       "class": "model-config-model-not-found",
-      "note": "404 'Model not found adelie-alpha-2026-02-19' (codex); 100% failure hotspot"
+      "note": "RECUR day 2: 404 'Model not found adelie-alpha-2026-02-19' (run 27070791283, 28 hits)"
     },
-    "Daily Ambient Context Optimizer": {
-      "last": "2026-06-05",
-      "last_concl": "success",
-      "eff_tok": 25368017,
-      "class": "token-cap-borderline",
-      "note": "25.37M eff OVER 25M cap but SUCCEEDED (was 429 failure 06-04). Top eff-tok of window."
-    },
-    "Daily Safe Output Tool Optimizer": {
-      "last": "2026-06-05",
-      "last_concl": "success",
-      "eff_tok": 21816797,
-      "aic": 442.07,
-      "note": "2nd-highest eff-tok this window (claude), success"
-    },
-    "Test Quality Sentinel": {
-      "last": "2026-06-05",
+    "Design Decision Gate": {
+      "last": "2026-06-06",
       "last_concl": "failure",
-      "eff_tok": 11642530,
-      "class": "copilot-agent-job-redden-with-valid-output",
-      "note": "27 turns, valid 77/100 report in agent_output, no crash, job reddened"
-    },
-    "Contribution Check": {
-      "last": "2026-06-05",
-      "last_concl": "success",
-      "eff_tok": 12546000,
-      "note": "RECOVERED: was safe-output target=* failure 06-04, success 06-05"
+      "eff_tok": 1575960,
+      "class": "detection-no-threat-result-parse-fail",
+      "note": "agent succeeded (turns=3); detection job reddened with ERR_PARSE no THREAT_DETECTION_RESULT (run 27065879421)"
     },
     "PR Sous Chef": {
-      "last": "2026-06-05",
-      "last_concl": "success",
-      "note": "RECOVERED: 5/5 success this window"
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 4399314,
+      "class": "safe-output-partial-failure",
+      "note": "REGRESSED: was 5/5 06-05. agent OK (turns=34) but safe_outputs job failed on sub_agent_error PR #37133 (run 27067988983)"
     },
-    "PR Code Quality Reviewer": {
-      "last": "2026-06-05",
+    "Test Quality Sentinel": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "copilot-agent-redden-empty-output",
+      "note": "empty agent_output {\"items\":[]}, turns=0, no stdio artifact; same oidc branch as a minimatch failure (run 27069819373)"
+    },
+    "Daily Ambient Context Optimizer": {
+      "last": "2026-06-06",
       "last_concl": "success",
-      "note": "RECOVERED: 2/2 success, sdk-driver lockout absent"
+      "eff_tok": 21479108,
+      "class": "token-cap-de-escalated",
+      "note": "21.48M eff, back UNDER 25M cap (was 25.37M 06-05, 25.12M 429-fail 06-04). token-429 quiet."
     },
     "Matt Pocock Skills Reviewer": {
-      "last": "2026-06-05",
+      "last": "2026-06-06",
       "last_concl": "success",
-      "eff_tok": 19905000,
-      "note": "high eff-tok (copilot), execution drift noted by observability"
+      "eff_tok": 22827383,
+      "aic": 773,
+      "note": "top completed eff-tok + top AIC this window (copilot), success"
+    },
+    "Contribution Check": {
+      "last": "2026-06-06",
+      "last_concl": "success",
+      "eff_tok": 22230609,
+      "note": "RECOVERED/stable; 2 runs success this window, AIC 754+488"
+    },
+    "Daily Safe Output Tool Optimizer": {
+      "last": "2026-06-06",
+      "last_concl": "in_progress",
+      "eff_tok": 29897664,
+      "note": "still running at audit time; highest eff-tok seen (claude)"
     }
   }
 }
