@@ -48,7 +48,7 @@ const AGENTIC_ENGINE_TIMEOUT_PATTERN = /signal=SIG(?:TERM|KILL|INT)/;
 // This occurs when Copilot Pro/Education users attempt to use a model that is
 // not available for their plan.  The full error from the Copilot CLI is:
 //   Execution failed: CAPIError: 400 The requested model is not supported.
-const MODEL_NOT_SUPPORTED_PATTERN = /The requested model is not supported/;
+const MODEL_NOT_SUPPORTED_PATTERN = /The requested model is not supported|Configured Copilot model ".+?" is (?:retired or unavailable|not available)/i;
 
 /**
  * Detect known error patterns in a log string and return detection results.

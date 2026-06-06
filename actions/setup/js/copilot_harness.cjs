@@ -87,7 +87,7 @@ const MCP_POLICY_BLOCKED_PATTERN = /MCP servers were blocked by policy:/;
 // Pattern to detect "model not supported" error (e.g. Copilot Pro/Education users hitting
 // a model that is unavailable for their subscription tier).
 // This is a persistent configuration error — retrying with --continue will not help.
-const MODEL_NOT_SUPPORTED_PATTERN = /The requested model is not supported/;
+const MODEL_NOT_SUPPORTED_PATTERN = /The requested model is not supported|Configured Copilot model ".+?" is (?:retired or unavailable|not available)/i;
 
 // Pattern to detect missing authentication credentials.
 // On a --continue attempt this may indicate that the Copilot CLI's on-disk session
@@ -111,6 +111,10 @@ const AGENTIC_ENGINE_TIMEOUT_PATTERN = /signal=SIG(?:TERM|KILL|INT)/;
 // re-injects the same broken history, producing the same 400 on every subsequent attempt.
 // A fresh restart is required to discard the poisoned history.
 const NULL_TYPE_TOOL_CALL_PATTERN = /tool_calls\[.*?\]\.type.*null/;
+const COPILOT_PROVIDER_BASE_URL_ENV_VAR = "COPILOT_PROVIDER_BASE_URL";
+const RETIRED_COPILOT_MODELS = Object.freeze({
+  "gpt-5-codex": "gpt-5.3-codex",
+});
 /**
  * Emit a diagnostic log line to stderr.
  * All driver messages are prefixed with "[copilot-harness]" so they are easy to
@@ -190,6 +194,9 @@ function isModelAvailableInReflectData(model, reflectData) {
   // TypeScript needs explicit 'in' check or cast before property access on narrowed object type
   const endpoints = "endpoints" in reflectData && Array.isArray(reflectData.endpoints) ? reflectData.endpoints : [];
   for (const endpoint of endpoints) {
+    if (String(endpoint?.provider || "").toLowerCase() !== "copilot") {
+      continue;
+    }
     if (!endpoint || endpoint.configured !== true || !Array.isArray(endpoint.models)) {
       continue;
     }
@@ -198,6 +205,84 @@ function isModelAvailableInReflectData(model, reflectData) {
     }
   }
   return false;
+}
+
+/**
+ * Returns true when the workflow explicitly configured Copilot BYOK mode.
+ * @param {NodeJS.ProcessEnv} [env]
+ * @returns {boolean}
+ */
+function hasExplicitCopilotBYOKProvider(env = process.env) {
+  return typeof env[COPILOT_PROVIDER_BASE_URL_ENV_VAR] === "string" && env[COPILOT_PROVIDER_BASE_URL_ENV_VAR].trim() !== "";
+}
+
+/**
+ * Validate configured COPILOT_MODEL before spawning the Copilot process.
+ * @param {{
+ *   configuredModel?: string,
+ *   reflectData?: unknown,
+ *   env?: NodeJS.ProcessEnv,
+ *   logger?: (msg: string) => void,
+ * }} [options]
+ * @returns {{ ok: true } | { ok: false, message: string }}
+ */
+function validateConfiguredCopilotModelBeforeLaunch(options) {
+  const configuredModel = typeof options?.configuredModel === "string" ? options.configuredModel.trim() : "";
+  const reflectData = options?.reflectData;
+  const env = options?.env || process.env;
+  const logger = options?.logger || log;
+
+  if (!configuredModel) {
+    return { ok: true };
+  }
+  if (configuredModel.includes("${{")) {
+    logger(`pre-flight: skipping model validation for expression-based COPILOT_MODEL=${configuredModel}`);
+    return { ok: true };
+  }
+  if (hasExplicitCopilotBYOKProvider(env)) {
+    logger("pre-flight: skipping Copilot model availability validation because COPILOT_PROVIDER_BASE_URL is explicitly configured");
+    return { ok: true };
+  }
+
+  const replacementModel = RETIRED_COPILOT_MODELS[configuredModel.toLowerCase()];
+  if (replacementModel) {
+    return {
+      ok: false,
+      message:
+        `Configured Copilot model "${configuredModel}" is retired or unavailable for this Copilot account. ` +
+        `Use a supported model such as "${replacementModel}" or another model enabled by your organization, ` +
+        "or omit engine.model to use the Copilot default.",
+    };
+  }
+
+  if (!reflectData || typeof reflectData !== "object") {
+    return { ok: true };
+  }
+
+  const endpoints = "endpoints" in reflectData && Array.isArray(reflectData.endpoints) ? reflectData.endpoints : [];
+  const copilotConfiguredEndpoints = endpoints.filter(endpoint => endpoint && endpoint.configured === true && String(endpoint.provider || "").toLowerCase() === "copilot");
+  if (copilotConfiguredEndpoints.length === 0) {
+    return { ok: true };
+  }
+
+  /** @type {string[]} */
+  const configuredCopilotModels = [];
+  for (const endpoint of copilotConfiguredEndpoints) {
+    if (Array.isArray(endpoint.models)) {
+      configuredCopilotModels.push(...endpoint.models.filter(model => typeof model === "string"));
+    }
+  }
+  if (configuredCopilotModels.length === 0) {
+    return { ok: true };
+  }
+  if (configuredCopilotModels.includes(configuredModel)) {
+    return { ok: true };
+  }
+
+  return {
+    ok: false,
+    message: `Configured Copilot model "${configuredModel}" is not available for this Copilot account or organization. ` + "Choose a model enabled in Copilot settings for this organization, or omit engine.model to use the Copilot default.",
+  };
 }
 
 /**
@@ -559,6 +644,16 @@ async function main() {
       awfReflectData = reflectResult.reflectData;
     }
   }
+  const modelValidation = validateConfiguredCopilotModelBeforeLaunch({
+    configuredModel: process.env.COPILOT_MODEL || "",
+    reflectData: awfReflectData,
+    env: process.env,
+    logger: log,
+  });
+  if (!modelValidation.ok) {
+    log(`pre-flight: ${modelValidation.message}`);
+    process.exit(1);
+  }
 
   // Resolve BYOK custom provider from live reflect data (SDK mode only).
   // BYOK is the only supported mode for SDK sessions — fail immediately if the provider
@@ -865,8 +960,10 @@ if (typeof module !== "undefined" && module.exports) {
     buildCopilotSDKServerArgs,
     getCopilotSDKServerPort,
     isDetectionPhase,
+    hasExplicitCopilotBYOKProvider,
     isModelAvailableInReflectData,
     isModelAvailableInReflectFile,
+    validateConfiguredCopilotModelBeforeLaunch,
     resolveCopilotSDKCustomProviderFromReflect,
     countPermissionDeniedIssues,
     detectCopilotErrors,

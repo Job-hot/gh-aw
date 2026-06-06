@@ -27,8 +27,10 @@ const {
   isMaxEffectiveTokensExceededError,
   isDetectionPhase,
   isAuthenticationFailedError,
+  hasExplicitCopilotBYOKProvider,
   isModelAvailableInReflectData,
   isModelAvailableInReflectFile,
+  validateConfiguredCopilotModelBeforeLaunch,
   resolveCopilotSDKCustomProviderFromReflect,
   enrichReflectModels,
   extractModelIds,
@@ -777,6 +779,11 @@ describe("copilot_harness.cjs", () => {
       expect(MODEL_NOT_SUPPORTED_PATTERN.test("MCP servers were blocked by policy: 'github'")).toBe(false);
       expect(MODEL_NOT_SUPPORTED_PATTERN.test("")).toBe(false);
     });
+
+    it("matches harness pre-flight retired model errors", () => {
+      const preflightOutput = 'Configured Copilot model "gpt-5-codex" is retired or unavailable for this Copilot account.';
+      expect(detectCopilotErrors(preflightOutput).modelNotSupportedError).toBe(true);
+    });
   });
 
   describe("no-auth-info detection pattern", () => {
@@ -1298,7 +1305,7 @@ describe("copilot_harness.cjs", () => {
       const reflectData = {
         endpoints: [
           { provider: "copilot", configured: true, models: ["claude-sonnet-4.6", "gpt-5.4"] },
-          { provider: "openai", configured: false, models: ["gpt-4.1"] },
+          { provider: "openai", configured: true, models: ["gpt-4.1"] },
         ],
       };
       expect(isModelAvailableInReflectData("claude-sonnet-4.6", reflectData)).toBe(true);
@@ -1332,6 +1339,53 @@ describe("copilot_harness.cjs", () => {
         model: "gpt-5.4",
         provider: { type: "openai", baseUrl: "http://api-proxy:10002" },
       });
+    });
+
+    it("detects explicit BYOK mode from COPILOT_PROVIDER_BASE_URL", () => {
+      expect(hasExplicitCopilotBYOKProvider({ COPILOT_PROVIDER_BASE_URL: "https://api.openai.com/v1" })).toBe(true);
+      expect(hasExplicitCopilotBYOKProvider({ COPILOT_PROVIDER_BASE_URL: "" })).toBe(false);
+      expect(hasExplicitCopilotBYOKProvider({})).toBe(false);
+    });
+
+    it("fails pre-flight for known retired Copilot model aliases", () => {
+      const result = validateConfiguredCopilotModelBeforeLaunch({
+        configuredModel: "gpt-5-codex",
+        reflectData: null,
+        env: {},
+        logger: () => {},
+      });
+      expect(result.ok).toBe(false);
+      expect(result.message).toContain('Configured Copilot model "gpt-5-codex" is retired or unavailable');
+      expect(result.message).toContain('"gpt-5.3-codex"');
+    });
+
+    it("fails pre-flight when configured model is absent from configured Copilot models", () => {
+      const result = validateConfiguredCopilotModelBeforeLaunch({
+        configuredModel: "gpt-5.3-codex",
+        reflectData: {
+          endpoints: [
+            { provider: "copilot", configured: true, models: ["gpt-5.4"] },
+            { provider: "openai", configured: true, models: ["gpt-5.3-codex"] },
+          ],
+        },
+        env: {},
+        logger: () => {},
+      });
+      expect(result.ok).toBe(false);
+      expect(result.message).toContain('Configured Copilot model "gpt-5.3-codex" is not available');
+      expect(result.message).toContain("organization");
+    });
+
+    it("skips pre-flight model availability failures in explicit BYOK mode", () => {
+      const result = validateConfiguredCopilotModelBeforeLaunch({
+        configuredModel: "gpt-5.3-codex",
+        reflectData: {
+          endpoints: [{ provider: "copilot", configured: true, models: ["gpt-5.4"] }],
+        },
+        env: { COPILOT_PROVIDER_BASE_URL: "http://host.docker.internal:11434/v1" },
+        logger: () => {},
+      });
+      expect(result).toEqual({ ok: true });
     });
   });
 

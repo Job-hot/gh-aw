@@ -97,6 +97,11 @@ describe("detect_agent_errors.cjs", () => {
       expect(MODEL_NOT_SUPPORTED_PATTERN.test(log)).toBe(true);
     });
 
+    it("matches retired-model pre-flight validation output", () => {
+      const log = 'Configured Copilot model "gpt-5-codex" is retired or unavailable for this Copilot account.';
+      expect(MODEL_NOT_SUPPORTED_PATTERN.test(log)).toBe(true);
+    });
+
     it("does not match other CAPIError 400 errors", () => {
       expect(MODEL_NOT_SUPPORTED_PATTERN.test("CAPIError: 400 Bad Request")).toBe(false);
       expect(MODEL_NOT_SUPPORTED_PATTERN.test("CAPIError: 400 400 Bad Request")).toBe(false);
