@@ -756,24 +756,21 @@ func loadCachedRunAIC(runID int64, verbose bool) float64 {
 		return summary.TokenUsage.TotalAIC
 	}
 
-	usageFirstFilters := [][]string{
-		{"usage"},
-		{constants.AgentArtifactName},
-		{"agent-artifacts"},
+	if err := forecastDownloadRunArtifacts(context.Background(), runID, dir, verbose, "", "", "", []string{"usage"}); err != nil {
+		if !errors.Is(err, ErrNoArtifacts) {
+			forecastRunLog.Printf("Failed to download usage artifact for run %d: %v", runID, err)
+			if verbose {
+				fmt.Fprintln(os.Stderr, console.FormatVerboseMessage(fmt.Sprintf("Failed to download usage artifact for run %d: %v", runID, err)))
+			}
+		}
+		return 0
 	}
 
-	for _, filter := range usageFirstFilters {
-		if err := forecastDownloadRunArtifacts(context.Background(), runID, dir, verbose, "", "", "", filter); err != nil && !errors.Is(err, ErrNoArtifacts) {
-			continue
-		}
-		tokenUsage, err := forecastAnalyzeTokenUsage(dir, verbose)
-		if err != nil || tokenUsage == nil || tokenUsage.TotalAIC <= 0 {
-			continue
-		}
-		return tokenUsage.TotalAIC
+	tokenUsage, err := forecastAnalyzeTokenUsage(dir, verbose)
+	if err != nil || tokenUsage == nil || tokenUsage.TotalAIC <= 0 {
+		return 0
 	}
-
-	return 0
+	return tokenUsage.TotalAIC
 }
 
 func isCompletedNonSkippedRun(r WorkflowRun) bool {
