@@ -2313,7 +2313,7 @@ describe("handle_agent_failure", () => {
       ];
       const result = buildPermissionDeniedContext(items);
       expect(result).toContain("`shell(cd /home/runner/work/gh-aw/gh-aw && git checkout -b safe-output-integrator/2026-06-07 2>&1)`");
-      expect(result).not.toContain("`permission denied by workflow tool permissions:");
+      expect(result).not.toContain("permission denied by workflow tool permissions:");
     });
 
     it("deduplicates denied commands across multiple tool/permission items", () => {

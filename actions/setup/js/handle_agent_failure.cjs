@@ -1002,6 +1002,7 @@ function extractDeniedCommandsFromAlternatives(alternatives) {
   const commands = [];
   let current = "";
   let depth = 0;
+  const stripPermissionDeniedPrefix = value => value.replace(/^permission denied(?:\s+by[^:]*)?:\s*/i, "").trim();
 
   for (let i = 0; i < deniedSection.length; i++) {
     const ch = deniedSection[i];
@@ -1020,7 +1021,7 @@ function extractDeniedCommandsFromAlternatives(alternatives) {
       const value = current.trim();
       if (value && !/^\.\.\. and \d+ more$/i.test(value)) {
         const unwrapped = value.replace(/^`(.+)`$/, "$1");
-        commands.push(unwrapped.replace(/^permission denied(?:\s+by[^:]*)?:\s*/i, "").trim());
+        commands.push(stripPermissionDeniedPrefix(unwrapped));
       }
       current = "";
       i += 2;
@@ -1033,7 +1034,7 @@ function extractDeniedCommandsFromAlternatives(alternatives) {
   const last = current.trim();
   if (last && !/^\.\.\. and \d+ more$/i.test(last)) {
     const unwrapped = last.replace(/^`(.+)`$/, "$1");
-    commands.push(unwrapped.replace(/^permission denied(?:\s+by[^:]*)?:\s*/i, "").trim());
+    commands.push(stripPermissionDeniedPrefix(unwrapped));
   }
 
   return [...new Set(commands)];
