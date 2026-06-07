@@ -12,12 +12,7 @@ import (
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
-// sampleRuntimeExpressionPattern matches GitHub Actions runtime expressions
-// (`${{ ... }}`) embedded inside sample values. Such values are substituted by
-// GitHub Actions on the runner before `apply_samples.cjs` reads
-// `GH_AW_SAMPLES`, so they cannot be validated against the MCP tool's
-// inputSchema at compile time.
-var sampleRuntimeExpressionPattern = regexp.MustCompile(`\$\{\{[^}]*\}\}`)
+var sampleRuntimeExpressionPattern = regexp.MustCompile(`(?s)\$\{\{.*?\}\}`)
 
 // sampleRuntimeExpressionPlaceholder is the sentinel substituted for any
 // sample value that contains a `${{ ... }}` GitHub Actions expression, used
