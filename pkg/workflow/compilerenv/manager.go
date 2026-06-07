@@ -108,6 +108,19 @@ func ResolveDefaultMaxAICredits(fallback int64) int64 {
 	return fallback
 }
 
+// ResolveDefaultMaxAICreditsWithLegacyFallback resolves the default AI credits
+// budget, preferring the dedicated AI-credits override and otherwise converting
+// the legacy max-effective-tokens override when present.
+func ResolveDefaultMaxAICreditsWithLegacyFallback(fallback int64, legacyFallback int64) int64 {
+	if strings.TrimSpace(os.Getenv(DefaultMaxAICredits)) != "" {
+		return ResolveDefaultMaxAICredits(fallback)
+	}
+	if converted, ok := typeutil.ConvertLegacyEffectiveTokensToAICredits(ResolveDefaultMaxEffectiveTokens(legacyFallback)); ok {
+		return converted
+	}
+	return fallback
+}
+
 // ResolveDefaultMaxTurns returns fallback when the env var is unset/invalid,
 // otherwise returns the parsed override as a string.
 func ResolveDefaultMaxTurns(fallback string) string {

@@ -53,7 +53,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 
@@ -282,13 +281,8 @@ func BuildAWFConfigJSON(config AWFCommandConfig) (string, error) {
 	}
 
 	// ── API proxy section ─────────────────────────────────────────────────────
-	maxAICredits := compilerenv.ResolveDefaultMaxAICredits(constants.DefaultMaxAICredits)
+	maxAICredits := compilerenv.ResolveDefaultMaxAICreditsWithLegacyFallback(constants.DefaultMaxAICredits, constants.DefaultMaxEffectiveTokens)
 	maxRuns := constants.DefaultMaxRuns
-	if strings.TrimSpace(os.Getenv(compilerenv.DefaultMaxAICredits)) == "" {
-		if converted, ok := convertLegacyEffectiveTokensToAICredits(compilerenv.ResolveDefaultMaxEffectiveTokens(constants.DefaultMaxEffectiveTokens)); ok {
-			maxAICredits = converted
-		}
-	}
 	if config.WorkflowData != nil && config.WorkflowData.EngineConfig != nil {
 		if config.WorkflowData.EngineConfig.MaxAICredits != 0 {
 			maxAICredits = config.WorkflowData.EngineConfig.MaxAICredits

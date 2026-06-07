@@ -4,7 +4,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/typeutil"
 )
@@ -79,25 +78,16 @@ func parseMaxEffectiveTokenLimitValue(raw any) (int64, bool) {
 }
 
 func convertLegacyEffectiveTokensToAICredits(limit int64) (int64, bool) {
-	if limit == -1 {
-		return -1, true
-	}
-	if limit <= 0 {
-		return 0, false
-	}
-
-	aiCredits := limit / constants.EffectiveTokensPerAICredit
-	if aiCredits <= 0 {
-		effectiveTokenLimitLog.Printf("Rejecting max-effective-tokens value %d: converts to less than 1 AI credit", limit)
+	aiCredits, ok := typeutil.ConvertLegacyEffectiveTokensToAICredits(limit)
+	if !ok {
+		if limit > 0 {
+			effectiveTokenLimitLog.Printf("Rejecting max-effective-tokens value %d: converts to less than 1 AI credit", limit)
+		}
 		return 0, false
 	}
 	return aiCredits, true
 }
 
 func parseLegacyMaxEffectiveTokensAsAICredits(raw any) (int64, bool) {
-	parsed, ok := parseMaxEffectiveTokenLimitValue(raw)
-	if !ok {
-		return 0, false
-	}
-	return convertLegacyEffectiveTokensToAICredits(parsed)
+	return typeutil.ParseLegacyEffectiveTokensAsAICredits(raw)
 }

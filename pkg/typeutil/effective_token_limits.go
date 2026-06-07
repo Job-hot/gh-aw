@@ -4,6 +4,8 @@ import (
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/github/gh-aw/pkg/constants"
 )
 
 // ParseInt64KMSuffix parses a positive base-10 integer string with an optional
@@ -48,4 +50,52 @@ func NormalizeInt64KMSuffix(raw string) (string, bool) {
 		return "", false
 	}
 	return strconv.FormatInt(parsed, 10), true
+}
+
+// ConvertLegacyEffectiveTokensToAICredits converts a legacy effective-token
+// budget to its AI-credits counterpart. Positive values are floor-divided by
+// the ET→AI-credit ratio, while -1 is preserved as the disable sentinel.
+func ConvertLegacyEffectiveTokensToAICredits(limit int64) (int64, bool) {
+	if limit == -1 {
+		return -1, true
+	}
+	if limit <= 0 {
+		return 0, false
+	}
+
+	aiCredits := limit / constants.EffectiveTokensPerAICredit
+	if aiCredits <= 0 {
+		return 0, false
+	}
+	return aiCredits, true
+}
+
+// ParseLegacyEffectiveTokensAsAICredits parses a legacy ET budget from either a
+// numeric value or a numeric string with optional K/M suffix and converts it to
+// AI credits.
+func ParseLegacyEffectiveTokensAsAICredits(raw any) (int64, bool) {
+	if parsed, ok := ParseIntValue(raw); ok && parsed != 0 {
+		return ConvertLegacyEffectiveTokensToAICredits(int64(parsed))
+	}
+
+	rawStr, ok := raw.(string)
+	if !ok {
+		return 0, false
+	}
+
+	trimmed := strings.TrimSpace(rawStr)
+	if trimmed == "-1" {
+		return -1, true
+	}
+
+	normalized, ok := NormalizeInt64KMSuffix(trimmed)
+	if !ok {
+		return 0, false
+	}
+
+	parsed, err := strconv.ParseInt(normalized, 10, 64)
+	if err != nil {
+		return 0, false
+	}
+	return ConvertLegacyEffectiveTokensToAICredits(parsed)
 }
