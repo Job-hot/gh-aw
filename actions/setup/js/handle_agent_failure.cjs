@@ -989,7 +989,7 @@ function extractDeniedCommandsFromAlternatives(alternatives) {
     return [];
   }
 
-  const markerMatch = alternatives.match(/denied\s+(?:commands|tool calls?):\s*/i);
+  const markerMatch = alternatives.match(/denied\s+(?:commands?|tool calls):\s*/i);
   if (!markerMatch || typeof markerMatch.index !== "number") {
     return [];
   }
