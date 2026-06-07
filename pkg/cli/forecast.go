@@ -24,6 +24,7 @@ import (
 
 	"github.com/github/gh-aw/pkg/console"
 	"github.com/github/gh-aw/pkg/constants"
+	"github.com/github/gh-aw/pkg/fileutil"
 	"github.com/github/gh-aw/pkg/gitutil"
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/parser"
@@ -47,9 +48,11 @@ var (
 	forecastFetchGitHubWorkflows      = fetchGitHubWorkflows
 	forecastListWorkflowRunsPaginated = listWorkflowRunsWithPagination
 	forecastLoadCachedRunAIC          = loadCachedRunAIC
-	forecastDownloadRunArtifacts      = downloadRunArtifacts
-	forecastAnalyzeTokenUsage         = analyzeTokenUsage
-	forecastRateLimitSleep            = func(ctx context.Context, delay time.Duration) error {
+	// forecastDownloadRunArtifacts uses a forecast-specific implementation that downloads
+	// only the usage artifact and skips workflow run log downloads (not needed for AIC computation).
+	forecastDownloadRunArtifacts = forecastDownloadUsageArtifact
+	forecastAnalyzeTokenUsage    = analyzeTokenUsage
+	forecastRateLimitSleep       = func(ctx context.Context, delay time.Duration) error {
 		timer := time.NewTimer(delay)
 		defer timer.Stop()
 
@@ -239,6 +242,7 @@ func RunForecast(config ForecastConfig) error {
 			if !config.Verbose {
 				spinner.Stop()
 			}
+			emitPartialForecastResults(results, config, now)
 			return normalizeForecastRunError(err, config)
 		}
 		if !config.Verbose {
@@ -255,6 +259,7 @@ func RunForecast(config ForecastConfig) error {
 				if !config.Verbose {
 					spinner.Stop()
 				}
+				emitPartialForecastResults(results, config, now)
 				return normalizeForecastRunError(err, config)
 			}
 			if !config.Verbose {
@@ -534,7 +539,7 @@ func forecastWorkflow(ctx context.Context, workflowName, startDate string, confi
 	aicObservations := make([]int, 0, len(completed))
 
 	for _, r := range completed {
-		runAIC := forecastLoadCachedRunAIC(r.DatabaseID, config.Verbose)
+		runAIC := forecastLoadCachedRunAIC(ctx, r.DatabaseID, config.Verbose)
 		totalAIC += runAIC
 		totalDurSec += r.Duration.Seconds()
 		// Monte Carlo currently samples integer observations; keep milli-AIC precision
@@ -749,15 +754,28 @@ func extractWorkflowIDFromName(name string) string {
 //
 // Cache location: <defaultLogsOutputDir>/run-<runID>/run_summary.json
 // (defaultLogsOutputDir is ".github/aw/logs" — defined in logs_models.go)
-func loadCachedRunAIC(runID int64, verbose bool) float64 {
+func loadCachedRunAIC(ctx context.Context, runID int64, verbose bool) float64 {
 	dir := filepath.Join(defaultLogsOutputDir, fmt.Sprintf("run-%d", runID))
 	summary, ok := loadRunSummary(dir, verbose)
 	if ok && summary != nil && summary.TokenUsage != nil && summary.TokenUsage.TotalAIC > 0 {
+		forecastRunLog.Printf("AIC cache hit for run %d: aic=%.3f (from run_summary.json)", runID, summary.TokenUsage.TotalAIC)
 		return summary.TokenUsage.TotalAIC
 	}
 
-	if err := forecastDownloadRunArtifacts(context.Background(), runID, dir, verbose, "", "", "", []string{"usage"}); err != nil {
-		if !errors.Is(err, ErrNoArtifacts) {
+	forecastRunLog.Printf("AIC cache miss for run %d; downloading usage artifact to %s", runID, dir)
+	if verbose {
+		fmt.Fprintln(os.Stderr, console.FormatVerboseMessage(fmt.Sprintf("Downloading usage artifact for run %d…", runID)))
+	}
+
+	if err := forecastDownloadRunArtifacts(ctx, runID, dir, verbose, "", "", "", []string{"usage"}); err != nil {
+		if errors.Is(err, ErrNoArtifacts) {
+			forecastRunLog.Printf("No usage artifact for run %d; AIC will be 0", runID)
+		} else if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			forecastRunLog.Printf("Usage artifact download for run %d interrupted: %v", runID, err)
+			if verbose {
+				fmt.Fprintln(os.Stderr, console.FormatVerboseMessage(fmt.Sprintf("Usage artifact download for run %d interrupted: %v", runID, err)))
+			}
+		} else {
 			forecastRunLog.Printf("Failed to download usage artifact for run %d: %v", runID, err)
 			if verbose {
 				fmt.Fprintln(os.Stderr, console.FormatVerboseMessage(fmt.Sprintf("Failed to download usage artifact for run %d: %v", runID, err)))
@@ -768,9 +786,118 @@ func loadCachedRunAIC(runID int64, verbose bool) float64 {
 
 	tokenUsage, err := forecastAnalyzeTokenUsage(dir, verbose)
 	if err != nil || tokenUsage == nil || tokenUsage.TotalAIC <= 0 {
+		forecastRunLog.Printf("No AIC data in usage artifact for run %d (err=%v, tokenUsage=%v)", runID, err, tokenUsage)
 		return 0
 	}
+	forecastRunLog.Printf("AIC from usage artifact for run %d: aic=%.3f", runID, tokenUsage.TotalAIC)
 	return tokenUsage.TotalAIC
+}
+
+// forecastDownloadUsageArtifact downloads only the usage artifact for a workflow run,
+// without downloading workflow run logs (which are not needed for AIC computation).
+// It is used by the forecast command via forecastDownloadRunArtifacts.
+func forecastDownloadUsageArtifact(ctx context.Context, runID int64, outputDir string, verbose bool, owner, repo, hostname string, artifactFilter []string) error {
+	forecastRunLog.Printf("Downloading usage artifact: run_id=%d, output_dir=%s, filter=%v", runID, outputDir, artifactFilter)
+	shouldLogProgress := IsRunningInCI() || verbose
+
+	// Check if the requested artifacts are already on disk (cache hit from actions/cache restore).
+	if fileutil.DirExists(outputDir) && !fileutil.IsDirEmpty(outputDir) {
+		missing := findMissingFilterEntries(artifactFilter, outputDir)
+		if len(missing) == 0 {
+			forecastRunLog.Printf("Usage artifact already on disk for run %d, skipping download", runID)
+			if shouldLogProgress {
+				fmt.Fprintln(os.Stderr, console.FormatInfoMessage(
+					fmt.Sprintf("Usage artifact already present for run %d, skipping download", runID)))
+			}
+			return nil
+		}
+		forecastRunLog.Printf("Usage artifact partially missing for run %d: %v; downloading missing entries", runID, missing)
+		artifactFilter = missing
+	}
+
+	if err := os.MkdirAll(outputDir, constants.DirPermPublic); err != nil {
+		return fmt.Errorf("failed to create output directory for run %d: %w", runID, err)
+	}
+
+	// List available artifacts for the run to find which match the filter.
+	artifactNames, listErr := listRunArtifactNames(ctx, runID, owner, repo, hostname, verbose)
+	if listErr != nil {
+		forecastRunLog.Printf("Failed to list artifacts for run %d: %v", runID, listErr)
+		if fileutil.IsDirEmpty(outputDir) {
+			_ = os.RemoveAll(outputDir)
+		}
+		return fmt.Errorf("failed to list artifacts for run %d: %w", runID, listErr)
+	}
+
+	var downloadableNames []string
+	for _, name := range artifactNames {
+		if !isDockerBuildArtifact(name) && artifactMatchesFilter(name, artifactFilter) {
+			downloadableNames = append(downloadableNames, name)
+		}
+	}
+
+	forecastRunLog.Printf("Run %d: found %d downloadable artifact(s) matching filter %v: %v", runID, len(downloadableNames), artifactFilter, downloadableNames)
+
+	if len(downloadableNames) == 0 {
+		// No usage artifact — clean up empty directory and report.
+		if fileutil.IsDirEmpty(outputDir) {
+			_ = os.RemoveAll(outputDir)
+		}
+		return ErrNoArtifacts
+	}
+
+	if shouldLogProgress {
+		fmt.Fprintln(os.Stderr, console.FormatInfoMessage(
+			fmt.Sprintf("Downloading usage artifact(s) for run %d: %v", runID, downloadableNames)))
+	}
+
+	if err := downloadArtifactsByName(ctx, runID, outputDir, downloadableNames, verbose, owner, repo, hostname); err != nil {
+		return fmt.Errorf("failed to download usage artifact for run %d: %w", runID, err)
+	}
+
+	if fileutil.IsDirEmpty(outputDir) {
+		return ErrNoArtifacts
+	}
+
+	forecastRunLog.Printf("Downloaded usage artifact for run %d to %s", runID, outputDir)
+	return nil
+}
+
+// emitPartialForecastResults outputs whatever workflow results have been collected so
+// far when the forecast computation is interrupted (timeout or user cancellation).
+// It is a no-op when results is empty.
+func emitPartialForecastResults(results []ForecastWorkflowResult, config ForecastConfig, now time.Time) {
+	if len(results) == 0 {
+		return
+	}
+	forecastRunLog.Printf("Emitting %d partial forecast result(s) before early exit", len(results))
+	fmt.Fprintln(os.Stderr, console.FormatWarningMessage(
+		fmt.Sprintf("Forecast interrupted; emitting partial results for %d workflow(s) processed so far.", len(results))))
+
+	// Sort partial results by Monte Carlo P50 descending (mirrors the full-results sort).
+	sort.Slice(results, func(i, j int) bool {
+		pi := results[i].ProjectedAIC
+		if mc := results[i].MonteCarlo; mc != nil {
+			pi = mc.P50ProjectedAIC
+		}
+		pj := results[j].ProjectedAIC
+		if mc := results[j].MonteCarlo; mc != nil {
+			pj = mc.P50ProjectedAIC
+		}
+		return pi > pj
+	})
+
+	output := ForecastResult{
+		Period:    config.Period,
+		AsOf:      now.UTC().Format(time.RFC3339),
+		EvalMode:  config.EvalMode,
+		Workflows: results,
+	}
+	if config.JSONOutput {
+		_ = renderForecastJSON(output)
+	} else {
+		_ = renderForecastTable(output, config)
+	}
 }
 
 func isCompletedNonSkippedRun(r WorkflowRun) bool {
@@ -838,7 +965,7 @@ func evaluateForecast(ctx context.Context, workflowName string, forecast Forecas
 			continue
 		}
 		eval.ActualRuns++
-		eval.ActualAIC += forecastLoadCachedRunAIC(r.DatabaseID, config.Verbose)
+		eval.ActualAIC += forecastLoadCachedRunAIC(ctx, r.DatabaseID, config.Verbose)
 	}
 
 	// Compute error metrics against P50 (falls back to point estimate).
