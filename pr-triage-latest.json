@@ -1,20 +1,12 @@
 {
-  "run_date": "2026-06-06T12:45:33Z",
-  "run_id": "27062608083",
+  "run_date": "2026-06-07T01:25:21Z",
+  "run_id": "27079085262",
   "fork_prs": 0,
-  "agent_prs_found": 9,
+  "agent_prs_found": 1,
   "prs_found": [
-    {"number": 37273, "author": "Copilot", "is_fork": false, "title": "feat: track cap-exceeded failures via centralized rollup issue, raise cap to 50/24h"},
-    {"number": 37272, "author": "Copilot", "is_fork": false, "title": "Prevent safe-outputs startup regressions in daily workflows"},
-    {"number": 37269, "author": "Copilot", "is_fork": false, "title": "Increase per-run AI budget for Agentic Token Optimizer to prevent ET cap aborts"},
-    {"number": 37268, "author": "Copilot", "is_fork": false, "title": "fix(code-simplifier): eliminate python3 bash-policy failures, fix jq split bug, add guardrails"},
-    {"number": 37265, "author": "Copilot", "is_fork": false, "title": "Update safe-output health failure messaging to AI Credits"},
-    {"number": 37257, "author": "Copilot", "is_fork": false, "title": "Replace test set-style map[string]bool usage with map[string]struct{}"},
-    {"number": 37187, "author": "Copilot", "is_fork": false, "title": "Route centralized command dispatches to the triggering PR branch"},
-    {"number": 37133, "author": "Copilot", "is_fork": false, "title": "feat: two-phase Copilot SDK driver for threat detection job"},
-    {"number": 36937, "author": "Copilot", "is_fork": false, "title": "Prevent stale-base signed replay from synthesizing unrelated changes; enforce policy on GraphQL payload"}
+    {"number": 37457, "author": "copilot-swe-agent", "is_fork": false, "title": "feat: forecast — context-aware downloads, no workflow logs, partial results on timeout"}
   ],
-  "notes": "9 open bot-authored PRs found but all originate from internal branches (isCrossRepository=false). Fork-only policy excludes all. No PRs to triage.",
+  "notes": "1 open bot-authored PR found but it originates from an internal branch (isCrossRepository=false). Fork-only policy excludes it. No PRs to triage.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
