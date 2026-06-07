@@ -65,6 +65,19 @@ var (
 	}
 )
 
+// ForecastRunSample holds the data for a single workflow run used in the forecast computation.
+// Included in ForecastWorkflowResult.RunSamples so callers and issue templates can list
+// the individual runs and their raw AI Credit values for human review.
+type ForecastRunSample struct {
+	// RunID is the GitHub Actions run ID.
+	RunID int64 `json:"run_id"`
+	// AIC is the AI Credit cost for this individual run.
+	AIC float64 `json:"aic"`
+	// Date is the ISO-8601 calendar date the run started (YYYY-MM-DD).
+	// Empty when the run's start timestamp is unavailable.
+	Date string `json:"date,omitempty"`
+}
+
 // ForecastWorkflowResult contains the projected metrics for a single workflow.
 type ForecastWorkflowResult struct {
 	// WorkflowID is the short identifier of the workflow (basename without .md).
@@ -86,13 +99,31 @@ type ForecastWorkflowResult struct {
 	AvgAIC             float64 `json:"avg_aic"`
 	AvgDurationSeconds float64 `json:"avg_duration_seconds"`
 
-	// Projected totals for the period.
+	// P50AIC is the 50th-percentile (median) AIC of individual sampled runs.
+	P50AIC float64 `json:"p50_aic_per_run"`
+	// P95AIC is the 95th-percentile AIC of individual sampled runs
+	// (conservative / budget-bound per-run cost estimate).
+	P95AIC float64 `json:"p95_aic_per_run"`
+
+	// Projected totals for the configured period.
 	ProjectedAIC float64 `json:"projected_aic"`
 
 	// MonteCarlo contains the probability distribution of projected AIC totals
-	// derived from a Monte Carlo simulation (10 000 trials).
+	// for the configured period, derived from a Monte Carlo simulation (10 000 trials).
 	// Nil when no completed runs were available.
 	MonteCarlo *ForecastMonteCarloSummary `json:"monte_carlo,omitempty"`
+
+	// WeeklyProjectedAIC is the point-estimate projected total AIC over a 7-day window.
+	WeeklyProjectedAIC float64 `json:"weekly_projected_aic"`
+	// WeeklyMonteCarlo contains the Monte Carlo distribution for the 7-day projection.
+	// Nil when no completed runs were available.
+	WeeklyMonteCarlo *ForecastMonteCarloSummary `json:"weekly_monte_carlo,omitempty"`
+
+	// MonthlyProjectedAIC is the point-estimate projected total AIC over a 30-day window.
+	MonthlyProjectedAIC float64 `json:"monthly_projected_aic"`
+	// MonthlyMonteCarlo contains the Monte Carlo distribution for the 30-day projection.
+	// Nil when no completed runs were available.
+	MonthlyMonteCarlo *ForecastMonteCarloSummary `json:"monthly_monte_carlo,omitempty"`
 
 	// Trigger information derived from frontmatter.
 	ActiveTriggers []string `json:"active_triggers"`
@@ -106,6 +137,11 @@ type ForecastWorkflowResult struct {
 	// Evaluation contains backtesting quality metrics when --eval is set.
 	// Nil in normal forecast mode.
 	Evaluation *ForecastEvaluation `json:"evaluation,omitempty"`
+
+	// RunSamples holds the individual per-run data used in the forecast computation.
+	// Each entry records the run ID, raw AIC, and (when available) the run date.
+	// Populated for all runs where AIC data was obtainable; zero-AIC runs are included.
+	RunSamples []ForecastRunSample `json:"run_samples,omitempty"`
 }
 
 // ForecastVariantResult contains projected metrics split by A/B experiment variant.
@@ -532,11 +568,12 @@ func forecastWorkflow(ctx context.Context, workflowName, startDate string, confi
 		return result, nil
 	}
 
-	// Compute per-run averages.
+	// Compute per-run averages and collect individual run samples.
 	var totalAIC float64
 	var totalDurSec float64
 	successCount := 0
 	aicObservations := make([]int, 0, len(completed))
+	samples := make([]ForecastRunSample, 0, len(completed))
 
 	for _, r := range completed {
 		runAIC := forecastLoadCachedRunAIC(ctx, r.DatabaseID, config.Verbose)
@@ -548,24 +585,50 @@ func forecastWorkflow(ctx context.Context, workflowName, startDate string, confi
 		if r.Conclusion == "success" {
 			successCount++
 		}
+		sample := ForecastRunSample{RunID: r.DatabaseID, AIC: roundForecastAIC(runAIC)}
+		if !r.StartedAt.IsZero() {
+			sample.Date = r.StartedAt.Format("2006-01-02")
+		}
+		samples = append(samples, sample)
 	}
+	result.RunSamples = samples
 
 	n := len(completed)
 	result.AvgAIC = roundForecastAIC(totalAIC / float64(n))
 	result.AvgDurationSeconds = totalDurSec / float64(n)
 	result.SuccessRate = float64(successCount) / float64(n)
 
+	// Compute P50 and P95 of individual run AIC (per-run percentiles, not period totals).
+	sortedAIC := make([]int, len(aicObservations))
+	copy(sortedAIC, aicObservations)
+	sort.Ints(sortedAIC)
+	result.P50AIC = roundForecastAIC(float64(percentileInt(sortedAIC, 50)) / 1000)
+	result.P95AIC = roundForecastAIC(float64(percentileInt(sortedAIC, 95)) / 1000)
+
 	// Compute observed run frequency: runs per calendar day over the history window,
 	// scaled to the projection period.
-	result.ObservedRunsPerPeriod = float64(n) / float64(config.Days) * float64(periodDays)
+	observedRunsPerDay := float64(n) / float64(config.Days)
+	result.ObservedRunsPerPeriod = observedRunsPerDay * float64(periodDays)
 
-	// Projected token usage (point estimate using simple means).
+	// Point estimates for weekly (7-day) and monthly (30-day) projections.
+	weeklyRuns := observedRunsPerDay * 7
+	monthlyRuns := observedRunsPerDay * 30
+	result.WeeklyProjectedAIC = roundForecastAIC(weeklyRuns * result.AvgAIC)
+	result.MonthlyProjectedAIC = roundForecastAIC(monthlyRuns * result.AvgAIC)
+
+	// Projected token usage (point estimate using simple means) for the configured period.
 	result.ProjectedAIC = roundForecastAIC(result.ObservedRunsPerPeriod * result.AvgAIC)
 
 	// Monte Carlo simulation: model run-count (Poisson), per-run token usage
 	// (bootstrap), and per-run success (Bernoulli) to produce P10/P50/P90 ranges.
-	rng := rand.New(rand.NewSource(time.Now().UnixNano())) //nolint:gosec // non-cryptographic simulation RNG
+	// Two independent RNGs ensure the weekly and monthly simulations are uncorrelated.
+	seed := time.Now().UnixNano()
+	rng := rand.New(rand.NewSource(seed))           //nolint:gosec // non-cryptographic simulation RNG
+	rng2 := rand.New(rand.NewSource(seed + 1))      //nolint:gosec
+	rng3 := rand.New(rand.NewSource(seed + 2))      //nolint:gosec
 	result.MonteCarlo = runMonteCarlo(aicObservations, successCount, result.ObservedRunsPerPeriod, rng)
+	result.WeeklyMonteCarlo = runMonteCarlo(aicObservations, successCount, weeklyRuns, rng2)
+	result.MonthlyMonteCarlo = runMonteCarlo(aicObservations, successCount, monthlyRuns, rng3)
 
 	// Populate experiment variant fractions from run history when metadata has variants.
 	result.ExperimentVariants = computeVariantFractions(result.ExperimentVariants, completed)
@@ -1011,57 +1074,70 @@ func renderForecastJSON(output ForecastResult) error {
 
 // forecastTableRow is a flattened struct used for console table rendering.
 type forecastTableRow struct {
-	Workflow     string `json:"workflow"      console:"header:Workflow"`
-	Runs         int    `json:"runs"          console:"header:Sampled Runs"`
-	SuccessRate  string `json:"success_rate"  console:"header:Success Rate"`
-	AvgAIC       string `json:"avg_aic"       console:"header:Avg AIC"`
-	ProjectedAIC string `json:"projected_aic" console:"header:Proj. AIC (P50)"`
-	AICRange     string `json:"aic_range"     console:"header:80% CI (P10–P90)"`
-	Triggers     string `json:"triggers"      console:"header:Triggers"`
+	Workflow    string `json:"workflow"     console:"header:Workflow"`
+	Runs        int    `json:"runs"         console:"header:Runs"`
+	P50PerRun   string `json:"p50_per_run"  console:"header:P50/Run"`
+	P95PerRun   string `json:"p95_per_run"  console:"header:P95/Run"`
+	WeeklyP50   string `json:"weekly_p50"   console:"header:Weekly (P50)"`
+	MonthlyP50  string `json:"monthly_p50"  console:"header:Monthly (P50)"`
+	SuccessRate string `json:"success_rate" console:"header:Success Rate"`
+	Triggers    string `json:"triggers"     console:"header:Triggers"`
 }
 
 // renderForecastTable renders the forecast result as a human-readable table.
 func renderForecastTable(output ForecastResult, config ForecastConfig) error {
-	periodLabel := strings.ToUpper(output.Period[:1]) + output.Period[1:]
 	fmt.Fprintln(os.Stderr, console.FormatInfoMessage(
-		fmt.Sprintf("Workflow Forecast — per %s (based on last %d days of history)", periodLabel, config.Days)))
+		fmt.Sprintf("Workflow Forecast — weekly & monthly projections (based on last %d days of history)", config.Days)))
 	fmt.Fprintln(os.Stderr, "")
 
 	anyUnreliable := false
-	rows := make([]forecastTableRow, 0, len(output.Workflows))
+	var totalWeeklyP50, totalMonthlyP50 float64
+	rows := make([]forecastTableRow, 0, len(output.Workflows)+1)
 	for _, wf := range output.Workflows {
-		// Use Monte Carlo P50 as the primary AIC estimate when available.
-		projAICStr := formatForecastAIC(wf.ProjectedAIC)
-		aicRangeStr := "-"
 		unreliableMark := ""
-		if mc := wf.MonteCarlo; mc != nil {
-			projAICStr = formatForecastAIC(mc.P50ProjectedAIC)
-			if mc.P10ProjectedAIC == 0 && mc.P90ProjectedAIC == 0 {
-				aicRangeStr = "-"
-			} else {
-				aicRangeStr = fmt.Sprintf("%s–%s",
-					formatForecastAIC(mc.P10ProjectedAIC),
-					formatForecastAIC(mc.P90ProjectedAIC))
-			}
+
+		weeklyP50 := wf.WeeklyProjectedAIC
+		if mc := wf.WeeklyMonteCarlo; mc != nil {
+			weeklyP50 = mc.P50ProjectedAIC
 			if !mc.IsReliable {
 				anyUnreliable = true
 				unreliableMark = "*"
 			}
 		}
+		monthlyP50 := wf.MonthlyProjectedAIC
+		if mc := wf.MonthlyMonteCarlo; mc != nil {
+			monthlyP50 = mc.P50ProjectedAIC
+		}
+		totalWeeklyP50 += weeklyP50
+		totalMonthlyP50 += monthlyP50
+
 		row := forecastTableRow{
-			Workflow:     wf.WorkflowID + unreliableMark,
-			Runs:         wf.SampledRuns,
-			SuccessRate:  formatForecastPercent(wf.SuccessRate, wf.SampledRuns > 0),
-			AvgAIC:       formatForecastAIC(wf.AvgAIC),
-			ProjectedAIC: projAICStr,
-			AICRange:     aicRangeStr,
-			Triggers:     formatTriggerList(wf.ActiveTriggers),
+			Workflow:    wf.WorkflowID + unreliableMark,
+			Runs:        wf.SampledRuns,
+			P50PerRun:   formatForecastAIC(wf.P50AIC),
+			P95PerRun:   formatForecastAIC(wf.P95AIC),
+			WeeklyP50:   formatForecastAIC(weeklyP50),
+			MonthlyP50:  formatForecastAIC(monthlyP50),
+			SuccessRate: formatForecastPercent(wf.SuccessRate, wf.SampledRuns > 0),
+			Triggers:    formatTriggerList(wf.ActiveTriggers),
 		}
 		rows = append(rows, row)
 	}
 
+	// Append a totals row when more than one workflow is present.
+	if len(output.Workflows) > 1 {
+		rows = append(rows, forecastTableRow{
+			Workflow:   "TOTAL",
+			WeeklyP50:  formatForecastAIC(totalWeeklyP50),
+			MonthlyP50: formatForecastAIC(totalMonthlyP50),
+		})
+	}
+
 	fmt.Fprint(os.Stderr, console.RenderStruct(rows))
 	fmt.Fprintln(os.Stderr, "")
+
+	// Show detailed per-run samples section.
+	printRunSamplesSection(output.Workflows)
 
 	// Show experiment variant details when present.
 	for _, wf := range output.Workflows {
@@ -1076,14 +1152,53 @@ func renderForecastTable(output ForecastResult, config ForecastConfig) error {
 	}
 
 	fmt.Fprintln(os.Stderr, console.FormatInfoMessage(
-		fmt.Sprintf("P50 = median; 80%% CI = P10–P90 from %d-trial Monte Carlo simulation (Gamma–Poisson model accounts for rate estimation uncertainty).", monteCarloIterations)))
+		fmt.Sprintf("P50/Run = per-run median AIC; P95/Run = 95th-percentile per-run AIC; Weekly/Monthly = projected P50 from %d-trial Monte Carlo simulation.", monteCarloIterations)))
 	if anyUnreliable {
 		fmt.Fprintln(os.Stderr, console.FormatWarningMessage(
 			fmt.Sprintf("* Fewer than %d sampled runs — confidence intervals may be unreliable.", minObservationsForReliableForecast)))
 	}
 	fmt.Fprintln(os.Stderr, console.FormatInfoMessage(
-		fmt.Sprintf("Run '%s forecast --json' for full output.", string(constants.CLIExtensionPrefix))))
+		fmt.Sprintf("Run '%s forecast --json' for full Monte Carlo output including P10/P90 confidence intervals.", string(constants.CLIExtensionPrefix))))
 	return nil
+}
+
+// printRunSamplesSection prints a detailed table of the sampled runs used in the forecast,
+// including the run ID, date, and raw AIC for each run.  Workflows with no samples are skipped.
+func printRunSamplesSection(workflows []ForecastWorkflowResult) {
+	type runRow struct {
+		RunID string `json:"run_id" console:"header:Run ID"`
+		Date  string `json:"date"   console:"header:Date"`
+		AIC   string `json:"aic"    console:"header:AIC"`
+	}
+
+	hasSamples := false
+	for _, wf := range workflows {
+		if len(wf.RunSamples) > 0 {
+			hasSamples = true
+			break
+		}
+	}
+	if !hasSamples {
+		return
+	}
+
+	fmt.Fprintln(os.Stderr, console.FormatInfoMessage("Sampled runs used in computation:"))
+	for _, wf := range workflows {
+		if len(wf.RunSamples) == 0 {
+			continue
+		}
+		fmt.Fprintf(os.Stderr, "  %s (%d run(s)):\n", wf.WorkflowID, len(wf.RunSamples))
+		rows := make([]runRow, 0, len(wf.RunSamples))
+		for _, s := range wf.RunSamples {
+			rows = append(rows, runRow{
+				RunID: fmt.Sprintf("#%d", s.RunID),
+				Date:  s.Date,
+				AIC:   formatForecastAIC(s.AIC),
+			})
+		}
+		fmt.Fprint(os.Stderr, console.RenderStruct(rows))
+		fmt.Fprintln(os.Stderr, "")
+	}
 }
 
 // printEvalBreakdown renders the backtesting comparison table.
