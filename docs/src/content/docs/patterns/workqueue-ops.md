@@ -16,7 +16,7 @@ flowchart LR
 
 ## Queue Strategy 1: Issue Checklist as Queue
 
-Use GitHub issue checkboxes as a lightweight, human-readable queue. The agent reads the issue body, finds unchecked items, processes each one, and checks it off. Best for small-to-medium batches (< 100 items). Use [Concurrency](/gh-aw/reference/concurrency/) controls to prevent race conditions between parallel runs.
+Use GitHub issue checkboxes as a lightweight, human-readable queue. Best for small-to-medium batches (< 100 items). Use [Concurrency](/gh-aw/reference/concurrency/) controls to prevent race conditions between parallel runs.
 
 ```aw wrap
 ---
@@ -52,15 +52,9 @@ You are processing a work queue stored as checkboxes in issue #${{ inputs.queue_
 4. If all items are checked, close the issue with a summary comment.
 ```
 
-```mermaid
-flowchart LR
-    issue[Issue checklist] --> process[Process unchecked items]
-    process --> check[Check off completed]
-```
-
 ## Queue Strategy 2: Sub-Issues as Queue
 
-Create one sub-issue per work item. The agent queries open sub-issues of a parent tracking issue, processes each one, and closes it when done. Scales to hundreds of items with individual discussion threads per item. Use `max:` limits on `close-issue` to avoid notification storms.
+Create one sub-issue per work item, queried from a parent tracking issue and closed when done. Scales to hundreds of items with individual discussion threads per item. Use `max:` limits on `close-issue` to avoid notification storms.
 
 ```aw wrap
 ---
@@ -95,15 +89,9 @@ You are processing a queue of open sub-issues. The parent tracking issue is labe
 If no sub-issues are open, post a comment on the parent issue saying the queue is empty.
 ```
 
-```mermaid
-flowchart LR
-    parent[Parent tracking issue] --> subissues[Open sub-issues]
-    subissues --> process[Process & close per item]
-```
-
 ## Queue Strategy 3: Cache-Memory Queue
 
-Store queue state as a JSON file in [cache-memory](/gh-aw/reference/cache-memory/). Each run loads the file, picks up where the last run left off, and saves the updated state. Best for large queues and multi-day processing horizons where items are generated programmatically. Cache-memory is scoped to a single branch; use filesystem-safe timestamps in filenames (no colons — e.g., `YYYY-MM-DD-HH-MM-SS-sss`).
+Store queue state as a JSON file in [cache-memory](/gh-aw/reference/cache-memory/), where each run resumes from where the last left off. Best for large queues and multi-day processing horizons where items are generated programmatically. Cache-memory is scoped to a single branch; use filesystem-safe timestamps in filenames (no colons — e.g., `YYYY-MM-DD-HH-MM-SS-sss`).
 
 ```aw wrap
 ---
@@ -148,12 +136,6 @@ You process items from a persistent JSON queue at `/tmp/gh-aw/cache-memory/workq
 If `pending` is empty, announce that the queue is exhausted.
 ```
 
-```mermaid
-flowchart LR
-    json[workqueue.json] --> process[Process pending items]
-    process --> save[Save updated queue]
-```
-
 ## Queue Strategy 4: Discussion-Based Queue
 
 Use a GitHub Discussion to track pending work items. Unresolved replies represent pending work; processing an item means resolving its reply. Best for community-sourced queues and async collaboration where humans need to inspect items before or after processing. Requires `discussions` in the GitHub toolset.
@@ -188,12 +170,6 @@ Each unresolved top-level reply is a work item.
 1. Find the "Work Queue" discussion and list all unresolved replies (`isAnswered: false`).
 2. For each unresolved reply (at most 5 per run): parse the work description, perform the work, then reply with the result.
 3. Create a summary discussion post documenting what was processed today.
-```
-
-```mermaid
-flowchart LR
-    discussion[Work Queue discussion] --> replies[Unresolved replies]
-    replies --> process[Process & resolve]
 ```
 
 ## Idempotency and Concurrency
