@@ -1390,12 +1390,8 @@ function parseMixedConfiguredModelNamesEvent(logContent) {
       if (parsed?.type !== "awf.mixed_configured_model_names") {
         continue;
       }
-      const configuredModels = Array.isArray(parsed.configured_models)
-        ? parsed.configured_models.map(m => String(m || "").trim()).filter(Boolean)
-        : [];
-      const availableModels = Array.isArray(parsed.available_models)
-        ? parsed.available_models.map(m => String(m || "").trim()).filter(Boolean)
-        : [];
+      const configuredModels = Array.isArray(parsed.configured_models) ? parsed.configured_models.map(m => String(m || "").trim()).filter(Boolean) : [];
+      const availableModels = Array.isArray(parsed.available_models) ? parsed.available_models.map(m => String(m || "").trim()).filter(Boolean) : [];
       return {
         engine: typeof parsed.engine === "string" && parsed.engine.trim() ? parsed.engine.trim() : "AI",
         configured_models: configuredModels,
