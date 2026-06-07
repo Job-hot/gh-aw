@@ -181,12 +181,43 @@ type ForecastEvaluation struct {
 	InCI bool `json:"in_ci"`
 }
 
+// ForecastTotals holds the repo-level aggregate of weekly and monthly P50 projections
+// across all sampled workflows, providing a single summary of the total forecast for the
+// repository without requiring callers to sum individual workflow values.
+type ForecastTotals struct {
+	WeeklyP50  float64 `json:"weekly_p50"`
+	MonthlyP50 float64 `json:"monthly_p50"`
+}
+
 // ForecastResult is the top-level output of the forecast command.
 type ForecastResult struct {
 	Period    string                   `json:"period"`
 	AsOf      string                   `json:"as_of"`
 	EvalMode  bool                     `json:"eval_mode,omitempty"`
 	Workflows []ForecastWorkflowResult `json:"workflows"`
+	// Totals is the repo-level aggregate across all workflows.  It is always
+	// present (even for a single workflow) so consumers never need to sum the
+	// individual workflow entries themselves.
+	Totals *ForecastTotals `json:"totals,omitempty"`
+}
+
+// computeForecastTotals sums the weekly and monthly P50 projections across all
+// workflows, preferring Monte Carlo P50 values when available.
+func computeForecastTotals(workflows []ForecastWorkflowResult) *ForecastTotals {
+	var weekly, monthly float64
+	for _, wf := range workflows {
+		w := wf.WeeklyProjectedAIC
+		if mc := wf.WeeklyMonteCarlo; mc != nil {
+			w = mc.P50ProjectedAIC
+		}
+		m := wf.MonthlyProjectedAIC
+		if mc := wf.MonthlyMonteCarlo; mc != nil {
+			m = mc.P50ProjectedAIC
+		}
+		weekly += w
+		monthly += m
+	}
+	return &ForecastTotals{WeeklyP50: weekly, MonthlyP50: monthly}
 }
 
 // RunForecast is the entry point for the forecast command.
@@ -339,6 +370,7 @@ func RunForecast(config ForecastConfig) error {
 		AsOf:      now.UTC().Format(time.RFC3339),
 		EvalMode:  config.EvalMode,
 		Workflows: results,
+		Totals:    computeForecastTotals(results),
 	}
 
 	if config.JSONOutput {
@@ -346,7 +378,6 @@ func RunForecast(config ForecastConfig) error {
 	}
 	return renderForecastTable(output, config)
 }
-
 func normalizeForecastRunError(err error, config ForecastConfig) error {
 	if config.TimeoutMinutes > 0 && errors.Is(err, context.DeadlineExceeded) {
 		fmt.Fprintln(os.Stderr, console.FormatErrorMessage(
@@ -965,6 +996,7 @@ func emitPartialForecastResults(results []ForecastWorkflowResult, config Forecas
 		AsOf:      now.UTC().Format(time.RFC3339),
 		EvalMode:  config.EvalMode,
 		Workflows: results,
+		Totals:    computeForecastTotals(results),
 	}
 	if config.JSONOutput {
 		_ = renderForecastJSON(output)
@@ -1091,7 +1123,6 @@ func renderForecastTable(output ForecastResult, config ForecastConfig) error {
 	fmt.Fprintln(os.Stderr, "")
 
 	anyUnreliable := false
-	var totalWeeklyP50, totalMonthlyP50 float64
 	rows := make([]forecastTableRow, 0, len(output.Workflows)+1)
 	for _, wf := range output.Workflows {
 		unreliableMark := ""
@@ -1108,8 +1139,6 @@ func renderForecastTable(output ForecastResult, config ForecastConfig) error {
 		if mc := wf.MonthlyMonteCarlo; mc != nil {
 			monthlyP50 = mc.P50ProjectedAIC
 		}
-		totalWeeklyP50 += weeklyP50
-		totalMonthlyP50 += monthlyP50
 
 		row := forecastTableRow{
 			Workflow:    wf.WorkflowID + unreliableMark,
@@ -1125,11 +1154,11 @@ func renderForecastTable(output ForecastResult, config ForecastConfig) error {
 	}
 
 	// Append a totals row when more than one workflow is present.
-	if len(output.Workflows) > 1 {
+	if len(output.Workflows) > 1 && output.Totals != nil {
 		rows = append(rows, forecastTableRow{
 			Workflow:   "TOTAL",
-			WeeklyP50:  formatForecastAIC(totalWeeklyP50),
-			MonthlyP50: formatForecastAIC(totalMonthlyP50),
+			WeeklyP50:  formatForecastAIC(output.Totals.WeeklyP50),
+			MonthlyP50: formatForecastAIC(output.Totals.MonthlyP50),
 		})
 	}
 

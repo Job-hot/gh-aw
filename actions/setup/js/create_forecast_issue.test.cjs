@@ -193,6 +193,43 @@ describe("create_forecast_issue", () => {
     expect(body).toContain("| **TOTAL** | | | | **10,000** | **42,000** |");
   });
 
+  it("uses pre-computed totals from report.totals when present", async () => {
+    const module = await import("./create_forecast_issue.cjs");
+    const body = module.buildForecastIssueBody(
+      {
+        period: "month",
+        totals: { weekly_p50: 99000, monthly_p50: 400000 },
+        workflows: [
+          {
+            workflow_id: "wf-1",
+            sampled_runs: 3,
+            p50_aic_per_run: 1000,
+            p95_aic_per_run: 2000,
+            weekly_projected_aic: 7000,
+            monthly_projected_aic: 30000,
+          },
+          {
+            workflow_id: "wf-2",
+            sampled_runs: 2,
+            p50_aic_per_run: 500,
+            p95_aic_per_run: 1000,
+            weekly_projected_aic: 3000,
+            monthly_projected_aic: 12000,
+          },
+        ],
+      },
+      {
+        owner: "octo",
+        repo: "repo",
+        serverUrl: "https://github.com",
+        generatedAtISO: "2026-01-01T00:00:00.000Z",
+      }
+    );
+
+    // report.totals values (99K / 400K) take precedence over the per-row sum (10K / 42K).
+    expect(body).toContain("| **TOTAL** | | | | **99,000** | **400,000** |");
+  });
+
   it("creates an error issue when report file is missing", async () => {
     mockFs.existsSync.mockReturnValue(false);
 

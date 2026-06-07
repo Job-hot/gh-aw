@@ -70,8 +70,8 @@ function buildForecastIssueBody(report, options) {
     if (tableRows.length === 0) {
       reportTable = "_No forecast rows were produced._";
     } else {
-      const totalWeekly = tableRows.reduce((s, [, , , , w]) => s + Number(w), 0);
-      const totalMonthly = tableRows.reduce((s, [, , , , , m]) => s + Number(m), 0);
+      const totalWeekly = report?.totals?.weekly_p50 ?? tableRows.reduce((s, [, , , , w]) => s + Number(w), 0);
+      const totalMonthly = report?.totals?.monthly_p50 ?? tableRows.reduce((s, [, , , , , m]) => s + Number(m), 0);
       const dataRows = tableRows.map(([workflowID, sampledRuns, p50Run, p95Run, weekly, monthly]) =>
         `| ${workflowID} | ${sampledRuns} | ${formatAIC(p50Run)} | ${formatAIC(p95Run)} | ${formatAIC(weekly)} | ${formatAIC(monthly)} |`
       );

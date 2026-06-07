@@ -450,3 +450,73 @@ func TestLoadCachedRunAIC_DoesNotFallbackToLegacyAgentArtifacts(t *testing.T) {
 	require.Zero(t, aic)
 	require.Equal(t, []string{"usage"}, downloaded)
 }
+
+// ── computeForecastTotals ─────────────────────────────────────────────────────
+
+func TestComputeForecastTotals_Empty(t *testing.T) {
+	totals := computeForecastTotals(nil)
+	require.NotNil(t, totals)
+	assert.Equal(t, 0.0, totals.WeeklyP50)
+	assert.Equal(t, 0.0, totals.MonthlyP50)
+}
+
+func TestComputeForecastTotals_PrefersMonteCarlo(t *testing.T) {
+	workflows := []ForecastWorkflowResult{
+		{
+			WeeklyProjectedAIC:  10,
+			MonthlyProjectedAIC: 20,
+			WeeklyMonteCarlo:    &ForecastMonteCarloSummary{P50ProjectedAIC: 12},
+			MonthlyMonteCarlo:   &ForecastMonteCarloSummary{P50ProjectedAIC: 22},
+		},
+		{
+			WeeklyProjectedAIC:  5,
+			MonthlyProjectedAIC: 8,
+			// No Monte Carlo — fallback to point estimate.
+		},
+	}
+	totals := computeForecastTotals(workflows)
+	require.NotNil(t, totals)
+	assert.InDelta(t, 12+5, totals.WeeklyP50, 1e-9, "weekly: MC p50 + point estimate")
+	assert.InDelta(t, 22+8, totals.MonthlyP50, 1e-9, "monthly: MC p50 + point estimate")
+}
+
+func TestForecastResult_TotalsPopulatedByRunForecast(t *testing.T) {
+	originalList := forecastListWorkflowRunsPaginated
+	originalLoadAIC := forecastLoadCachedRunAIC
+	t.Cleanup(func() {
+		forecastListWorkflowRunsPaginated = originalList
+		forecastLoadCachedRunAIC = originalLoadAIC
+	})
+
+	forecastListWorkflowRunsPaginated = func(_ ListWorkflowRunsOptions) ([]WorkflowRun, int, error) {
+		runs := []WorkflowRun{
+			{DatabaseID: 1, Status: "completed", Conclusion: "success", Duration: 5 * time.Minute},
+			{DatabaseID: 2, Status: "completed", Conclusion: "success", Duration: 6 * time.Minute},
+		}
+		return runs, len(runs), nil
+	}
+	forecastLoadCachedRunAIC = func(_ context.Context, runID int64, _ bool) float64 {
+		return map[int64]float64{1: 3.0, 2: 5.0}[runID]
+	}
+
+	result, err := forecastWorkflow(context.Background(), "ci", "2026-01-01", ForecastConfig{
+		Days:       30,
+		Period:     "month",
+		SampleSize: 100,
+	}, 30)
+	require.NoError(t, err)
+
+	// The single-workflow ForecastResult assembled via computeForecastTotals should
+	// expose a non-nil Totals matching the workflow's own weekly/monthly values.
+	mc := result.WeeklyMonteCarlo
+	require.NotNil(t, mc, "Monte Carlo must run for positive lambda")
+
+	output := ForecastResult{
+		Period:    "month",
+		AsOf:      "2026-01-01T00:00:00Z",
+		Workflows: []ForecastWorkflowResult{result},
+		Totals:    computeForecastTotals([]ForecastWorkflowResult{result}),
+	}
+	require.NotNil(t, output.Totals)
+	assert.Equal(t, output.Totals.WeeklyP50, mc.P50ProjectedAIC)
+}
