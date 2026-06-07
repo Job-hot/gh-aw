@@ -1,18 +1,6 @@
 {
   "strategies": [
     {
-      "name": "Historical Trend Regression",
-      "tested": "2026-04-28",
-      "effectiveness": "High",
-      "finding": "Duration >15min = 100% success; <5min = ~7% success. Agent count >=4/day = 48.8% success"
-    },
-    {
-      "name": "CI Smoke Test Failure Clustering",
-      "tested": "2026-05-03",
-      "effectiveness": "High",
-      "finding": "3+ failures at same second = infra incident, not code regression"
-    },
-    {
       "name": "Gate Workflow Composition Fingerprinting",
       "tested": "2026-05-05",
       "effectiveness": "High",
@@ -35,7 +23,13 @@
       "tested": "2026-06-03",
       "effectiveness": "High",
       "finding": "On gate-sweep days 100% of successes originate from the Running-Copilot-cloud-agent workflow; gate workflows (Q/Smoke CI/CJS/CGO/Agentic Commands/moderators) never produce success conclusions (only action_required). Completion-rate denominator is dominated by gate firings, so daily completion% mostly tracks gate-to-agent-session ratio, not agent quality."
+    },
+    {
+      "name": "Success-Workflow Provenance Inversion",
+      "tested": "2026-06-07",
+      "effectiveness": "High",
+      "finding": "On recovery days (completion>=40%) gate/moderator/review workflows (Test Quality Sentinel, PR Code Quality Reviewer, Design Decision Gate, Matt Pocock, Code Review, Agentic Commands) DO produce success conclusions -- 17/20 successes vs only 3 from cloud-agent. Inverts the 06-03 provenance mapping which held only on pure gate-sweep days. Implication: completion% is bimodal by regime, not purely a gate-to-agent ratio."
     }
   ],
-  "last_updated": "2026-06-03"
+  "last_updated": "2026-06-07"
 }
