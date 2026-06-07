@@ -1,10 +1,12 @@
 > [!WARNING]
 > **Daily Workflow AIC Guardrail Exceeded**: The agent was not started because the triggering user has already consumed the configured 24-hour AI Credits budget for this workflow.
 
-- **24h AIC usage:** `{total_effective_tokens}` AI Credits
+- **24h AIC usage:** `{total_aic}` AI Credits
 - **Configured threshold:** `{threshold}` AI Credits
 
 The agent will resume automatically once the 24-hour rolling window resets. No action is required if the current limit is appropriate for your usage.
+
+<sub>AIC values are approximate. Consult the billing dashboards for accurate usage and charges.</sub>
 
 <details>
 <summary>How to raise the daily limit</summary>
@@ -12,7 +14,7 @@ The agent will resume automatically once the 24-hour rolling window resets. No a
 Set `max-daily-ai-credits` in your workflow frontmatter to a higher value, then recompile:
 
 ```yaml
-max-daily-ai-credits: 5M
+max-daily-ai-credits: 20K
 ```
 
 Common suffix shorthands: `K` = thousands, `M` = millions (e.g. `2M` = 2,000,000).
@@ -29,7 +31,7 @@ Commit and push the updated `.lock.yml` file.
 > Raising the limit increases the number of AI inference calls the workflow can make
 > per 24-hour window per triggering user. Review your Copilot or model provider billing
 > before significantly increasing the threshold (for example, before doubling the current
-> value or setting it above 10M tokens).
+> value or setting it far above expected usage).
 
 </details>
 
