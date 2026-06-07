@@ -70,6 +70,9 @@ const MaxExpressionLineLength LineLength = 120
 // ExpressionBreakThreshold is the threshold for breaking long lines at logical points.
 const ExpressionBreakThreshold LineLength = 100
 
+// EffectiveTokensPerAICredit is the legacy ET-to-AI-credits conversion ratio.
+const EffectiveTokensPerAICredit int64 = 10000
+
 // File-permission policy for files and directories written by gh-aw.
 const (
 	// FilePermSensitive is owner-only read/write (0o600). Use for files that may

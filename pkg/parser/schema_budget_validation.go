@@ -5,10 +5,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/typeutil"
 )
-
-const legacyEffectiveTokensPerAICredit int64 = 10000
 
 func validateLegacyBudgetMigration(frontmatter map[string]any) error {
 	legacyValue, hasLegacy := frontmatter["max-effective-tokens"]
@@ -76,7 +75,7 @@ func convertLegacyEffectiveTokensInt64(value int64) (int64, bool) {
 	if value <= 0 {
 		return 0, false
 	}
-	aiCredits := value / legacyEffectiveTokensPerAICredit
+	aiCredits := value / constants.EffectiveTokensPerAICredit
 	if aiCredits <= 0 {
 		return 0, false
 	}

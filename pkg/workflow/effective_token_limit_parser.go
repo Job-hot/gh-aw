@@ -4,13 +4,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/typeutil"
 )
 
 var effectiveTokenLimitLog = logger.New("workflow:effective_token_limit_parser")
-
-const effectiveTokensPerAICredit int64 = 10000
 
 // normalizePositiveEffectiveTokenLimit converts positive integer-like values
 // into a canonical base-10 string.
@@ -87,7 +86,7 @@ func convertLegacyEffectiveTokensToAICredits(limit int64) (int64, bool) {
 		return 0, false
 	}
 
-	aiCredits := limit / effectiveTokensPerAICredit
+	aiCredits := limit / constants.EffectiveTokensPerAICredit
 	if aiCredits <= 0 {
 		effectiveTokenLimitLog.Printf("Rejecting max-effective-tokens value %d: converts to less than 1 AI credit", limit)
 		return 0, false
