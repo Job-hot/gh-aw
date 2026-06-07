@@ -1,12 +1,10 @@
 {
-  "run_date": "2026-06-07T01:25:21Z",
-  "run_id": "27079085262",
+  "run_date": "2026-06-07T07:41:16Z",
+  "run_id": "27086344862",
   "fork_prs": 0,
-  "agent_prs_found": 1,
-  "prs_found": [
-    {"number": 37457, "author": "copilot-swe-agent", "is_fork": false, "title": "feat: forecast — context-aware downloads, no workflow logs, partial results on timeout"}
-  ],
-  "notes": "1 open bot-authored PR found but it originates from an internal branch (isCrossRepository=false). Fork-only policy excludes it. No PRs to triage.",
+  "agent_prs_found": 0,
+  "prs_found": [],
+  "notes": "No open PRs found in the repository. PR #37457 (previously tracked as an internal-branch PR) is now MERGED. Zero open agent PRs to triage.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
