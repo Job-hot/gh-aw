@@ -1,33 +1,33 @@
 {
-  "total_runs": 28,
-  "total_findings": 221,
-  "total_tasks": 55,
+  "total_runs": 29,
+  "total_findings": 227,
+  "total_tasks": 57,
   "avg_success_score": 8.7,
-  "last_run": "2026-06-06",
-  "serena_lsp": "23 tools stable R4-28. activate_project --project ~1.3s warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'. Dynamic Workflow tool needs manual review — do audits directly via Grep/Read.",
+  "last_run": "2026-06-07",
+  "serena_lsp": "23 tools stable R4-29. activate_project --project ~1.3s warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'.",
   "open_issues": {
-    "sg28a1_R28": "tolowerequalfold ENFORCE-ENABLE (filed R28). Linter now ZERO-FP after sg27a1 precision fix landed R28. Enforce blocker = 13 prod TP lines (~15 comparisons) need ToLower(x)==literal/var -> strings.EqualFold conversion: yaml_import:39(x2), schema_suggestions:666, repo_memory_validation:52, features:69, resolve:173(x2)/189/227, notify_comment:630, strings:243, forecast:462(x2), add_workflow_resolution:459, import_url_fetcher:218. All ASCII keyword compares -> semantic-safe swap. After convert -> append -tolowerequalfold to cgo.yml:1078.",
-    "sg28a2_R28": "//nolint PARITY (filed R28). 9/21 registered linters lack nolint.BuildLineIndex (contextcancelnotdeferred ctxbackground excessivefuncparams fileclosenotdeferred largefunc ossetenvlibrary seenmapbool ssljson tolowerequalfold). INVARIANT: all 11 enforced HAVE it (fmterrorfnoverbs gained nolint when enforced R26). nolint = enforce precondition. seenmapbool 60+ escaping sites need escape hatch -> HARD precondition for sg26a1 enforce. Integration ~3-5 lines via internal/nolint.go HasDirective+BuildLineIndex.",
-    "sg27a1_R27_RESOLVED": "tolowerequalfold self-compare precision LANDED R28 — caseConvArg(72-95)+sameOperand(98-107), run() skips at 50-54, testdata okExamples 26-27. 3 FP sites now excluded. CLOSED.",
-    "sg26a1_R26_OPEN": "seenmapbool (20th linter) STILL UNLANDED at R28 — cgo.yml:1078 still 11 flags (NO -seenmapbool); inspectBody(seenmapbool.go:64-170) STILL escape-blind. sg26a1 filed R26 06-02 +7d -> open ~06-09, NOT re-filed. Ask = add escape filter (drop if returned/passed/stored/captured) then re-measure THEN enforce. ALSO needs nolint (sg28a2) for residual escaping FPs.",
-    "sgbo1_defensible": "2 filepath.Join variants intentional: cli/git.go:303 trailing-slash, cli/fix_command.go:410 Separator-suffix."
+    "sg29a1_R29": "tolowerequalfold FALSE-NEG. caseConvArg(tolowerequalfold.go:78-101) matches DIRECT ToLower/ToUpper call operand only, misses var-stored result. 4 files/5 sites: yaml_import:67(x2),features:27,runs_on_validation:52,error_recovery:221. Smoking-gun yaml_import fixed :39 left :67; features EqualFold :69/:105 vs == :27. Fix: track v:=ToLower(x), flag v(==/!=)<stringLit>.",
+    "sg29a2_R29": "internal/nolint.go BuildLineIndex HasPrefix('nolint:'+name) matches linter only FIRST-in-comma-list; //nolint:gosec,tolowerequalfold wouldnt suppress; all 14 nolint linters. Latent (repo custom dirs all single). Fix comma-split+membership ~10 lines.",
+    "sg28a2_R28_OPEN": "nolint parity. PARTIAL R29: seenmapbool+tolowerequalfold gained nolint; missing 7 (contextcancelnotdeferred ctxbackground excessivefuncparams fileclosenotdeferred largefunc ossetenvlibrary ssljson). All 12 enforced have nolint.",
+    "sg26a1_R26_OPEN": "seenmapbool escape filter UNLANDED R29 (inspectBody 64-175 escape-blind). NOW has nolint->annotate-enforce viable. Open ~06-09 not refiled.",
+    "sg28a1_RESOLVED": "tolowerequalfold ENFORCE LANDED R29 (cgo.yml:1078 12 flags, 13 sites EqualFold).",
+    "sgbo1_defensible": "2 filepath.Join intentional: cli/git.go:303, cli/fix_command.go:410."
   },
-  "completed_scans": "Resolved+enforced: errstringmatch(R14) panicinlibrarycode(R19) manualmutexunlock/osexit/rawlog(R21) regexp/fprintln/strconv(R23) jsonmarshal(R24) uncheckedtypeassertion(R25) fmterrorfnoverbs(R26, utc_offset.go errors.New, 11 flags). type_assert sg18a1 FIXED. fmt_errorf %w universal. sync defer-Unlock universal. octal 57(R8). STALLED/UNLANDED: sg26a1 seenmapbool escape-filter+enforce (non-near-zero, 60+ sites). DEFER: largefunc(>60)/excessivefuncparams(>8) R5-6 17fn/11fn refactor-heavy; ctxbackground 28 sites; tolowerequalfold 15-site EqualFold convert (after sg27a1 precision fix). DO-NOT-REFILE (dismissed): ossetenvlibrary 10, contextcancelnotdeferred 6, fileclosenotdeferred zero-prod.",
+  "completed_scans": "Resolved+enforced: errstringmatch(R14) panicinlibrarycode(R19) manualmutexunlock/osexit/rawlog(R21) regexp/fprintln/strconv(R23) jsonmarshal(R24) uncheckedtypeassertion(R25) fmterrorfnoverbs(R26) tolowerequalfold(R29 13-site EqualFold). DEFER: largefunc(>60)/excessivefuncparams(>8) refactor-heavy; ctxbackground 28 sites. DO-NOT-REFILE (dismissed): ossetenvlibrary 10, contextcancelnotdeferred 6, fileclosenotdeferred zero-prod.",
   "patterns": {
-    "ci_enforce": "cgo.yml:1040 POSITIVE LINTER_FLAGS. R27=11 flags: -errstringmatch -panicinlibrarycode -manualmutexunlock -osexitinlibrary -rawloginlib -regexpcompileinfunction -fprintlnsprintf -strconvparseignorederror -jsonmarshalignoredeerror -uncheckedtypeassertion -fmterrorfnoverbs. Append for zero-vio; refactor///nolint first for non-zero.",
-    "enforce_landed_5consec_then_STALL": "PROVEN R22->R26 (5 consec): audit registered-but-unenforced NEAR-ZERO linter -> fix-to-zero -> file enforce = lands within week. R27 STALLED: seenmapbool (60+ sites, non-near-zero) did NOT land — fast pattern requires near-zero. For non-near-zero NEW linters, pivot to PRECISION-FIX angle (single-file, self-consistency) which is independently landable (sg27a1 tolowerequalfold self-compare FP).",
-    "linter_precision_subpattern": "NEW linters often ship with precision gaps. sg24a1(two-value ResultOf RESOLVED R25), sg27a1(tolowerequalfold self-compare FP RESOLVED R28 caseConvArg+sameOperand+testdata 26-27), sg26a1(seenmapbool escape-blind, OPEN — NOT single-file-trivial, escape analysis harder, lone holdout). Single-file precision fix = high landability (2/3 landed); escape-analysis fix lags. Check each NEW linter testdata okExamples for uncovered FP idioms.",
-    "enforce_precondition_nolint": "enforced linter INVARIANT: all 11 enforced have nolint.BuildLineIndex+HasDirective escape hatch. fmterrorfnoverbs gained nolint when enforced (R26 lacked->R28 has). So adding nolint is an enforce precondition for non-near-zero linters (seenmapbool 60+ escaping sites). tolowerequalfold can enforce via full site-conversion (13 EqualFold) WITHOUT nolint, but nolint is the convention. sg28a2.",
-    "wasm_build_tag": "*_wasm.go files carry IMPLICIT GOARCH=wasm via filename (no //go:build needed). Host (linux) golint-custom EXCLUDES them. Partition grep hits by build constraint before claiming 'N enforceable'.",
-    "self_consistency": "Linter framework's own analyzers should pass enforced linters. sg24a1 RESOLVED R25."
+    "ci_enforce": "cgo.yml:1078 POSITIVE LINTER_FLAGS, R29=12 flags. Append flag for zero-vio linter; convert-to-zero or //nolint-annotate first for non-zero.",
+    "precision_fix_lands": "Single-file linter precision/enforce fixes land ~1day: sg24a1 R25, sg27a1 R28, sg28a1 enforce R29. Non-near-zero (seenmapbool 60+ sites) does NOT auto-land (R27 stall) — pivot to precision/nolint angle.",
+    "enforce_precondition_nolint": "INVARIANT: all 12 enforced linters have internal/nolint (BuildLineIndex+HasDirective). Adding nolint is an enforce precondition for non-near-zero linters. seenmapbool gained nolint R29.",
+    "wasm_build_tag": "*_wasm.go = implicit GOARCH=wasm; host golint-custom EXCLUDES them. Partition grep hits by build constraint.",
+    "self_consistency": "Linter framework's own analyzers should pass enforced linters (sg24a1)."
   },
-  "linters_R28": {
+  "linters_R29": {
     "total_registered": 21,
-    "enforced_11": "errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion fmterrorfnoverbs",
-    "unenforced_10": "contextcancelnotdeferred(dismissed,no-nolint) ctxbackground(28,refactor,no-nolint) errormessage(opt-in,HAS-nolint) excessivefuncparams(refactor,no-nolint) fileclosenotdeferred(zero,dismissed,no-nolint) largefunc(refactor,no-nolint) ossetenvlibrary(dismissed,no-nolint) ssljson(not-go-code,no-nolint) seenmapbool(sg26a1 OPEN,60+sites,escape-blind,no-nolint) tolowerequalfold(ZERO-FP now,sg28a1 13 TP convert->enforce,no-nolint sg28a2)",
-    "nolint_have_12": "panicinlibrarycode strconvparseignorederror rawloginlib fmterrorfnoverbs manualmutexunlock uncheckedtypeassertion osexitinlibrary fprintlnsprintf regexpcompileinfunction errstringmatch jsonmarshalignoredeerror errormessage. INVARIANT: all 11 enforced have nolint; errormessage only non-enforced one with it.",
-    "nolint_missing_9": "contextcancelnotdeferred ctxbackground excessivefuncparams fileclosenotdeferred largefunc ossetenvlibrary seenmapbool ssljson tolowerequalfold",
-    "next_candidates": "R29: reverify sg28a1(tolowerequalfold 13-site EqualFold convert + enforce) + sg28a2(nolint parity, esp seenmapbool+tolowerequalfold) + sg26a1(seenmapbool escape filter, expires ~06-09). Watch 22nd linter (none R28; last new R27). If sg28a1 lands -> 12 enforced. enforce pipeline now needs (a) site-conversion (tolowerequalfold) OR (b) nolint+annotate (seenmapbool) — both tracked. Other angles: ctxbackground 28-site, errormessage opt-in scope, largefunc/excessivefuncparams refactor (deferred)."
+    "enforced_12": "errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion fmterrorfnoverbs tolowerequalfold",
+    "unenforced_9": "contextcancelnotdeferred ctxbackground errormessage(opt-in,HAS-nolint) excessivefuncparams fileclosenotdeferred largefunc ossetenvlibrary ssljson seenmapbool(sg26a1,NOW-HAS-nolint)",
+    "nolint_have_14": "all 12 enforced + errormessage + seenmapbool",
+    "nolint_missing_7": "contextcancelnotdeferred ctxbackground excessivefuncparams fileclosenotdeferred largefunc ossetenvlibrary ssljson",
+    "next_candidates": "R30: reverify sg29a1(var-alias FN) sg29a2(nolint multi-directive) sg28a2(parity 7) sg26a1(seenmapbool nolint-ready, exp ~06-09). 22nd linter none R27-R29. enforce 11->12 R29."
   },
-  "bash_policy": "Sandbox blocks: multi-stmt compounds, mkdir/ls/find-exec/wc/cat/sed outside repo, for-loops, backtick grep (cmd subst), heredoc, git on /tmp. go build blocked (lint via Grep/Read). gh issue/search list --json 'Malformed version:'; gh api search/issues label query null items — open-issue check unreliable, rely on memory+7d expiry. Glob/Read/Write work on /tmp; bash CANNOT write/read /tmp/gh-aw/repo-memory (use Write/Edit; append via Edit on unique tail). /tmp/gh-aw/agent/ bash-writable. safeoutputs `. < file.json`. KEEP MEMORY FILES SMALL — 10KB patch limit; prefer Edit over full Write rewrites."
+  "bash_policy": "Sandbox blocks multi-stmt compounds, ls/mkdir/cat/sed outside repo, for-loops, backtick grep, git on /tmp. go build blocked (lint via Grep/Read). gh issue/search --json 'Malformed version:' — open-issue check unreliable, rely on memory+7d expiry. Glob/Read/Write work on /tmp; bash CANNOT touch /tmp/gh-aw/repo-memory. KEEP MEMORY SMALL — ~10KB total changed-file limit; compact strategies.jsonl to recent entries."
 }

@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-06-06T00:00:00Z",
+  "last_updated": "2026-06-07T00:00:00Z",
   "tool_count": 23,
-  "tool_change_R28": "NONE on Serena LSP — stable at 23 (R4-28, 25 consec). Registered linters UNCHANGED at 21 (no 22nd — last new tolowerequalfold R27). sg27a1 tolowerequalfold self-compare precision LANDED (caseConvArg 72-95 + sameOperand 98-107, run() skips 50-54, testdata okExamples 26-27). CI ENFORCEMENT unchanged 11 flags (cgo.yml:1078) — neither seenmapbool nor tolowerequalfold enforced yet. NEW FINDING: //nolint parity — 12 linters use internal/nolint (BuildLineIndex+HasDirective), 9 lack it; all 11 enforced HAVE nolint (enforce precondition). Registry growth paused R27->R28 (was ~1/few runs R23-27).",
+  "tool_change_R29": "Serena LSP stable at 23 (R4-29). Linters UNCHANGED at 21 (no 22nd R27-R29). CI ENFORCEMENT 11->12 (cgo.yml:1078): -tolowerequalfold appended (sg28a1 LANDED, 13 sites EqualFold). //nolint coverage 12->14: seenmapbool+tolowerequalfold gained internal/nolint; 7 lack it. All 12 enforced HAVE nolint. NEW sg29a1 tolowerequalfold var-alias FALSE-NEG; NEW sg29a2 internal/nolint first-in-comma-list parse gap.",
   "tools": [
     "activate_project", "check_onboarding_performed", "delete_memory", "edit_memory",
     "find_file", "find_referencing_symbols", "find_symbol", "get_current_config",
@@ -12,5 +12,5 @@
     "think_about_whether_you_are_done", "write_memory"
   ],
   "params": "activate_project --project (NOT --path). find_symbol --name_path_pattern. find_referencing_symbols --name_path + --relative_path FILE. search_for_pattern --substring_pattern. JSON stdin pipe `.` sentinel.",
-  "gotchas": "Bare receiver-method names return [] from find_symbol — qualify '(*Type).method'. find_symbol broad 70s+ (prefer Grep). activate_project ~1.3s warm/~7.3s cold. Bash sandbox blocks go build, find-exec, mkdir/ls outside repo, multi-stmt compounds, sed, for-loops, backtick grep (cmd subst), git on /tmp. gh issue list/search --json 'Malformed version:'; gh api search/issues null items for label query — open-sergo check unreliable, rely on memory open_issues + 7d expiry. safeoutputs `. < file.json` works (printf|safeoutputs tool .). Repo-memory /tmp/gh-aw/repo-memory/default/ OUTSIDE write dir — bash blocked (mkdir/ls/cat), use Glob/Read/Write; append via Edit on unique tail to keep patch <10KB. /tmp/gh-aw/agent/ writable. Dynamic Workflow tool needs manual review. *_wasm.go = implicit GOARCH=wasm, excluded from host lint."
+  "gotchas": "Bare receiver-method names return [] — qualify '(*Type).method'. find_symbol broad 70s+ (prefer Grep). Bash sandbox blocks go build, mkdir/ls/cat/sed outside repo, multi-stmt compounds, for-loops, backtick grep, git on /tmp. gh issue/search --json 'Malformed version:' — open-issue check unreliable, rely on memory+7d expiry. Repo-memory /tmp/gh-aw/repo-memory/ bash-blocked — use Glob/Read/Write; KEEP TOTAL ~10KB (compact strategies.jsonl to ~3 recent). *_wasm.go excluded from host lint."
 }
