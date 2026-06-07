@@ -793,9 +793,17 @@ func loadCachedRunAIC(ctx context.Context, runID int64, verbose bool) float64 {
 	return tokenUsage.TotalAIC
 }
 
-// forecastDownloadUsageArtifact downloads only the usage artifact for a workflow run,
-// without downloading workflow run logs (which are not needed for AIC computation).
-// It is used by the forecast command via forecastDownloadRunArtifacts.
+// forecastDownloadUsageArtifact is a forecast-specific replacement for
+// downloadRunArtifacts. Unlike the general-purpose downloader, it:
+//   - Downloads only artifacts matching artifactFilter (typically ["usage"]).
+//   - Skips workflow run log downloads entirely — logs are not needed for
+//     AIC computation and downloading them wastes time when forecasting
+//     many runs.
+//   - Returns ErrNoArtifacts immediately when no matching artifact is found
+//     rather than falling back to log diagnostics.
+//
+// It is referenced by forecastDownloadRunArtifacts so that tests can substitute
+// a mock implementation without modifying the general artifact download path.
 func forecastDownloadUsageArtifact(ctx context.Context, runID int64, outputDir string, verbose bool, owner, repo, hostname string, artifactFilter []string) error {
 	forecastRunLog.Printf("Downloading usage artifact: run_id=%d, output_dir=%s, filter=%v", runID, outputDir, artifactFilter)
 	shouldLogProgress := IsRunningInCI() || verbose
@@ -865,7 +873,9 @@ func forecastDownloadUsageArtifact(ctx context.Context, runID int64, outputDir s
 
 // emitPartialForecastResults outputs whatever workflow results have been collected so
 // far when the forecast computation is interrupted (timeout or user cancellation).
-// It is a no-op when results is empty.
+// Partial results are only meaningful when at least one workflow has been fully
+// processed; the function is a no-op when results is empty so callers do not need to
+// guard against it.
 func emitPartialForecastResults(results []ForecastWorkflowResult, config ForecastConfig, now time.Time) {
 	if len(results) == 0 {
 		return
