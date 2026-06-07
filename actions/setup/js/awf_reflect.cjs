@@ -303,6 +303,36 @@ async function fetchAWFReflect(options) {
 }
 
 /**
+ * Collect unique model names from configured reflect endpoints.
+ * When `preferredProvider` is given, models from matching provider endpoints are
+ * returned first; if none match, all configured endpoint models are returned.
+ *
+ * @param {unknown} reflectData
+ * @param {string} preferredProvider
+ * @returns {string[]}
+ */
+function getAvailableModelsFromReflectData(reflectData, preferredProvider) {
+  if (!reflectData || typeof reflectData !== "object" || !("endpoints" in reflectData) || !Array.isArray(reflectData.endpoints)) {
+    return [];
+  }
+  const provider = String(preferredProvider || "")
+    .trim()
+    .toLowerCase();
+  const configuredEndpoints = reflectData.endpoints.filter(ep => ep && ep.configured === true && Array.isArray(ep.models));
+  const providerEndpoints = provider ? configuredEndpoints.filter(ep => String(ep.provider || "").toLowerCase() === provider) : configuredEndpoints;
+  const sourceEndpoints = providerEndpoints.length > 0 ? providerEndpoints : configuredEndpoints;
+  const unique = new Set();
+  for (const endpoint of sourceEndpoints) {
+    for (const model of endpoint.models) {
+      if (typeof model === "string" && model.trim()) {
+        unique.add(model.trim());
+      }
+    }
+  }
+  return Array.from(unique).sort((a, b) => a.localeCompare(b));
+}
+
+/**
  * Resolve Copilot SDK BYOK custom provider configuration from AWF /reflect data.
  * Chooses a configured endpoint and maps it to an OpenAI-compatible provider base URL.
  * Returns null when no suitable endpoint is found (e.g. no reflect data, or endpoints not
@@ -382,6 +412,7 @@ if (typeof module !== "undefined" && module.exports) {
     extractModelIds,
     fetchAWFReflect,
     fetchModelsFromUrl,
+    getAvailableModelsFromReflectData,
     resolveCopilotSDKCustomProviderFromReflect,
   };
 }

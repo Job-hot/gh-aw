@@ -44,7 +44,9 @@ const {
   extractModelIds,
   fetchAWFReflect,
   fetchModelsFromUrl,
+  getAvailableModelsFromReflectData,
 } = require("./awf_reflect.cjs");
+const { emitJSONLEvent } = require("./jsonl_helpers.cjs");
 const { emitMissingToolPermissionIssue, hasNoopInSafeOutputs } = require("./safeoutputs_cli.cjs");
 const { countPermissionDeniedIssues, hasNumerousPermissionDeniedIssues, extractDeniedCommands, buildMissingToolPermissionIssuePayload } = require("./permission_denied_helpers.cjs");
 
@@ -81,18 +83,6 @@ const SERVER_ERROR_PATTERN = /InternalServerError|ServiceUnavailableError|500 In
 function log(message) {
   const ts = new Date().toISOString();
   process.stderr.write(`[codex-harness] ${ts} ${message}\n`);
-}
-
-/**
- * Emit one dedicated JSONL event line for downstream failure-report parsing.
- * @param {Record<string, any>} event
- */
-function emitJSONLEvent(event) {
-  try {
-    process.stderr.write(JSON.stringify(event) + "\n");
-  } catch {
-    // Best-effort diagnostics only; ignore serialization failures.
-  }
 }
 
 /**
@@ -231,33 +221,6 @@ function extractConfiguredModelFromCodexArgs(args) {
     }
   }
   return "";
-}
-
-/**
- * Collect unique model names from configured reflect endpoints.
- * @param {unknown} reflectData
- * @param {string} preferredProvider
- * @returns {string[]}
- */
-function getAvailableModelsFromReflectData(reflectData, preferredProvider) {
-  if (!reflectData || typeof reflectData !== "object" || !("endpoints" in reflectData) || !Array.isArray(reflectData.endpoints)) {
-    return [];
-  }
-  const provider = String(preferredProvider || "")
-    .trim()
-    .toLowerCase();
-  const configuredEndpoints = reflectData.endpoints.filter(ep => ep && ep.configured === true && Array.isArray(ep.models));
-  const providerEndpoints = provider ? configuredEndpoints.filter(ep => String(ep.provider || "").toLowerCase() === provider) : configuredEndpoints;
-  const sourceEndpoints = providerEndpoints.length > 0 ? providerEndpoints : configuredEndpoints;
-  const unique = new Set();
-  for (const endpoint of sourceEndpoints) {
-    for (const model of endpoint.models) {
-      if (typeof model === "string" && model.trim()) {
-        unique.add(model.trim());
-      }
-    }
-  }
-  return Array.from(unique).sort((a, b) => a.localeCompare(b));
 }
 
 /**

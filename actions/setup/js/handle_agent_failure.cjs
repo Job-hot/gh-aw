@@ -16,6 +16,7 @@ const { isMaxEffectiveTokensExceededError } = require("./effective_tokens_hard_r
 const { formatAICCredits } = require("./daily_effective_workflow_helpers.cjs");
 const { parseTokenUsageJsonl, generateTokenUsageSummary } = require("./parse_mcp_gateway_log.cjs");
 const { readDedupedTokenUsage, TOKEN_USAGE_PATHS } = require("./parse_token_usage.cjs");
+const { parseMixedConfiguredModelNamesEvent } = require("./jsonl_helpers.cjs");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -1370,38 +1371,6 @@ function buildModelNotSupportedErrorContext(hasModelNotSupportedError) {
   }
 
   return "\n" + renderPromptTemplate("model_not_supported_error.md");
-}
-
-/**
- * Parse a dedicated mixed-configured-models JSONL event from engine logs.
- * @param {string} logContent
- * @returns {{engine: string, configured_models: string[], available_models: string[]} | null}
- */
-function parseMixedConfiguredModelNamesEvent(logContent) {
-  if (!logContent) return null;
-  const lines = logContent.split("\n");
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith("{") || !trimmed.includes('"awf.mixed_configured_model_names"')) {
-      continue;
-    }
-    try {
-      const parsed = JSON.parse(trimmed);
-      if (parsed?.type !== "awf.mixed_configured_model_names") {
-        continue;
-      }
-      const configuredModels = Array.isArray(parsed.configured_models) ? parsed.configured_models.map(m => String(m || "").trim()).filter(Boolean) : [];
-      const availableModels = Array.isArray(parsed.available_models) ? parsed.available_models.map(m => String(m || "").trim()).filter(Boolean) : [];
-      return {
-        engine: typeof parsed.engine === "string" && parsed.engine.trim() ? parsed.engine.trim() : "AI",
-        configured_models: configuredModels,
-        available_models: availableModels,
-      };
-    } catch {
-      // Ignore malformed lines and keep scanning.
-    }
-  }
-  return null;
 }
 
 /**

@@ -57,8 +57,10 @@ const {
   extractModelIds,
   fetchAWFReflect,
   fetchModelsFromUrl,
+  getAvailableModelsFromReflectData,
   resolveCopilotSDKCustomProviderFromReflect,
 } = require("./awf_reflect.cjs");
+const { emitJSONLEvent } = require("./jsonl_helpers.cjs");
 const { runSafeOutputsCLI, buildMissingToolAlternatives, emitMissingToolPermissionIssue, emitInfrastructureIncomplete, hasNoopInSafeOutputs } = require("./safeoutputs_cli.cjs");
 const { countPermissionDeniedIssues, hasNumerousPermissionDeniedIssues, extractDeniedCommands, buildMissingToolPermissionIssuePayload } = require("./permission_denied_helpers.cjs");
 
@@ -112,17 +114,6 @@ const AGENTIC_ENGINE_TIMEOUT_PATTERN = /signal=SIG(?:TERM|KILL|INT)/;
 // A fresh restart is required to discard the poisoned history.
 const NULL_TYPE_TOOL_CALL_PATTERN = /tool_calls\[.*?\]\.type.*null/;
 
-/**
- * Emit one dedicated JSONL event line for downstream failure-report parsing.
- * @param {Record<string, any>} event
- */
-function emitJSONLEvent(event) {
-  try {
-    process.stderr.write(JSON.stringify(event) + "\n");
-  } catch {
-    // Best-effort diagnostics only; ignore serialization failures.
-  }
-}
 /**
  * Emit a diagnostic log line to stderr.
  * All driver messages are prefixed with "[copilot-harness]" so they are easy to
@@ -210,33 +201,6 @@ function isModelAvailableInReflectData(model, reflectData) {
     }
   }
   return false;
-}
-
-/**
- * Collect unique model names from configured reflect endpoints.
- * @param {unknown} reflectData
- * @param {string} preferredProvider
- * @returns {string[]}
- */
-function getAvailableModelsFromReflectData(reflectData, preferredProvider) {
-  if (!reflectData || typeof reflectData !== "object" || !("endpoints" in reflectData) || !Array.isArray(reflectData.endpoints)) {
-    return [];
-  }
-  const provider = String(preferredProvider || "")
-    .trim()
-    .toLowerCase();
-  const configuredEndpoints = reflectData.endpoints.filter(ep => ep && ep.configured === true && Array.isArray(ep.models));
-  const providerEndpoints = provider ? configuredEndpoints.filter(ep => String(ep.provider || "").toLowerCase() === provider) : configuredEndpoints;
-  const sourceEndpoints = providerEndpoints.length > 0 ? providerEndpoints : configuredEndpoints;
-  const unique = new Set();
-  for (const endpoint of sourceEndpoints) {
-    for (const model of endpoint.models) {
-      if (typeof model === "string" && model.trim()) {
-        unique.add(model.trim());
-      }
-    }
-  }
-  return Array.from(unique).sort((a, b) => a.localeCompare(b));
 }
 
 /**
