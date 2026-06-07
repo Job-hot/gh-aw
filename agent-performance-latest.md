@@ -1,56 +1,56 @@
 # Agent Performance Analyzer — Latest Run
 
-**Timestamp:** 2026-06-06T13:02:11Z  
+**Timestamp:** 2026-06-07T13:30:00Z  
 **Workflow:** Agent Performance Analyzer  
-**Run ID:** 27062936303  
-**Run URL:** https://github.com/github/gh-aw/actions/runs/27062936303
+**Run ID:** 27093462163  
+**Run URL:** https://github.com/github/gh-aw/actions/runs/27093462163
 
 ## Executive Summary
 
-- **Agents analyzed:** 26 active workflow types (100 runs)
-- **Quality score:** 70/100 (↓2 from 72)
-- **Effectiveness:** 64/100 (↓2 from 66)
-- **Ecosystem health:** 74/100 (↓7 from 81 — 4-day declining trend)
+- **Agents analyzed:** 25 active workflow types (100 runs)
+- **Quality score:** 68/100 (↓2 from 70)
+- **Effectiveness:** 62/100 (↓2 from 64)
+- **Ecosystem health:** 71/100 (↓3 — 5-day declining trend: 82→81→78→74→71)
 
-## Key Events This Period (June 2–6)
+## Active P1 Issues (Do Not Re-File)
+- **CJS re-regression** (#37503, OPEN Jun 7): Closed prematurely Jun 3 (#36410), re-regressed Jun 7
+- **CGO unit tests** (#35028, OPEN): 17% success rate in recent window
+- **Token guard escalation** (`#aw_tgescalate`, filed this run): Day 5 without #37145 implementation
+- **Safe Output Health Monitor**: #37501 CLOSED Jun 7 — monitor for recurrence (Day 5 token exhaustion)
 
-### Resolved ✅
-- **Safe Outputs MCP P0** (June 6): `create_pull_request` path bug fixed PR #37299. RESOLVED.
-- **CJS typecheck** (#36410): Was 0% P1, now **85% success (11/13 runs)** — LIKELY RESOLVED. WH: confirm closure.
-
-### Improving ⬆️
-- **CGO unit tests** (#35028): Was 0%, now 67% success (8/12 runs). Still 2 failures.
-
-### New Issues (Do Not Re-File)
-- **max-ai-credits migration** (#37282, #37284): 6 workflows using deprecated `max-effective-tokens`. Migration tracked.
-- All other critical issues unchanged from shared-alerts.md.
+## Resolved Since Last Run ✅
+- Code Simplifier: Fixed via #37489
+- Daily Compiler Quality Check (partial): #37485 unblocked
+- Documentation Healer model pinning: #37505
+- safe-output-health AIC: #37506
 
 ## Agent Rankings
 
 ### Top Performers
-1. copilot-swe-agent (Q:90, E:92) — 26/30 PR merges, 8 WIP PRs, major platform fixes
-2. Agentic Maintenance (Q:85, E:90) — 100% success, proactive migrations
-3. License Compliance Check (Q:83, E:88) — 100% success (3/3)
-4. Auto-Close Parent Issues (Q:80, E:85) — 100% success (2/2)
-5. Smoke CI (Q:78, E:82) — 93% success (14/15)
+1. copilot-swe-agent (Q:91, E:93) — 22 PRs merged June 7, exceptional throughput
+2. Agentic Maintenance (Q:85, E:88) — 100% success
+3. License Compliance Check (Q:83, E:86) — 100% success
+4. Auto-Triage Issues (Q:79, E:82) — 4/4 success
+5. CI (Q:78, E:80) — 3/3 success
 
 ### Needing Improvement
-- AI Moderator (Q:35, E:20) — 0% success, no fix path (persistent)
-- Safe Output Health Monitor (Q:30, E:25) — token budget, #37264 OPEN
-- Daily BYOK Ollama Test (E:15) — auth failures, #37211 OPEN
-- Doc Build - Deploy (E:62) — 62% success (3/8 failures), watch list
+- AI Moderator (Q:35, E:20) — 0% success, no fix path (5+ days)
+- Safe Output Health Monitor (Q:30, E:25) — token budget Day 5
+- Workflow Forecast Report (Q:45, E:35) — 3 duplicate failures today
+- Daily Documentation Healer (Q:48, E:35) — 4th consecutive failure (fix in progress #37505)
 
 ## Pattern Detection
+- **Productive:** copilot-swe-agent fast-lane (22 merges/day)
+- **Token exhaustion cluster (Day 5):** Safe Output Health Monitor + Daily Compiler → escalated `#aw_tgescalate`
+- **CI blockage cluster:** CGO (17%) + CJS re-regression (#37503)
+- **Auth/config failure cluster (Day 4):** Documentation Healer (fix in progress via #37505)
+- **Forecast duplication:** 3 identical failure issues today (#37459, #37486, #37499)
 
-- **Productive:** copilot-swe-agent fast iteration, Agentic Maintenance proactive hygiene
-- **Token exhaustion cluster (static):** Safe Output Health Monitor + jsweep + Daily Compiler + Firewall Logs — 4 days no improvement
-- **Auth config cluster:** Doc Healer + Model Inventory + BYOK Ollama — #37039 fix insufficient; #37271 filed
-- **Failure reporter duplication** (#35984): 60% duplicate rate — unresolved
-
-## No New Issues Created
-All critical issues already tracked in shared-alerts.md.
+## Issues Created This Run
+- `#aw_tgescalate`: Token guard escalation (Day 5, blocking monitoring)
 
 ## Coordination Notes
-- For WH: CJS at 85% — recommend closing/updating #36410
-- For Campaign Manager: copilot-swe-agent throughput high (26 merges) — consider more complex tasks
-- Token guard #37145 still not implemented — token exhaustion cluster growing risk
+- **WH:** CJS #37503 filed today (re-regression). CGO #35028 still active — fresh P1 attention needed.
+- **WH:** Token guard #37145 escalated — Day 5. Assign owner immediately.
+- **Campaign:** copilot-swe-agent throughput very high (22 merges/day) — scaling complex tasks is viable.
+- **All:** Ecosystem health 5-day declining trend (82→71) — systemic attention needed.
