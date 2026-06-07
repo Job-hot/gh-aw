@@ -81,20 +81,20 @@ func extractEngineBudgetLimits(engineConfig *EngineConfig) (string, int64, int64
 	if engineConfig == nil {
 		return "", 0, 0, 0
 	}
-
-	func validateLegacyBudgetConfiguration(frontmatter map[string]any, importsResult *parser.ImportsResult) error {
-		hasLegacy := frontmatter["max-effective-tokens"] != nil
-		hasModern := frontmatter["max-ai-credits"] != nil
-		if importsResult != nil {
-			hasLegacy = hasLegacy || importsResult.MergedMaxEffectiveTokens != ""
-			hasModern = hasModern || importsResult.MergedMaxAICredits != ""
-		}
-		if hasLegacy && hasModern {
-			return errors.New("'max-effective-tokens' cannot be used with 'max-ai-credits' in the same compiled workflow; remove the legacy field and keep 'max-ai-credits'")
-		}
-		return nil
-	}
 	return engineConfig.MaxTurns, engineConfig.MaxEffectiveTokens, engineConfig.MaxAICredits, engineConfig.MaxRuns
+}
+
+func validateLegacyBudgetConfiguration(frontmatter map[string]any, importsResult *parser.ImportsResult) error {
+	hasLegacy := frontmatter["max-effective-tokens"] != nil
+	hasModern := frontmatter["max-ai-credits"] != nil
+	if importsResult != nil {
+		hasLegacy = hasLegacy || importsResult.MergedMaxEffectiveTokens != ""
+		hasModern = hasModern || importsResult.MergedMaxAICredits != ""
+	}
+	if hasLegacy && hasModern {
+		return errors.New("'max-effective-tokens' cannot be used with 'max-ai-credits' in the same compiled workflow; remove the legacy field and keep 'max-ai-credits'")
+	}
+	return nil
 }
 
 func defaultNetworkPermissions(networkPermissions *NetworkPermissions) *NetworkPermissions {
