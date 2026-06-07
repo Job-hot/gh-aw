@@ -1,16 +1,13 @@
 {
-  "run_date": "2026-06-07T12:49:17Z",
-  "run_id": "27092980976",
+  "run_date": "2026-06-07T18:42:39Z",
+  "run_id": "27101319902",
   "fork_prs": 0,
-  "agent_prs_found": 0,
+  "agent_prs_found": 1,
   "prs_found": [],
   "branch_prs_skipped": [
-    {"number": 37542, "title": "[spec-enforcer] Enforce specifications for cli, console, constants", "author": "github-actions"},
-    {"number": 37525, "title": "[spec-extractor] Update package specifications for envutil, fileutil, gitutil, logger", "author": "github-actions"},
-    {"number": 37520, "title": "[instructions] Sync instruction files with release v0.78.3", "author": "github-actions"},
-    {"number": 37517, "title": "[actions] Update GitHub Actions versions - 2026-06-07", "author": "github-actions"}
+    {"number": 37621, "title": "[WIP] Switch agent-persona-explorer output from discussion to issue", "author": "app/copilot-swe-agent", "state": "DRAFT", "isCrossRepository": false, "additions": 0, "deletions": 0, "changedFiles": 0}
   ],
-  "notes": "4 open branch-based (non-fork) PRs found, all skipped per fork-only policy. No app/github-copilot authored PRs found.",
+  "notes": "1 open branch-based (non-fork) DRAFT PR found (#37621 by app/copilot-swe-agent), skipped per fork-only policy. PR has 0 files changed (WIP state).",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
