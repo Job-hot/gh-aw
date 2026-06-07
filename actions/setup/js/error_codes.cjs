@@ -45,6 +45,24 @@ const ERR_SYSTEM = "ERR_SYSTEM";
 /** @type {string} Safe output validation/input errors (legacy numeric taxonomy) */
 const SAFE_OUTPUT_E001 = "E001";
 
+/** @type {string} add_reviewer GraphQL node ID resolution failures */
+const SAFE_OUTPUT_E009 = "E009";
+
+/** @type {string} apply_samples input parsing/validation failures */
+const SAFE_OUTPUT_E010 = "E010";
+
+/** @type {string} apply_samples runtime/tool invocation failures */
+const SAFE_OUTPUT_E011 = "E011";
+
+/** @type {string} hide_comment comment_id validation/resolution failures */
+const SAFE_OUTPUT_E012 = "E012";
+
+/** @type {string} safeoutputs_cli argument validation failures */
+const SAFE_OUTPUT_E013 = "E013";
+
+/** @type {string} safeoutputs_cli invocation/runtime failures */
+const SAFE_OUTPUT_E014 = "E014";
+
 /** @type {string} Safe output operation/runtime failures (legacy numeric taxonomy) */
 const SAFE_OUTPUT_E099 = "E099";
 
@@ -57,5 +75,11 @@ module.exports = {
   ERR_PARSE,
   ERR_SYSTEM,
   SAFE_OUTPUT_E001,
+  SAFE_OUTPUT_E009,
+  SAFE_OUTPUT_E010,
+  SAFE_OUTPUT_E011,
+  SAFE_OUTPUT_E012,
+  SAFE_OUTPUT_E013,
+  SAFE_OUTPUT_E014,
   SAFE_OUTPUT_E099,
 };

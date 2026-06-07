@@ -1,6 +1,22 @@
 // @ts-check
 import { describe, it, expect } from "vitest";
-const { ERR_VALIDATION, ERR_PERMISSION, ERR_API, ERR_CONFIG, ERR_NOT_FOUND, ERR_PARSE, ERR_SYSTEM, SAFE_OUTPUT_E001, SAFE_OUTPUT_E099 } = require("./error_codes.cjs");
+const {
+  ERR_VALIDATION,
+  ERR_PERMISSION,
+  ERR_API,
+  ERR_CONFIG,
+  ERR_NOT_FOUND,
+  ERR_PARSE,
+  ERR_SYSTEM,
+  SAFE_OUTPUT_E001,
+  SAFE_OUTPUT_E009,
+  SAFE_OUTPUT_E010,
+  SAFE_OUTPUT_E011,
+  SAFE_OUTPUT_E012,
+  SAFE_OUTPUT_E013,
+  SAFE_OUTPUT_E014,
+  SAFE_OUTPUT_E099,
+} = require("./error_codes.cjs");
 
 describe("error_codes", () => {
   describe("module exports", () => {
@@ -13,11 +29,33 @@ describe("error_codes", () => {
       expect(ERR_PARSE).toBeDefined();
       expect(ERR_SYSTEM).toBeDefined();
       expect(SAFE_OUTPUT_E001).toBeDefined();
+      expect(SAFE_OUTPUT_E009).toBeDefined();
+      expect(SAFE_OUTPUT_E010).toBeDefined();
+      expect(SAFE_OUTPUT_E011).toBeDefined();
+      expect(SAFE_OUTPUT_E012).toBeDefined();
+      expect(SAFE_OUTPUT_E013).toBeDefined();
+      expect(SAFE_OUTPUT_E014).toBeDefined();
       expect(SAFE_OUTPUT_E099).toBeDefined();
     });
 
     it("exports string values only", () => {
-      const codes = [ERR_VALIDATION, ERR_PERMISSION, ERR_API, ERR_CONFIG, ERR_NOT_FOUND, ERR_PARSE, ERR_SYSTEM, SAFE_OUTPUT_E001, SAFE_OUTPUT_E099];
+      const codes = [
+        ERR_VALIDATION,
+        ERR_PERMISSION,
+        ERR_API,
+        ERR_CONFIG,
+        ERR_NOT_FOUND,
+        ERR_PARSE,
+        ERR_SYSTEM,
+        SAFE_OUTPUT_E001,
+        SAFE_OUTPUT_E009,
+        SAFE_OUTPUT_E010,
+        SAFE_OUTPUT_E011,
+        SAFE_OUTPUT_E012,
+        SAFE_OUTPUT_E013,
+        SAFE_OUTPUT_E014,
+        SAFE_OUTPUT_E099,
+      ];
       for (const code of codes) {
         expect(typeof code).toBe("string");
       }
@@ -62,6 +100,15 @@ describe("error_codes", () => {
     it("SAFE_OUTPUT_E099 is 'E099'", () => {
       expect(SAFE_OUTPUT_E099).toBe("E099");
     });
+
+    it("SAFE_OUTPUT_E009 through SAFE_OUTPUT_E014 map to E009 through E014", () => {
+      expect(SAFE_OUTPUT_E009).toBe("E009");
+      expect(SAFE_OUTPUT_E010).toBe("E010");
+      expect(SAFE_OUTPUT_E011).toBe("E011");
+      expect(SAFE_OUTPUT_E012).toBe("E012");
+      expect(SAFE_OUTPUT_E013).toBe("E013");
+      expect(SAFE_OUTPUT_E014).toBe("E014");
+    });
   });
 
   describe("usage as error message prefixes", () => {
@@ -82,7 +129,23 @@ describe("error_codes", () => {
     });
 
     it("legacy codes are distinct from primary codes", () => {
-      const all = [ERR_VALIDATION, ERR_PERMISSION, ERR_API, ERR_CONFIG, ERR_NOT_FOUND, ERR_PARSE, ERR_SYSTEM, SAFE_OUTPUT_E001, SAFE_OUTPUT_E099];
+      const all = [
+        ERR_VALIDATION,
+        ERR_PERMISSION,
+        ERR_API,
+        ERR_CONFIG,
+        ERR_NOT_FOUND,
+        ERR_PARSE,
+        ERR_SYSTEM,
+        SAFE_OUTPUT_E001,
+        SAFE_OUTPUT_E009,
+        SAFE_OUTPUT_E010,
+        SAFE_OUTPUT_E011,
+        SAFE_OUTPUT_E012,
+        SAFE_OUTPUT_E013,
+        SAFE_OUTPUT_E014,
+        SAFE_OUTPUT_E099,
+      ];
       const unique = new Set(all);
       expect(unique.size).toBe(all.length);
     });

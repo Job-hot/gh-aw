@@ -24,6 +24,7 @@ const { createAuthenticatedGitHubClient } = require("./handler_auth.cjs");
 const { attachExecutionState, extractReviewStateFromData, fetchPullRequestReviewState } = require("./safe_output_execution_metadata.cjs");
 const { resolveTargetRepoConfig, resolveAndValidateRepo } = require("./repo_helpers.cjs");
 const { COPILOT_REVIEWER_BOT, COPILOT_REVIEWER_BOT_ID } = require("./constants.cjs");
+const { SAFE_OUTPUT_E009 } = require("./error_codes.cjs");
 
 /**
  * Main handler factory for add_reviewer
@@ -213,7 +214,7 @@ async function main(config = {}) {
           });
           const pullRequestId = pullRequestResponse?.repository?.pullRequest?.id;
           if (!pullRequestId) {
-            throw new Error(`Could not resolve pull request node ID for ${repoParts.owner}/${repoParts.repo}#${prNumber}`);
+            throw new Error(`${SAFE_OUTPUT_E009}: Could not resolve pull request node ID for ${repoParts.owner}/${repoParts.repo}#${prNumber}`);
           }
 
           const requestReviewsMutation = `
