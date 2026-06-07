@@ -989,7 +989,7 @@ function extractDeniedCommandsFromAlternatives(alternatives) {
     return [];
   }
 
-  const markerMatch = alternatives.match(/denied\s+(?:commands?|tool calls):\s*/i);
+  const markerMatch = alternatives.match(/(?:denied\s+(?:commands?|tool calls?)|last denied request):\s*/i);
   if (!markerMatch || typeof markerMatch.index !== "number") {
     return [];
   }
@@ -1019,7 +1019,8 @@ function extractDeniedCommandsFromAlternatives(alternatives) {
     if (depth === 0 && deniedSection.slice(i, i + 3) === " | ") {
       const value = current.trim();
       if (value && !/^\.\.\. and \d+ more$/i.test(value)) {
-        commands.push(value.replace(/^`(.+)`$/, "$1"));
+        const unwrapped = value.replace(/^`(.+)`$/, "$1");
+        commands.push(unwrapped.replace(/^permission denied[^:]*:\s*/i, "").trim());
       }
       current = "";
       i += 2;
@@ -1031,7 +1032,8 @@ function extractDeniedCommandsFromAlternatives(alternatives) {
 
   const last = current.trim();
   if (last && !/^\.\.\. and \d+ more$/i.test(last)) {
-    commands.push(last.replace(/^`(.+)`$/, "$1"));
+    const unwrapped = last.replace(/^`(.+)`$/, "$1");
+    commands.push(unwrapped.replace(/^permission denied[^:]*:\s*/i, "").trim());
   }
 
   return [...new Set(commands)];

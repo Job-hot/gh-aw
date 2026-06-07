@@ -2301,6 +2301,21 @@ describe("handle_agent_failure", () => {
       expect(result).toContain("`read(...)`");
     });
 
+    it("parses last denied request alternatives and strips permission denied prefix", () => {
+      writePermissionDeniedTemplate();
+      const items = [
+        {
+          type: "missing_tool",
+          tool: "tool/permission",
+          reason: "numerous permission denied errors detected",
+          alternatives: "The workflow exceeded the denial threshold. Last denied request: `permission denied by workflow tool permissions: shell(cd /home/runner/work/gh-aw/gh-aw && git checkout -b safe-output-integrator/2026-06-07 2>&1)`",
+        },
+      ];
+      const result = buildPermissionDeniedContext(items);
+      expect(result).toContain("`shell(cd /home/runner/work/gh-aw/gh-aw && git checkout -b safe-output-integrator/2026-06-07 2>&1)`");
+      expect(result).not.toContain("`permission denied by workflow tool permissions:");
+    });
+
     it("deduplicates denied commands across multiple tool/permission items", () => {
       writePermissionDeniedTemplate();
       const items = [
