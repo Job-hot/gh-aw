@@ -177,7 +177,10 @@ func (c *Compiler) warnOnBuiltInEngineEnvNeeds(engineEnvContent string, depends 
 		if slices.Contains(depends, builtinJobName) {
 			continue
 		}
-		if _, warned := builtinsWarned[builtinJobName]; warned || !strings.Contains(engineEnvContent, fmt.Sprintf("needs.%s.", builtinJobName)) {
+		if _, warned := builtinsWarned[builtinJobName]; warned {
+			continue
+		}
+		if !strings.Contains(engineEnvContent, fmt.Sprintf("needs.%s.", builtinJobName)) {
 			continue
 		}
 		builtinsWarned[builtinJobName] = struct{}{}

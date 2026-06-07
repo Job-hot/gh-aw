@@ -7,6 +7,11 @@ import (
 )
 
 func TestEnsureMainJobContentsRead(t *testing.T) {
+	t.Run("creates default contents read permissions when empty", func(t *testing.T) {
+		result := ensureMainJobContentsRead("", true)
+		assert.Equal(t, NewPermissionsContentsRead().RenderToYAML(), result)
+	})
+
 	t.Run("adds contents read when required", func(t *testing.T) {
 		permissions := "permissions:\n  issues: read\n"
 
