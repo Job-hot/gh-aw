@@ -127,13 +127,16 @@ describe("buildWorkflowRunUrl", () => {
   it("should fall back to GITHUB_SERVER_URL when context.serverUrl is absent", () => {
     const originalEnv = process.env.GITHUB_SERVER_URL;
     process.env.GITHUB_SERVER_URL = "https://ghes.example.com";
-    const ctx = { runId: 99 };
-    const url = buildWorkflowRunUrl(ctx, { owner: "ent-owner", repo: "ent-repo" });
-    expect(url).toBe("https://ghes.example.com/ent-owner/ent-repo/actions/runs/99");
-    if (originalEnv === undefined) {
-      delete process.env.GITHUB_SERVER_URL;
-    } else {
-      process.env.GITHUB_SERVER_URL = originalEnv;
+    try {
+      const ctx = { runId: 99 };
+      const url = buildWorkflowRunUrl(ctx, { owner: "ent-owner", repo: "ent-repo" });
+      expect(url).toBe("https://ghes.example.com/ent-owner/ent-repo/actions/runs/99");
+    } finally {
+      if (originalEnv === undefined) {
+        delete process.env.GITHUB_SERVER_URL;
+      } else {
+        process.env.GITHUB_SERVER_URL = originalEnv;
+      }
     }
   });
 
@@ -150,15 +153,15 @@ describe("buildWorkflowRunUrl", () => {
   it("should fall back to https://github.com when no server URL sources are available", () => {
     const originalEnv = process.env.GITHUB_SERVER_URL;
     delete process.env.GITHUB_SERVER_URL;
-
-    const url = buildWorkflowRunUrl({ runId: 1 }, { owner: "owner", repo: "repo" });
-
-    expect(url).toBe("https://github.com/owner/repo/actions/runs/1");
-
-    if (originalEnv === undefined) {
-      delete process.env.GITHUB_SERVER_URL;
-    } else {
-      process.env.GITHUB_SERVER_URL = originalEnv;
+    try {
+      const url = buildWorkflowRunUrl({ runId: 1 }, { owner: "owner", repo: "repo" });
+      expect(url).toBe("https://github.com/owner/repo/actions/runs/1");
+    } finally {
+      if (originalEnv === undefined) {
+        delete process.env.GITHUB_SERVER_URL;
+      } else {
+        process.env.GITHUB_SERVER_URL = originalEnv;
+      }
     }
   });
 
