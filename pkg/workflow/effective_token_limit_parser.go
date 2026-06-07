@@ -10,6 +10,8 @@ import (
 
 var effectiveTokenLimitLog = logger.New("workflow:effective_token_limit_parser")
 
+const effectiveTokensPerAICredit int64 = 10000
+
 // normalizePositiveEffectiveTokenLimit converts positive integer-like values
 // into a canonical base-10 string.
 //
@@ -75,4 +77,28 @@ func parseMaxEffectiveTokenLimitValue(raw any) (int64, bool) {
 		return 0, false
 	}
 	return parsed, true
+}
+
+func convertLegacyEffectiveTokensToAICredits(limit int64) (int64, bool) {
+	if limit == -1 {
+		return -1, true
+	}
+	if limit <= 0 {
+		return 0, false
+	}
+
+	aiCredits := limit / effectiveTokensPerAICredit
+	if aiCredits <= 0 {
+		effectiveTokenLimitLog.Printf("Rejecting max-effective-tokens value %d: converts to less than 1 AI credit", limit)
+		return 0, false
+	}
+	return aiCredits, true
+}
+
+func parseLegacyMaxEffectiveTokensAsAICredits(raw any) (int64, bool) {
+	parsed, ok := parseMaxEffectiveTokenLimitValue(raw)
+	if !ok {
+		return 0, false
+	}
+	return convertLegacyEffectiveTokensToAICredits(parsed)
 }

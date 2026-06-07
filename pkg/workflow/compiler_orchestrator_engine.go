@@ -51,6 +51,9 @@ func (c *Compiler) setupEngineAndImports(result *parser.FrontmatterResult, clean
 	if err != nil {
 		return nil, err
 	}
+	if err := validateLegacyBudgetConfiguration(result.Frontmatter, importsResult); err != nil {
+		return nil, err
+	}
 	engineSetting, engineConfig, err = c.resolveEngineFromIncludesAndImports(result, markdownDir, importsResult, engineSetting, engineConfig)
 	if err != nil {
 		return nil, err
@@ -77,6 +80,19 @@ func (c *Compiler) setupEngineAndImports(result *parser.FrontmatterResult, clean
 func extractEngineBudgetLimits(engineConfig *EngineConfig) (string, int64, int64, int) {
 	if engineConfig == nil {
 		return "", 0, 0, 0
+	}
+
+	func validateLegacyBudgetConfiguration(frontmatter map[string]any, importsResult *parser.ImportsResult) error {
+		hasLegacy := frontmatter["max-effective-tokens"] != nil
+		hasModern := frontmatter["max-ai-credits"] != nil
+		if importsResult != nil {
+			hasLegacy = hasLegacy || importsResult.MergedMaxEffectiveTokens != ""
+			hasModern = hasModern || importsResult.MergedMaxAICredits != ""
+		}
+		if hasLegacy && hasModern {
+			return errors.New("'max-effective-tokens' cannot be used with 'max-ai-credits' in the same compiled workflow; remove the legacy field and keep 'max-ai-credits'")
+		}
+		return nil
 	}
 	return engineConfig.MaxTurns, engineConfig.MaxEffectiveTokens, engineConfig.MaxAICredits, engineConfig.MaxRuns
 }
@@ -340,9 +356,10 @@ func (c *Compiler) applyEngineImportDefaults(
 	if engineConfig.MaxEffectiveTokens == 0 && importsResult.MergedMaxEffectiveTokens != "" {
 		var importedMaxTokens any
 		if err := json.Unmarshal([]byte(importsResult.MergedMaxEffectiveTokens), &importedMaxTokens); err == nil {
-			if parsed := parseMaxEffectiveTokensValue(importedMaxTokens); parsed != 0 {
-				engineConfig.MaxEffectiveTokens = parsed
-				orchestratorEngineLog.Printf("Applied max-effective-tokens from import")
+			if parsed, ok := parseLegacyMaxEffectiveTokensAsAICredits(importedMaxTokens); ok {
+				engineConfig.MaxEffectiveTokens = parseMaxEffectiveTokensValue(importedMaxTokens)
+				engineConfig.MaxAICredits = parsed
+				orchestratorEngineLog.Printf("Applied legacy max-effective-tokens from import as max-ai-credits")
 			}
 		}
 	}

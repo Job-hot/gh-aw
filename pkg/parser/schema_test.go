@@ -525,14 +525,48 @@ func TestValidateMainWorkflowFrontmatterWithSchemaAndLocation_MaxLimitsAllowExpr
 	validFrontmatter := map[string]any{
 		"on":                   "push",
 		"max-runs":             "${{ inputs.max-runs }}",
-		"max-effective-tokens": "${{ inputs.max-effective-tokens }}",
 		"max-ai-credits":       "${{ inputs.max-ai-credits }}",
 		"max-daily-ai-credits": "${{ inputs.max-daily-ai-credits }}",
 	}
 
 	err := ValidateMainWorkflowFrontmatterWithSchemaAndLocation(validFrontmatter, "/tmp/gh-aw/max-limits-expression-test.md")
 	if err != nil {
-		t.Fatalf("expected max-runs/max-effective-tokens/max-ai-credits/max-daily-ai-credits expressions to pass schema validation, got: %v", err)
+		t.Fatalf("expected max-runs/max-ai-credits/max-daily-ai-credits expressions to pass schema validation, got: %v", err)
+	}
+}
+
+func TestValidateMainWorkflowFrontmatterWithSchemaAndLocation_MaxEffectiveTokensExpressionRejected(t *testing.T) {
+	t.Parallel()
+
+	invalidFrontmatter := map[string]any{
+		"on":                   "push",
+		"max-effective-tokens": "${{ inputs.max-effective-tokens }}",
+	}
+
+	err := ValidateMainWorkflowFrontmatterWithSchemaAndLocation(invalidFrontmatter, "/tmp/gh-aw/max-effective-tokens-expression-test.md")
+	if err == nil {
+		t.Fatal("expected max-effective-tokens expression to fail validation")
+	}
+	if !strings.Contains(err.Error(), "no longer supports expressions") {
+		t.Fatalf("expected expression conversion error, got: %v", err)
+	}
+}
+
+func TestValidateMainWorkflowFrontmatterWithSchemaAndLocation_MaxEffectiveTokensConflictsWithMaxAICredits(t *testing.T) {
+	t.Parallel()
+
+	invalidFrontmatter := map[string]any{
+		"on":                   "push",
+		"max-effective-tokens": "100M",
+		"max-ai-credits":       1000,
+	}
+
+	err := ValidateMainWorkflowFrontmatterWithSchemaAndLocation(invalidFrontmatter, "/tmp/gh-aw/max-effective-tokens-conflict-test.md")
+	if err == nil {
+		t.Fatal("expected max-effective-tokens with max-ai-credits to fail validation")
+	}
+	if !strings.Contains(err.Error(), "cannot be used with 'max-ai-credits'") {
+		t.Fatalf("expected legacy conflict error, got: %v", err)
 	}
 }
 

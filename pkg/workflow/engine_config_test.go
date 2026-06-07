@@ -34,7 +34,7 @@ func TestExtractEngineConfig(t *testing.T) {
 				"max-effective-tokens": 10000000,
 			},
 			expectedEngineSetting: "",
-			expectedConfig:        &EngineConfig{MaxEffectiveTokens: 10000000},
+			expectedConfig:        &EngineConfig{MaxEffectiveTokens: 10000000, MaxAICredits: 1000},
 		},
 		{
 			name: "top-level max-runs without engine",
@@ -107,7 +107,7 @@ func TestExtractEngineConfig(t *testing.T) {
 				"max-effective-tokens": -1,
 			},
 			expectedEngineSetting: "",
-			expectedConfig:        &EngineConfig{MaxEffectiveTokens: -1},
+			expectedConfig:        &EngineConfig{MaxEffectiveTokens: -1, MaxAICredits: -1},
 		},
 		{
 			name:                  "string format - claude",
@@ -218,7 +218,7 @@ func TestExtractEngineConfig(t *testing.T) {
 				"max-effective-tokens": 10000000,
 			},
 			expectedEngineSetting: "claude",
-			expectedConfig:        &EngineConfig{ID: "claude", MaxEffectiveTokens: 10000000},
+			expectedConfig:        &EngineConfig{ID: "claude", MaxEffectiveTokens: 10000000, MaxAICredits: 1000},
 		},
 		{
 			name: "object format - with top-level max-runs",
@@ -285,7 +285,7 @@ func TestExtractEngineConfig(t *testing.T) {
 				"max-effective-tokens": "10000000",
 			},
 			expectedEngineSetting: "claude",
-			expectedConfig:        &EngineConfig{ID: "claude", MaxEffectiveTokens: 10000000},
+			expectedConfig:        &EngineConfig{ID: "claude", MaxEffectiveTokens: 10000000, MaxAICredits: 1000},
 		},
 		{
 			name: "object format - with top-level max-effective-tokens as suffix string",
@@ -296,7 +296,7 @@ func TestExtractEngineConfig(t *testing.T) {
 				"max-effective-tokens": "100M",
 			},
 			expectedEngineSetting: "claude",
-			expectedConfig:        &EngineConfig{ID: "claude", MaxEffectiveTokens: 100000000},
+			expectedConfig:        &EngineConfig{ID: "claude", MaxEffectiveTokens: 100000000, MaxAICredits: 10000},
 		},
 		{
 			name: "object format - with top-level negative max-effective-tokens",
@@ -307,7 +307,7 @@ func TestExtractEngineConfig(t *testing.T) {
 				"max-effective-tokens": -1,
 			},
 			expectedEngineSetting: "claude",
-			expectedConfig:        &EngineConfig{ID: "claude", MaxEffectiveTokens: -1},
+			expectedConfig:        &EngineConfig{ID: "claude", MaxEffectiveTokens: -1, MaxAICredits: -1},
 		},
 		{
 			name: "object format - complete with max-turns",
@@ -479,6 +479,9 @@ func TestExtractEngineConfig(t *testing.T) {
 				}
 				if config.MaxEffectiveTokens != test.expectedConfig.MaxEffectiveTokens {
 					t.Errorf("Expected config.MaxEffectiveTokens '%d', got '%d'", test.expectedConfig.MaxEffectiveTokens, config.MaxEffectiveTokens)
+				}
+				if config.MaxAICredits != test.expectedConfig.MaxAICredits {
+					t.Errorf("Expected config.MaxAICredits '%d', got '%d'", test.expectedConfig.MaxAICredits, config.MaxAICredits)
 				}
 
 				if config.MaxRuns != test.expectedConfig.MaxRuns {

@@ -164,6 +164,11 @@ func (c *Compiler) ExtractEngineConfig(frontmatter map[string]any) (string, *Eng
 	topLevelMaxToolDenials := parseMaxToolDenialsValue(frontmatter["max-tool-denials"])
 	topLevelMaxEffectiveTokens := parseMaxEffectiveTokensValue(frontmatter["max-effective-tokens"])
 	topLevelMaxAICredits := parseMaxAICreditsValue(frontmatter["max-ai-credits"])
+	if topLevelMaxAICredits == 0 {
+		if converted, ok := parseLegacyMaxEffectiveTokensAsAICredits(frontmatter["max-effective-tokens"]); ok {
+			topLevelMaxAICredits = converted
+		}
+	}
 	topLevelMaxRuns := parseMaxRunsValue(frontmatter["max-turns"])
 	if topLevelMaxRuns == 0 {
 		topLevelMaxRuns = parseMaxRunsValue(frontmatter["max-runs"])

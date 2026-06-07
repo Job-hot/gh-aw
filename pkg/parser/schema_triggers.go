@@ -11,11 +11,7 @@ var schemaTriggersLog = logger.New("parser:schema_triggers")
 
 // validateEngineSpecificRules validates engine-specific rules that are not easily expressed in JSON schema
 func validateEngineSpecificRules(frontmatter map[string]any) error {
-	// Custom validation rules are now handled separately
-	// Command trigger conflicts are validated before schema validation
-	// This function is kept as a placeholder for potential future validation rules
-	_ = frontmatter
-	return nil
+	return validateLegacyBudgetMigration(frontmatter)
 }
 
 // validateCommandTriggerConflicts checks that command triggers are not used with conflicting events

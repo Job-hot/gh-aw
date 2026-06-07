@@ -84,6 +84,38 @@ max-effective-tokens: -1
 	require.NotNil(t, result)
 	require.NotNil(t, result.engineConfig)
 	assert.Equal(t, int64(-1), result.engineConfig.MaxEffectiveTokens, "negative max-effective-tokens should be preserved after string-engine import expansion")
+	assert.Equal(t, int64(-1), result.engineConfig.MaxAICredits, "negative max-effective-tokens should convert to negative max-ai-credits")
+}
+
+func TestSetupEngineAndImports_RejectsImportedLegacyAndModernBudgetMix(t *testing.T) {
+	tmpDir := testutil.TempDir(t, "engine-legacy-budget-conflict")
+
+	sharedPath := filepath.Join(tmpDir, "shared.md")
+	sharedContent := `---
+max-effective-tokens: 100M
+---`
+	require.NoError(t, os.WriteFile(sharedPath, []byte(sharedContent), 0644))
+
+	testContent := `---
+on: push
+engine: copilot
+max-ai-credits: 1000
+imports:
+  - shared.md
+---`
+
+	testFile := filepath.Join(tmpDir, "test.md")
+	require.NoError(t, os.WriteFile(testFile, []byte(testContent), 0644))
+
+	compiler := NewCompiler()
+	content := []byte(testContent)
+
+	frontmatterResult, err := parser.ExtractFrontmatterFromContent(string(content))
+	require.NoError(t, err)
+
+	_, err = compiler.setupEngineAndImports(frontmatterResult, testFile, content, tmpDir)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "cannot be used with 'max-ai-credits'")
 }
 
 // TestSetupEngineAndImports_DefaultEngine tests engine defaulting when not specified

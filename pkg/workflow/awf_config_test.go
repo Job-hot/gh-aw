@@ -100,7 +100,7 @@ func TestBuildAWFConfigJSON(t *testing.T) {
 		assert.Contains(t, jsonStr, "my-proxy.internal.example.com", "should include the openai host")
 	})
 
-	t.Run("configured max-effective-tokens is emitted in apiProxy config", func(t *testing.T) {
+	t.Run("configured max-effective-tokens is converted to max-ai-credits in apiProxy config", func(t *testing.T) {
 		config := AWFCommandConfig{
 			EngineName:     "copilot",
 			AllowedDomains: "github.com",
@@ -108,6 +108,7 @@ func TestBuildAWFConfigJSON(t *testing.T) {
 				EngineConfig: &EngineConfig{
 					ID:                 "copilot",
 					MaxEffectiveTokens: 424242,
+					MaxAICredits:       42,
 				},
 				NetworkPermissions: &NetworkPermissions{
 					Firewall: &FirewallConfig{Enabled: true},
@@ -117,10 +118,11 @@ func TestBuildAWFConfigJSON(t *testing.T) {
 
 		jsonStr, err := BuildAWFConfigJSON(config)
 		require.NoError(t, err)
-		assert.Contains(t, jsonStr, `"maxEffectiveTokens":424242`, "apiProxy should emit configured maxEffectiveTokens")
+		assert.Contains(t, jsonStr, `"maxAiCredits":42`, "apiProxy should emit converted maxAiCredits")
+		assert.NotContains(t, jsonStr, `"maxEffectiveTokens"`, "apiProxy should no longer emit maxEffectiveTokens")
 	})
 
-	t.Run("enterprise default max-effective-tokens env var is used when frontmatter is unset", func(t *testing.T) {
+	t.Run("enterprise default max-effective-tokens env var is converted when frontmatter is unset", func(t *testing.T) {
 		t.Setenv(compilerenv.DefaultMaxEffectiveTokens, "123456")
 		config := AWFCommandConfig{
 			EngineName:     "copilot",
@@ -137,7 +139,8 @@ func TestBuildAWFConfigJSON(t *testing.T) {
 
 		jsonStr, err := BuildAWFConfigJSON(config)
 		require.NoError(t, err)
-		assert.Contains(t, jsonStr, `"maxEffectiveTokens":123456`, "apiProxy should emit env var default maxEffectiveTokens")
+		assert.Contains(t, jsonStr, `"maxAiCredits":12`, "apiProxy should emit converted env var default maxAiCredits")
+		assert.NotContains(t, jsonStr, `"maxEffectiveTokens"`, "apiProxy should no longer emit maxEffectiveTokens")
 	})
 
 	t.Run("default max-ai-credits is enabled when frontmatter is unset", func(t *testing.T) {
@@ -206,6 +209,7 @@ func TestBuildAWFConfigJSON(t *testing.T) {
 				EngineConfig: &EngineConfig{
 					ID:                 "copilot",
 					MaxEffectiveTokens: -1,
+					MaxAICredits:       -1,
 				},
 				NetworkPermissions: &NetworkPermissions{
 					Firewall: &FirewallConfig{Enabled: true},
@@ -217,6 +221,7 @@ func TestBuildAWFConfigJSON(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotContains(t, jsonStr, `"enableTokenSteering"`, "apiProxy should omit enableTokenSteering when max-effective-tokens is negative")
 		assert.NotContains(t, jsonStr, `"maxEffectiveTokens"`, "apiProxy should omit maxEffectiveTokens when negative (disabled)")
+		assert.NotContains(t, jsonStr, `"maxAiCredits"`, "apiProxy should omit converted maxAiCredits when legacy budget is negative")
 	})
 
 	t.Run("token steering is disabled when max-ai-credits is negative", func(t *testing.T) {

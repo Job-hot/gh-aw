@@ -1185,8 +1185,11 @@ permissions:
 	if !strings.Contains(lockContent, `"maxRuns":37`) {
 		t.Errorf("Expected lock file to contain apiProxy.maxRuns from imported workflow, got:\n%s", lockContent)
 	}
-	if !strings.Contains(lockContent, `"maxEffectiveTokens":424242`) {
-		t.Errorf("Expected lock file to contain apiProxy.maxEffectiveTokens from imported workflow, got:\n%s", lockContent)
+	if !strings.Contains(lockContent, `"maxAiCredits":42`) {
+		t.Errorf("Expected lock file to contain converted apiProxy.maxAiCredits from imported workflow, got:\n%s", lockContent)
+	}
+	if strings.Contains(lockContent, `"maxEffectiveTokens":`) {
+		t.Errorf("Expected lock file to omit apiProxy.maxEffectiveTokens from imported workflow, got:\n%s", lockContent)
 	}
 }
 
