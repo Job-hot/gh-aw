@@ -2,7 +2,7 @@
   "counts": {
     "model_size": {
       "small-agent": 1,
-      "agent": 1
+      "agent": 2
     }
   },
   "runs": [
@@ -16,6 +16,13 @@
     {
       "run_id": "27046499438",
       "timestamp": "2026-06-06T00:02:51.739Z",
+      "assignments": {
+        "model_size": "agent"
+      }
+    },
+    {
+      "run_id": "27077497108",
+      "timestamp": "2026-06-07T00:02:27.334Z",
       "assignments": {
         "model_size": "agent"
       }
