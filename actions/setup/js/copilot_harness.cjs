@@ -111,6 +111,18 @@ const AGENTIC_ENGINE_TIMEOUT_PATTERN = /signal=SIG(?:TERM|KILL|INT)/;
 // re-injects the same broken history, producing the same 400 on every subsequent attempt.
 // A fresh restart is required to discard the poisoned history.
 const NULL_TYPE_TOOL_CALL_PATTERN = /tool_calls\[.*?\]\.type.*null/;
+
+/**
+ * Emit one dedicated JSONL event line for downstream failure-report parsing.
+ * @param {Record<string, any>} event
+ */
+function emitJSONLEvent(event) {
+  try {
+    process.stderr.write(JSON.stringify(event) + "\n");
+  } catch {
+    // Best-effort diagnostics only; ignore serialization failures.
+  }
+}
 /**
  * Emit a diagnostic log line to stderr.
  * All driver messages are prefixed with "[copilot-harness]" so they are easy to
@@ -192,6 +204,68 @@ function isModelAvailableInReflectData(model, reflectData) {
   for (const endpoint of endpoints) {
     if (!endpoint || endpoint.configured !== true || !Array.isArray(endpoint.models)) {
       continue;
+    }
+
+    /**
+     * Collect unique model names from configured reflect endpoints.
+     * @param {unknown} reflectData
+     * @param {string} preferredProvider
+     * @returns {string[]}
+     */
+    function getAvailableModelsFromReflectData(reflectData, preferredProvider) {
+      if (!reflectData || typeof reflectData !== "object" || !Array.isArray(reflectData.endpoints)) {
+        return [];
+      }
+      const provider = String(preferredProvider || "")
+        .trim()
+        .toLowerCase();
+      const configuredEndpoints = reflectData.endpoints.filter(ep => ep && ep.configured === true && Array.isArray(ep.models));
+      const providerEndpoints = provider ? configuredEndpoints.filter(ep => String(ep.provider || "").toLowerCase() === provider) : configuredEndpoints;
+      const sourceEndpoints = providerEndpoints.length > 0 ? providerEndpoints : configuredEndpoints;
+      const unique = new Set();
+      for (const endpoint of sourceEndpoints) {
+        for (const model of endpoint.models) {
+          if (typeof model === "string" && model.trim()) {
+            unique.add(model.trim());
+          }
+        }
+      }
+      return Array.from(unique).sort((a, b) => a.localeCompare(b));
+    }
+
+    /**
+     * Detect mixed configured model names and build a dedicated JSONL event payload.
+     * @param {{engine: string, env: NodeJS.ProcessEnv, reflectData: unknown, provider: string}} options
+     * @returns {null|{type: string, engine: string, reason: string, configured_models: string[], available_models: string[], retry_disabled: boolean}}
+     */
+    function detectMixedConfiguredModelNames(options) {
+      const env = options.env || {};
+      const configuredValues = [
+        env.COPILOT_MODEL,
+        env.GH_AW_INFO_MODEL,
+        env.GH_AW_MODEL_AGENT_COPILOT,
+        env.GH_AW_MODEL_DETECTION_COPILOT,
+        env.GH_AW_DEFAULT_MODEL_COPILOT,
+      ];
+      const configuredModels = Array.from(
+        new Set(
+          configuredValues
+            .filter(v => typeof v === "string")
+            .map(v => v.trim())
+            .filter(Boolean)
+        )
+      ).sort((a, b) => a.localeCompare(b));
+      if (configuredModels.length <= 1) {
+        return null;
+      }
+      return {
+        type: "awf.mixed_configured_model_names",
+        engine: options.engine,
+        reason: "mixed configured model names",
+        configured_models: configuredModels,
+        available_models: getAvailableModelsFromReflectData(options.reflectData, options.provider),
+        retry_disabled: true,
+      };
     }
     if (endpoint.models.includes(normalizedModel)) {
       return true;
@@ -560,6 +634,20 @@ async function main() {
     }
   }
 
+  const mixedConfiguredModelsEvent = detectMixedConfiguredModelNames({
+    engine: "copilot",
+    env: process.env,
+    reflectData: awfReflectData,
+    provider: "copilot",
+  });
+  if (mixedConfiguredModelsEvent) {
+    emitJSONLEvent(mixedConfiguredModelsEvent);
+    log(
+      `fatal: mixed configured model names detected (${mixedConfiguredModelsEvent.configured_models.join(", ")}) — not retrying`
+    );
+    process.exit(1);
+  }
+
   // Resolve BYOK custom provider from live reflect data (SDK mode only).
   // BYOK is the only supported mode for SDK sessions — fail immediately if the provider
   // cannot be resolved so retries are not wasted on a misconfigured environment.
@@ -886,7 +974,10 @@ if (typeof module !== "undefined" && module.exports) {
     isDetectionPhase,
     isModelAvailableInReflectData,
     isModelAvailableInReflectFile,
+    getAvailableModelsFromReflectData,
+    detectMixedConfiguredModelNames,
     resolveCopilotSDKCustomProviderFromReflect,
+    emitJSONLEvent,
     countPermissionDeniedIssues,
     detectCopilotErrors,
     hasNumerousPermissionDeniedIssues,

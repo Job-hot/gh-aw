@@ -19,6 +19,9 @@ const {
   extractDeniedCommands,
   buildMissingToolPermissionIssuePayload,
   buildCodexChildEnv,
+  extractConfiguredModelFromCodexArgs,
+  getAvailableModelsFromReflectData,
+  detectMixedConfiguredModelNames,
   extractPortFromURL,
   extractOpenAIProxyBaseURLFromToml,
   getConfiguredOpenAIPortFromReflect,
@@ -184,6 +187,50 @@ describe("codex_harness.cjs", () => {
       const result = buildCodexChildEnv({ PATH: "/usr/bin" }, undefined, undefined);
       expect(result.CODEX_API_KEY).toBeUndefined();
       expect(result.OPENAI_API_KEY).toBeUndefined();
+    });
+  });
+
+  describe("mixed configured model detection", () => {
+    it("extracts --model value from codex args", () => {
+      expect(extractConfiguredModelFromCodexArgs(["exec", "--model", "gpt-5.4", "do work"])).toBe("gpt-5.4");
+      expect(extractConfiguredModelFromCodexArgs(["exec", "do work"])).toBe("");
+    });
+
+    it("collects available models from configured openai reflect endpoints", () => {
+      const reflectData = {
+        endpoints: [
+          { provider: "openai", configured: true, models: ["gpt-5.4", "gpt-4.1"] },
+          { provider: "copilot", configured: true, models: ["claude-sonnet-4.6"] },
+        ],
+      };
+      expect(getAvailableModelsFromReflectData(reflectData, "openai")).toEqual(["gpt-4.1", "gpt-5.4"]);
+    });
+
+    it("detects mixed configured model names and includes reflect models", () => {
+      const event = detectMixedConfiguredModelNames({
+        env: { GH_AW_INFO_MODEL: "gpt-5.4" },
+        args: ["exec", "--model", "gpt-4.1", "prompt"],
+        reflectData: {
+          endpoints: [{ provider: "openai", configured: true, models: ["gpt-5.4", "gpt-4.1"] }],
+        },
+        provider: "openai",
+      });
+      expect(event).not.toBeNull();
+      expect(event.type).toBe("awf.mixed_configured_model_names");
+      expect(event.engine).toBe("codex");
+      expect(event.configured_models).toEqual(["gpt-4.1", "gpt-5.4"]);
+      expect(event.available_models).toEqual(["gpt-4.1", "gpt-5.4"]);
+      expect(event.retry_disabled).toBe(true);
+    });
+
+    it("does not emit mixed-model event when only one model is configured", () => {
+      const event = detectMixedConfiguredModelNames({
+        env: { GH_AW_INFO_MODEL: "gpt-5.4" },
+        args: ["exec", "--model", "gpt-5.4", "prompt"],
+        reflectData: null,
+        provider: "openai",
+      });
+      expect(event).toBeNull();
     });
   });
 

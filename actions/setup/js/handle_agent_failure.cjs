@@ -1373,6 +1373,60 @@ function buildModelNotSupportedErrorContext(hasModelNotSupportedError) {
 }
 
 /**
+ * Parse a dedicated mixed-configured-models JSONL event from engine logs.
+ * @param {string} logContent
+ * @returns {{engine: string, configured_models: string[], available_models: string[]} | null}
+ */
+function parseMixedConfiguredModelNamesEvent(logContent) {
+  if (!logContent) return null;
+  const lines = logContent.split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("{") || !trimmed.includes('"awf.mixed_configured_model_names"')) {
+      continue;
+    }
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed?.type !== "awf.mixed_configured_model_names") {
+        continue;
+      }
+      const configuredModels = Array.isArray(parsed.configured_models)
+        ? parsed.configured_models.map(m => String(m || "").trim()).filter(Boolean)
+        : [];
+      const availableModels = Array.isArray(parsed.available_models)
+        ? parsed.available_models.map(m => String(m || "").trim()).filter(Boolean)
+        : [];
+      return {
+        engine: typeof parsed.engine === "string" && parsed.engine.trim() ? parsed.engine.trim() : "AI",
+        configured_models: configuredModels,
+        available_models: availableModels,
+      };
+    } catch {
+      // Ignore malformed lines and keep scanning.
+    }
+  }
+  return null;
+}
+
+/**
+ * Build dedicated failure context for mixed configured model-name errors.
+ * @param {{engine: string, configured_models: string[], available_models: string[]}} event
+ * @returns {string}
+ */
+function buildMixedConfiguredModelNamesContext(event) {
+  const engineLabel = event.engine || "AI";
+  const configured = event.configured_models.length > 0 ? event.configured_models.map(m => `- \`${m}\``).join("\n") : "- (none)";
+  const available = event.available_models.length > 0 ? event.available_models.map(m => `- \`${m}\``).join("\n") : "- (unavailable from Reflect API)";
+  let context = buildWarningAlertLine("Mixed Configured Model Names", `The \`${engineLabel}\` driver detected conflicting configured model names and stopped without retrying.`) + "\n";
+  context += "Use a single model name for this run to avoid ambiguous provider/model selection.\n\n";
+  context += "**Configured model names detected:**\n";
+  context += configured + "\n\n";
+  context += "**Models reported by Reflect API:**\n";
+  context += available + "\n\n";
+  return context;
+}
+
+/**
  * Detect HTTP 429/rate-limit engine failures in text payloads.
  * @param {string} content
  * @returns {boolean}
@@ -1875,6 +1929,12 @@ function buildEngineFailureContext() {
     if (hasEngineRateLimit429Signal(logContent) || hasEngineRateLimit429InOTELMirror()) {
       core.info("Detected engine HTTP 429/rate-limit signal — using dedicated context message");
       return buildEngineRateLimit429Context(engineLabel);
+    }
+
+    const mixedConfiguredModelsEvent = parseMixedConfiguredModelNamesEvent(logContent);
+    if (mixedConfiguredModelsEvent) {
+      core.info("Detected mixed configured model-name event — using dedicated context message");
+      return buildMixedConfiguredModelNamesContext(mixedConfiguredModelsEvent);
     }
 
     const errorMessages = new Set();
@@ -3115,6 +3175,8 @@ module.exports = {
   hasEngineRateLimit429Signal,
   hasEngineRateLimit429InOTELMirror,
   buildEngineRateLimit429Context,
+  parseMixedConfiguredModelNamesEvent,
+  buildMixedConfiguredModelNamesContext,
   readTokenUsageMarkdown,
   parseFirewallAuthErrors,
   parseMaxEffectiveTokensFromAuditLog,

@@ -1496,6 +1496,27 @@ describe("handle_agent_failure", () => {
       expect(buildEngineFailureContext()).toBe("");
     });
 
+    it("returns dedicated context for mixed configured model names event", () => {
+      fs.writeFileSync(
+        stdioLogPath,
+        JSON.stringify({
+          type: "awf.mixed_configured_model_names",
+          engine: "copilot",
+          configured_models: ["claude-sonnet-4.6", "gpt-5.4"],
+          available_models: ["claude-sonnet-4.6", "gpt-5.4", "gpt-4.1"],
+          retry_disabled: true,
+        }) + "\n"
+      );
+      const result = buildEngineFailureContext();
+      expect(result).toContain("Mixed Configured Model Names");
+      expect(result).toContain("conflicting configured model names");
+      expect(result).toContain("`claude-sonnet-4.6`");
+      expect(result).toContain("`gpt-5.4`");
+      expect(result).toContain("Models reported by Reflect API");
+      expect(result).toContain("`gpt-4.1`");
+      expect(result).not.toContain("Last agent output");
+    });
+
     it("returns dedicated context when 429/rate-limit is only present in OTLP mirror", () => {
       fs.writeFileSync(stdioLogPath, "Agent terminated unexpectedly without clear error details\n");
       fs.writeFileSync(

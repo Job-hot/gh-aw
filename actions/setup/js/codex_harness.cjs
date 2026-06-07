@@ -84,6 +84,18 @@ function log(message) {
 }
 
 /**
+ * Emit one dedicated JSONL event line for downstream failure-report parsing.
+ * @param {Record<string, any>} event
+ */
+function emitJSONLEvent(event) {
+  try {
+    process.stderr.write(JSON.stringify(event) + "\n");
+  } catch {
+    // Best-effort diagnostics only; ignore serialization failures.
+  }
+}
+
+/**
  * Determines if the collected output contains an OpenAI rate-limit error.
  * @param {string} output - Collected stdout+stderr from the process
  * @returns {boolean}
@@ -199,6 +211,83 @@ function buildCodexChildEnv(baseEnv, codexApiKey, openaiApiKey) {
   const childEnv = { ...baseEnv };
   if (codexApiKey) {
     childEnv.CODEX_API_KEY = codexApiKey;
+  }
+
+  /**
+   * Parse --model <name> from codex args.
+   * @param {string[]} args
+   * @returns {string}
+   */
+  function extractConfiguredModelFromCodexArgs(args) {
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === "--model" && i + 1 < args.length) {
+        const value = String(args[i + 1] || "").trim();
+        if (value) return value;
+      }
+    }
+    return "";
+  }
+
+  /**
+   * Collect unique model names from configured reflect endpoints.
+   * @param {unknown} reflectData
+   * @param {string} preferredProvider
+   * @returns {string[]}
+   */
+  function getAvailableModelsFromReflectData(reflectData, preferredProvider) {
+    if (!reflectData || typeof reflectData !== "object" || !Array.isArray(reflectData.endpoints)) {
+      return [];
+    }
+    const provider = String(preferredProvider || "")
+      .trim()
+      .toLowerCase();
+    const configuredEndpoints = reflectData.endpoints.filter(ep => ep && ep.configured === true && Array.isArray(ep.models));
+    const providerEndpoints = provider ? configuredEndpoints.filter(ep => String(ep.provider || "").toLowerCase() === provider) : configuredEndpoints;
+    const sourceEndpoints = providerEndpoints.length > 0 ? providerEndpoints : configuredEndpoints;
+    const unique = new Set();
+    for (const endpoint of sourceEndpoints) {
+      for (const model of endpoint.models) {
+        if (typeof model === "string" && model.trim()) {
+          unique.add(model.trim());
+        }
+      }
+    }
+    return Array.from(unique).sort((a, b) => a.localeCompare(b));
+  }
+
+  /**
+   * Detect mixed configured model names and build a dedicated JSONL event payload.
+   * @param {{env: NodeJS.ProcessEnv, args: string[], reflectData: unknown, provider: string}} options
+   * @returns {null|{type: string, engine: string, reason: string, configured_models: string[], available_models: string[], retry_disabled: boolean}}
+   */
+  function detectMixedConfiguredModelNames(options) {
+    const env = options.env || {};
+    const configuredValues = [
+      extractConfiguredModelFromCodexArgs(options.args || []),
+      env.GH_AW_INFO_MODEL,
+      env.GH_AW_MODEL_AGENT_CODEX,
+      env.GH_AW_MODEL_DETECTION_CODEX,
+      env.GH_AW_DEFAULT_MODEL_CODEX,
+    ];
+    const configuredModels = Array.from(
+      new Set(
+        configuredValues
+          .filter(v => typeof v === "string")
+          .map(v => v.trim())
+          .filter(Boolean)
+      )
+    ).sort((a, b) => a.localeCompare(b));
+    if (configuredModels.length <= 1) {
+      return null;
+    }
+    return {
+      type: "awf.mixed_configured_model_names",
+      engine: "codex",
+      reason: "mixed configured model names",
+      configured_models: configuredModels,
+      available_models: getAvailableModelsFromReflectData(options.reflectData, options.provider),
+      retry_disabled: true,
+    };
   }
   if (openaiApiKey) {
     childEnv.OPENAI_API_KEY = openaiApiKey;
@@ -359,7 +448,25 @@ async function main() {
 
   // Fetch AWF API proxy reflection data before running the agent to capture initial proxy state.
   // This is best-effort: failures are logged but do not affect the agent run.
-  await fetchAWFReflect({ logger: log });
+  let awfReflectData = null;
+  const preRunReflectResult = await fetchAWFReflect({ logger: log });
+  if (preRunReflectResult.ok && preRunReflectResult.reflectData) {
+    awfReflectData = preRunReflectResult.reflectData;
+  }
+
+  const mixedConfiguredModelsEvent = detectMixedConfiguredModelNames({
+    env: process.env,
+    args: resolvedArgs,
+    reflectData: awfReflectData,
+    provider: "openai",
+  });
+  if (mixedConfiguredModelsEvent) {
+    emitJSONLEvent(mixedConfiguredModelsEvent);
+    log(
+      `fatal: mixed configured model names detected (${mixedConfiguredModelsEvent.configured_models.join(", ")}) — not retrying`
+    );
+    process.exit(1);
+  }
   const codexHome = process.env.CODEX_HOME || "";
   if (codexHome) {
     const validation = validateCodexOpenAIBaseURLFromReflect({
@@ -488,6 +595,10 @@ if (typeof module !== "undefined" && module.exports) {
     buildMissingToolPermissionIssuePayload,
     emitMissingToolPermissionIssue,
     buildCodexChildEnv,
+    extractConfiguredModelFromCodexArgs,
+    getAvailableModelsFromReflectData,
+    detectMixedConfiguredModelNames,
+    emitJSONLEvent,
     extractPortFromURL,
     extractOpenAIProxyBaseURLFromToml,
     getConfiguredOpenAIPortFromReflect,

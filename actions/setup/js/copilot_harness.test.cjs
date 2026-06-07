@@ -31,6 +31,8 @@ const {
   isAuthenticationFailedError,
   isModelAvailableInReflectData,
   isModelAvailableInReflectFile,
+  getAvailableModelsFromReflectData,
+  detectMixedConfiguredModelNames,
   resolveCopilotSDKCustomProviderFromReflect,
   enrichReflectModels,
   extractModelIds,
@@ -1341,6 +1343,45 @@ describe("copilot_harness.cjs", () => {
         model: "gpt-5.4",
         provider: { type: "openai", baseUrl: "http://api-proxy:10002" },
       });
+    });
+
+    it("collects available models from configured copilot endpoints", () => {
+      const reflectData = {
+        endpoints: [
+          { provider: "copilot", configured: true, models: ["gpt-5.4", "claude-sonnet-4.6"] },
+          { provider: "openai", configured: true, models: ["gpt-4.1"] },
+        ],
+      };
+      expect(getAvailableModelsFromReflectData(reflectData, "copilot")).toEqual(["claude-sonnet-4.6", "gpt-5.4"]);
+    });
+
+    it("detects mixed configured model names and includes reflect models", () => {
+      const event = detectMixedConfiguredModelNames({
+        engine: "copilot",
+        env: {
+          COPILOT_MODEL: "gpt-5.4",
+          GH_AW_INFO_MODEL: "claude-sonnet-4.6",
+        },
+        reflectData: {
+          endpoints: [{ provider: "copilot", configured: true, models: ["gpt-5.4", "claude-sonnet-4.6"] }],
+        },
+        provider: "copilot",
+      });
+      expect(event).not.toBeNull();
+      expect(event.type).toBe("awf.mixed_configured_model_names");
+      expect(event.configured_models).toEqual(["claude-sonnet-4.6", "gpt-5.4"]);
+      expect(event.available_models).toEqual(["claude-sonnet-4.6", "gpt-5.4"]);
+      expect(event.retry_disabled).toBe(true);
+    });
+
+    it("does not emit mixed-model event when only one model is configured", () => {
+      const event = detectMixedConfiguredModelNames({
+        engine: "copilot",
+        env: { COPILOT_MODEL: "gpt-5.4" },
+        reflectData: null,
+        provider: "copilot",
+      });
+      expect(event).toBeNull();
     });
   });
 
