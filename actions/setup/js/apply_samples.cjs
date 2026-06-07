@@ -372,7 +372,8 @@ async function main() {
 if (require.main === module) {
   main().catch(err => {
     const errorOutput = err && err.stack ? err.stack : String(err);
-    const hasErrorCode = /^(?:Error:\s+)?E\d{3}:/.test(errorOutput);
+    const messageText = err && typeof err.message === "string" ? err.message : String(err);
+    const hasErrorCode = /^E\d{3}:/.test(messageText);
     core.setFailed(hasErrorCode ? errorOutput : `${SAFE_OUTPUT_E011}: ${errorOutput}`);
   });
 }
