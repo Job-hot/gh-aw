@@ -1123,7 +1123,11 @@ func renderForecastTable(output ForecastResult, config ForecastConfig) error {
 	fmt.Fprintln(os.Stderr, "")
 
 	anyUnreliable := false
-	rows := make([]forecastTableRow, 0, len(output.Workflows)+1)
+	cap := len(output.Workflows)
+	if len(output.Workflows) > 1 && output.Totals != nil {
+		cap++
+	}
+	rows := make([]forecastTableRow, 0, cap)
 	for _, wf := range output.Workflows {
 		unreliableMark := ""
 

@@ -518,5 +518,5 @@ func TestForecastResult_TotalsPopulatedByRunForecast(t *testing.T) {
 		Totals:    computeForecastTotals([]ForecastWorkflowResult{result}),
 	}
 	require.NotNil(t, output.Totals)
-	assert.Equal(t, output.Totals.WeeklyP50, mc.P50ProjectedAIC)
+	assert.Equal(t, mc.P50ProjectedAIC, output.Totals.WeeklyP50)
 }
