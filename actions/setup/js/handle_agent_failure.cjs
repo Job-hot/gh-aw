@@ -989,13 +989,12 @@ function extractDeniedCommandsFromAlternatives(alternatives) {
     return [];
   }
 
-  const marker = "Denied commands:";
-  const markerIndex = alternatives.indexOf(marker);
-  if (markerIndex < 0) {
+  const markerMatch = alternatives.match(/denied\s+(?:commands|tool calls?):\s*/i);
+  if (!markerMatch || typeof markerMatch.index !== "number") {
     return [];
   }
 
-  const deniedSection = alternatives.slice(markerIndex + marker.length).trim();
+  const deniedSection = alternatives.slice(markerMatch.index + markerMatch[0].length).trim();
   if (!deniedSection) {
     return [];
   }
@@ -1020,7 +1019,7 @@ function extractDeniedCommandsFromAlternatives(alternatives) {
     if (depth === 0 && deniedSection.slice(i, i + 3) === " | ") {
       const value = current.trim();
       if (value && !/^\.\.\. and \d+ more$/i.test(value)) {
-        commands.push(value);
+        commands.push(value.replace(/^`(.+)`$/, "$1"));
       }
       current = "";
       i += 2;
@@ -1032,7 +1031,7 @@ function extractDeniedCommandsFromAlternatives(alternatives) {
 
   const last = current.trim();
   if (last && !/^\.\.\. and \d+ more$/i.test(last)) {
-    commands.push(last);
+    commands.push(last.replace(/^`(.+)`$/, "$1"));
   }
 
   return [...new Set(commands)];

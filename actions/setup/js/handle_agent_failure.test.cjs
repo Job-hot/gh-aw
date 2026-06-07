@@ -2285,6 +2285,22 @@ describe("handle_agent_failure", () => {
       expect(result).not.toContain("`read(/tmp/gh-aw/cache-memory/spdd-daily/rotation.json)`");
     });
 
+    it("parses denied commands from denied tool calls alternatives", () => {
+      writePermissionDeniedTemplate();
+      const items = [
+        {
+          type: "missing_tool",
+          tool: "tool/permission",
+          reason: "numerous permission denied errors detected",
+          alternatives:
+            "Verify token scopes, repository permissions, and MCP/tool access configuration. Denied tool calls: `shell(cd /home/runner/work/gh-aw/gh-aw && git checkout -b safe-output-integrator/2026-06-07 2>&1)` | read(/home/runner/work/gh-aw/gh-aw/specs)",
+        },
+      ];
+      const result = buildPermissionDeniedContext(items);
+      expect(result).toContain("`shell(cd /home/runner/work/gh-aw/gh-aw && git checkout -b safe-output-integrator/2026-06-07 2>&1)`");
+      expect(result).toContain("`read(...)`");
+    });
+
     it("deduplicates denied commands across multiple tool/permission items", () => {
       writePermissionDeniedTemplate();
       const items = [
