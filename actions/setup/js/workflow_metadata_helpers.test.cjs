@@ -94,6 +94,27 @@ describe("getWorkflowMetadata", () => {
     expect(metadata.runId).toBe(0);
     expect(metadata.runUrl).toBe("https://github.com/test-owner/test-repo/actions/runs/0");
   });
+
+  it("should prefer context.serverUrl over GITHUB_SERVER_URL env var", () => {
+    global.context = {
+      runId: 42,
+      serverUrl: "https://context-server.example.com",
+    };
+    process.env.GITHUB_SERVER_URL = "https://env-server.example.com";
+
+    const metadata = getWorkflowMetadata("owner", "repo");
+
+    expect(metadata.runUrl).toBe("https://context-server.example.com/owner/repo/actions/runs/42");
+  });
+
+  it("should fall back to https://github.com when no server URL sources are available", () => {
+    global.context = { runId: 7 };
+    delete process.env.GITHUB_SERVER_URL;
+
+    const metadata = getWorkflowMetadata("my-owner", "my-repo");
+
+    expect(metadata.runUrl).toBe("https://github.com/my-owner/my-repo/actions/runs/7");
+  });
 });
 
 describe("buildWorkflowRunUrl", () => {
@@ -124,5 +145,25 @@ describe("buildWorkflowRunUrl", () => {
     expect(url).toBe("https://github.com/wf-owner/wf-repo/actions/runs/7777");
     expect(url).not.toContain("cross-owner");
     expect(url).not.toContain("cross-repo");
+  });
+
+  it("should fall back to https://github.com when no server URL sources are available", () => {
+    const originalEnv = process.env.GITHUB_SERVER_URL;
+    delete process.env.GITHUB_SERVER_URL;
+
+    const url = buildWorkflowRunUrl({ runId: 1 }, { owner: "owner", repo: "repo" });
+
+    expect(url).toBe("https://github.com/owner/repo/actions/runs/1");
+
+    if (originalEnv === undefined) {
+      delete process.env.GITHUB_SERVER_URL;
+    } else {
+      process.env.GITHUB_SERVER_URL = originalEnv;
+    }
+  });
+
+  it("should handle runId of 0", () => {
+    const url = buildWorkflowRunUrl({ serverUrl: "https://github.com", runId: 0 }, { owner: "owner", repo: "repo" });
+    expect(url).toBe("https://github.com/owner/repo/actions/runs/0");
   });
 });
