@@ -1,6 +1,9 @@
 {
-  "updated": "2026-06-06T21:40Z",
+  "updated": "2026-06-07T21:50Z",
   "workflows": {
+    "_2026-06-07_changes": {
+      "note": "06-07 deltas: minimatch sdk-crash GONE (Linter Miner/Daily Secrets/Daily Testify/PR Triage not in this small window; PR Code Quality Reviewer failure ROOT-CAUSE-CHANGED to guardrail-cjs on PR branch). Caveman + Cache RECUR day 3. Safe Output Integrator RECUR tool-perm-lockout. NEW: 4 PR-review wf fail on activation-guardrail-cjs (copilot/fix-daily-credit-limit-test). Design Decision Gate + PR Sous Chef RECOVERED on main. Top cost: Safe Output Tool Optimizer $6.19, Documentation Unbloat $5.44."
+    },
     "Linter Miner": {
       "last": "2026-06-06",
       "last_concl": "failure",
@@ -16,11 +19,11 @@
       "note": "MODULE_NOT_FOUND minimatch (run 27069682890)"
     },
     "PR Code Quality Reviewer": {
-      "last": "2026-06-06",
-      "last_concl": "failure",
+      "last": "2026-06-07",
+      "last_concl": "mixed",
       "eff_tok": 0,
-      "class": "copilot-sdk-driver-minimatch",
-      "note": "REGRESSED: was 2/2 success 06-05. 2 runs 06-06 both minimatch MODULE_NOT_FOUND (27069819378, 27069914133)"
+      "class": "activation-guardrail-cjs-module-not-found",
+      "note": "06-07: minimatch GONE. Failed (27103538547) + succeeded on PR branch copilot/fix-daily-credit-limit-test; failure root-cause is activation guardrail-cjs MODULE_NOT_FOUND, not sdk-driver."
     },
     "Daily Testify Uber Super Expert": {
       "last": "2026-06-06",
@@ -50,26 +53,26 @@
       "class": "copilot-sdk-driver-tool-permission-lockout",
       "note": "tool-permission lockout, turns=1 (run 27067987828)"
     },
-    "Daily Safe Output Integrator": {
-      "last": "2026-06-06",
-      "last_concl": "failure",
-      "eff_tok": 52465,
-      "class": "copilot-sdk-driver-tool-permission-lockout",
-      "note": "tool-permission lockout, turns=1 (run 27071016066)"
-    },
     "Daily Caveman Optimizer": {
-      "last": "2026-06-06",
+      "last": "2026-06-07",
       "last_concl": "failure",
       "eff_tok": 0,
       "class": "model-config-effort-unsupported",
-      "note": "RECUR day 2: 400 'does not support the effort parameter' (run 27073730816, 34 hits)"
+      "note": "RECUR day 3: 400 'This model does not support the effort parameter' (run 27104658186, retries 1/11). Unfixed; drop effort param from frontmatter."
     },
     "Daily Cache Strategy Analyzer": {
-      "last": "2026-06-06",
+      "last": "2026-06-07",
       "last_concl": "failure",
       "eff_tok": 0,
       "class": "model-config-model-not-found",
-      "note": "RECUR day 2: 404 'Model not found adelie-alpha-2026-02-19' (run 27070791283, 28 hits)"
+      "note": "RECUR day 3: 404 'Model not found gpt-5-codex-alpha-2025-11-07' (run 27101492605). Model id ROTATED from adelie-alpha-2026-02-19 but STILL 404 — needs a stable/valid codex id, not another pin."
+    },
+    "Daily Safe Output Integrator": {
+      "last": "2026-06-07",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "copilot-sdk-driver-tool-permission-lockout",
+      "note": "RECUR: 13 denials, read(pkg/workflow/*_test.go)+shell(sed safe_outputs_config.go), 5-denial abort, turns=1 (run 27101776716)"
     },
     "Design Decision Gate": {
       "last": "2026-06-06",

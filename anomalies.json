@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-06T21:40Z",
+  "updated": "2026-06-07T21:50Z",
   "anomalies": [
+    {
+      "id": "anom-activation-guardrail-cjs-missing",
+      "date": "2026-06-07",
+      "wf": "TQS / PR Code Quality Reviewer / Design Decision Gate / Matt Pocock Skills Reviewer",
+      "run": "27103538546,27103538547,27103538566,27103538567",
+      "kind": "activation-guardrail-cjs-module-not-found",
+      "persistence": 1,
+      "escalation": "NEW-MEDIUM",
+      "detail": "Activation job 'Cannot find module check_daily_effective_workflow_guardrail.cjs' on all 4 PR review workflows of branch copilot/fix-daily-credit-limit-test. Agent correctly SKIPPED but activation failure reds the run. Dev-confined to the feature PR developing the daily-credit guardrail; packaging gap that would hit main if merged unbundled. 4/8 fails this window.",
+      "status": "ACTIVE"
+    },
     {
       "id": "anom-sdk-minimatch-crash",
       "date": "2026-06-06",
@@ -8,19 +19,19 @@
       "run": "27069431407,27069682890,27069819378,27069914133,27070138441,27070604747",
       "kind": "sdk-driver-minimatch-module-not-found",
       "persistence": 1,
-      "escalation": "NEW-HIGH",
-      "detail": "copilot_sdk_driver.cjs MODULE_NOT_FOUND 'minimatch' on all 4 retries, 0 turns/0 tokens. 6 distinct workflows same window = packaging regression. Single biggest failure driver this window (6/16).",
-      "status": "ACTIVE"
+      "escalation": "DE-ESCALATED",
+      "detail": "ABSENT 2026-06-07: not observed in any of 28 copilot runs. Was the single biggest driver 06-06 (6/16). Tentatively fixed; one more clean window to close.",
+      "status": "RESOLVED-THIS-WINDOW"
     },
     {
       "id": "anom-sdk-toolperm-reescalate",
-      "date": "2026-06-06",
-      "wf": "Daily SPDD Spec Planner / GEO Optimizer / Daily Safe Output Integrator",
-      "run": "27067363723,27067987828,27071016066",
+      "date": "2026-06-07",
+      "wf": "Daily Safe Output Integrator",
+      "run": "27101776716",
       "kind": "sdk-driver-tool-permission-lockout",
-      "persistence": 2,
-      "escalation": "RE-ESCALATED",
-      "detail": "3 prod-main schedules aborted after 5 tool denials (SPDD permDenied=10). Was RESOLVED 06-05; back 06-06. Combined with minimatch, copilot sdk-driver path accounts for 9/16 fails.",
+      "persistence": 3,
+      "escalation": "PERSISTING-NARROWER",
+      "detail": "RECUR 06-07 on 1 prod-main schedule (Safe Output Integrator): denies read(*_test.go)/shell(sed), 13 denials, 5-denial abort. Down from 3 wf on 06-06. sdk-driver path now 1/8 fails (minimatch gone).",
       "status": "ACTIVE"
     },
     {
@@ -47,24 +58,24 @@
     },
     {
       "id": "anom-model-config-effort",
-      "date": "2026-06-06",
+      "date": "2026-06-07",
       "wf": "Daily Caveman Optimizer",
-      "run": 27073730816,
+      "run": 27104658186,
       "kind": "model-config-effort-unsupported",
-      "persistence": 2,
-      "escalation": "PERSISTING",
-      "detail": "RECUR: 400 'does not support the effort parameter' again (run 27073730816, 34 hits) on prod main schedule; all retries exhausted, 0 tokens. Unfixed 2 days.",
+      "persistence": 3,
+      "escalation": "PERSISTING-ESCALATE",
+      "detail": "RECUR 3rd consecutive day: 400 'This model does not support the effort parameter' (run 27104658186, now retries 1/11) on prod main schedule; all retries exhausted, 0 tokens. Unfixed 3 days — static config, should be a one-line frontmatter fix.",
       "status": "ACTIVE"
     },
     {
       "id": "anom-model-config-notfound",
-      "date": "2026-06-06",
+      "date": "2026-06-07",
       "wf": "Daily Cache Strategy Analyzer",
-      "run": 27070791283,
+      "run": 27101492605,
       "kind": "model-config-model-not-found",
-      "persistence": 2,
-      "escalation": "PERSISTING",
-      "detail": "RECUR: 404 'Model not found adelie-alpha-2026-02-19' again (run 27070791283, 28 hits) on prod main schedule. Unfixed 2 days.",
+      "persistence": 3,
+      "escalation": "PERSISTING-ESCALATE",
+      "detail": "RECUR 3rd consecutive day: 404 'Model not found gpt-5-codex-alpha-2025-11-07' (run 27101492605) on prod main schedule. Model id ROTATED from adelie-alpha-2026-02-19 but STILL 404 — chasing a moving endpoint; needs a valid/aliased model id, not another pin.",
       "status": "ACTIVE"
     },
     {

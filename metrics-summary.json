@@ -1,36 +1,37 @@
 {
-  "updated": "2026-06-06T21:40Z",
-  "date": "2026-06-06",
-  "partial": true,
-  "latest_window": "2026-06-06 15:11-21:29Z (~6h evening cluster ONLY; logs MCP tool timed out at 120s and returned just the newest 100 runs, so the prior 06-05 21:30 -> 06-06 15:11 ~18h is UNOBSERVED this cycle). 81 success / 16 fail of 97 completed = 83.5% (+3 in-progress incl audit agent). DOMINANT NEW class = COPILOT SDK-DRIVER PATH BROKEN: 9 of 16 fails are sdk-driver-related. (a) NEW copilot_sdk_driver.cjs 'Cannot find module minimatch' MODULE_NOT_FOUND x6 (Linter Miner, Daily Secrets Analysis Agent, PR Code Quality Reviewer x2, Daily Testify Uber Super Expert, PR Triage Agent) — all 4 retries exhausted, 0 turns/0 tokens, static packaging bug; (b) RECUR sdk-driver tool-permission lockout x3 (Daily SPDD Spec Planner permDenied=10, GEO Optimizer Daily Audit, Daily Safe Output Integrator) — denies shell/read on cache-memory, 5-denial abort. Other fails: model/param config RECUR x2 (Caveman effort-400, Cache Strategy model-not-found-404), NEW detection-parse-failure (Design Decision Gate: ERR_PARSE no THREAT_DETECTION_RESULT, agent OK but detection job reddened), safe-output partial-fail RECUR (PR Sous Chef safe_outputs job, sub_agent_error), TQS empty agent_output redden, 2 by-design smoke probes (Smoke Claude/Copilot). token-budget-429 ABSENT (Daily Ambient 21.48M eff, back UNDER cap). fw 838/4457 (18.8%), 0 mcp-fail/missing-tool/missing-data.",
+  "updated": "2026-06-07T21:50Z",
+  "date": "2026-06-07",
+  "partial": false,
+  "latest_window": "2026-06-07 17:56-21:38Z (~3.7h cluster; continuation fetch returned 0 older runs, confirming this IS the full 24h window — quiet Sunday). 46 success / 8 fail of 54 completed = 85.2% (+2 in-progress: Daily Regulatory Report Generator + this Audit Agent). PROD-MAIN ONLY: 39 success / 4 fail of 43 = 90.7%; excluding the 1 intentional-fail wf -> 39/42 = 92.9% real. 8 failures / 4 classes: (1) NEW guardrail-module-missing x4 on PR branch copilot/fix-daily-credit-limit-test — activation job crashes 'Cannot find module check_daily_effective_workflow_guardrail.cjs' (TQS, PR Code Quality Reviewer, Design Decision Gate, Matt Pocock Skills Reviewer); agent correctly SKIPPED but activation reddens the run. Confined to one feature PR developing the daily-credit-limit guardrail = packaging gap that would hit main if merged unbundled. (2) RECUR model-param-config x2 prod-main: Caveman [claude] 400 'does not support the effort parameter' (3rd consecutive day, now retries 1/11), Cache Strategy [codex] 404 'Model not found gpt-5-codex-alpha-2025-11-07' (model id ROTATED again from adelie-alpha-2026-02-19, still 404). (3) RECUR copilot-sdk tool-permission-lockout x1: Daily Safe Output Integrator [copilot] denies read(.go test files)/shell(sed) — 13 denials, 5-denial abort. (4) by-design x1: Daily Max AI Credits Test (Intentionally Fails). minimatch sdk-crash ABSENT (06-06 dominant, not observed = likely fixed). token-budget-429 ABSENT. fw 0 blocked / 2516 (clean window). 1 missing-tool (Safe Output Integrator perm-denied), 0 mcp-fail/missing-data.",
   "totals": {
-    "r": 97,
-    "s": 81,
-    "f": 16,
-    "in_prog": 3,
-    "rate": 83.5,
-    "tok": 41627101,
-    "eff_tok": 329991371,
-    "aic": 8648.75,
-    "$_note": "AIC (agent inference credits); partial ~6h window only",
-    "turns": 1001,
-    "min": 908,
-    "errors": 0,
-    "fw_req": 4457,
-    "fw_blk": 838,
-    "fw_blk_pct": 18.8,
-    "missing_tools": 0,
+    "r": 54,
+    "s": 46,
+    "f": 8,
+    "in_prog": 2,
+    "rate": 85.2,
+    "prod_main_rate": 90.7,
+    "prod_main_real_rate": 92.9,
+    "tok": 23994237,
+    "eff_tok": 152136120,
+    "aic": 3595.34,
+    "$_note": "AIC (agent inference credits); full 24h window but small (3.7h active cluster)",
+    "turns": 422,
+    "min": 391,
+    "errors": 8,
+    "github_api_calls": 691,
+    "fw_req": 2516,
+    "fw_blk": 0,
+    "fw_blk_pct": 0,
+    "missing_tools": 1,
     "missing_data": 0,
     "mcp_failures": 0,
-    "safe_items": 24
+    "safe_items": 5
   },
   "engines": {
-    "copilot": 76,
-    "claude": 17,
-    "codex": 4,
-    "gemini": 1,
-    "antigravity": 1,
-    "pi": 1
+    "copilot": 28,
+    "claude": 9,
+    "codex": 2,
+    "unclassified": 17
   },
   "history": [
     {
@@ -180,6 +181,14 @@
       "tok": 41627101,
       "partial": true,
       "note": "PARTIAL ~6h window (15:11-21:29Z; logs tool timed out at 120s, newest 100 runs only, ~18h unobserved). 16 fail. DOMINANT: copilot SDK-driver path broken = 9/16 (NEW minimatch MODULE_NOT_FOUND x6 + RECUR tool-perm-lockout x3). Also: model/param config RECUR x2 (Caveman/Cache), NEW detection-parse-fail (Design Decision Gate), safe-output partial-fail RECUR (PR Sous Chef), TQS empty-output redden, 2 smoke probes. token-429 ABSENT (Ambient 21.48M under cap). fw 18.8%. AIC 8648.75."
+    },
+    {
+      "d": "2026-06-07",
+      "r": 54,
+      "s": 46,
+      "rate": 85.2,
+      "tok": 23994237,
+      "note": "FULL but SMALL 24h window (~3.7h active cluster 17:56-21:38Z; continuation returned 0 older runs — quiet Sunday). PROD-MAIN 39/42 real = 92.9% (excl 1 intentional-fail). 8 fail/4 classes: NEW guardrail-module-missing x4 (PR branch copilot/fix-daily-credit-limit-test, activation crash 'check_daily_effective_workflow_guardrail.cjs' MODULE_NOT_FOUND, dev-confined), model-param-config RECUR x2 prod (Caveman effort-400 day3, Cache model-not-found-404 new id gpt-5-codex-alpha-2025-11-07), copilot-sdk tool-perm-lockout RECUR x1 (Safe Output Integrator), 1 by-design (Max AI Credits Test). minimatch sdk-crash ABSENT (06-06 dominant, gone). token-429 ABSENT. fw 0/2516 clean. AIC 3595."
     }
   ]
 }

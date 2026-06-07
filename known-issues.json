@@ -1,15 +1,33 @@
 {
-  "updated": "2026-06-06T21:40Z",
+  "updated": "2026-06-07T21:50Z",
   "issues": [
+    {
+      "id": "activation-guardrail-cjs-module-not-found",
+      "title": "Activation job crashes: Cannot find module 'check_daily_effective_workflow_guardrail.cjs' (MODULE_NOT_FOUND)",
+      "status": "OPEN",
+      "severity": "MEDIUM",
+      "new": true,
+      "first_seen": "2026-06-07",
+      "last_seen": "2026-06-07",
+      "recurrence": "NEW this window and dominant by count (4/8 fails). Confined to ONE feature PR branch (copilot/fix-daily-credit-limit-test) that is developing the daily-credit-limit guardrail; all 4 PR review workflows fail identically. NOT on prod main yet — but a reproducible packaging gap that WILL redden main if merged with the .cjs unbundled.",
+      "affected": [
+        "Test Quality Sentinel",
+        "PR Code Quality Reviewer",
+        "Design Decision Gate",
+        "Matt Pocock Skills Reviewer"
+      ],
+      "note": "activation job runs require('/home/runner/work/_temp/gh-aw/actions/check_daily_effective_workflow_guardrail.cjs') -> '##[error]Unhandled error: Error: Cannot find module ...check_daily_effective_workflow_guardrail.cjs'. The agent job is then correctly SKIPPED (agent.result=skipped) but the activation job failure reddens the whole run. The guardrail .cjs is referenced by compiled lock files on the feature branch but is not bundled in the action package. Same MODULE_NOT_FOUND family as the (now-absent) minimatch crash but in the activation guardrail step. Runs 27103538546/47/66/67. GH_AW_MAX_DAILY_AI_CREDITS=500000 present.",
+      "fix": "Bundle check_daily_effective_workflow_guardrail.cjs into the action build before merging the daily-credit-limit feature; add a CI smoke test that node-requires every .cjs the activation job references."
+    },
     {
       "id": "copilot-sdk-driver-minimatch-module-not-found",
       "title": "copilot_sdk_driver.cjs crashes at startup: Cannot find module 'minimatch' (MODULE_NOT_FOUND)",
-      "status": "OPEN",
+      "status": "LIKELY-RESOLVED",
       "severity": "HIGH",
-      "new": true,
+      "new": false,
       "first_seen": "2026-06-06",
       "last_seen": "2026-06-06",
-      "recurrence": "NEW and dominant this window: 6 distinct copilot workflows all hard-fail identically on every one of 4 retries with 0 turns / 0 tokens. Static packaging/dependency bug, not transient.",
+      "recurrence": "ABSENT 2026-06-07: not observed in any of the 28 copilot runs this window (was the dominant 6/16 failure class on 06-06). Tentatively resolved/fixed; keep watching one more window before closing.",
       "affected": [
         "Linter Miner",
         "Daily Secrets Analysis Agent",
@@ -27,7 +45,7 @@
       "new": true,
       "first_seen": "2026-06-06",
       "last_seen": "2026-06-06",
-      "recurrence": "new this window; agent job SUCCEEDED (turns=3) but the separate detection job failed",
+      "recurrence": "ABSENT 2026-06-07: Design Decision Gate ran 4x this window (3 success on main, 1 fail on PR branch from the unrelated guardrail-module crash); no detection ERR_PARSE observed. Was NEW 06-06.",
       "affected": [
         "Design Decision Gate"
       ],
@@ -38,15 +56,15 @@
       "title": "Prod-main workflows hard-fail instantly on model/param config drift (effort unsupported / model not found)",
       "status": "OPEN",
       "severity": "HIGH",
-      "new": true,
+      "new": false,
       "first_seen": "2026-06-05",
-      "last_seen": "2026-06-06",
-      "recurrence": "RECUR 2026-06-06: BOTH prod-main schedules failed identically again. Caveman [claude] 27073730816 -> 400 'does not support the effort parameter' (34 hits); Cache Strategy [codex] 27070791283 -> 404 'Model not found adelie-alpha-2026-02-19' (28 hits). Unfixed 2 days running; static config drift wasting whole scheduled runs.",
+      "last_seen": "2026-06-07",
+      "recurrence": "RECUR 2026-06-07 (3rd CONSECUTIVE day): BOTH prod-main schedules failed identically again. Caveman [claude] 27104658186 -> 400 'This model does not support the effort parameter' (now retries 1/11). Cache Strategy [codex] 27101492605 -> 404 'Model not found gpt-5-codex-alpha-2025-11-07' — note the model id ROTATED (was adelie-alpha-2026-02-19 on 06-06) but STILL 404, so updating the pinned id is not keeping pace with the endpoint's available models. Unfixed 3 days; static config drift wasting whole scheduled runs daily.",
       "affected": [
         "Daily Caveman Optimizer",
         "Daily Cache Strategy Analyzer"
       ],
-      "note": "Two variants: (a) Daily Caveman Optimizer [claude] run 27040285267 -> 400 invalid_request_error 'This model does not support the effort parameter' (claude model pinned with a reasoning-effort param it rejects); (b) Daily Cache Strategy Analyzer [codex] run 27034341100 -> 404 'Model not found adelie-alpha-2026-02-19' (codex model id deprecated/removed at the responses endpoint). Both fail fast on every retry, cheap but total. Likely config drift after a model/param change."
+      "note": "Two variants: (a) Daily Caveman Optimizer [claude] -> 400 invalid_request_error 'This model does not support the effort parameter' (claude model pinned with a reasoning-effort/effort param it rejects); (b) Daily Cache Strategy Analyzer [codex] -> 404 'Model not found <id>' at the responses endpoint (codex model id deprecated/removed; id has rotated adelie-alpha-2026-02-19 -> gpt-5-codex-alpha-2025-11-07, both 404). Both fail fast on every retry, cheap but total. Static config drift after a model/param change."
     },
     {
       "id": "token-budget-429-effective-tokens",
@@ -56,7 +74,7 @@
       "ref": "#35661",
       "first_seen": "2026-05",
       "last_seen": "2026-06-04",
-      "recurrence": "ABSENT 2026-06-05 but BORDERLINE: Daily Ambient Context Optimizer ran 25.37M effective tokens (OVER the 25M cap) and SUCCEEDED this window. Cap edge unresolved; one bad run-set away from re-failing.",
+      "recurrence": "ABSENT 2026-06-07 (and prior 2 windows). Daily Ambient Context Optimizer not in this small window's run-set; no 429 observed. Cap edge unresolved but quiet. Soft pre-cap guard still not in place.",
       "affected": [
         "Daily Ambient Context Optimizer"
       ],
@@ -69,7 +87,7 @@
       "severity": "HIGH",
       "first_seen": "2026-05",
       "last_seen": "2026-06-06",
-      "recurrence": "RECUR 2026-06-06: PR Sous Chef 27067988983 agent SUCCEEDED (turns=34) but safe_outputs job FAILED (sub_agent_error 'insufficient_context' on PR #37133 + noops). One bad item reddened the whole job again.",
+      "recurrence": "ABSENT 2026-06-07: PR Sous Chef ran 3x on main this window (0/7/21 turns, execution-drift flagged) all SUCCESS; no safe_outputs partial-failure observed. Was RECUR 06-06. Fix still not shipped.",
       "affected": [
         "Contribution Check",
         "PR Sous Chef",
@@ -84,15 +102,15 @@
       "status": "OPEN",
       "severity": "HIGH",
       "first_seen": "2026-06-02",
-      "last_seen": "2026-06-06",
-      "recurrence": "RE-ESCALATED 2026-06-06: tool-permission-lockout variant hit 3 prod-main schedules. Daily SPDD Spec Planner 27067363723 (permissionDeniedCount=10, hasNumerousPermissionDenied=true; sdk-driver denied shell ls/cat on /tmp/gh-aw/cache-memory + read), GEO Optimizer Daily Audit 27067987828, Daily Safe Output Integrator 27071016066 — each ran 1 turn then aborted after 5 tool denials. Distinct from the NEW minimatch crash (see copilot-sdk-driver-minimatch-module-not-found); both are sdk-driver-path regressions (9/16 fails combined).",
+      "last_seen": "2026-06-07",
+      "recurrence": "RECUR 2026-06-07: tool-permission-lockout hit 1 prod-main schedule. Daily Safe Output Integrator 27101776716 denied read(pkg/workflow/*_test.go) and shell(sed -n ...safe_outputs_config.go) — 13 permission-denied entries, aborted after 5-denial threshold (1 turn). The minimatch crash variant is ABSENT this window, so the sdk-driver path is now 1/8 fails (down from 9/16). Persisting but narrower.",
       "affected": [
         "Daily SPDD Spec Planner",
         "GEO Optimizer Daily Audit",
         "Daily Safe Output Integrator",
         "PR Code Quality Reviewer"
       ],
-      "note": "sdk-driver path denies tools (shell/read on cache-memory) the workflow legitimately needs; after 5 denials the harness aborts the attempt. The denied tools are in the workflow's own tool config but the sdk-driver permission mapping (23 allow-tool entries from GH_AW_COPILOT_SDK_SERVER_ARGS) does not grant them."
+      "note": "sdk-driver path denies tools (read on repo source/_test.go files, shell sed) the workflow legitimately needs; after 5 denials the harness aborts the attempt. The denied tools are in the workflow's own tool config but the sdk-driver permission mapping (allow-tool entries from GH_AW_COPILOT_SDK_SERVER_ARGS) does not grant them. Earlier windows saw cache-memory read/shell denials too."
     },
     {
       "id": "copilot-agent-job-redden-with-valid-output",
@@ -102,7 +120,7 @@
       "new": true,
       "first_seen": "2026-06-05",
       "last_seen": "2026-06-06",
-      "recurrence": "RECUR 2026-06-06 but DIFFERENT shape: TQS 27069819373 (PR, oidc branch) reddened with EMPTY agent_output ({\"items\":[]}), turns=0, no agent-stdio.log artifact. On the same oidc branch PR Code Quality Reviewer hit the minimatch crash, so this may be the same sdk-driver-startup family rather than the 06-05 valid-report-redden. Inconclusive — keep watching.",
+      "recurrence": "06-07: TQS failed again (run 27103538546) but root cause is the activation-guardrail-cjs-module-not-found crash (PR branch copilot/fix-daily-credit-limit-test), NOT a copilot agent-job redden — agent was correctly SKIPPED. TQS also ran successfully once on the same PR branch. The valid-output-redden shape itself was NOT observed; this id is quiet. Keep watching.",
       "affected": [
         "Test Quality Sentinel"
       ],
@@ -155,7 +173,7 @@
       "severity": "INFO",
       "first_seen": "2026-05",
       "last_seen": "2026-06-06",
-      "recurrence": "18.8% blocked (838/4457) this window, up slightly from 17.9%. Block counts now spread across many workflows (Contribution Check 41/151, Smoke Codex 41/100, Daily Ambient 40/144, PR Code Quality Reviewer 40/138) rather than concentrated in smoke probes.",
+      "recurrence": "0% blocked (0/2516) this window — clean. No smoke probes ran in this small Sunday cluster, and the scheduled/PR runs that did run hit only allowed domains. Was 18.8% on 06-06. By-design; no firewall-caused failure.",
       "affected": [
         "Contribution Check",
         "Smoke Codex",
