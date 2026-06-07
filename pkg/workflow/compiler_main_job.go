@@ -292,13 +292,13 @@ func ensureMainJobContentsRead(permissions string, needsContentsRead bool) strin
 		return permissions
 	}
 	if permissions == "" {
-		return NewPermissionsContentsRead().RenderToYAML()
+		return filterJobLevelPermissions(NewPermissionsContentsRead().RenderToYAML())
 	}
 	parser := NewPermissionsParser(permissions)
 	perms := parser.ToPermissions()
 	if level, exists := perms.Get(PermissionContents); !exists || level == PermissionNone {
 		perms.Set(PermissionContents, PermissionRead)
-		return perms.RenderToYAML()
+		return filterJobLevelPermissions(perms.RenderToYAML())
 	}
 	return permissions
 }
