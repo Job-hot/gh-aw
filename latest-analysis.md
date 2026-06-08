@@ -1,20 +1,8 @@
-# Latest NLP Analysis
+# NLP Analysis - 2026-06-08
 
-**Date**: 2026-05-22
-**PRs Analyzed**: 38
-**Average Sentiment**: 0.026 (slightly positive)
-**Discussion Pattern**: Zero comments (all PRs merged without discussion)
-
-## Key Findings
-- 52.6% positive PRs, 26.3% neutral, 21.1% negative
-- Workflow/testing infrastructure dominates (50% of PRs)
-- High confidence in Copilot changes (no review needed)
-
-## Top Keywords
-1. bin (78)
-2. workflow (68)
-3. test (52)
-4. command (49)
-5. block (48)
-
-Last updated: 2026-05-22T11:26:45+00:00
+- PRs analyzed: 76
+- Avg sentiment: +0.060 (slightly positive)
+- Positive: 41 (54%), Neutral: 4 (5%), Negative: 31 (41%)
+- Top topic: Testing & CI (17 PRs, 22%)
+- Top keywords: updated, behavior, output, daily, guardrail, credits
+- Run: https://github.com/github/gh-aw/actions/runs/27135411457
