@@ -237,7 +237,6 @@ describe("handle_agent_failure", () => {
         delete process.env.GH_AW_AMBIENT_CONTEXT;
       }
     });
-
   });
 
   describe("main() precise failure issue matching", () => {

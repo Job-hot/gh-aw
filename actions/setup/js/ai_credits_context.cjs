@@ -120,7 +120,8 @@ function parseMaxAICreditsFromAWFConfig() {
   if (!awfConfig || typeof awfConfig.apiProxy !== "object" || awfConfig.apiProxy === null) {
     return "";
   }
-  return parsePositiveNumberString(awfConfig.apiProxy.maxAiCredits ?? awfConfig.apiProxy.max_ai_credits);
+  const apiProxy = /** @type {Record<string, unknown>} */ (awfConfig.apiProxy);
+  return parsePositiveNumberString(apiProxy.maxAiCredits ?? apiProxy.max_ai_credits);
 }
 
 /**
