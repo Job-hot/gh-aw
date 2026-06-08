@@ -2456,7 +2456,7 @@ describe("handle_agent_failure", () => {
       expect(hasMaxAICreditsExceededEventSignal()).toBe(false);
     });
 
-    it("ignores malformed lines and non-matching events while scanning", () => {
+    it("ignores malformed/non-matching events while detecting a valid nested rate-limit message", () => {
       const logsDir = path.join(tmpDir, "sandbox", "firewall-audit-logs", "api-proxy-logs");
       fs.mkdirSync(logsDir, { recursive: true });
       fs.writeFileSync(
@@ -2468,6 +2468,22 @@ describe("handle_agent_failure", () => {
           JSON.stringify({ type: "response.error", payload: { reason: "CAPIError: 429 Maximum AI credits exceeded" } }),
           JSON.stringify({ type: "response.error", payload: { detail: "CAPIError: 429 Maximum AI credits exceeded (8.445900 / 1)." } }),
         ].join("\n") + "\n"
+      );
+
+      expect(hasMaxAICreditsExceededEventSignal()).toBe(true);
+    });
+
+    it("detects MaxAI credits exceeded when nested inside array fields", () => {
+      const logsDir = path.join(tmpDir, "sandbox", "firewall", "logs", "api-proxy-logs");
+      fs.mkdirSync(logsDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(logsDir, "event-logs.jsonl"),
+        JSON.stringify({
+          type: "response.error",
+          payload: {
+            errors: ["upstream timeout", "CAPIError: 429 Maximum AI credits exceeded (8.445900 / 1)."],
+          },
+        }) + "\n"
       );
 
       expect(hasMaxAICreditsExceededEventSignal()).toBe(true);

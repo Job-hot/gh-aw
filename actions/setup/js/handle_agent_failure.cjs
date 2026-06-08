@@ -1260,18 +1260,29 @@ function hasMaxAICreditsExceededText(value) {
   if (typeof value === "string") {
     return MAX_AI_CREDITS_EXCEEDED_RE.test(value);
   }
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  if (!value || typeof value !== "object") {
     return false;
   }
   const stack = [value];
   while (stack.length > 0) {
     const node = stack.pop();
-    if (!node || typeof node !== "object") continue;
-    for (const nestedValue of Object.values(node)) {
-      if (typeof nestedValue === "string" && MAX_AI_CREDITS_EXCEEDED_RE.test(nestedValue)) {
+    if (typeof node === "string") {
+      if (MAX_AI_CREDITS_EXCEEDED_RE.test(node)) {
         return true;
       }
-      if (nestedValue && typeof nestedValue === "object") {
+      continue;
+    }
+    if (!node || typeof node !== "object") {
+      continue;
+    }
+    if (Array.isArray(node)) {
+      for (const nestedValue of node) {
+        stack.push(nestedValue);
+      }
+      continue;
+    }
+    for (const nestedValue of Object.values(node)) {
+      if (nestedValue !== null && nestedValue !== undefined) {
         stack.push(nestedValue);
       }
     }
@@ -1291,7 +1302,7 @@ function hasMaxAICreditsExceededEventSignal() {
       const content = fs.readFileSync(eventsPath, "utf8");
       if (!content.trim()) continue;
 
-      for (const parsed of parseJsonlContent(content, line => MAX_AI_CREDITS_EXCEEDED_RE.test(line))) {
+      for (const parsed of parseJsonlContent(content)) {
         if (hasMaxAICreditsExceededText(parsed)) {
           return true;
         }
