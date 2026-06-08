@@ -16,7 +16,6 @@ var errorRecoveryLog = logger.New("workflow:error_recovery")
 var (
 	engineContextLinePattern = regexp.MustCompile(`(?m)^\s*>?\s*(\d+)\s*\|\s*engine:\s*([A-Za-z0-9._-]+)\s*$`)
 	errorFilePathPattern     = regexp.MustCompile(`^(.+?):\d+:\d+:\s*error:`)
-	supportedEngineIDs       = append([]string(nil), GetGlobalEngineRegistry().GetSupportedEngines()...)
 )
 
 // ErrorSeverity classifies how urgently a compilation error should be fixed.
@@ -393,6 +392,10 @@ func normalizeErrorMessage(message string) string {
 	return strings.Join(strings.Fields(strings.ToLower(message)), " ")
 }
 
+func supportedEngineIDs() []string {
+	return append([]string(nil), GetGlobalEngineRegistry().GetSupportedEngines()...)
+}
+
 func expandDisplayMessage(message string) []string {
 	const schemaPrefix = "Multiple schema validation failures:"
 	if !strings.Contains(message, schemaPrefix) {
@@ -435,14 +438,15 @@ func synthesizeInvalidEngineTypoMessage(message string) string {
 		return ""
 	}
 	engineLower := strings.ToLower(engineValue)
-	for _, known := range supportedEngineIDs {
+	engineIDs := supportedEngineIDs()
+	for _, known := range engineIDs {
 		if strings.EqualFold(engineValue, known) {
 			return ""
 		}
 	}
 
-	suggestions := parser.FindClosestMatches(engineLower, supportedEngineIDs, 1)
-	errorMessage := fmt.Sprintf("unknown engine %q. Valid engines are: %s", engineValue, strings.Join(supportedEngineIDs, ", "))
+	suggestions := parser.FindClosestMatches(engineLower, engineIDs, 1)
+	errorMessage := fmt.Sprintf("unknown engine %q. Valid engines are: %s", engineValue, strings.Join(engineIDs, ", "))
 	if len(suggestions) > 0 {
 		errorMessage += fmt.Sprintf(". Did you mean %q?", suggestions[0])
 	}
