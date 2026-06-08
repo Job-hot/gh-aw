@@ -396,11 +396,12 @@ func normalizeErrorMessage(message string) string {
 }
 
 func supportedEngineIDs() []string {
+	registry := GetGlobalEngineRegistry()
+	if registry == nil {
+		return nil
+	}
+
 	supportedEngineIDsOnce.Do(func() {
-		registry := GetGlobalEngineRegistry()
-		if registry == nil {
-			return
-		}
 		cachedSupportedEngineIDs = append([]string(nil), registry.GetSupportedEngines()...)
 		sort.Strings(cachedSupportedEngineIDs)
 	})
