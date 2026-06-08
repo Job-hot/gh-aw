@@ -2,4 +2,4 @@
 
 Run: 100
 Persona: hex-drifter
-Note: first commit in two-commit sequence
+Note: second commit in two-commit sequence
