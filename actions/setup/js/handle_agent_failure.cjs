@@ -26,6 +26,8 @@ const FAILURE_ISSUE_CATEGORY_DAILY_CAP = 50;
 const FAILURE_ISSUE_WINDOW_MS = FAILURE_ISSUE_DEDUP_WINDOW_HOURS * 60 * 60 * 1000;
 const DEFAULT_OTEL_JSONL_PATH = "/tmp/gh-aw/otel.jsonl";
 const COPILOT_SESSION_STATE_DIR = path.join(os.tmpdir(), "gh-aw", "sandbox", "agent", "logs", "copilot-session-state");
+const MAX_AI_CREDITS_EXCEEDED_RE =
+  /(?:capierror:\s*429[\s\S]{0,160}maximum ai credits exceeded|maximum ai credits exceeded|max(?:imum)?\s*ai[\s_-]*credits?\s*exceeded|maxai[\s_-]*credits?\s*exceeded)/i;
 // Engine-side 429/rate-limit signatures:
 // - HTTP 429 accompanied by "too many requests"/"rate limit" phrasing
 // - provider error codes like rate_limit_error / rate_limit_exceeded
@@ -1225,6 +1227,39 @@ function loadToolDenialsExceededEvents() {
 }
 
 /**
+ * Load MaxAI credits exceeded signals from Copilot SDK session events.jsonl files.
+ * @returns {boolean}
+ */
+function hasMaxAICreditsExceededEventSignal() {
+  try {
+    if (!fs.existsSync(COPILOT_SESSION_STATE_DIR)) {
+      return false;
+    }
+
+    const sessionDirs = fs.readdirSync(COPILOT_SESSION_STATE_DIR, { withFileTypes: true });
+    for (const entry of sessionDirs) {
+      if (!entry.isDirectory()) continue;
+      const eventsPath = path.join(COPILOT_SESSION_STATE_DIR, entry.name, "events.jsonl");
+      if (!fs.existsSync(eventsPath)) continue;
+
+      const content = fs.readFileSync(eventsPath, "utf8");
+      if (!content.trim()) continue;
+
+      for (const rawLine of content.split("\n")) {
+        const line = rawLine.trim();
+        if (!line) continue;
+        if (MAX_AI_CREDITS_EXCEEDED_RE.test(line)) {
+          return true;
+        }
+      }
+    }
+  } catch (error) {
+    core.warning(`Failed to load MaxAI credits exceeded events: ${getErrorMessage(error)}`);
+  }
+  return false;
+}
+
+/**
  * Build context for max-tool-denials guardrail failures from Copilot SDK events.
  * @param {Array<{denialCount: number, threshold: number, reason: string}>} events
  * @param {string} [workflowId]
@@ -2263,7 +2298,8 @@ async function main() {
     const codePushFailureCount = process.env.GH_AW_CODE_PUSH_FAILURE_COUNT || "0";
     const checkoutPRSuccess = process.env.GH_AW_CHECKOUT_PR_SUCCESS || "";
     const timeoutMinutes = process.env.GH_AW_TIMEOUT_MINUTES || "";
-    const { aiCredits, maxAICredits, aiCreditsRateLimitError } = resolveAICreditsFailureState();
+    const { aiCredits, maxAICredits, aiCreditsRateLimitError: resolvedAICreditsRateLimitError } = resolveAICreditsFailureState();
+    let aiCreditsRateLimitError = resolvedAICreditsRateLimitError;
     const inferenceAccessError = process.env.GH_AW_INFERENCE_ACCESS_ERROR === "true";
     const mcpPolicyError = process.env.GH_AW_MCP_POLICY_ERROR === "true";
     const agenticEngineTimeout = process.env.GH_AW_AGENTIC_ENGINE_TIMEOUT === "true";
@@ -2460,6 +2496,11 @@ async function main() {
     if (hasToolDenialsExceeded) {
       core.info(`Detected ${toolDenialsExceededEvents.length} guard.tool_denials_exceeded event(s) from Copilot SDK events.jsonl`);
     }
+    const hasMaxAICreditsExceededEvent = engineId === "copilot" ? hasMaxAICreditsExceededEventSignal() : false;
+    if (!aiCreditsRateLimitError && hasMaxAICreditsExceededEvent) {
+      aiCreditsRateLimitError = true;
+      core.info("Detected MaxAI credits exceeded signal from Copilot SDK events.jsonl");
+    }
 
     // Detect cache-miss misconfiguration: the agent reported a missing_data with reason
     // "cache_memory_miss" while cache-memory was configured and available.  This indicates the
@@ -2509,7 +2550,7 @@ async function main() {
     }
 
     // If we only have noop outputs (and no report_incomplete/cache-miss/missing-tool/data/tool-denials-exceeded), skip failure handling
-    if (hasOnlyNoopOutputs && !hasReportIncomplete && !hasCacheMissMisconfiguration && !hasMissingTool && !hasMissingData && !hasToolDenialsExceeded) {
+    if (hasOnlyNoopOutputs && !hasReportIncomplete && !hasCacheMissMisconfiguration && !hasMissingTool && !hasMissingData && !hasToolDenialsExceeded && !aiCreditsRateLimitError) {
       core.info("Agent completed with only noop outputs - skipping failure handling");
       return;
     }
@@ -2519,7 +2560,7 @@ async function main() {
     // This prevents false-positive failure issues when a transient AI model error occurs
     // after the agent has already finished its task (e.g., create_discussion produced but
     // the server returned a spurious error on teardown).
-    if (hasCompletedDespiteJobFailure && !hasReportIncomplete && !hasCacheMissMisconfiguration) {
+    if (hasCompletedDespiteJobFailure && !hasReportIncomplete && !hasCacheMissMisconfiguration && !aiCreditsRateLimitError) {
       core.info("Agent completed with valid safe outputs despite job failure (terminal_reason: completed) — skipping failure handling");
       return;
     }
@@ -3094,6 +3135,7 @@ module.exports = {
   normalizeDeniedPermissionCommand,
   loadToolDenialsExceededEvents,
   buildToolDenialsExceededContext,
+  hasMaxAICreditsExceededEventSignal,
   buildCredentialAuthErrorContext,
   buildAICreditsRateLimitErrorContext,
   hasEngineRateLimit429Signal,

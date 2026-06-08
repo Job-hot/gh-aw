@@ -2401,6 +2401,57 @@ describe("handle_agent_failure", () => {
     });
   });
 
+  describe("hasMaxAICreditsExceededEventSignal", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const os = require("os");
+    let hasMaxAICreditsExceededEventSignal;
+    /** @type {string} */
+    let tmpDir;
+
+    beforeEach(() => {
+      vi.resetModules();
+      try {
+        fs.rmSync(path.join(os.tmpdir(), "gh-aw", "sandbox", "agent", "logs", "copilot-session-state"), { recursive: true, force: true });
+      } catch {}
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "aw-test-max-ai-credits-events-"));
+      process.env.RUNNER_TEMP = tmpDir;
+      ({ hasMaxAICreditsExceededEventSignal } = require("./handle_agent_failure.cjs"));
+    });
+
+    afterEach(() => {
+      delete process.env.RUNNER_TEMP;
+      if (fs.existsSync(tmpDir)) {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+      try {
+        fs.rmSync(path.join(os.tmpdir(), "gh-aw", "sandbox", "agent", "logs", "copilot-session-state"), { recursive: true, force: true });
+      } catch {}
+    });
+
+    it("returns true when events.jsonl contains a MaxAI credits exceeded signal", () => {
+      const sessionDir = path.join(os.tmpdir(), "gh-aw", "sandbox", "agent", "logs", "copilot-session-state", "session-1");
+      fs.mkdirSync(sessionDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(sessionDir, "events.jsonl"),
+        [
+          JSON.stringify({ type: "assistant.message", data: { content: "starting run" } }),
+          JSON.stringify({ type: "assistant.message", data: { content: "CAPIError: 429 Maximum AI credits exceeded (8.445900 / 1)." } }),
+        ].join("\n") + "\n"
+      );
+
+      expect(hasMaxAICreditsExceededEventSignal()).toBe(true);
+    });
+
+    it("returns false when events.jsonl does not contain a MaxAI credits exceeded signal", () => {
+      const sessionDir = path.join(os.tmpdir(), "gh-aw", "sandbox", "agent", "logs", "copilot-session-state", "session-1");
+      fs.mkdirSync(sessionDir, { recursive: true });
+      fs.writeFileSync(path.join(sessionDir, "events.jsonl"), JSON.stringify({ type: "assistant.message", data: { content: "all good" } }) + "\n");
+
+      expect(hasMaxAICreditsExceededEventSignal()).toBe(false);
+    });
+  });
+
   // ──────────────────────────────────────────────────────
   // normalizeDeniedPermissionCommand
   // ──────────────────────────────────────────────────────
