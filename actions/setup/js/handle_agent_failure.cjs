@@ -2,6 +2,7 @@
 /// <reference types="@actions/github-script" />
 
 const { getErrorMessage } = require("./error_helpers.cjs");
+const { parseJsonlContent } = require("./jsonl_helpers.cjs");
 const { sanitizeContent } = require("./sanitize_content.cjs");
 const { getDetectionCautionAlert, getFooterAgentFailureIssueMessage, getFooterAgentFailureCommentMessage, generateXMLMarker } = require("./messages.cjs");
 const { renderTemplate, renderTemplateFromFile, getPromptPath } = require("./messages_core.cjs");
@@ -26,6 +27,12 @@ const FAILURE_ISSUE_CATEGORY_DAILY_CAP = 50;
 const FAILURE_ISSUE_WINDOW_MS = FAILURE_ISSUE_DEDUP_WINDOW_HOURS * 60 * 60 * 1000;
 const DEFAULT_OTEL_JSONL_PATH = "/tmp/gh-aw/otel.jsonl";
 const COPILOT_SESSION_STATE_DIR = path.join(os.tmpdir(), "gh-aw", "sandbox", "agent", "logs", "copilot-session-state");
+const API_PROXY_EVENT_LOG_RELATIVE_PATHS = [
+  path.join("sandbox", "firewall", "logs", "api-proxy-logs", "event-logs.jsonl"),
+  path.join("sandbox", "firewall", "logs", "api-proxy-logs", "events.jsonl"),
+  path.join("sandbox", "firewall-audit-logs", "api-proxy-logs", "event-logs.jsonl"),
+  path.join("sandbox", "firewall-audit-logs", "api-proxy-logs", "events.jsonl"),
+];
 const MAX_AI_CREDITS_EXCEEDED_RE = /(?:capierror:\s*429[\s\S]{0,160}maximum ai credits exceeded|maximum ai credits exceeded|max(?:imum)?\s*ai[\s_-]*credits?\s*exceeded|maxai[\s_-]*credits?\s*exceeded)/i;
 // Engine-side 429/rate-limit signatures:
 // - HTTP 429 accompanied by "too many requests"/"rate limit" phrasing
@@ -1226,43 +1233,72 @@ function loadToolDenialsExceededEvents() {
 }
 
 /**
- * Load MaxAI credits exceeded signals from Copilot SDK session events.jsonl files.
+ * Resolve API proxy events.jsonl / event-logs.jsonl paths from local or artifact layout.
+ * @returns {string[]}
+ */
+function getAPIProxyEventLogPaths() {
+  const agentOutputFile = process.env.GH_AW_AGENT_OUTPUT;
+  const roots = [];
+  if (agentOutputFile) {
+    roots.push(path.dirname(agentOutputFile));
+  }
+  roots.push("/tmp/gh-aw");
+  const paths = [];
+  for (const root of roots) {
+    for (const relPath of API_PROXY_EVENT_LOG_RELATIVE_PATHS) {
+      paths.push(path.join(root, relPath));
+    }
+  }
+  return [...new Set(paths)];
+}
+
+/**
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function hasMaxAICreditsExceededText(value) {
+  if (typeof value === "string") {
+    return MAX_AI_CREDITS_EXCEEDED_RE.test(value);
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  const stack = [value];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (!node || typeof node !== "object") continue;
+    for (const nestedValue of Object.values(node)) {
+      if (typeof nestedValue === "string" && MAX_AI_CREDITS_EXCEEDED_RE.test(nestedValue)) {
+        return true;
+      }
+      if (nestedValue && typeof nestedValue === "object") {
+        stack.push(nestedValue);
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Load MaxAI credits exceeded signals from API proxy firewall event logs.
  * @returns {boolean}
  */
 function hasMaxAICreditsExceededEventSignal() {
   try {
-    if (!fs.existsSync(COPILOT_SESSION_STATE_DIR)) {
-      return false;
-    }
-
-    const sessionDirs = fs.readdirSync(COPILOT_SESSION_STATE_DIR, { withFileTypes: true });
-    for (const entry of sessionDirs) {
-      if (!entry.isDirectory()) continue;
-      const eventsPath = path.join(COPILOT_SESSION_STATE_DIR, entry.name, "events.jsonl");
+    for (const eventsPath of getAPIProxyEventLogPaths()) {
       if (!fs.existsSync(eventsPath)) continue;
 
       const content = fs.readFileSync(eventsPath, "utf8");
       if (!content.trim()) continue;
 
-      for (const rawLine of content.split("\n")) {
-        const line = rawLine.trim();
-        if (!line) continue;
-        try {
-          const parsed = JSON.parse(line);
-          if (parsed.type !== "assistant.message" || parsed.data == null || typeof parsed.data !== "object" || Array.isArray(parsed.data)) {
-            continue;
-          }
-          const contentText = typeof parsed.data.content === "string" ? parsed.data.content : "";
-          if (contentText && MAX_AI_CREDITS_EXCEEDED_RE.test(contentText)) {
-            return true;
-          }
-        } catch {
-          // Skip malformed lines
+      for (const parsed of parseJsonlContent(content, line => MAX_AI_CREDITS_EXCEEDED_RE.test(line))) {
+        if (hasMaxAICreditsExceededText(parsed)) {
+          return true;
         }
       }
     }
   } catch (error) {
-    core.warning(`Failed to load MaxAI credits exceeded events: ${getErrorMessage(error)}`);
+    core.warning(`Failed to load MaxAI credits exceeded API proxy events: ${getErrorMessage(error)}`);
   }
   return false;
 }
@@ -2504,10 +2540,10 @@ async function main() {
     if (hasToolDenialsExceeded) {
       core.info(`Detected ${toolDenialsExceededEvents.length} guard.tool_denials_exceeded event(s) from Copilot SDK events.jsonl`);
     }
-    const hasMaxAICreditsExceededEvent = engineId === "copilot" ? hasMaxAICreditsExceededEventSignal() : false;
+    const hasMaxAICreditsExceededEvent = hasMaxAICreditsExceededEventSignal();
     if (!aiCreditsRateLimitError && hasMaxAICreditsExceededEvent) {
       aiCreditsRateLimitError = true;
-      core.info("Detected MaxAI credits exceeded signal from Copilot SDK events.jsonl");
+      core.info("Detected MaxAI credits exceeded signal from API proxy firewall event logs");
     }
 
     // Detect cache-miss misconfiguration: the agent reported a missing_data with reason
