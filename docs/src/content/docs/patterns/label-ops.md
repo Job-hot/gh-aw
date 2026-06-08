@@ -19,13 +19,6 @@ The `label_command` trigger treats a label as a one-shot command: applying the l
 
 This workflow triggers when a `deploy` label is applied to a pull request. It builds and deploys a preview environment, then posts the URL as a comment. The workflow runs with read-only permissions while [safe-outputs](/gh-aw/reference/safe-outputs/) handle the comment creation securely.
 
-```mermaid
-flowchart LR
-    apply([Apply deploy label]) --> fire[Trigger fires, label removed]
-    fire --> agent[AI agent]
-    agent --> comment[Comment with URL]
-```
-
 Example workflow:
 
 ```aw wrap title=".github/workflows/deploy-preview.md"
@@ -48,15 +41,7 @@ A `deploy` label was applied to this pull request. Build and deploy a preview en
 The matched label name is available as `${{ needs.activation.outputs.label_command }}` if needed to distinguish between multiple label commands.
 ```
 
-After activation the `deploy` label is removed from the pull request, so a reviewer can apply it again to trigger another deployment without any cleanup step.
-
-The label that triggered the workflow is exposed as an output of the activation job:
-
-```
-${{ needs.activation.outputs.label_command }}
-```
-
-This is useful when a workflow handles multiple label commands and needs to branch on which one was applied.
+After activation the `deploy` label is removed, so a reviewer can re-apply it to trigger another deployment with no cleanup step. The triggering label is exposed via `${{ needs.activation.outputs.label_command }}` (shown in the example above), letting a workflow that handles multiple label commands branch on which one fired.
 
 ### Combining with slash commands
 
