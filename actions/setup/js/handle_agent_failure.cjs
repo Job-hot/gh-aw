@@ -1249,7 +1249,7 @@ function hasMaxAICreditsExceededEventSignal() {
         if (!line) continue;
         try {
           const parsed = JSON.parse(line);
-          if (parsed.type !== "assistant.message" || !parsed.data || Array.isArray(parsed.data) || typeof parsed.data !== "object") {
+          if (parsed.type !== "assistant.message" || parsed.data == null || typeof parsed.data !== "object" || Array.isArray(parsed.data)) {
             continue;
           }
           const contentText = typeof parsed.data.content === "string" ? parsed.data.content : "";

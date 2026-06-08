@@ -2456,6 +2456,8 @@ describe("handle_agent_failure", () => {
         [
           "not-json",
           JSON.stringify({ type: "guard.tool_denials_exceeded", data: { reason: "CAPIError: 429 Maximum AI credits exceeded" } }),
+          JSON.stringify({ type: "assistant.message", data: [] }),
+          JSON.stringify({ type: "assistant.message", data: { reason: "CAPIError: 429 Maximum AI credits exceeded" } }),
           JSON.stringify({ type: "assistant.message", data: { content: "CAPIError: 429 Maximum AI credits exceeded (8.445900 / 1)." } }),
         ].join("\n") + "\n"
       );
