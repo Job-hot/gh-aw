@@ -1,194 +1,206 @@
 {
-  "updated": "2026-06-07T21:50Z",
-  "date": "2026-06-07",
-  "partial": false,
-  "latest_window": "2026-06-07 17:56-21:38Z (~3.7h cluster; continuation fetch returned 0 older runs, confirming this IS the full 24h window — quiet Sunday). 46 success / 8 fail of 54 completed = 85.2% (+2 in-progress: Daily Regulatory Report Generator + this Audit Agent). PROD-MAIN ONLY: 39 success / 4 fail of 43 = 90.7%; excluding the 1 intentional-fail wf -> 39/42 = 92.9% real. 8 failures / 4 classes: (1) NEW guardrail-module-missing x4 on PR branch copilot/fix-daily-credit-limit-test — activation job crashes 'Cannot find module check_daily_effective_workflow_guardrail.cjs' (TQS, PR Code Quality Reviewer, Design Decision Gate, Matt Pocock Skills Reviewer); agent correctly SKIPPED but activation reddens the run. Confined to one feature PR developing the daily-credit-limit guardrail = packaging gap that would hit main if merged unbundled. (2) RECUR model-param-config x2 prod-main: Caveman [claude] 400 'does not support the effort parameter' (3rd consecutive day, now retries 1/11), Cache Strategy [codex] 404 'Model not found gpt-5-codex-alpha-2025-11-07' (model id ROTATED again from adelie-alpha-2026-02-19, still 404). (3) RECUR copilot-sdk tool-permission-lockout x1: Daily Safe Output Integrator [copilot] denies read(.go test files)/shell(sed) — 13 denials, 5-denial abort. (4) by-design x1: Daily Max AI Credits Test (Intentionally Fails). minimatch sdk-crash ABSENT (06-06 dominant, not observed = likely fixed). token-budget-429 ABSENT. fw 0 blocked / 2516 (clean window). 1 missing-tool (Safe Output Integrator perm-denied), 0 mcp-fail/missing-data.",
-  "totals": {
-    "r": 54,
-    "s": 46,
-    "f": 8,
-    "in_prog": 2,
-    "rate": 85.2,
-    "prod_main_rate": 90.7,
-    "prod_main_real_rate": 92.9,
-    "tok": 23994237,
-    "eff_tok": 152136120,
-    "aic": 3595.34,
-    "$_note": "AIC (agent inference credits); full 24h window but small (3.7h active cluster)",
-    "turns": 422,
-    "min": 391,
-    "errors": 8,
-    "github_api_calls": 691,
-    "fw_req": 2516,
-    "fw_blk": 0,
-    "fw_blk_pct": 0,
-    "missing_tools": 1,
-    "missing_data": 0,
-    "mcp_failures": 0,
-    "safe_items": 5
-  },
-  "engines": {
-    "copilot": 28,
-    "claude": 9,
-    "codex": 2,
-    "unclassified": 17
-  },
-  "history": [
-    {
-      "d": "2026-05-20",
-      "r": 78,
-      "s": 67,
-      "rate": 85.9,
-      "$": 26.72,
-      "tok": 59645141
-    },
-    {
-      "d": "2026-05-21",
-      "r": 41,
-      "s": 31,
-      "rate": 75.6,
-      "$": 19.96,
-      "tok": 35895593
-    },
-    {
-      "d": "2026-05-23",
-      "r": 77,
-      "s": 32,
-      "rate": 41.6,
-      "$": 24.6145,
-      "tok": 46179750
-    },
-    {
-      "d": "2026-05-24",
-      "r": 38,
-      "s": 30,
-      "rate": 81.1,
-      "$": 23.058685,
-      "tok": 38562917
-    },
-    {
-      "d": "2026-05-25",
-      "r": 174,
-      "s": 162,
-      "rate": 94.7,
-      "$": 26.2265,
-      "tok": 56839455
-    },
-    {
-      "d": "2026-05-26",
-      "r": 49,
-      "s": 42,
-      "rate": 85.7,
-      "$": 26.366459,
-      "tok": 54489070
-    },
-    {
-      "d": "2026-05-27",
-      "r": 37,
-      "s": 30,
-      "rate": 90.9,
-      "$": 12.0,
-      "tok": 17283384,
-      "partial": true
-    },
-    {
-      "d": "2026-05-28",
-      "r": 64,
-      "s": 47,
-      "rate": 81.0,
-      "$": 29.354164,
-      "tok": 48923104,
-      "partial": true
-    },
-    {
-      "d": "2026-05-29",
-      "r": 21,
-      "s": 17,
-      "rate": 89.5,
-      "$": 7.18,
-      "tok": 14553338,
-      "partial": true,
-      "note": "small mid-cycle window; $ is claude-only"
-    },
-    {
-      "d": "2026-05-30",
-      "r": 56,
-      "s": 51,
-      "rate": 91.1,
-      "$": 24.55,
-      "tok": 49889280,
-      "note": "full window; $ claude-measured (copilot/codex cost not reported)"
-    },
-    {
-      "d": "2026-05-31",
-      "r": 59,
-      "s": 53,
-      "rate": 89.8,
-      "$": 31.63,
-      "tok": 68838688,
-      "note": "full window; $ claude-measured. Cost up on Go Logger Enhancement $8.30 outlier (success)."
-    },
-    {
-      "d": "2026-06-01",
-      "r": 53,
-      "s": 51,
-      "rate": 96.2,
-      "$": 15.62,
-      "tok": 38076235,
-      "note": "full window; $ claude-measured. BEST success rate in 14-day window. Both failures = same safe-output target=* class."
-    },
-    {
-      "d": "2026-06-02",
-      "r": 57,
-      "s": 48,
-      "rate": 84.2,
-      "$": 15.05,
-      "tok": 32731221,
-      "note": "full window; $ claude-measured. Success DOWN from 96.2% peak. 9 failures/3 classes: token-budget-429 RE-ESCALATED (2 wf over 25M cap), safe-output partial-failure-intolerance (3 wf), NEW copilot-sdk-session-auth (4 dev-iteration runs on 1 experimental wf). Cost outlier Semantic Function Refactoring $6.35 (success). | AFTERNOON RE-AUDIT (14:31-17:23Z, 47 completed, 89.4%, $6.27 claude-measured): token-budget-429 ABSENT (improvement). 5 failures/5 classes (2 NEW: node-missing exit127, agent-timeout Avenger opus 48min; +safe-output count-exceeded, copilot-sdk session.idle timeout, super-linter job). Complements morning #36398. | EVENING RE-AUDIT (16:51-19:34Z, 46 completed, 97.8%, 23.0M tok/140.9M eff): ONLY 1 failure = copilot-sdk session.idle 600s timeout ESCALATED to a PRODUCTION schedule/main wf (Daily Security Observability Report). safe-output partial-failure ABSENT, token-budget-429 ABSENT. sdk-driver path now ~14/48 copilot+codex runs. Firewall 513/2527 (20.3%), no smoke probes this window."
-    },
-    {
-      "d": "2026-06-03",
-      "r": 17,
-      "s": 13,
-      "rate": 76.5,
-      "$": 6.75,
-      "tok": 6839253,
-      "note": "window since 06-02 night audit (17 completed/19, 2 in-prog). $ claude-measured. 4 failures: 3x copilot-sdk-session-auth (100% of sdk-driver runs, ESCALATED to prod main) + 1 safe-output target=* (Contribution Check)."
-    },
-    {
-      "d": "2026-06-04",
-      "r": 64,
-      "s": 57,
-      "rate": 89.1,
-      "$": 19.23,
-      "tok": 31739017,
-      "partial": true,
-      "note": "PARTIAL ~4h window (logs timeout). 7 fail: token-budget-429 RECUR prod main + safe-output target=* x2 (Contribution Check/PR Sous Chef) + copilot-sdk-tool-permission-lockout (PR Code Quality Reviewer) + 3 by-design smoke probes."
-    },
-    {
-      "d": "2026-06-05",
-      "r": 53,
-      "s": 48,
-      "rate": 90.6,
-      "tok": 30404314,
-      "note": "full window (~4h evening cluster; continuation returned 0 older runs). 5 fail: NEW model/param config-incompatibility x2 prod-main (Caveman effort-unsupported 400, Cache Strategy model-not-found 404) + TQS copilot agent-job redden w/ valid output + 2 by-design smoke probes. ALL prior recurring classes recovered. Ambient 25.37M eff over-cap-but-survived. fw 17.9%. AIC 6065.76."
-    },
-    {
-      "d": "2026-06-06",
-      "r": 97,
-      "s": 81,
-      "rate": 83.5,
-      "tok": 41627101,
-      "partial": true,
-      "note": "PARTIAL ~6h window (15:11-21:29Z; logs tool timed out at 120s, newest 100 runs only, ~18h unobserved). 16 fail. DOMINANT: copilot SDK-driver path broken = 9/16 (NEW minimatch MODULE_NOT_FOUND x6 + RECUR tool-perm-lockout x3). Also: model/param config RECUR x2 (Caveman/Cache), NEW detection-parse-fail (Design Decision Gate), safe-output partial-fail RECUR (PR Sous Chef), TQS empty-output redden, 2 smoke probes. token-429 ABSENT (Ambient 21.48M under cap). fw 18.8%. AIC 8648.75."
-    },
-    {
-      "d": "2026-06-07",
-      "r": 54,
-      "s": 46,
-      "rate": 85.2,
-      "tok": 23994237,
-      "note": "FULL but SMALL 24h window (~3.7h active cluster 17:56-21:38Z; continuation returned 0 older runs — quiet Sunday). PROD-MAIN 39/42 real = 92.9% (excl 1 intentional-fail). 8 fail/4 classes: NEW guardrail-module-missing x4 (PR branch copilot/fix-daily-credit-limit-test, activation crash 'check_daily_effective_workflow_guardrail.cjs' MODULE_NOT_FOUND, dev-confined), model-param-config RECUR x2 prod (Caveman effort-400 day3, Cache model-not-found-404 new id gpt-5-codex-alpha-2025-11-07), copilot-sdk tool-perm-lockout RECUR x1 (Safe Output Integrator), 1 by-design (Max AI Credits Test). minimatch sdk-crash ABSENT (06-06 dominant, gone). token-429 ABSENT. fw 0/2516 clean. AIC 3595."
-    }
-  ]
+"updated": "2026-06-08T21:50Z",
+"date": "2026-06-08",
+"partial": true,
+"latest_window": "PARTIAL ~3.3h evening cluster (18:21-21:40Z; logs timeout, 93/260 dirs had summaries). ACTIVE INCIDENT copilot-pat-not-supported-400 (NEW) onset 19:40Z still firing 21:37Z: '400 Personal Access Tokens are not supported for this endpoint' on copilot harness+sdk token-check. ~15 runs incl prod-main (Ambient, Contribution Check, Daily Project Perf) + many PRs/smokes. Pre-incident 44/50=88.0%, post-incident 22/38=57.9%. In-flight fix branch pelikhan/fix-pat-400-retry. Also: cli-proxy DIFC liveness-probe x2 (infra), sdk tool-perm-lockout x1 RECUR, sdk session.idle-870s-timeout x1 (valid output wasted), codex AI Moderator+Cache Strategy day4, 3 smoke probes. token-429 ABSENT. fw 4.6% blocked. EffectiveTokens unpopulated this window.",
+"totals": {
+"r": 88,
+"s": 66,
+"f": 22,
+"in_prog": 5,
+"rate": 75.0,
+"prod_main_rate": 75.0,
+"pre_incident_rate": 88.0,
+"post_incident_rate": 57.9,
+"tok": 24367927,
+"eff_tok": 0,
+"cost_usd_claude": 16.83,
+"turns": 674,
+"min": 825,
+"errors": 0,
+"github_api_calls": null,
+"fw_req": 4162,
+"fw_blk": 192,
+"fw_blk_pct": 4.6,
+"missing_tools": 1,
+"missing_data": 0,
+"mcp_failures": 0,
+"safe_items": 16,
+"note": "PARTIAL window; cost claude-measured only"
+},
+"engines": {
+"copilot": 69,
+"claude": 16,
+"codex": 5,
+"pi": 1,
+"gemini": 1,
+"antigravity": 1
+},
+"history": [
+{
+"d": "2026-05-20",
+"r": 78,
+"s": 67,
+"rate": 85.9,
+"$": 26.72,
+"tok": 59645141
+},
+{
+"d": "2026-05-21",
+"r": 41,
+"s": 31,
+"rate": 75.6,
+"$": 19.96,
+"tok": 35895593
+},
+{
+"d": "2026-05-23",
+"r": 77,
+"s": 32,
+"rate": 41.6,
+"$": 24.6145,
+"tok": 46179750
+},
+{
+"d": "2026-05-24",
+"r": 38,
+"s": 30,
+"rate": 81.1,
+"$": 23.058685,
+"tok": 38562917
+},
+{
+"d": "2026-05-25",
+"r": 174,
+"s": 162,
+"rate": 94.7,
+"$": 26.2265,
+"tok": 56839455
+},
+{
+"d": "2026-05-26",
+"r": 49,
+"s": 42,
+"rate": 85.7,
+"$": 26.366459,
+"tok": 54489070
+},
+{
+"d": "2026-05-27",
+"r": 37,
+"s": 30,
+"rate": 90.9,
+"$": 12.0,
+"tok": 17283384,
+"partial": true
+},
+{
+"d": "2026-05-28",
+"r": 64,
+"s": 47,
+"rate": 81.0,
+"$": 29.354164,
+"tok": 48923104,
+"partial": true
+},
+{
+"d": "2026-05-29",
+"r": 21,
+"s": 17,
+"rate": 89.5,
+"$": 7.18,
+"tok": 14553338,
+"partial": true,
+"note": "small mid-cycle window; $ is claude-only"
+},
+{
+"d": "2026-05-30",
+"r": 56,
+"s": 51,
+"rate": 91.1,
+"$": 24.55,
+"tok": 49889280,
+"note": "full window; $ claude-measured (copilot/codex cost not reported)"
+},
+{
+"d": "2026-05-31",
+"r": 59,
+"s": 53,
+"rate": 89.8,
+"$": 31.63,
+"tok": 68838688,
+"note": "full window; $ claude-measured. Cost up on Go Logger Enhancement $8.30 outlier (success)."
+},
+{
+"d": "2026-06-01",
+"r": 53,
+"s": 51,
+"rate": 96.2,
+"$": 15.62,
+"tok": 38076235,
+"note": "full window; $ claude-measured. BEST success rate in 14-day window. Both failures = same safe-output target=* class."
+},
+{
+"d": "2026-06-02",
+"r": 57,
+"s": 48,
+"rate": 84.2,
+"$": 15.05,
+"tok": 32731221,
+"note": "full window; $ claude-measured. Success DOWN from 96.2% peak. 9 failures/3 classes: token-budget-429 RE-ESCALATED (2 wf over 25M cap), safe-output partial-failure-intolerance (3 wf), NEW copilot-sdk-session-auth (4 dev-iteration runs on 1 experimental wf). Cost outlier Semantic Function Refactoring $6.35 (success). | AFTERNOON RE-AUDIT (14:31-17:23Z, 47 completed, 89.4%, $6.27 claude-measured): token-budget-429 ABSENT (improvement). 5 failures/5 classes (2 NEW: node-missing exit127, agent-timeout Avenger opus 48min; +safe-output count-exceeded, copilot-sdk session.idle timeout, super-linter job). Complements morning #36398. | EVENING RE-AUDIT (16:51-19:34Z, 46 completed, 97.8%, 23.0M tok/140.9M eff): ONLY 1 failure = copilot-sdk session.idle 600s timeout ESCALATED to a PRODUCTION schedule/main wf (Daily Security Observability Report). safe-output partial-failure ABSENT, token-budget-429 ABSENT. sdk-driver path now ~14/48 copilot+codex runs. Firewall 513/2527 (20.3%), no smoke probes this window."
+},
+{
+"d": "2026-06-03",
+"r": 17,
+"s": 13,
+"rate": 76.5,
+"$": 6.75,
+"tok": 6839253,
+"note": "window since 06-02 night audit (17 completed/19, 2 in-prog). $ claude-measured. 4 failures: 3x copilot-sdk-session-auth (100% of sdk-driver runs, ESCALATED to prod main) + 1 safe-output target=* (Contribution Check)."
+},
+{
+"d": "2026-06-04",
+"r": 64,
+"s": 57,
+"rate": 89.1,
+"$": 19.23,
+"tok": 31739017,
+"partial": true,
+"note": "PARTIAL ~4h window (logs timeout). 7 fail: token-budget-429 RECUR prod main + safe-output target=* x2 (Contribution Check/PR Sous Chef) + copilot-sdk-tool-permission-lockout (PR Code Quality Reviewer) + 3 by-design smoke probes."
+},
+{
+"d": "2026-06-05",
+"r": 53,
+"s": 48,
+"rate": 90.6,
+"tok": 30404314,
+"note": "full window (~4h evening cluster; continuation returned 0 older runs). 5 fail: NEW model/param config-incompatibility x2 prod-main (Caveman effort-unsupported 400, Cache Strategy model-not-found 404) + TQS copilot agent-job redden w/ valid output + 2 by-design smoke probes. ALL prior recurring classes recovered. Ambient 25.37M eff over-cap-but-survived. fw 17.9%. AIC 6065.76."
+},
+{
+"d": "2026-06-06",
+"r": 97,
+"s": 81,
+"rate": 83.5,
+"tok": 41627101,
+"partial": true,
+"note": "PARTIAL ~6h window (15:11-21:29Z; logs tool timed out at 120s, newest 100 runs only, ~18h unobserved). 16 fail. DOMINANT: copilot SDK-driver path broken = 9/16 (NEW minimatch MODULE_NOT_FOUND x6 + RECUR tool-perm-lockout x3). Also: model/param config RECUR x2 (Caveman/Cache), NEW detection-parse-fail (Design Decision Gate), safe-output partial-fail RECUR (PR Sous Chef), TQS empty-output redden, 2 smoke probes. token-429 ABSENT (Ambient 21.48M under cap). fw 18.8%. AIC 8648.75."
+},
+{
+"d": "2026-06-07",
+"r": 54,
+"s": 46,
+"rate": 85.2,
+"tok": 23994237,
+"note": "FULL but SMALL 24h window (~3.7h active cluster 17:56-21:38Z; continuation returned 0 older runs \u2014 quiet Sunday). PROD-MAIN 39/42 real = 92.9% (excl 1 intentional-fail). 8 fail/4 classes: NEW guardrail-module-missing x4 (PR branch copilot/fix-daily-credit-limit-test, activation crash 'check_daily_effective_workflow_guardrail.cjs' MODULE_NOT_FOUND, dev-confined), model-param-config RECUR x2 prod (Caveman effort-400 day3, Cache model-not-found-404 new id gpt-5-codex-alpha-2025-11-07), copilot-sdk tool-perm-lockout RECUR x1 (Safe Output Integrator), 1 by-design (Max AI Credits Test). minimatch sdk-crash ABSENT (06-06 dominant, gone). token-429 ABSENT. fw 0/2516 clean. AIC 3595."
+},
+{
+"d": "2026-06-08",
+"r": 88,
+"s": 66,
+"rate": 75.0,
+"tok": 24367927,
+"partial": true,
+"note": "PARTIAL ~3.3h evening cluster (18:21-21:40Z; logs timeout, 93/260 dirs had summaries). ACTIVE INCIDENT copilot-pat-not-supported-400 (NEW) onset 19:40Z still firing 21:37Z: '400 Personal Access Tokens are not supported for this endpoint' on copilot harness+sdk token-check. ~15 runs incl prod-main (Ambient, Contribution Check, Daily Project Perf) + many PRs/smokes. Pre-incident 44/50=88.0%, post-incident 22/38=57.9%. In-flight fix branch pelikhan/fix-pat-400-retry. Also: cli-proxy DIFC liveness-probe x2 (infra), sdk tool-perm-lockout x1 RECUR, sdk session.idle-870s-timeout x1 (valid output wasted), codex AI Moderator+Cache Strategy day4, 3 smoke probes. token-429 ABSENT. fw 4.6% blocked. EffectiveTokens unpopulated this window."
+}
+]
 }
