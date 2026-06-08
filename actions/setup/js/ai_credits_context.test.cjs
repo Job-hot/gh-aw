@@ -18,7 +18,7 @@ describe("ai_credits_context", () => {
     fs.rmSync("/tmp/gh-aw/awf-config.json", { force: true });
   });
 
-  it("falls back to downloaded agent usage and awf config files when env data is absent", () => {
+  it("falls back to downloaded agent usage and awf config files and suppresses under-limit rate-limit signals", () => {
     fs.mkdirSync("/tmp/gh-aw", { recursive: true });
     fs.writeFileSync("/tmp/gh-aw/agent_usage.json", JSON.stringify({ ai_credits: 395.044 }));
     fs.writeFileSync("/tmp/gh-aw/awf-config.json", JSON.stringify({ apiProxy: { maxAiCredits: 1000 } }));

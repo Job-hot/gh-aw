@@ -115,7 +115,7 @@ function parseAICreditsFromAgentUsage() {
  */
 function parseMaxAICreditsFromAWFConfig() {
   const awfConfig = readJSONObjectIfExists(AWF_CONFIG_PATH);
-  if (!awfConfig || typeof awfConfig.apiProxy !== "object" || !awfConfig.apiProxy) {
+  if (!awfConfig || typeof awfConfig.apiProxy !== "object" || awfConfig.apiProxy === null) {
     return "";
   }
   return parsePositiveNumberString(awfConfig.apiProxy.maxAiCredits ?? awfConfig.apiProxy.max_ai_credits);
