@@ -2432,10 +2432,10 @@ describe("handle_agent_failure", () => {
     it("returns true when events.jsonl contains a MaxAI credits exceeded signal", () => {
       const sessionDir = path.join(os.tmpdir(), "gh-aw", "sandbox", "agent", "logs", "copilot-session-state", "session-1");
       fs.mkdirSync(sessionDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(sessionDir, "events.jsonl"),
-        [JSON.stringify({ type: "assistant.message", data: { content: "starting run" } }), JSON.stringify({ type: "assistant.message", data: { content: "CAPIError: 429 Maximum AI credits exceeded (8.445900 / 1)." } })].join("\n") + "\n"
-      );
+      const eventLineStart = JSON.stringify({ type: "assistant.message", data: { content: "starting run" } });
+      const eventLineCreditsExceeded = JSON.stringify({ type: "assistant.message", data: { content: "CAPIError: 429 Maximum AI credits exceeded (8.445900 / 1)." } });
+      const eventLines = [eventLineStart, eventLineCreditsExceeded];
+      fs.writeFileSync(path.join(sessionDir, "events.jsonl"), eventLines.join("\n") + "\n");
 
       expect(hasMaxAICreditsExceededEventSignal()).toBe(true);
     });
