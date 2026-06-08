@@ -1178,9 +1178,11 @@ func TestBuildAWFCommand_AddsToolCacheMountProbe(t *testing.T) {
 
 	command := BuildAWFCommand(config)
 
-	assert.Contains(t, command, `GH_AW_TOOL_CACHE="${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}"`, "should detect RUNNER_TOOL_CACHE with hostedtoolcache fallback")
+	assert.Contains(t, command, `GH_AW_TOOL_CACHE="$RUNNER_TOOL_CACHE"`, "should resolve tool cache from RUNNER_TOOL_CACHE when set")
+	assert.Contains(t, command, `elif [ -d "/opt/hostedtoolcache" ]; then`, "should fall back to /opt/hostedtoolcache when it exists")
+	assert.Contains(t, command, `elif [ -d "/home/runner/work/_tool" ]; then`, "should fall back to legacy _tool path when it exists")
+	assert.Contains(t, command, `GH_AW_TOOL_CACHE="/home/runner/work/_tool"`, "should resolve legacy _tool path as the tool cache")
 	assert.Contains(t, command, `GH_AW_TOOL_CACHE_MOUNT="$GH_AW_TOOL_CACHE:$GH_AW_TOOL_CACHE:ro"`, "should mount non-/opt tool cache paths")
-	assert.Contains(t, command, `GH_AW_TOOL_CACHE_MOUNT="/home/runner/work/_tool:/home/runner/work/_tool:ro"`, "should include fallback mount for legacy _tool path")
 	assert.Contains(t, command, `${GH_AW_TOOL_CACHE_MOUNT:+--mount "$GH_AW_TOOL_CACHE_MOUNT"}`, "should inject tool-cache mount args into awf invocation")
 }
 

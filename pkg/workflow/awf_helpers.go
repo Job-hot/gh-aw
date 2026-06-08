@@ -205,15 +205,19 @@ fi`,
 		arcDindPrefixArgsRef = fmt.Sprintf("${%s}", awfArcDindPrefixArgsVarName)
 	}
 	toolCacheMountProbe := fmt.Sprintf(`%s=""
-GH_AW_TOOL_CACHE="${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}"
-if [ -d "$GH_AW_TOOL_CACHE" ]; then
+GH_AW_TOOL_CACHE=""
+if [ -n "${RUNNER_TOOL_CACHE:-}" ]; then
+  GH_AW_TOOL_CACHE="$RUNNER_TOOL_CACHE"
+elif [ -d "/opt/hostedtoolcache" ]; then
+  GH_AW_TOOL_CACHE="/opt/hostedtoolcache"
+elif [ -d "/home/runner/work/_tool" ]; then
+  GH_AW_TOOL_CACHE="/home/runner/work/_tool"
+fi
+if [ -n "$GH_AW_TOOL_CACHE" ] && [ -d "$GH_AW_TOOL_CACHE" ]; then
   if [[ "$GH_AW_TOOL_CACHE" != /opt/* ]]; then
     %s="$GH_AW_TOOL_CACHE:$GH_AW_TOOL_CACHE:ro"
   fi
-elif [ -d "/home/runner/work/_tool" ]; then
-  %s="/home/runner/work/_tool:/home/runner/work/_tool:ro"
 fi`,
-		awfToolCacheMountVarName,
 		awfToolCacheMountVarName,
 		awfToolCacheMountVarName,
 	)

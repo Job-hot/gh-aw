@@ -813,13 +813,18 @@ jobs:
             GH_AW_DOCKER_HOST_PATH_PREFIX_ARGS="--docker-host-path-prefix /tmp/gh-aw"
           fi
           GH_AW_TOOL_CACHE_MOUNT=""
-          GH_AW_TOOL_CACHE="${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}"
-          if [ -d "$GH_AW_TOOL_CACHE" ]; then
+          GH_AW_TOOL_CACHE=""
+          if [ -n "${RUNNER_TOOL_CACHE:-}" ]; then
+            GH_AW_TOOL_CACHE="$RUNNER_TOOL_CACHE"
+          elif [ -d "/opt/hostedtoolcache" ]; then
+            GH_AW_TOOL_CACHE="/opt/hostedtoolcache"
+          elif [ -d "/home/runner/work/_tool" ]; then
+            GH_AW_TOOL_CACHE="/home/runner/work/_tool"
+          fi
+          if [ -n "$GH_AW_TOOL_CACHE" ] && [ -d "$GH_AW_TOOL_CACHE" ]; then
             if [[ "$GH_AW_TOOL_CACHE" != /opt/* ]]; then
               GH_AW_TOOL_CACHE_MOUNT="$GH_AW_TOOL_CACHE:$GH_AW_TOOL_CACHE:ro"
             fi
-          elif [ -d "/home/runner/work/_tool" ]; then
-            GH_AW_TOOL_CACHE_MOUNT="/home/runner/work/_tool:/home/runner/work/_tool:ro"
           fi
           # shellcheck disable=SC1003
           sudo -E awf --config "${RUNNER_TEMP}/gh-aw/awf-config.json" --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" ${GH_AW_TOOL_CACHE_MOUNT:+--mount "$GH_AW_TOOL_CACHE_MOUNT"} ${GH_AW_DOCKER_HOST_PATH_PREFIX_ARGS} --env-all --exclude-env COPILOT_GITHUB_TOKEN --exclude-env GITHUB_MCP_SERVER_TOKEN --exclude-env MCP_GATEWAY_API_KEY --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --allow-host-ports 80,443,8080 --skip-pull \
@@ -1381,13 +1386,18 @@ jobs:
             GH_AW_DOCKER_HOST_PATH_PREFIX_ARGS="--docker-host-path-prefix /tmp/gh-aw"
           fi
           GH_AW_TOOL_CACHE_MOUNT=""
-          GH_AW_TOOL_CACHE="${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}"
-          if [ -d "$GH_AW_TOOL_CACHE" ]; then
+          GH_AW_TOOL_CACHE=""
+          if [ -n "${RUNNER_TOOL_CACHE:-}" ]; then
+            GH_AW_TOOL_CACHE="$RUNNER_TOOL_CACHE"
+          elif [ -d "/opt/hostedtoolcache" ]; then
+            GH_AW_TOOL_CACHE="/opt/hostedtoolcache"
+          elif [ -d "/home/runner/work/_tool" ]; then
+            GH_AW_TOOL_CACHE="/home/runner/work/_tool"
+          fi
+          if [ -n "$GH_AW_TOOL_CACHE" ] && [ -d "$GH_AW_TOOL_CACHE" ]; then
             if [[ "$GH_AW_TOOL_CACHE" != /opt/* ]]; then
               GH_AW_TOOL_CACHE_MOUNT="$GH_AW_TOOL_CACHE:$GH_AW_TOOL_CACHE:ro"
             fi
-          elif [ -d "/home/runner/work/_tool" ]; then
-            GH_AW_TOOL_CACHE_MOUNT="/home/runner/work/_tool:/home/runner/work/_tool:ro"
           fi
           # shellcheck disable=SC1003
           sudo -E awf --config "${RUNNER_TEMP}/gh-aw/awf-config.json" --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" ${GH_AW_TOOL_CACHE_MOUNT:+--mount "$GH_AW_TOOL_CACHE_MOUNT"} ${GH_AW_DOCKER_HOST_PATH_PREFIX_ARGS} --env-all --exclude-env COPILOT_GITHUB_TOKEN --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --allow-host-ports 80,443,8080 --skip-pull \
