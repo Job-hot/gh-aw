@@ -1,1 +1,1 @@
-{"date":"2026-04-30","period_days":30,"overall":{"total_runs":98,"total_tokens":72562018,"total_cost":0,"total_action_minutes":820},"workflows":[{"n":"Daily Community Attribution Updater","tt":8685578},{"n":"Test Quality Sentinel","tt":8170079},{"n":"Daily Syntax Error Quality Check","tt":4406755},{"n":"Contribution Check","tt":4252303},{"n":"Daily Security Observability Report","tt":4092317}]}
+{"date":"2026-04-30","period_days":30,"overall":{"total_runs":98,"total_tokens":72562018,"total_cost":0,"total_action_minutes":820},"workflows":[{},{},{},{},{}]}

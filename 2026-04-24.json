@@ -1,1 +1,1 @@
-{"date":"2026-04-24","period_days":30,"overall":{"total_runs":99,"total_tokens":54842866,"total_cost":0,"total_action_minutes":683},"workflows":[{"n":"Contribution Check","tt":5747774},{"n":"jsweep - JavaScript Unbloater","tt":4638657},{"n":"Test Quality Sentinel","tt":4548002},{"n":"Daily Syntax Error Quality Check","tt":4209675},{"n":"Ubuntu Actions Image Analyzer","tt":2833560}]}
+{"date":"2026-04-24","period_days":30,"overall":{"total_runs":99,"total_tokens":54842866,"total_cost":0,"total_action_minutes":683},"workflows":[{},{},{},{},{}]}
