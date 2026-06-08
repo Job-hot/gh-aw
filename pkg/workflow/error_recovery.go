@@ -405,7 +405,7 @@ func supportedEngineIDs() []string {
 		cachedSupportedEngineIDs = append([]string(nil), registry.GetSupportedEngines()...)
 		sort.Strings(cachedSupportedEngineIDs)
 	})
-	return append([]string(nil), cachedSupportedEngineIDs...)
+	return cachedSupportedEngineIDs
 }
 
 func expandDisplayMessage(message string) []string {
