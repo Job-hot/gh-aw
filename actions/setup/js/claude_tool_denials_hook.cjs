@@ -216,7 +216,7 @@ function run() {
   // Set up stdin reader to monitor Claude's output
   // In a real hook integration, this would be connected to Claude's event stream
   process.stdin.setEncoding("utf8");
-  process.stdin.on("data", (chunk) => {
+  process.stdin.on("data", chunk => {
     const lines = chunk.split("\n");
     for (const line of lines) {
       if (line.trim()) {

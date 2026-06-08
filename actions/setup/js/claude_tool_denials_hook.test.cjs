@@ -2,12 +2,7 @@
 
 const { describe, it, beforeEach, afterEach } = require("node:test");
 const assert = require("node:assert");
-const {
-  ClaudeToolDenialsHook,
-  parseMaxToolDenialsLimit,
-  getEnvPositiveIntOrDefault,
-  MAX_TOOL_DENIALS_DEFAULT,
-} = require("./claude_tool_denials_hook.cjs");
+const { ClaudeToolDenialsHook, parseMaxToolDenialsLimit, getEnvPositiveIntOrDefault, MAX_TOOL_DENIALS_DEFAULT } = require("./claude_tool_denials_hook.cjs");
 
 describe("claude_tool_denials_hook", () => {
   describe("parseMaxToolDenialsLimit", () => {
@@ -102,7 +97,7 @@ describe("claude_tool_denials_hook", () => {
       stderrWrites = [];
       originalWrite = process.stderr.write;
       // @ts-ignore - Mock stderr.write
-      process.stderr.write = (chunk) => {
+      process.stderr.write = chunk => {
         stderrWrites.push(String(chunk));
         return true;
       };
@@ -154,7 +149,7 @@ describe("claude_tool_denials_hook", () => {
       assert.strictEqual(hook.catastrophicToolDenialsTriggered, true);
 
       // Check that guard event was emitted
-      const guardEvent = stderrWrites.find((line) => line.includes("guard.tool_denials_exceeded"));
+      const guardEvent = stderrWrites.find(line => line.includes("guard.tool_denials_exceeded"));
       assert.ok(guardEvent, "Expected guard.tool_denials_exceeded event to be emitted");
 
       const parsed = JSON.parse(guardEvent);
@@ -170,7 +165,7 @@ describe("claude_tool_denials_hook", () => {
       }
 
       // Count guard events
-      const guardEvents = stderrWrites.filter((line) => line.includes("guard.tool_denials_exceeded"));
+      const guardEvents = stderrWrites.filter(line => line.includes("guard.tool_denials_exceeded"));
       assert.strictEqual(guardEvents.length, 1, "Expected exactly one guard event");
     });
 
@@ -224,14 +219,14 @@ describe("claude_tool_denials_hook", () => {
     describe("onLaunch and onShutdown", () => {
       it("logs initialization on launch", () => {
         hook.onLaunch();
-        const launchLog = stderrWrites.find((line) => line.includes("hook initialized"));
+        const launchLog = stderrWrites.find(line => line.includes("hook initialized"));
         assert.ok(launchLog, "Expected launch log");
       });
 
       it("logs statistics on shutdown", () => {
         hook.onToolDenied("Bash", "Permission denied");
         hook.onShutdown();
-        const shutdownLog = stderrWrites.find((line) => line.includes("hook shutdown"));
+        const shutdownLog = stderrWrites.find(line => line.includes("hook shutdown"));
         assert.ok(shutdownLog, "Expected shutdown log");
         assert.ok(shutdownLog.includes("totalDenials=1"), "Expected denial count in shutdown log");
       });

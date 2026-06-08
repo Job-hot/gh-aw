@@ -33,7 +33,8 @@
 "use strict";
 
 const fs = require("fs");
-const { runProcess, formatDuration, sleep } = require("./process_runner.cjs");
+const { spawn } = require("child_process");
+const { formatDuration, sleep } = require("./process_runner.cjs");
 const {
   AWF_API_PROXY_REFLECT_URL,
   AWF_REFLECT_OUTPUT_PATH,
@@ -47,6 +48,7 @@ const {
 } = require("./awf_reflect.cjs");
 const { emitMissingToolPermissionIssue, hasNoopInSafeOutputs } = require("./safeoutputs_cli.cjs");
 const { countPermissionDeniedIssues, hasNumerousPermissionDeniedIssues, extractDeniedCommands, buildMissingToolPermissionIssuePayload } = require("./permission_denied_helpers.cjs");
+const { ClaudeToolDenialsHook } = require("./claude_tool_denials_hook.cjs");
 
 // Maximum number of retry attempts after the initial run
 const MAX_RETRIES = 3;
@@ -246,6 +248,114 @@ function resolveClaudePromptFileArgs(args) {
 }
 
 /**
+ * Run a command with the given arguments, monitoring output through the tool denials hook.
+ * This is a modified version of runProcess that integrates with ClaudeToolDenialsHook.
+ *
+ * @param {{
+ *   command: string,
+ *   args: string[],
+ *   attempt: number,
+ *   log: (message: string) => void,
+ *   logArgs?: string[],
+ *   env?: NodeJS.ProcessEnv,
+ *   hook: ClaudeToolDenialsHook
+ * }} options
+ * @returns {Promise<{exitCode: number, output: string, hasOutput: boolean, durationMs: number}>}
+ */
+function runProcessWithHook({ command, args, attempt, log, logArgs, env, hook }) {
+  return new Promise(resolve => {
+    const startTime = Date.now();
+    let settled = false;
+    /** @param {{exitCode: number, output: string, hasOutput: boolean, durationMs: number}} result */
+    function settle(result) {
+      if (settled) return;
+      settled = true;
+      resolve(result);
+    }
+
+    const argsForLog = logArgs ?? args;
+    log(`attempt ${attempt + 1}: spawning: ${command} ${argsForLog.join(" ").substring(0, 200)}`);
+
+    const child = spawn(command, args, {
+      stdio: ["inherit", "pipe", "pipe"],
+      env: env ?? process.env,
+    });
+
+    log(`attempt ${attempt + 1}: process started (pid=${child.pid ?? "unknown"})`);
+
+    let collectedOutput = "";
+    let hasOutput = false;
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+
+    child.stdout.on(
+      "data",
+      /** @param {Buffer} data */ data => {
+        hasOutput = true;
+        stdoutBytes += data.length;
+        const text = data.toString();
+        collectedOutput += text;
+
+        // Process each line through the tool denials hook
+        const lines = text.split("\n");
+        for (const line of lines) {
+          if (line.trim()) {
+            hook.processOutputLine(line);
+          }
+        }
+
+        process.stdout.write(data);
+      }
+    );
+
+    child.stderr.on(
+      "data",
+      /** @param {Buffer} data */ data => {
+        hasOutput = true;
+        stderrBytes += data.length;
+        const text = data.toString();
+        collectedOutput += text;
+
+        // Process each line through the tool denials hook
+        const lines = text.split("\n");
+        for (const line of lines) {
+          if (line.trim()) {
+            hook.processOutputLine(line);
+          }
+        }
+
+        process.stderr.write(data);
+      }
+    );
+
+    child.on("exit", (code, signal) => {
+      log(`attempt ${attempt + 1}: process exit event` + ` exitCode=${code ?? 1}` + (signal ? ` signal=${signal}` : ""));
+    });
+
+    child.on("close", (code, signal) => {
+      const durationMs = Date.now() - startTime;
+      const exitCode = code ?? 1;
+      log(`attempt ${attempt + 1}: process closed` + ` exitCode=${exitCode}` + (signal ? ` signal=${signal}` : "") + ` duration=${formatDuration(durationMs)}` + ` stdout=${stdoutBytes}B stderr=${stderrBytes}B hasOutput=${hasOutput}`);
+      settle({ exitCode, output: collectedOutput, hasOutput, durationMs });
+    });
+
+    child.on("error", err => {
+      const durationMs = Date.now() - startTime;
+      const errno = /** @type {NodeJS.ErrnoException} */ err;
+      const errCode = errno.code ?? "unknown";
+      const errSyscall = errno.syscall ?? "unknown";
+      log(`attempt ${attempt + 1}: failed to start process '${command}': ${err.message}` + ` (code=${errCode} syscall=${errSyscall})`);
+      settle({
+        exitCode: 1,
+        output: collectedOutput,
+        hasOutput,
+        durationMs,
+      });
+    });
+  });
+}
+
+/**
  * Strip --prompt-file and its path argument from args.
  * Used for --continue retries where Claude resumes from on-disk session state
  * and should not be given the original prompt again.
@@ -334,6 +444,10 @@ async function main() {
   let continueDisabledPermanently = false;
   const driverStartTime = Date.now();
 
+  // Initialize the tool denials hook to monitor Claude's output for permission errors
+  const toolDenialsHook = new ClaudeToolDenialsHook();
+  toolDenialsHook.onLaunch();
+
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     // For --continue retries: omit the original prompt and add --continue.
     // Claude Code resumes the session from on-disk state; re-sending the original
@@ -356,7 +470,7 @@ async function main() {
       log(`retry ${attempt}/${MAX_RETRIES}: woke up, next delay cap will be ${Math.min(delay * BACKOFF_MULTIPLIER, MAX_DELAY_MS)}ms`);
     }
 
-    const result = await runProcess({ command, args: currentArgs, attempt, log, logArgs });
+    const result = await runProcessWithHook({ command, args: currentArgs, attempt, log, logArgs, hook: toolDenialsHook });
     lastExitCode = result.exitCode;
 
     // Success — stop retrying
@@ -471,6 +585,9 @@ async function main() {
 
   // Fetch AWF API proxy reflection data and persist to disk for post-run step summary.
   await fetchAWFReflect({ logger: log });
+
+  // Shut down the tool denials hook and log final statistics
+  toolDenialsHook.onShutdown();
 
   log(`done: exitCode=${lastExitCode} totalDuration=${formatDuration(Date.now() - driverStartTime)}`);
   process.exit(lastExitCode);
