@@ -1,39 +1,42 @@
-# Workflow Health — 2026-06-07T05:57Z
+# Workflow Health — 2026-06-08T06:15Z
 
-Score: 71/100 (↓3 from 74)
-Workflows: 243 | Lock files: 243/243 (100% ✅) | Run: §27084292585
+Score: 68/100 (↓3 from 71)
+Workflows: 245 | Lock files: 245/245 (100% ✅) | Run: §27119093920
 
 ## KEY FINDINGS
 
-### Status (June 7)
-- **Compilation:** 243/243 workflows have lock files (100% ✅) — 2 new workflows added
-- **CJS typecheck**: Re-filed as new issue #aw_cjs7 (#36410 was closed Jun 3, but failures never stopped) — DO NOT RE-FILE
-- **CGO unit tests** (#35028 OPEN): Still failing Jun 7 — DO NOT RE-FILE
-- **Daily Documentation Healer**: 4th consecutive failure; new persistent issue #aw_healer7 — DO NOT RE-FILE
-- **Daily Model Inventory Checker**: 4th consecutive failure; covered by #aw_healer7 — DO NOT RE-FILE
-- **Daily Compiler Quality Check**: 2nd consecutive failure (#37483 auto-closed Jun 7) — MONITOR
-- **Safe Output Health Monitor**: Failed again Jun 7, issue #37501 OPEN — DO NOT RE-FILE
+### Status (June 8)
+- **Compilation:** 245/245 workflows have lock files (100% ✅)
+- **Failure Cascade** (#37721 OPEN): awf-cli-proxy container exit + LLM max_runs_exceeded — DO NOT RE-FILE
+- **CJS typecheck**: New issue filed this run (#aw_cjs8) — DO NOT RE-FILE
+- **CGO unit tests** (#35028 OPEN): Still failing Jun 8 — DO NOT RE-FILE
+- **Daily Compiler Quality Check** (#37730 OPEN): 3rd consecutive failure; comment added escalating to P1 — DO NOT RE-FILE
+- **Daily Documentation Healer**: RESOLVED Jun 8 ✅ (4-day streak broken)
+- **Safe Output Health Monitor** (#37759 OPEN): Re-failing Jun 8 after Jun 7 success — DO NOT RE-FILE
 
-### Critical Issues (P1) 🚨
-- **CJS typecheck**: New issue filed today. DO NOT RE-FILE.
-- **CGO unit tests**: #35028 OPEN. DO NOT RE-FILE.
-- **Doc Healer + Model Inventory**: New persistent issue filed today. DO NOT RE-FILE.
+### Critical Issues (P0/P1) 🚨
+- **Cascade** (#37721 OPEN): awf-cli-proxy exit. DO NOT RE-FILE.
+- **CJS typecheck**: New issue filed (#aw_cjs8). DO NOT RE-FILE.
+- **CGO** (#35028 OPEN). DO NOT RE-FILE.
+- **Compiler Quality** (#37730 OPEN, 3rd day). DO NOT RE-FILE.
 
 ### P2 Issues ⚠️
-- **Safe Output Health Monitor**: #37501 OPEN. DO NOT RE-FILE.
-- **Daily Compiler Quality Check**: 2nd day. Monitor — file if fails 3rd day.
-- **AI Moderator**: Still blocked (0% success). Old issue exists. Monitor.
+- **AI Moderator** (#37723, cascade-suspected): Persistent. Monitor.
+- **Safe Output Health Monitor** (#37759 OPEN): Token exhaustion. DO NOT RE-FILE.
+- **Code Simplifier** (#37733 OPEN): Re-failed Jun 8. Monitor.
 
-### Resolved (Jun 7 vs Jun 6) ✅
-- Daily Sentrux Report: SUCCESS ✅ (was P1/P2)
-- PR Sous Chef: SUCCESS ✅ (#37216 closed)
-- Code Simplifier: SUCCESS ✅ (#37488 closed)
+### Resolved (Jun 8) ✅
+- Daily Documentation Healer: SUCCESS ✅ (model pinning fix confirmed)
+- Daily Sentrux Report: ✅
+- PR Sous Chef: ✅
 
 ### Systemic Patterns
-- **CI blockage cluster**: CJS + CGO both 100% failing — all PR validation affected
-- **Auth/config failure cluster**: Documentation Healer + Model Inventory (4+ days static)
-- **Token budget cluster**: Safe Output Health Monitor + Daily Compiler → monitoring degraded
+- **Cascade cluster**: awf-cli-proxy container exit → smoke + agentic failures
+- **CI blockage cluster**: CJS + CGO both 100% failing on main
+- **Tool denial cluster**: Daily Compiler Quality (3 days), Safe Output Health Monitor (recurring)
+- **Issue lifecycle gap**: CJS #37503 closed prematurely — health score declining
 
 ### Actions Taken This Run
-- 3 issues created: Dashboard 2026-06-07, CJS re-regression, Doc Healer/Model Inventory 4th-day
+- 2 issues created: CJS re-regression (#aw_cjs8), Health Dashboard Jun 8
+- 2 comments added: #37730 (P1 escalation), #37721 (root cause analysis)
 - Updated shared memory
