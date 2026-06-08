@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "summary_detail": {
+      "brief": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "27119867232",
+      "timestamp": "2026-06-08T06:25:18.456Z",
+      "assignments": {
+        "summary_detail": "brief"
+      }
+    }
+  ]
+}
