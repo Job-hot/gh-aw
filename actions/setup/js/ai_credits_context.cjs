@@ -98,6 +98,8 @@ function readJSONObjectIfExists(filePath) {
     const parsed = JSON.parse(content);
     return parsed && typeof parsed === "object" ? parsed : null;
   } catch {
+    // Treat malformed or unreadable runtime artifacts as unavailable and fall back
+    // to other AIC sources (env vars or firewall audit logs).
     return null;
   }
 }
