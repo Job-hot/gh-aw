@@ -1,7 +1,7 @@
 {
-  "last_updated": "2026-06-07T00:00:00Z",
+  "last_updated": "2026-06-08T00:00:00Z",
   "tool_count": 23,
-  "tool_change_R29": "Serena LSP stable at 23 (R4-29). Linters UNCHANGED at 21 (no 22nd R27-R29). CI ENFORCEMENT 11->12 (cgo.yml:1078): -tolowerequalfold appended (sg28a1 LANDED, 13 sites EqualFold). //nolint coverage 12->14: seenmapbool+tolowerequalfold gained internal/nolint; 7 lack it. All 12 enforced HAVE nolint. NEW sg29a1 tolowerequalfold var-alias FALSE-NEG; NEW sg29a2 internal/nolint first-in-comma-list parse gap.",
+  "tool_change_R30": "Serena LSP UNCHANGED at 23 (R4-30). LINTER REGISTRY 21->22: NEW lenstringzero (flags len(s)==0/!=0 on strings -> use s==\"\"/!=\"\") landed (ADR-37618, cmd/linters/main.go:29+64). BUT undocumented: doc.go still 'All 21', README missing (bullets/table/imports), spec_test documentedAnalyzers() 21 entries -> NO spec-test coverage for 22nd. CI ENFORCE still 12 (cgo.yml:1078, lenstringzero NOT enforced). nolint coverage still 14 (lenstringzero lacks internal/nolint). R29 issues LANDED+CLOSED: sg29a1 var-alias FN (#37492, collectCaseConvAliases added) & sg29a2 nolint comma-list (#37493, SplitSeq membership). sg26a1 seenmapbool (#36406) CLOSED (escape filter STILL escape-blind in code = dismissed/wontfix, DO NOT REFILE). NEW sg30a1 lenstringzero doc/spec gap; NEW sg30a2 lenstringzero intermediate-var len FN.",
   "tools": [
     "activate_project", "check_onboarding_performed", "delete_memory", "edit_memory",
     "find_file", "find_referencing_symbols", "find_symbol", "get_current_config",
@@ -12,5 +12,5 @@
     "think_about_whether_you_are_done", "write_memory"
   ],
   "params": "activate_project --project (NOT --path). find_symbol --name_path_pattern. find_referencing_symbols --name_path + --relative_path FILE. search_for_pattern --substring_pattern. JSON stdin pipe `.` sentinel.",
-  "gotchas": "Bare receiver-method names return [] — qualify '(*Type).method'. find_symbol broad 70s+ (prefer Grep). Bash sandbox blocks go build, mkdir/ls/cat/sed outside repo, multi-stmt compounds, for-loops, backtick grep, git on /tmp. gh issue/search --json 'Malformed version:' — open-issue check unreliable, rely on memory+7d expiry. Repo-memory /tmp/gh-aw/repo-memory/ bash-blocked — use Glob/Read/Write; KEEP TOTAL ~10KB (compact strategies.jsonl to ~3 recent). *_wasm.go excluded from host lint."
+  "gotchas": "Bare receiver-method names return [] — qualify '(*Type).method'. find_symbol broad 70s+ (prefer Grep). Bash sandbox blocks go build, mkdir/ls/cat/sed outside repo, multi-stmt compounds, for-loops, backtick grep, git on /tmp. gh issue list/search --json AND plain 'Malformed version:' BUT `gh api .../issues?labels=sergo --jq` WORKS (use API not issue subcmd). Repo-memory /tmp/gh-aw/repo-memory/ bash-blocked — use Glob/Read/Write; KEEP TOTAL ~10KB (compact strategies.jsonl to ~3 recent). *_wasm.go excluded from host lint."
 }
