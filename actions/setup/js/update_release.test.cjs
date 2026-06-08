@@ -187,8 +187,7 @@ describe("update_release", () => {
   it("should wrap generic API errors with ERR_API prefix", async () => {
     mockGithub.rest.repos.getReleaseByTag.mockRejectedValue(new Error("Internal Server Error"));
 
-    await expect(evalHandler({}, { tag: "v1.0.0", operation: "replace", body: "New notes" })).rejects.toThrow(/^ERR_API:/);
-    await expect(evalHandler({}, { tag: "v1.0.0", operation: "replace", body: "New notes" })).rejects.toThrow("Failed to update release with tag v1.0.0");
+    await expect(evalHandler({}, { tag: "v1.0.0", operation: "replace", body: "New notes" })).rejects.toThrow(/^ERR_API: Failed to update release with tag v1\.0\.0:/);
   });
 
   it("should handle multiple release updates with the same handler", async () => {
