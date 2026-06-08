@@ -38,7 +38,7 @@ tools:
     - "git diff:*"
     - "git status"
     - "git restore:*"
-    - "make fmt"
+    - "make format"
 steps:
   - name: Fetch open non-draft PR queue
     id: fetch-prs
@@ -200,11 +200,12 @@ For each PR that is not skipped:
 
 0. **Run formatters and push if needed**
    - Checkout the PR branch: `git checkout <headRefName>`
-   - Run `make fmt` to format all code (Go, JavaScript, JSON)
+   - Run `make format` to format all code (Go, JavaScript, JSON)
+   - Discard any formatting changes under `.github/workflows`: `git restore --staged --worktree .github/workflows`
    - Check for changes: `git diff --quiet || echo "dirty"`
    - If dirty, call `push_to_pull_request_branch` with the PR number to push the formatting fixes
    - Return to the original branch: `git checkout -`
-   - Skip this step silently if `make fmt` exits non-zero (tools unavailable)
+   - Skip this step silently if `make format` exits non-zero (tools unavailable)
 
 1. **Update branch if possible**
    - If the PR is behind its base branch (or otherwise indicates branch update needed), attempt `update_pull_request` with `update_branch: true`.

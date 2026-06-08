@@ -31,4 +31,7 @@ func TestPRSousChefWorkflowAddCommentTargetContract(t *testing.T) {
 	assert.Contains(t, text, "skip_reason: \"sub_agent_error\"", "Workflow should skip failed sub-agent responses without retry")
 	assert.Contains(t, text, "eligible_count=", "fetch-prs step must export eligible_count output")
 	assert.Contains(t, text, ".prs | length", "eligible_count should reflect the number of eligible PRs")
+	assert.Contains(t, text, "\"make format\"", "Workflow should allow running make format")
+	assert.Contains(t, text, "Run `make format`", "Workflow should instruct make format before nudges")
+	assert.Contains(t, text, "git restore --staged --worktree .github/workflows", "Workflow should discard workflow-directory edits before branch pushes")
 }

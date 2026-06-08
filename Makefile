@@ -575,6 +575,9 @@ lint-lock: build
 fmt: fmt-go fmt-cjs fmt-json
 	@echo "✓ Code formatted successfully"
 
+.PHONY: format
+format: fmt
+
 .PHONY: fmt-go
 fmt-go:
 	@echo "→ Formatting Go code..."
