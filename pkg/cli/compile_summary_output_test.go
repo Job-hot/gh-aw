@@ -58,7 +58,7 @@ func TestPrintCompilationSummaryWithFailedWorkflows(t *testing.T) {
 				"🟡 MEDIUM PRIORITY:",
 				"🔵 LOW PRIORITY:",
 				"💡 Recovery plan:",
-				"Use a supported engine name in frontmatter",
+				"Check the engine name — valid values are listed in the error",
 				"Either enable strict mode for the workflow or remove the unsupported network configuration.",
 			},
 			notExpectedInOutput: []string{},
