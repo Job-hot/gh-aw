@@ -45,11 +45,16 @@ async function inferReleaseTag(ctx, client) {
     }
 
     if (releaseId) {
-      core.info(`Fetching release with ID: ${releaseId}`);
+      const releaseIdValue = `${releaseId}`.trim();
+      if (!/^[1-9]\d*$/.test(releaseIdValue)) {
+        throw new Error(`${ERR_VALIDATION}: Invalid release_id input '${releaseIdValue}'. Expected a positive integer.`);
+      }
+
+      core.info(`Fetching release with ID: ${releaseIdValue}`);
       const { data: release } = await client.rest.repos.getRelease({
         owner: ctx.repo.owner,
         repo: ctx.repo.repo,
-        release_id: parseInt(releaseId, 10),
+        release_id: Number(releaseIdValue),
       });
       core.info(`Inferred release tag from release_id input: ${release.tag_name}`);
       return release.tag_name;
@@ -89,7 +94,8 @@ async function main(config = {}) {
     core.info(`Processing update-release message`);
 
     try {
-      const releaseTag = message.tag ?? (await inferReleaseTag(context, githubClient));
+      const messageTag = typeof message.tag === "string" ? message.tag.trim() : message.tag;
+      const releaseTag = messageTag || (await inferReleaseTag(context, githubClient));
 
       if (!releaseTag) {
         throw new Error(`${ERR_CONFIG}: Release tag is required but not provided and cannot be inferred from event context`);
@@ -138,6 +144,10 @@ async function main(config = {}) {
 
       if (errorMessage.includes("Not Found")) {
         throw new Error(`${ERR_VALIDATION}: Release with tag '${tagInfo}' not found. Please ensure the tag exists.`);
+      }
+
+      if (errorMessage.startsWith(`${ERR_CONFIG}:`) || errorMessage.startsWith(`${ERR_VALIDATION}:`)) {
+        throw new Error(errorMessage);
       }
 
       throw new Error(`${ERR_API}: Failed to update release with tag ${tagInfo}: ${errorMessage}`);

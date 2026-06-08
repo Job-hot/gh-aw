@@ -187,6 +187,7 @@ describe("update_release", () => {
   it("should wrap generic API errors with ERR_API prefix", async () => {
     mockGithub.rest.repos.getReleaseByTag.mockRejectedValue(new Error("Internal Server Error"));
 
+    await expect(evalHandler({}, { tag: "v1.0.0", operation: "replace", body: "New notes" })).rejects.toThrow(/^ERR_API:/);
     await expect(evalHandler({}, { tag: "v1.0.0", operation: "replace", body: "New notes" })).rejects.toThrow("Failed to update release with tag v1.0.0");
   });
 
@@ -250,6 +251,26 @@ describe("update_release", () => {
     expect(mockCore.info).toHaveBeenCalledWith(expect.stringContaining("Fetching release with ID: 42"));
     expect(mockGithub.rest.repos.getRelease).toHaveBeenCalledWith({ owner: "test-owner", repo: "test-repo", release_id: 42 });
     expect(mockCore.info).toHaveBeenCalledWith(expect.stringContaining("Inferred release tag from release_id input: v5.0.0"));
+  });
+
+  it("should infer tag when message tag is empty", async () => {
+    mockContext.eventName = "release";
+    mockContext.payload = { release: { tag_name: "v6.0.0" } };
+    const mockRelease = { id: 6, tag_name: "v6.0.0", body: "", html_url: "https://github.com/test-owner/test-repo/releases/tag/v6.0.0" };
+    mockGithub.rest.repos.getReleaseByTag.mockResolvedValue({ data: mockRelease });
+    mockGithub.rest.repos.updateRelease.mockResolvedValue({ data: { ...mockRelease, body: "New notes" } });
+
+    await evalHandler({}, { tag: "   ", operation: "replace", body: "New notes" });
+
+    expect(mockGithub.rest.repos.getReleaseByTag).toHaveBeenCalledWith({ owner: "test-owner", repo: "test-repo", tag: "v6.0.0" });
+  });
+
+  it("should fail fast for invalid workflow_dispatch release_id input", async () => {
+    mockContext.eventName = "workflow_dispatch";
+    mockContext.payload = { inputs: { release_id: "42abc" } };
+
+    await expect(evalHandler({}, { operation: "replace", body: "New notes" })).rejects.toThrow("ERR_VALIDATION: Invalid release_id input '42abc'. Expected a positive integer.");
+    expect(mockGithub.rest.repos.getRelease).not.toHaveBeenCalled();
   });
 
   it("should fail when tag is missing and cannot be inferred", async () => {
