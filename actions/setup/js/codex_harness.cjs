@@ -46,6 +46,7 @@ const {
 } = require("./awf_reflect.cjs");
 const { emitMissingToolPermissionIssue, hasNoopInSafeOutputs } = require("./safeoutputs_cli.cjs");
 const { countPermissionDeniedIssues, hasNumerousPermissionDeniedIssues, extractDeniedCommands, buildMissingToolPermissionIssuePayload } = require("./permission_denied_helpers.cjs");
+const { parseMaxToolDenialsLimit, createToolDenialsGuard } = require("./codex_tool_denials_hook.cjs");
 
 // Maximum number of retry attempts after the initial run
 const MAX_RETRIES = 3;
@@ -371,6 +372,15 @@ async function main() {
     }
   }
 
+  const maxToolDenialsLimit = parseMaxToolDenialsLimit(process.env.GH_AW_MAX_TOOL_DENIALS);
+  const toolDenialsEventsPath = codexHome ? `${codexHome}/logs/codex-harness-events.jsonl` : "";
+  const toolDenialsGuard = createToolDenialsGuard({
+    threshold: maxToolDenialsLimit,
+    eventsPath: toolDenialsEventsPath,
+    logger: msg => log(msg),
+  });
+  let toolDenialsExceededEvent = null;
+
   let delay = INITIAL_DELAY_MS;
   let lastExitCode = 1;
   const driverStartTime = Date.now();
@@ -387,8 +397,40 @@ async function main() {
       log(`retry ${attempt}/${MAX_RETRIES}: woke up, next delay cap will be ${Math.min(delay * BACKOFF_MULTIPLIER, MAX_DELAY_MS)}ms`);
     }
 
-    const result = await runProcess({ command, args: resolvedArgs, attempt, log, logArgs: safeArgs, env: codexChildEnv });
+    /** @type {{stdout: string, stderr: string}} */
+    const remainders = { stdout: "", stderr: "" };
+    const result = await runProcess({
+      command,
+      args: resolvedArgs,
+      attempt,
+      log,
+      logArgs: safeArgs,
+      env: codexChildEnv,
+      onOutputChunk: chunk => {
+        const key = chunk.source === "stdout" ? "stdout" : "stderr";
+        const combined = (remainders[key] || "") + chunk.text;
+        const lines = combined.split("\n");
+        remainders[key] = lines.pop() || "";
+        for (const line of lines) {
+          const observation = toolDenialsGuard.observeLine(line);
+          if (observation.event && !toolDenialsExceededEvent) {
+            toolDenialsExceededEvent = observation.event;
+            log(`max tool denials threshold reached (${observation.event.denialCount}/${observation.event.threshold}): ${observation.event.reason}`);
+            return { abort: true, reason: `max tool denials threshold reached (${observation.event.denialCount}/${observation.event.threshold})` };
+          }
+        }
+        return;
+      },
+    });
     lastExitCode = result.exitCode;
+
+    if (toolDenialsExceededEvent) {
+      const deniedCommands = extractDeniedCommands(result.output);
+      emitMissingToolPermissionIssue({ deniedCommands, logger: log });
+      log(`attempt ${attempt + 1}: stopped early due to excessive tool denials — not retrying`);
+      lastExitCode = 1;
+      break;
+    }
 
     // Success — stop retrying
     if (result.exitCode === 0) {

@@ -511,4 +511,39 @@ process.exit(1);`,
       expect(result.stderr).toContain("noop message found in safe-outputs — not retrying");
     });
   });
+
+  describe("tool denials guardrail", () => {
+    it("stops the Codex subprocess once max tool denials is reached", () => {
+      const tempDir = makeHarnessTempDir("codex-tool-denials-");
+      const stubPath = path.join(tempDir, "stub.cjs");
+      const promptPath = path.join(tempDir, "prompt.txt");
+      const codexHome = path.join(tempDir, "codex-home");
+      fs.mkdirSync(codexHome, { recursive: true });
+
+      fs.writeFileSync(
+        stubPath,
+        `process.stderr.write("permission denied by workflow tool permissions: read\\n");
+process.stderr.write("permission denied by workflow tool permissions: read\\n");
+setInterval(() => {}, 1000);`,
+        "utf8"
+      );
+      fs.writeFileSync(promptPath, "fix the bug", "utf8");
+
+      const result = spawnSync(process.execPath, ["codex_harness.cjs", process.execPath, stubPath, "exec", "--prompt-file", promptPath], {
+        cwd: path.dirname(require.resolve("./codex_harness.cjs")),
+        env: {
+          ...process.env,
+          CODEX_API_KEY: "fake-key-for-test",
+          GH_AW_MAX_TOOL_DENIALS: "2",
+          CODEX_HOME: codexHome,
+        },
+        encoding: "utf8",
+        timeout: 10000,
+      });
+
+      expect(result.status).toBe(1);
+      expect(result.stderr).toContain("max tool denials threshold reached (2/2)");
+      expect(result.stderr).toContain("stopped early due to excessive tool denials");
+    });
+  });
 });

@@ -50,7 +50,8 @@ function sleep(ms) {
  *   attempt: number,
  *   log: (message: string) => void,
  *   logArgs?: string[],
- *   env?: NodeJS.ProcessEnv
+ *   env?: NodeJS.ProcessEnv,
+ *   onOutputChunk?: (chunk: {source: "stdout" | "stderr", data: Buffer, text: string}) => ({abort: true, reason?: string} | void)
  * }} options
  *   - command   - The executable to run
  *   - args      - Arguments to pass to the command
@@ -58,16 +59,16 @@ function sleep(ms) {
  *   - log       - Caller-supplied logging function (harness-specific prefix)
  *   - logArgs   - Safe arg list used only for logging; defaults to `args`.
  *                 Pass a redacted copy to avoid leaking sensitive values.
- * @returns {Promise<{exitCode: number, output: string, hasOutput: boolean, durationMs: number}>}
+ * @returns {Promise<{exitCode: number, output: string, hasOutput: boolean, durationMs: number, aborted?: boolean, abortReason?: string}>}
  */
-function runProcess({ command, args, attempt, log, logArgs, env }) {
+function runProcess({ command, args, attempt, log, logArgs, env, onOutputChunk }) {
   return new Promise(resolve => {
     const startTime = Date.now();
     // Guard against the promise being settled more than once.  On some systems Node
     // emits 'close' after 'error' (or vice-versa); only the first terminal event should
     // log and resolve so callers receive a deterministic result.
     let settled = false;
-    /** @param {{exitCode: number, output: string, hasOutput: boolean, durationMs: number}} result */
+    /** @param {{exitCode: number, output: string, hasOutput: boolean, durationMs: number, aborted?: boolean, abortReason?: string}} result */
     function settle(result) {
       if (settled) return;
       settled = true;
@@ -88,6 +89,42 @@ function runProcess({ command, args, attempt, log, logArgs, env }) {
     let hasOutput = false;
     let stdoutBytes = 0;
     let stderrBytes = 0;
+    let aborted = false;
+    /** @type {string} */
+    let abortReason = "";
+    /** @type {NodeJS.Timeout | null} */
+    let killTimeout = null;
+
+    /**
+     * @param {"stdout" | "stderr"} source
+     * @param {Buffer} data
+     */
+    function onChunk(source, data) {
+      const handler = onOutputChunk;
+      if (typeof handler !== "function" || aborted) return;
+      try {
+        const decision = handler({ source, data, text: data.toString() });
+        if (!decision || decision.abort !== true) return;
+        aborted = true;
+        abortReason = typeof decision.reason === "string" ? decision.reason : "aborted by output hook";
+        log(`attempt ${attempt + 1}: abort requested by output hook: ${abortReason}`);
+        try {
+          child.kill("SIGTERM");
+        } catch {
+          // best-effort
+        }
+        killTimeout = setTimeout(() => {
+          try {
+            child.kill("SIGKILL");
+          } catch {
+            // best-effort
+          }
+        }, 2000);
+      } catch (err) {
+        const e = /** @type {Error} */ err;
+        log(`attempt ${attempt + 1}: output hook error: ${e.message}`);
+      }
+    }
 
     child.stdout.on(
       "data",
@@ -95,6 +132,7 @@ function runProcess({ command, args, attempt, log, logArgs, env }) {
         hasOutput = true;
         stdoutBytes += data.length;
         collectedOutput += data.toString();
+        onChunk("stdout", data);
         process.stdout.write(data);
       }
     );
@@ -105,6 +143,7 @@ function runProcess({ command, args, attempt, log, logArgs, env }) {
         hasOutput = true;
         stderrBytes += data.length;
         collectedOutput += data.toString();
+        onChunk("stderr", data);
         process.stderr.write(data);
       }
     );
@@ -117,8 +156,12 @@ function runProcess({ command, args, attempt, log, logArgs, env }) {
     child.on("close", (code, signal) => {
       const durationMs = Date.now() - startTime;
       const exitCode = code ?? 1;
+      if (killTimeout) {
+        clearTimeout(killTimeout);
+        killTimeout = null;
+      }
       log(`attempt ${attempt + 1}: process closed` + ` exitCode=${exitCode}` + (signal ? ` signal=${signal}` : "") + ` duration=${formatDuration(durationMs)}` + ` stdout=${stdoutBytes}B stderr=${stderrBytes}B hasOutput=${hasOutput}`);
-      settle({ exitCode, output: collectedOutput, hasOutput, durationMs });
+      settle({ exitCode, output: collectedOutput, hasOutput, durationMs, aborted, abortReason });
     });
 
     child.on("error", err => {
@@ -133,6 +176,8 @@ function runProcess({ command, args, attempt, log, logArgs, env }) {
         output: collectedOutput,
         hasOutput,
         durationMs,
+        aborted,
+        abortReason,
       });
     });
   });

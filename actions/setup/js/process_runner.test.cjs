@@ -169,6 +169,25 @@ describe("process_runner.cjs", () => {
       expect(result.output).toContain("err");
     });
 
+    it("supports early termination via onOutputChunk hook", async () => {
+      const logs = [];
+      const result = await runProcess({
+        command: process.execPath,
+        args: ["-e", 'process.stderr.write("tool denied: read\\n"); setInterval(() => {}, 1000);'],
+        attempt: 0,
+        log: msg => logs.push(msg),
+        onOutputChunk: chunk => {
+          if (chunk.text.includes("tool denied")) {
+            return { abort: true, reason: "test hook abort" };
+          }
+        },
+      });
+      expect(result.exitCode).not.toBe(0);
+      expect(result.aborted).toBe(true);
+      expect(result.abortReason).toContain("test hook abort");
+      expect(result.output).toContain("tool denied");
+    });
+
     it("resolves with durationMs as a non-negative number", async () => {
       const logs = [];
       const result = await runProcess({
