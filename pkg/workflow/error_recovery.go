@@ -15,8 +15,13 @@ import (
 var errorRecoveryLog = logger.New("workflow:error_recovery")
 
 var (
-	engineContextLinePattern = regexp.MustCompile(`(?m)^\s*>?\s*(\d+)\s*\|\s*engine:\s*([A-Za-z0-9._-]+)\s*$`)
+	engineContextLinePattern = regexp.MustCompile(`(?m)^\s*>?\s*(\d+)\s*\|\s*engine:\s*([a-z][a-z0-9-]*)\s*$`)
 	errorFilePathPattern     = regexp.MustCompile(`^(.+?):\d+:\d+:\s*error:`)
+	sortedAgenticEngines     = func() []string {
+		values := append([]string(nil), constants.AgenticEngines...)
+		sort.Strings(values)
+		return values
+	}()
 )
 
 // ErrorSeverity classifies how urgently a compilation error should be fixed.
@@ -261,17 +266,23 @@ func classifyErrorMessage(message string) PrioritizedError {
 	}
 
 	switch {
-	case strings.Contains(headline, "failed to parse frontmatter"),
-		strings.Contains(headline, "failed to parse yaml frontmatter"),
-		strings.Contains(headline, "no frontmatter found"),
-		strings.Contains(headline, "mapping values are not allowed"),
-		strings.Contains(headline, "did not find expected key"),
-		strings.Contains(headline, "missing ':' after key"):
+	case strings.Contains(headline, "missing ':' after key"):
 		return PrioritizedError{
 			Message:    message,
 			Severity:   SeverityCritical,
 			Category:   "syntax",
 			Suggestion: "Add \":\" after the key to fix YAML syntax, then re-run `gh aw compile`.",
+		}
+	case strings.Contains(headline, "failed to parse frontmatter"),
+		strings.Contains(headline, "failed to parse yaml frontmatter"),
+		strings.Contains(headline, "no frontmatter found"),
+		strings.Contains(headline, "mapping values are not allowed"),
+		strings.Contains(headline, "did not find expected key"):
+		return PrioritizedError{
+			Message:    message,
+			Severity:   SeverityCritical,
+			Category:   "syntax",
+			Suggestion: "Fix the YAML/frontmatter syntax first, then re-run `gh aw compile`.",
 		}
 	case strings.Contains(headline, "invalid engine"),
 		strings.Contains(headline, "invalid engine value"),
@@ -443,9 +454,7 @@ func synthesizeInvalidEngineTypoMessage(message string) string {
 		return ""
 	}
 
-	validEngines := append([]string(nil), constants.AgenticEngines...)
-	sort.Strings(validEngines)
-	errorMessage := fmt.Sprintf("unknown engine %q. Valid engines are: %s", engineValue, strings.Join(validEngines, ", "))
+	errorMessage := fmt.Sprintf("unknown engine %q. Valid engines are: %s", engineValue, strings.Join(sortedAgenticEngines, ", "))
 	errorMessage += fmt.Sprintf(". Did you mean %q?", suggestions[0])
 
 	pathMatch := errorFilePathPattern.FindStringSubmatch(strings.TrimSpace(message))
