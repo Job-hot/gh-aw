@@ -4,6 +4,7 @@ package workflow
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -102,12 +103,51 @@ func TestExpandErrorMessages_SynthesizesInvalidEngineTypoRootCause(t *testing.T)
 - 'engine' (line 5, col 1): must satisfy oneOf
 - 'engine' (line 5, col 1): Unknown property: max-ai-credits
 4 | on: push
-5 | engine: claud
+5 | engine: CLAUD
 6 | max-ai-credits: 1200`
 
 	messages := ExpandErrorMessages(errors.New(raw))
-	require.NotEmpty(t, messages, "Expected expanded messages")
-	assert.Contains(t, messages[0], `unknown engine "claud"`, "Expected synthesized root-cause engine typo error to be first")
+	require.Len(t, messages, 3, "Expected synthesized engine error plus original schema failures")
+	assert.Contains(t, messages[0], `/tmp/workflow.md:5:1: error:`, "Synthesized error should preserve file path and line")
+	assert.Contains(t, messages[0], `unknown engine "CLAUD"`, "Expected synthesized root-cause engine typo error to be first")
+	assert.Contains(t, messages[0], `Did you mean "claude"?`, "Expected synthesized error to include the nearest suggestion")
+
+	foundOriginalSchemaError := false
+	for _, message := range messages[1:] {
+		if strings.Contains(message, "must satisfy oneOf") {
+			foundOriginalSchemaError = true
+			break
+		}
+	}
+	assert.True(t, foundOriginalSchemaError, "Original schema errors should remain in the expanded output")
+}
+
+func TestExpandErrorMessages_UnknownEngineWithoutSuggestionStillSurfacesRootCause(t *testing.T) {
+	raw := `/tmp/workflow.md:5:1: error: Multiple schema validation failures:
+- 'engine' (line 5, col 1): must satisfy oneOf
+- 'engine' (line 5, col 1): Unknown property: max-ai-credits
+4 | on: push
+5 | engine: FOOBARXYZ
+6 | max-ai-credits: 1200`
+
+	messages := ExpandErrorMessages(errors.New(raw))
+	require.Len(t, messages, 3, "Expected synthesized engine error plus original schema failures")
+	assert.Contains(t, messages[0], `unknown engine "FOOBARXYZ"`, "Unknown engine should surface even without a near-match suggestion")
+	assert.NotContains(t, messages[0], `Did you mean`, "No suggestion should be added when there is no near match")
+}
+
+func TestBuildPrioritizedErrorReportFromMessages_ClassifiesFromHeadlineOnly(t *testing.T) {
+	messages := []string{
+		`/tmp/workflow.md:5:1: error: unknown engine "claud". Valid engines are: antigravity, claude, codex, copilot, crush, gemini, opencode, pi. Did you mean "claude"?
+4 | on:
+5 |   pull_request:
+6 | engine: claud`,
+	}
+
+	report := BuildPrioritizedErrorReportFromMessages(messages, true)
+	require.Len(t, report.DisplayedErrors, 1, "Expected one prioritized error")
+	assert.Equal(t, "configuration", report.DisplayedErrors[0].Category, "Context lines should not change the error category")
+	assert.Contains(t, report.DisplayedErrors[0].Suggestion, "Check the engine name", "Engine-specific suggestion should win over event/filter hinting")
 }
 
 func TestNewValidationError_ClassifiesSeverity(t *testing.T) {

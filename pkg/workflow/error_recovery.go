@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/parser"
 )
@@ -15,13 +14,9 @@ import (
 var errorRecoveryLog = logger.New("workflow:error_recovery")
 
 var (
-	engineContextLinePattern = regexp.MustCompile(`(?m)^\s*>?\s*(\d+)\s*\|\s*engine:\s*([a-z][a-z0-9-]*)\s*$`)
+	engineContextLinePattern = regexp.MustCompile(`(?m)^\s*>?\s*(\d+)\s*\|\s*engine:\s*([A-Za-z0-9._-]+)\s*$`)
 	errorFilePathPattern     = regexp.MustCompile(`^(.+?):\d+:\d+:\s*error:`)
-	sortedAgenticEngines     = func() []string {
-		values := append([]string(nil), constants.AgenticEngines...)
-		sort.Strings(values)
-		return values
-	}()
+	supportedEngineIDs       = append([]string(nil), GetGlobalEngineRegistry().GetSupportedEngines()...)
 )
 
 // ErrorSeverity classifies how urgently a compilation error should be fixed.
@@ -259,11 +254,8 @@ func classifyValidationSeverity(field string, reason string) (ErrorSeverity, str
 }
 
 func classifyErrorMessage(message string) PrioritizedError {
-	lower := normalizeErrorMessage(message)
-	headline := lower
-	if idx := strings.Index(headline, "\n"); idx >= 0 {
-		headline = headline[:idx]
-	}
+	headline, _, _ := strings.Cut(message, "\n")
+	headline = normalizeErrorMessage(headline)
 
 	switch {
 	case strings.Contains(headline, "missing ':' after key"):
@@ -443,19 +435,17 @@ func synthesizeInvalidEngineTypoMessage(message string) string {
 		return ""
 	}
 	engineLower := strings.ToLower(engineValue)
-	for _, known := range constants.AgenticEngines {
-		if engineLower == known {
+	for _, known := range supportedEngineIDs {
+		if strings.EqualFold(engineValue, known) {
 			return ""
 		}
 	}
 
-	suggestions := parser.FindClosestMatches(engineLower, constants.AgenticEngines, 1)
-	if len(suggestions) == 0 {
-		return ""
+	suggestions := parser.FindClosestMatches(engineLower, supportedEngineIDs, 1)
+	errorMessage := fmt.Sprintf("unknown engine %q. Valid engines are: %s", engineValue, strings.Join(supportedEngineIDs, ", "))
+	if len(suggestions) > 0 {
+		errorMessage += fmt.Sprintf(". Did you mean %q?", suggestions[0])
 	}
-
-	errorMessage := fmt.Sprintf("unknown engine %q. Valid engines are: %s", engineValue, strings.Join(sortedAgenticEngines, ", "))
-	errorMessage += fmt.Sprintf(". Did you mean %q?", suggestions[0])
 
 	pathMatch := errorFilePathPattern.FindStringSubmatch(strings.TrimSpace(message))
 	if len(pathMatch) < 2 {

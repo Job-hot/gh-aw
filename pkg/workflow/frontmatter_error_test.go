@@ -3,6 +3,7 @@
 package workflow
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -122,4 +123,22 @@ func TestReadSourceContextLines(t *testing.T) {
 				"context should contain the target line content")
 		})
 	}
+}
+
+func TestCreateFrontmatterError_PreservesHighlightedYAMLContextLine(t *testing.T) {
+	err := (&Compiler{}).createFrontmatterError(
+		"/tmp/workflow.md",
+		"",
+		errors.New(`failed to parse frontmatter:
+[3:1] missing ':' after key
+ 2 | on
+> 3 | engine: claud
+ 4 | permissions:`),
+		1,
+	)
+
+	rendered := err.Error()
+	assert.Contains(t, rendered, "/tmp/workflow.md:3:1: error: missing ':' after key", "Expected VSCode-compatible error header")
+	assert.Contains(t, rendered, "> 3 | engine: claud", "Expected highlighted YAML context line to be preserved")
+	assert.NotContains(t, rendered, "[3:1] missing ':' after key", "Expected duplicate line/column headline to be removed from context")
 }
