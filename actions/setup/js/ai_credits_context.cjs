@@ -6,6 +6,8 @@ const path = require("path");
 const MAX_AI_CREDITS_FIELDS = new Set(["max_ai_credits", "maxAiCredits"]);
 const AI_CREDITS_FIELDS = new Set(["ai_credits", "aiCredits"]);
 const AI_CREDITS_RATE_LIMIT_ERROR_FIELDS = new Set(["ai_credits_rate_limit_error", "aiCreditsRateLimitError"]);
+const AGENT_USAGE_PATH = "/tmp/gh-aw/agent_usage.json";
+const AWF_CONFIG_PATH = "/tmp/gh-aw/awf-config.json";
 // Note: these text fields are intentionally broad (common field names like "error", "message") because
 // rate-limit signals can appear in any of them. This asymmetry vs parseMaxAICreditsFromAuditLog is deliberate.
 const AI_CREDITS_RATE_LIMIT_TEXT_FIELDS = new Set(["error", "message", "reason", "details", "detail", "type", "code"]);
@@ -82,6 +84,41 @@ function resolveFirewallAuditLogPath(auditJsonlPathOverride) {
     }
   }
   return path.join(candidateBases[0], "log.jsonl");
+}
+
+/**
+ * @param {string} filePath
+ * @returns {Record<string, unknown>|null}
+ */
+function readJSONObjectIfExists(filePath) {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    const content = fs.readFileSync(filePath, "utf8").trim();
+    if (!content) return null;
+    const parsed = JSON.parse(content);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * @returns {string}
+ */
+function parseAICreditsFromAgentUsage() {
+  const agentUsage = readJSONObjectIfExists(AGENT_USAGE_PATH);
+  return agentUsage ? parsePositiveNumberString(agentUsage.ai_credits) : "";
+}
+
+/**
+ * @returns {string}
+ */
+function parseMaxAICreditsFromAWFConfig() {
+  const awfConfig = readJSONObjectIfExists(AWF_CONFIG_PATH);
+  if (!awfConfig || typeof awfConfig.apiProxy !== "object" || !awfConfig.apiProxy) {
+    return "";
+  }
+  return parsePositiveNumberString(awfConfig.apiProxy.maxAiCredits ?? awfConfig.apiProxy.max_ai_credits);
 }
 
 /**
@@ -232,8 +269,10 @@ function resolveAICreditsFailureState() {
   const { aiCredits: auditAICredits, maxAICredits: auditMaxAICredits, rateLimitError: auditRateLimitError } = parseAuditLogCombined();
   const envAICredits = parsePositiveNumberString(process.env.GH_AW_AIC);
   const envMaxAICredits = parsePositiveNumberString(process.env.GH_AW_MAX_AI_CREDITS);
-  const aiCredits = auditAICredits || envAICredits || "";
-  const maxAICredits = auditMaxAICredits || envMaxAICredits || "";
+  const fileAICredits = parseAICreditsFromAgentUsage();
+  const fileMaxAICredits = parseMaxAICreditsFromAWFConfig();
+  const aiCredits = auditAICredits || envAICredits || fileAICredits || "";
+  const maxAICredits = auditMaxAICredits || envMaxAICredits || fileMaxAICredits || "";
   const rawAICreditsRateLimitError = auditRateLimitError || process.env.GH_AW_AI_CREDITS_RATE_LIMIT_ERROR === "true";
   const aiCreditsRateLimitError = shouldReportAICreditsRateLimitError(rawAICreditsRateLimitError, aiCredits, maxAICredits);
   return { aiCredits, maxAICredits, aiCreditsRateLimitError };

@@ -1461,10 +1461,9 @@ function readTokenUsageMarkdown() {
  * @param {boolean} hasAICreditsRateLimitError
  * @param {string} aiCredits
  * @param {string} maxAICredits
- * @param {string} runUrl
  * @returns {string}
  */
-function buildAICreditsRateLimitErrorContext(hasAICreditsRateLimitError, aiCredits, maxAICredits, runUrl) {
+function buildAICreditsRateLimitErrorContext(hasAICreditsRateLimitError, aiCredits, maxAICredits) {
   if (!hasAICreditsRateLimitError) {
     return "";
   }
@@ -1484,9 +1483,6 @@ function buildAICreditsRateLimitErrorContext(hasAICreditsRateLimitError, aiCredi
   }
   if (formattedOverage) {
     metricsRows.push(`| Over the limit by | \`${formattedOverage}\` |`);
-  }
-  if (runUrl) {
-    metricsRows.push(`| Run | [View workflow run](${runUrl}) |`);
   }
   const metricsTable = metricsRows.length > 0 ? `\n\n| Metric | Value |\n| --- | --- |\n${metricsRows.join("\n")}` : "";
 
@@ -2264,6 +2260,12 @@ async function main() {
     const checkoutPRSuccess = process.env.GH_AW_CHECKOUT_PR_SUCCESS || "";
     const timeoutMinutes = process.env.GH_AW_TIMEOUT_MINUTES || "";
     const { aiCredits, maxAICredits, aiCreditsRateLimitError } = resolveAICreditsFailureState();
+    if (aiCredits && !process.env.GH_AW_AIC) {
+      process.env.GH_AW_AIC = aiCredits;
+    }
+    if (maxAICredits && !process.env.GH_AW_MAX_AI_CREDITS) {
+      process.env.GH_AW_MAX_AI_CREDITS = maxAICredits;
+    }
     const inferenceAccessError = process.env.GH_AW_INFERENCE_ACCESS_ERROR === "true";
     const mcpPolicyError = process.env.GH_AW_MCP_POLICY_ERROR === "true";
     const agenticEngineTimeout = process.env.GH_AW_AGENTIC_ENGINE_TIMEOUT === "true";
@@ -2726,7 +2728,7 @@ async function main() {
 
         // Build model not supported error context
         const modelNotSupportedErrorContext = buildModelNotSupportedErrorContext(modelNotSupportedError);
-        const aiCreditsRateLimitErrorContext = buildAICreditsRateLimitErrorContext(aiCreditsRateLimitError, aiCredits, maxAICredits, runUrl);
+        const aiCreditsRateLimitErrorContext = buildAICreditsRateLimitErrorContext(aiCreditsRateLimitError, aiCredits, maxAICredits);
 
         // Build GitHub App token minting failure context
         const appTokenMintingFailedContext = buildAppTokenMintingFailedContext(hasAppTokenMintingFailed);
@@ -2950,7 +2952,7 @@ async function main() {
 
         // Build model not supported error context
         const modelNotSupportedErrorContext = buildModelNotSupportedErrorContext(modelNotSupportedError);
-        const aiCreditsRateLimitErrorContext = buildAICreditsRateLimitErrorContext(aiCreditsRateLimitError, aiCredits, maxAICredits, runUrl);
+        const aiCreditsRateLimitErrorContext = buildAICreditsRateLimitErrorContext(aiCreditsRateLimitError, aiCredits, maxAICredits);
 
         // Build GitHub App token minting failure context
         const appTokenMintingFailedContext = buildAppTokenMintingFailedContext(hasAppTokenMintingFailed);

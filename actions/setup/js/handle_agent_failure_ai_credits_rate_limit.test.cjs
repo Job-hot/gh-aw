@@ -20,13 +20,13 @@ describe("handle_agent_failure AI Credits rate-limit context", () => {
   });
 
   it("shows actual usage, guardrail details, and collapsible optimization guidance", () => {
-    const rendered = buildAICreditsRateLimitErrorContext(true, "17.329230000000003", "10.1", "https://github.com/octo/repo/actions/runs/123");
+    const rendered = buildAICreditsRateLimitErrorContext(true, "17.329230000000003", "10.1");
 
     expect(rendered).toContain("AI Credits Budget Exceeded");
     expect(rendered).toContain("| AI credits used | `17.3` |");
     expect(rendered).toContain("| Guardrail limit (`max-ai-credits`) | `10.1` |");
     expect(rendered).toContain("| Over the limit by | `7.23` |");
-    expect(rendered).toContain("| Run | [View workflow run](https://github.com/octo/repo/actions/runs/123) |");
+    expect(rendered).not.toContain("| Run |");
     expect(rendered).toContain("<details>");
     expect(rendered).toContain("<summary>Tips for reducing AI credit usage</summary>");
     expect(rendered).toContain("https://github.github.com/gh-aw/reference/cost-management/");
@@ -34,6 +34,6 @@ describe("handle_agent_failure AI Credits rate-limit context", () => {
   });
 
   it("returns empty string when the AI Credits rate-limit did not trigger", () => {
-    expect(buildAICreditsRateLimitErrorContext(false, "17.3", "10", "")).toBe("");
+    expect(buildAICreditsRateLimitErrorContext(false, "17.3", "10")).toBe("");
   });
 });

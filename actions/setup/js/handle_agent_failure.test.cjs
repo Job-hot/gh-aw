@@ -99,6 +99,10 @@ describe("handle_agent_failure", () => {
       delete process.env.GH_AW_DETECTION_REASON;
       delete process.env.GITHUB_HEAD_REF;
       delete process.env.GITHUB_WORKSPACE;
+      delete process.env.GH_AW_AI_CREDITS_RATE_LIMIT_ERROR;
+
+      fs.rmSync("/tmp/gh-aw/agent_usage.json", { force: true });
+      fs.rmSync("/tmp/gh-aw/awf-config.json", { force: true });
 
       if (tmpDir && fs.existsSync(tmpDir)) {
         fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -233,6 +237,7 @@ describe("handle_agent_failure", () => {
         delete process.env.GH_AW_AMBIENT_CONTEXT;
       }
     });
+
   });
 
   describe("main() precise failure issue matching", () => {
