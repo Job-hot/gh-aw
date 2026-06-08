@@ -2434,10 +2434,7 @@ describe("handle_agent_failure", () => {
       fs.mkdirSync(sessionDir, { recursive: true });
       fs.writeFileSync(
         path.join(sessionDir, "events.jsonl"),
-        [
-          JSON.stringify({ type: "assistant.message", data: { content: "starting run" } }),
-          JSON.stringify({ type: "assistant.message", data: { content: "CAPIError: 429 Maximum AI credits exceeded (8.445900 / 1)." } }),
-        ].join("\n") + "\n"
+        [JSON.stringify({ type: "assistant.message", data: { content: "starting run" } }), JSON.stringify({ type: "assistant.message", data: { content: "CAPIError: 429 Maximum AI credits exceeded (8.445900 / 1)." } })].join("\n") + "\n"
       );
 
       expect(hasMaxAICreditsExceededEventSignal()).toBe(true);
@@ -2449,6 +2446,21 @@ describe("handle_agent_failure", () => {
       fs.writeFileSync(path.join(sessionDir, "events.jsonl"), JSON.stringify({ type: "assistant.message", data: { content: "all good" } }) + "\n");
 
       expect(hasMaxAICreditsExceededEventSignal()).toBe(false);
+    });
+
+    it("ignores malformed lines and non-assistant events while scanning", () => {
+      const sessionDir = path.join(os.tmpdir(), "gh-aw", "sandbox", "agent", "logs", "copilot-session-state", "session-1");
+      fs.mkdirSync(sessionDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(sessionDir, "events.jsonl"),
+        [
+          "not-json",
+          JSON.stringify({ type: "guard.tool_denials_exceeded", data: { reason: "CAPIError: 429 Maximum AI credits exceeded" } }),
+          JSON.stringify({ type: "assistant.message", data: { content: "CAPIError: 429 Maximum AI credits exceeded (8.445900 / 1)." } }),
+        ].join("\n") + "\n"
+      );
+
+      expect(hasMaxAICreditsExceededEventSignal()).toBe(true);
     });
   });
 

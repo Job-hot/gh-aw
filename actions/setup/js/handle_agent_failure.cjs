@@ -26,8 +26,7 @@ const FAILURE_ISSUE_CATEGORY_DAILY_CAP = 50;
 const FAILURE_ISSUE_WINDOW_MS = FAILURE_ISSUE_DEDUP_WINDOW_HOURS * 60 * 60 * 1000;
 const DEFAULT_OTEL_JSONL_PATH = "/tmp/gh-aw/otel.jsonl";
 const COPILOT_SESSION_STATE_DIR = path.join(os.tmpdir(), "gh-aw", "sandbox", "agent", "logs", "copilot-session-state");
-const MAX_AI_CREDITS_EXCEEDED_RE =
-  /(?:capierror:\s*429[\s\S]{0,160}maximum ai credits exceeded|maximum ai credits exceeded|max(?:imum)?\s*ai[\s_-]*credits?\s*exceeded|maxai[\s_-]*credits?\s*exceeded)/i;
+const MAX_AI_CREDITS_EXCEEDED_RE = /(?:capierror:\s*429[\s\S]{0,160}maximum ai credits exceeded|maximum ai credits exceeded|max(?:imum)?\s*ai[\s_-]*credits?\s*exceeded|maxai[\s_-]*credits?\s*exceeded)/i;
 // Engine-side 429/rate-limit signatures:
 // - HTTP 429 accompanied by "too many requests"/"rate limit" phrasing
 // - provider error codes like rate_limit_error / rate_limit_exceeded
@@ -1248,8 +1247,17 @@ function hasMaxAICreditsExceededEventSignal() {
       for (const rawLine of content.split("\n")) {
         const line = rawLine.trim();
         if (!line) continue;
-        if (MAX_AI_CREDITS_EXCEEDED_RE.test(line)) {
-          return true;
+        try {
+          const parsed = JSON.parse(line);
+          if (parsed.type !== "assistant.message" || !parsed.data || typeof parsed.data !== "object") {
+            continue;
+          }
+          const contentText = typeof parsed.data.content === "string" ? parsed.data.content : "";
+          if (contentText && MAX_AI_CREDITS_EXCEEDED_RE.test(contentText)) {
+            return true;
+          }
+        } catch {
+          // Skip malformed lines
         }
       }
     }
