@@ -6,10 +6,10 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/parser"
+	"github.com/github/gh-aw/pkg/syncutil"
 )
 
 var errorRecoveryLog = logger.New("workflow:error_recovery")
@@ -17,8 +17,7 @@ var errorRecoveryLog = logger.New("workflow:error_recovery")
 var (
 	engineContextLinePattern = regexp.MustCompile(`(?m)^\s*>?\s*(\d+)\s*\|\s*engine:\s*([A-Za-z0-9._-]+)\s*$`)
 	errorFilePathPattern     = regexp.MustCompile(`^(.+?):\d+:\d+:\s*error:`)
-	supportedEngineIDsOnce   sync.Once
-	cachedSupportedEngineIDs []string
+	supportedEngineIDsCache  syncutil.OnceLoader[[]string]
 )
 
 // ErrorSeverity classifies how urgently a compilation error should be fixed.
@@ -401,11 +400,12 @@ func supportedEngineIDs() []string {
 		return nil
 	}
 
-	supportedEngineIDsOnce.Do(func() {
-		cachedSupportedEngineIDs = append([]string(nil), registry.GetSupportedEngines()...)
-		sort.Strings(cachedSupportedEngineIDs)
+	engineIDs, _ := supportedEngineIDsCache.Get(func() ([]string, error) {
+		engineIDs := append([]string(nil), registry.GetSupportedEngines()...)
+		sort.Strings(engineIDs)
+		return engineIDs, nil
 	})
-	return cachedSupportedEngineIDs
+	return engineIDs
 }
 
 func expandDisplayMessage(message string) []string {
