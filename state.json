@@ -2,7 +2,8 @@
   "counts": {
     "model_size": {
       "small-agent": 1,
-      "agent": 2
+      "agent": 2,
+      "claude-haiku-4.5": 1
     }
   },
   "runs": [
@@ -25,6 +26,13 @@
       "timestamp": "2026-06-07T00:02:27.334Z",
       "assignments": {
         "model_size": "agent"
+      }
+    },
+    {
+      "run_id": "27108786183",
+      "timestamp": "2026-06-08T00:02:29.611Z",
+      "assignments": {
+        "model_size": "claude-haiku-4.5"
       }
     }
   ]
