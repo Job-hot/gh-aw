@@ -459,6 +459,16 @@ Test content.`,
 				t.Errorf("%s: error should contain line number markers '|' from yaml.FormatError(), got: %s", tt.description, errorStr)
 			}
 
+			// Ensure the exact reported line is present in the displayed context.
+			// This guards against context windows that skip the actual error line.
+			var expectedLine, expectedCol int
+			if _, scanErr := fmt.Sscanf(tt.expectedLineCol, "[%d:%d]", &expectedLine, &expectedCol); scanErr == nil {
+				expectedLineMarker := fmt.Sprintf("%d |", expectedLine)
+				if !strings.Contains(errorStr, expectedLineMarker) {
+					t.Errorf("%s: error context should include the actual error line marker %q, got: %s", tt.description, expectedLineMarker, errorStr)
+				}
+			}
+
 			// Check for visual pointer (>)
 			if tt.expectPointer && !strings.Contains(errorStr, ">") {
 				t.Errorf("%s: error should contain visual pointer '>' from yaml.FormatError(), got: %s", tt.description, errorStr)

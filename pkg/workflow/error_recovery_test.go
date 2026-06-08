@@ -82,6 +82,34 @@ func TestBuildPrioritizedErrorReportFromMessages_SuppressesCascadingSyntaxErrors
 	assert.Equal(t, 1, report.SuppressedCount, "One cascading error should be suppressed")
 }
 
+func TestBuildPrioritizedErrorReportFromMessages_YAMLMissingColonGetsSyntaxSuggestion(t *testing.T) {
+	messages := []string{
+		`/tmp/workflow.md:2:1: error: missing ':' after key — YAML mapping entries require 'key: value' format
+2 | on
+3 |   workflow_dispatch:
+  | ^`,
+	}
+
+	report := BuildPrioritizedErrorReportFromMessages(messages, true)
+	require.Len(t, report.DisplayedErrors, 1, "Expected one prioritized error")
+	assert.Equal(t, SeverityCritical, report.DisplayedErrors[0].Severity, "Missing colon should be classified as critical syntax")
+	assert.Equal(t, "syntax", report.DisplayedErrors[0].Category, "Missing colon should be a syntax category")
+	assert.Contains(t, report.DisplayedErrors[0].Suggestion, "Add \":\" after the key", "Suggestion should be YAML-specific")
+}
+
+func TestExpandErrorMessages_SynthesizesInvalidEngineTypoRootCause(t *testing.T) {
+	raw := `/tmp/workflow.md:5:1: error: Multiple schema validation failures:
+- 'engine' (line 5, col 1): must satisfy oneOf
+- 'engine' (line 5, col 1): Unknown property: max-ai-credits
+4 | on: push
+5 | engine: claud
+6 | max-ai-credits: 1200`
+
+	messages := ExpandErrorMessages(errors.New(raw))
+	require.NotEmpty(t, messages, "Expected expanded messages")
+	assert.Contains(t, messages[0], `unknown engine "claud"`, "Expected synthesized root-cause engine typo error to be first")
+}
+
 func TestNewValidationError_ClassifiesSeverity(t *testing.T) {
 	err := NewValidationError("network.allowed", "example.com", "requires strict mode", "Enable strict mode")
 

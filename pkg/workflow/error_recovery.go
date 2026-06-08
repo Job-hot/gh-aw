@@ -2,13 +2,22 @@ package workflow
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
+	"github.com/github/gh-aw/pkg/parser"
 )
 
 var errorRecoveryLog = logger.New("workflow:error_recovery")
+
+var (
+	engineContextLinePattern = regexp.MustCompile(`(?m)^\s*>?\s*(\d+)\s*\|\s*engine:\s*([A-Za-z0-9._-]+)\s*$`)
+	errorFilePathPattern     = regexp.MustCompile(`^(.+?):\d+:\d+:\s*error:`)
+)
 
 // ErrorSeverity classifies how urgently a compilation error should be fixed.
 type ErrorSeverity int
@@ -58,6 +67,13 @@ func ExpandErrorMessages(err error) []string {
 	seen := make(map[string]struct{}, len(messages))
 	result := make([]string, 0, len(messages))
 	for _, msg := range messages {
+		if synthesized := synthesizeInvalidEngineTypoMessage(msg); synthesized != "" {
+			key := normalizeErrorMessage(synthesized)
+			if _, ok := seen[key]; !ok {
+				seen[key] = struct{}{}
+				result = append(result, synthesized)
+			}
+		}
 		for _, expanded := range expandDisplayMessage(msg) {
 			trimmed := strings.TrimSpace(expanded)
 			if trimmed == "" {
@@ -239,82 +255,88 @@ func classifyValidationSeverity(field string, reason string) (ErrorSeverity, str
 
 func classifyErrorMessage(message string) PrioritizedError {
 	lower := normalizeErrorMessage(message)
+	headline := lower
+	if idx := strings.Index(headline, "\n"); idx >= 0 {
+		headline = headline[:idx]
+	}
 
 	switch {
-	case strings.Contains(lower, "failed to parse frontmatter"),
-		strings.Contains(lower, "failed to parse yaml frontmatter"),
-		strings.Contains(lower, "no frontmatter found"),
-		strings.Contains(lower, "mapping values are not allowed"),
-		strings.Contains(lower, "did not find expected key"):
+	case strings.Contains(headline, "failed to parse frontmatter"),
+		strings.Contains(headline, "failed to parse yaml frontmatter"),
+		strings.Contains(headline, "no frontmatter found"),
+		strings.Contains(headline, "mapping values are not allowed"),
+		strings.Contains(headline, "did not find expected key"),
+		strings.Contains(headline, "missing ':' after key"):
 		return PrioritizedError{
 			Message:    message,
 			Severity:   SeverityCritical,
 			Category:   "syntax",
-			Suggestion: "Fix the YAML/frontmatter syntax first, then re-run `gh aw compile`.",
+			Suggestion: "Add \":\" after the key to fix YAML syntax, then re-run `gh aw compile`.",
 		}
-	case strings.Contains(lower, "invalid engine"),
-		strings.Contains(lower, "invalid engine value"):
+	case strings.Contains(headline, "invalid engine"),
+		strings.Contains(headline, "invalid engine value"),
+		strings.Contains(headline, "unknown engine"):
 		return PrioritizedError{
 			Message:    message,
 			Severity:   SeverityCritical,
 			Category:   "configuration",
-			Suggestion: "Use a supported engine name in frontmatter, for example `engine: copilot`.",
+			Suggestion: "Check the engine name — valid values are listed in the error (for example: `copilot`, `claude`, `codex`).",
 		}
-	case strings.Contains(lower, "field 'engine'") && (strings.Contains(lower, "empty") || strings.Contains(lower, "required")):
+	case strings.Contains(headline, "field 'engine'") && (strings.Contains(headline, "empty") || strings.Contains(headline, "required")):
 		return PrioritizedError{
 			Message:    message,
 			Severity:   SeverityCritical,
 			Category:   "configuration",
 			Suggestion: "Add an `engine:` value to the workflow frontmatter before fixing lower-priority issues.",
 		}
-	case strings.Contains(lower, "network.allowed"),
-		(strings.Contains(lower, "network") && strings.Contains(lower, "strict mode")):
+	case strings.Contains(headline, "network.allowed"),
+		(strings.Contains(headline, "network") && strings.Contains(headline, "strict mode")):
 		return PrioritizedError{
 			Message:    message,
 			Severity:   SeverityHigh,
 			Category:   "permissions",
 			Suggestion: "Either enable strict mode for the workflow or remove the unsupported network configuration.",
 		}
-	case strings.Contains(lower, "mcp"),
-		strings.Contains(lower, "tool configuration"),
-		strings.Contains(lower, "tools."),
-		strings.Contains(lower, "tools/"):
+	case strings.Contains(headline, "mcp"),
+		strings.Contains(headline, "tool configuration"),
+		strings.Contains(headline, "tools."),
+		strings.Contains(headline, "tools/"):
 		return PrioritizedError{
 			Message:    message,
 			Severity:   SeverityHigh,
 			Category:   "tools",
 			Suggestion: "Check the `tools:` and MCP server configuration for missing required fields or unsupported values.",
 		}
-	case strings.Contains(lower, "event"),
-		strings.Contains(lower, "workflow_dispatch"),
-		strings.Contains(lower, "pull-request"),
-		strings.Contains(lower, "pull_request"):
+	case strings.Contains(headline, "event"),
+		strings.Contains(headline, "workflow_dispatch"),
+		strings.Contains(headline, "pull-request"),
+		strings.Contains(headline, "pull_request"):
 		return PrioritizedError{
 			Message:    message,
 			Severity:   SeverityMedium,
 			Category:   "events",
 			Suggestion: "Correct the event or filter name, then re-run compilation.",
 		}
-	case strings.Contains(lower, "permission"):
+	case strings.Contains(headline, "permission"):
 		return PrioritizedError{
 			Message:    message,
 			Severity:   SeverityMedium,
 			Category:   "permissions",
 			Suggestion: "Adjust the permissions block to match the workflow's required scopes.",
 		}
-	case strings.Contains(lower, "runtime"),
-		strings.Contains(lower, "node version"),
-		strings.Contains(lower, "python version"),
-		strings.Contains(lower, "version conflict"):
+	case strings.Contains(headline, "runtime"),
+		strings.Contains(headline, "node version"),
+		strings.Contains(headline, "python version"),
+		strings.Contains(headline, "version conflict"):
 		return PrioritizedError{
 			Message:    message,
 			Severity:   SeverityMedium,
 			Category:   "runtime",
 			Suggestion: "Resolve the runtime version conflict or choose a supported version.",
 		}
-	case strings.Contains(lower, "deprecated"),
-		strings.Contains(lower, "warning"),
-		strings.Contains(lower, "recommend"):
+	case strings.Contains(headline, "deprecated"),
+		strings.Contains(headline, "warning"),
+		strings.Contains(headline, "recommend"):
 		return PrioritizedError{
 			Message:    message,
 			Severity:   SeverityLow,
@@ -397,6 +419,40 @@ func expandDisplayMessage(message string) []string {
 	}
 
 	return expanded
+}
+
+func synthesizeInvalidEngineTypoMessage(message string) string {
+	lineMatch := engineContextLinePattern.FindStringSubmatch(message)
+	if len(lineMatch) < 3 {
+		return ""
+	}
+
+	engineValue := strings.TrimSpace(lineMatch[2])
+	if engineValue == "" {
+		return ""
+	}
+	engineLower := strings.ToLower(engineValue)
+	for _, known := range constants.AgenticEngines {
+		if engineLower == known {
+			return ""
+		}
+	}
+
+	suggestions := parser.FindClosestMatches(engineLower, constants.AgenticEngines, 1)
+	if len(suggestions) == 0 {
+		return ""
+	}
+
+	validEngines := append([]string(nil), constants.AgenticEngines...)
+	sort.Strings(validEngines)
+	errorMessage := fmt.Sprintf("unknown engine %q. Valid engines are: %s", engineValue, strings.Join(validEngines, ", "))
+	errorMessage += fmt.Sprintf(". Did you mean %q?", suggestions[0])
+
+	pathMatch := errorFilePathPattern.FindStringSubmatch(strings.TrimSpace(message))
+	if len(pathMatch) < 2 {
+		return errorMessage
+	}
+	return fmt.Sprintf("%s:%s:1: error: %s", pathMatch[1], lineMatch[1], errorMessage)
 }
 
 // Heading returns a human-friendly severity heading for terminal output.
