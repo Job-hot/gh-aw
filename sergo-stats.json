@@ -1,34 +1,35 @@
 {
-  "total_runs": 30,
-  "total_findings": 233,
-  "total_tasks": 59,
-  "avg_success_score": 8.71,
-  "last_run": "2026-06-08",
-  "serena_lsp": "23 tools stable R4-30. activate_project --project ~1.3s warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'.",
+  "total_runs": 31,
+  "total_findings": 239,
+  "total_tasks": 61,
+  "avg_success_score": 8.72,
+  "last_run": "2026-06-09",
+  "serena_lsp": "23 tools stable R4-31. activate_project --project ~1.3s warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'. search_for_pattern great for cross-linter pattern audits (used R31 to find which linters use pass.TypesInfo).",
   "open_issues": {
-    "sg30a1_R30": "lenstringzero (22nd linter, ADR-37618) registered in driver cmd/linters/main.go:29+64 but UNDOCUMENTED: doc.go:3 'All 21 active analyzers' + 21-bullet list; README.md missing bullet(~28)/table(~57)/import(~122); spec_test.go documentedAnalyzers() 21 entries (spec note says 21) -> TestSpec_PublicAPI does NOT validate lenstringzero.Analyzer. Fix: bump all 3 to 22. Self_consistency pattern (proven-to-land).",
-    "sg30a2_R30": "lenstringzero intermediate-var FN: flags only DIRECT len(s)==0/!=0; misses n:=len(s); n==0 (ADR-37618 'Negative' documents this). tolowerequalfold JUST landed collectCaseConvAliases alias-tracking (R29 #37492) — mirror that template to track v:=len(s) and flag v==0 when len-arg is string. Distinct from sg30a1.",
-    "lenstringzero_enforce_roadmap": "Not enforced (cgo.yml:1078 still 12). Lacks internal/nolint (coverage 14, lenstringzero absent). Enforce path: add nolint precondition + remediate 20+ direct string sites (ADR) + append -lenstringzero flag. Roadmap, not yet filed.",
-    "sg28a2_R28_carry": "nolint parity. R29: coverage 14 (all 12 enforced + errormessage + seenmapbool). Missing 8 now (7 prior + lenstringzero): contextcancelnotdeferred ctxbackground excessivefuncparams fileclosenotdeferred largefunc ossetenvlibrary ssljson lenstringzero."
+    "sg31a1_R31": "sortslice (23rd linter) registered cmd/linters/main.go:37+63 but UNDOCUMENTED: doc.go:3 'All 22'+22 bullets (no sortslice between seenmapbool/ssljson); README.md ZERO sortslice refs (bullet/table/import/usage/subpkg-list); spec_test documentedAnalyzers() 22 entries + note '22 subpackages' -> TestSpec_PublicAPI does NOT validate sortslice.Analyzer. Fix: bump all 3 to 23 (mirror lenstringzero #37740). Self_consistency, proven-to-land.",
+    "sg31a2_R31": "sortslice precision: matches sort.Slice/SliceStable by SYNTACTIC pkgIdent.Name=='sort' (sortslice.go:54-57), no pass.TypesInfo. FP on shadowing (local/field named sort, or non-sort pkg aliased to sort); FN on stdlib sort aliased import (import s \"sort\"; s.Slice). SOLE package-matcher skipping type verify -> mirror fmterrorfnoverbs.isFmtErrorf (ObjectOf->*types.PkgName->Imported().Path()=='sort'). Single-file precision, proven-to-land template.",
+    "sortslice_enforce": "NOT enforced (cgo.yml:1119 still 12). HAS internal/nolint already (BuildLineIndex L32). Blocker = 50+ prod sort.Slice sites/33 files. MIGRATION OWNED BY lint-monster #38012/#38014 (open) — DO NOT REFILE migration/enforce; enforce auto-follows once migration lands.",
+    "lenstringzero_enforce": "NOT enforced. Has nolint? verify. Blocker remediation 20+ direct string sites (ADR). Roadmap.",
+    "nolint_parity": "coverage now 15+ (12 enforced + errormessage + seenmapbool + sortslice). Missing: contextcancelnotdeferred ctxbackground excessivefuncparams fileclosenotdeferred largefunc ossetenvlibrary ssljson lenstringzero. Carry."
   },
-  "closed_recent": "sg29a1 var-alias FN #37492 LANDED (collectCaseConvAliases). sg29a2 nolint comma-list #37493 LANDED (SplitSeq membership). sg26a1 seenmapbool escape #36406 CLOSED but inspectBody(64-175) STILL escape-blind = dismissed/wontfix, DO-NOT-REFILE.",
-  "completed_scans": "Resolved+enforced: errstringmatch(R14) panicinlibrarycode(R19) manualmutexunlock/osexit/rawlog(R21) regexp/fprintln/strconv(R23) jsonmarshal(R24) uncheckedtypeassertion(R25) fmterrorfnoverbs(R26) tolowerequalfold(R29 13-site). PRECISION landed: sg27a1 self-compare(R28) sg29a1 var-alias(R30) sg29a2 nolint-comma(R30). DEFER: largefunc/excessivefuncparams refactor-heavy; ctxbackground 28 sites. DO-NOT-REFILE: ossetenvlibrary, contextcancelnotdeferred, fileclosenotdeferred, seenmapbool-escape(#36406 dismissed).",
+  "closed_recent": "R30: sg30a1 lenstringzero doc-sync #37740 LANDED (doc.go 'All 22', README 19/49/79/95/117, spec_test entry). sg30a2 intermediate-var FN #37741 LANDED. sg29a1 #37492, sg29a2 #37493 LANDED. sg26a1 seenmapbool #36406 dismissed/wontfix escape-blind DO-NOT-REFILE.",
+  "completed_scans": "Resolved+enforced: errstringmatch(R14) panicinlibrarycode(R19) manualmutexunlock/osexit/rawlog(R21) regexp/fprintln/strconv(R23) jsonmarshal(R24) uncheckedtypeassertion(R25) fmterrorfnoverbs(R26) tolowerequalfold(R29). PRECISION landed: sg27a1 self-compare(R28) sg29a1 var-alias(R30) sg29a2 nolint-comma(R30) sg30a2 lenstringzero-intermediate(R31). DOC-SYNC landed: sg30a1 lenstringzero(R31). DEFER: largefunc/excessivefuncparams refactor-heavy; ctxbackground 28 sites. DO-NOT-REFILE: ossetenvlibrary, contextcancelnotdeferred, fileclosenotdeferred, seenmapbool-escape(#36406), sortslice-migration(lint-monster #38012/#38014).",
   "patterns": {
-    "ci_enforce": "cgo.yml:1078 POSITIVE LINTER_FLAGS, R30=12 flags. Append flag for zero-vio linter; convert-to-zero or //nolint-annotate first for non-zero.",
-    "precision_fix_lands": "Single-file linter precision/enforce fixes land ~1day: sg24a1 R25, sg27a1 R28, sg28a1 enforce R29, sg29a1+sg29a2 R30. Non-near-zero (seenmapbool 60+ sites) does NOT auto-land — pivot to precision/nolint/dismiss.",
-    "new_linter_doc_lag": "NEW R30: linters land in driver main.go BEFORE doc.go/README/spec_test sync (lenstringzero). Each run: diff cmd/linters/main.go analyzer list vs doc.go count vs spec_test documentedAnalyzers() — gap = self_consistency issue.",
-    "enforce_precondition_nolint": "INVARIANT: all 12 enforced linters have internal/nolint. Adding nolint is enforce precondition for non-near-zero linters. lenstringzero lacks it.",
-    "team_closes_fast": "Sergo issues converted to PRs + CLOSED within ~1-2 days; open_issues list usually empty. gh api issues?labels=sergo&state=all confirms landings."
+    "new_linter_doc_lag": "CONFIRMED 2x (lenstringzero R30->landed R31; sortslice R31): NEW linters land in driver main.go BEFORE doc.go/README/spec_test sync. Each run: diff cmd/linters/main.go analyzer count vs doc.go 'All N' vs spec_test documentedAnalyzers() len -> gap = self_consistency issue, lands ~1day.",
+    "new_linter_precision_audit": "NEW R31 pattern: when a NEW linter lands, search_for_pattern pass.TypesInfo across pkg/linters to see if newcomer matches stdlib pkgs by type vs syntactic name. sortslice was sole syntactic matcher -> precision issue. Apply to each future new linter.",
+    "precision_fix_lands": "Single-file linter precision/enforce fixes land ~1day: sg24a1 R25, sg27a1 R28, sg28a1 enforce R29, sg29a1+sg29a2 R30, sg30a1+sg30a2 R31. Non-near-zero (seenmapbool 60+, sortslice 50+) does NOT auto-land via sergo — pivot to precision/doc/nolint or defer to migration bots.",
+    "ci_enforce": "cgo.yml:1119 POSITIVE LINTER_FLAGS, R31=12 flags. Append flag for zero-vio linter; convert-to-zero or //nolint first for non-zero.",
+    "cross_bot_dedup": "NEW R31: other bots file overlapping issues (lint-monster #38012/#38014 sort.Slice migration). Before filing enforce/migration issues, `gh search issues --repo github/gh-aw --state open '<term>' --json number,title` to avoid dup. Sergo scoped to doc-sync + precision (orthogonal to migration).",
+    "team_closes_fast": "Sergo issues -> PRs + CLOSED within ~1-2 days; open_issues usually empty. gh api issues?labels=sergo&state=all confirms landings."
   },
-  "linters_R30": {
-    "total_registered": 22,
-    "documented_in_spec": 21,
-    "doc_gap": "lenstringzero registered in cmd/linters/main.go but NOT in doc.go/README.md/spec_test.go (sg30a1).",
+  "linters_R31": {
+    "total_registered": 23,
+    "documented_in_spec": 22,
+    "doc_gap": "sortslice registered cmd/linters/main.go but NOT in doc.go/README.md/spec_test.go (sg31a1).",
     "enforced_12": "errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion fmterrorfnoverbs tolowerequalfold",
-    "unenforced_10": "contextcancelnotdeferred ctxbackground errormessage(opt-in) excessivefuncparams fileclosenotdeferred largefunc ossetenvlibrary ssljson seenmapbool(dismissed-escape) lenstringzero(NEW)",
-    "nolint_have_14": "all 12 enforced + errormessage + seenmapbool",
-    "nolint_missing_8": "contextcancelnotdeferred ctxbackground excessivefuncparams fileclosenotdeferred largefunc ossetenvlibrary ssljson lenstringzero",
-    "next_candidates": "R31: verify sg30a1 doc-sync landed; verify sg30a2 alias-FN; lenstringzero enforce-roadmap (nolint+remediate 20+ +flag); watch for 23rd linter."
+    "unenforced_11": "contextcancelnotdeferred ctxbackground errormessage(opt-in) excessivefuncparams fileclosenotdeferred largefunc ossetenvlibrary ssljson seenmapbool(dismissed-escape) lenstringzero sortslice(NEW,migration-owned-by-lint-monster)",
+    "next_candidates": "R32: verify sg31a1 doc-sync landed; verify sg31a2 type-identity precision landed; watch for 24th linter (run new_linter_doc_lag + new_linter_precision_audit); lenstringzero enforce-roadmap; sortslice enforce auto-follows lint-monster migration."
   },
-  "bash_policy": "Sandbox blocks multi-stmt compounds, ls/mkdir/cat/sed outside repo, for-loops, backtick grep, git on /tmp. go build blocked (lint via Grep/Read). gh issue/search 'Malformed version:' — USE gh api repos/.../issues?labels=sergo --jq INSTEAD (works). Glob/Read/Write work on /tmp; bash CANNOT touch /tmp/gh-aw/repo-memory. KEEP MEMORY ~10KB total; compact strategies.jsonl to ~3 recent."
+  "repo_context": "pkg/: 894 prod .go, 1264 test .go. 23 analyzer subpkgs + internal/. ~33 files use sort.Slice/SliceStable (50+ call sites).",
+  "bash_policy": "Sandbox blocks multi-stmt compounds, ls/mkdir/cat/sed outside repo, for-loops, backtick grep, git on /tmp, go build. printf-with-raw-JSON BLOCKED -> Write payload to /tmp/gh-aw/agent/*.json then `safeoutputs create_issue . < file`. gh issue/search subcmd 'Malformed version:' for some flags BUT gh api repos/.../issues?labels=sergo --jq WORKS + gh search issues --json WORKS. Glob/Read/Write work on /tmp; bash CANNOT touch /tmp/gh-aw/repo-memory. KEEP MEMORY ~10KB; compact strategies.jsonl to ~3 recent."
 }
