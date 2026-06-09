@@ -369,6 +369,7 @@ func (e *ClaudeEngine) GetExecutionSteps(workflowData *WorkflowData, logFile str
 		"RUNNER_TEMP":         "${{ runner.temp }}",
 	}
 	injectWorkflowCallNetworkAllowedEnv(env, workflowData)
+	injectMaxAICreditsEnv(env, workflowData)
 	// Indicate the phase: "agent" for the main run, "detection" for threat detection
 	// Include the compiler version so agents can identify which gh-aw version generated the workflow
 	if workflowData.IsDetectionRun {

@@ -13,16 +13,26 @@ import (
 	"github.com/github/gh-aw/pkg/stringutil"
 	"github.com/github/gh-aw/pkg/types"
 	"github.com/github/gh-aw/pkg/typeutil"
+	"github.com/github/gh-aw/pkg/workflow/compilerenv"
 )
 
 var engineLog = logger.New("workflow:engine")
 
 const WorkflowCallNetworkAllowedEnvVar = "GH_AW_WORKFLOW_CALL_NETWORK_ALLOWED"
+const maxAICreditsEnvVar = "GH_AW_MAX_AI_CREDITS"
 
 func injectWorkflowCallNetworkAllowedEnv(env map[string]string, workflowData *WorkflowData) {
 	if shouldUseWorkflowCallNetworkAllowedInput(workflowData) {
 		env[WorkflowCallNetworkAllowedEnvVar] = fmt.Sprintf("${{ inputs.%s }}", NetworkAllowedInputName)
 	}
+}
+
+func injectMaxAICreditsEnv(env map[string]string, workflowData *WorkflowData) {
+	if workflowData != nil && workflowData.EngineConfig != nil && workflowData.EngineConfig.MaxAICredits != 0 {
+		env[maxAICreditsEnvVar] = strconv.FormatInt(workflowData.EngineConfig.MaxAICredits, 10)
+		return
+	}
+	env[maxAICreditsEnvVar] = compilerenv.BuildDefaultMaxAICreditsExpression(constants.DefaultMaxAICredits)
 }
 
 // EngineConfig represents the parsed engine configuration

@@ -166,6 +166,7 @@ func (e *OpenCodeEngine) GetExecutionSteps(workflowData *WorkflowData, logFile s
 		"NO_PROXY":         "localhost,127.0.0.1",
 	}
 	injectWorkflowCallNetworkAllowedEnv(env, workflowData)
+	injectMaxAICreditsEnv(env, workflowData)
 	e.ApplyUniversalProviderEnv(env, workflowData, firewallEnabled)
 
 	if HasMCPServers(workflowData) {

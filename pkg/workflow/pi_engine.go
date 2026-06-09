@@ -386,6 +386,7 @@ touch %s
 		"RUNNER_TEMP":         "${{ runner.temp }}",
 	}
 	injectWorkflowCallNetworkAllowedEnv(env, workflowData)
+	injectMaxAICreditsEnv(env, workflowData)
 	if modelConfigured {
 		env["GH_AW_PI_MODEL"] = workflowData.EngineConfig.Model
 	}

@@ -1074,6 +1074,26 @@ func TestBuildAWFCommand_ModelMultipliersLoadedFromFile(t *testing.T) {
 	assert.NotContains(t, command, "my-custom-model", "expected custom model multipliers to be omitted from inline AWF config JSON")
 }
 
+func TestBuildAWFCommand_MaxAICreditsLoadedFromEnv(t *testing.T) {
+	config := AWFCommandConfig{
+		EngineName:    "copilot",
+		EngineCommand: "copilot --prompt-file /tmp/prompt.txt",
+		LogFile:       "/tmp/gh-aw/agent-stdio.log",
+		WorkflowData: &WorkflowData{
+			EngineConfig: &EngineConfig{ID: "copilot"},
+			NetworkPermissions: &NetworkPermissions{
+				Firewall: &FirewallConfig{Enabled: true},
+			},
+		},
+	}
+
+	command := BuildAWFCommand(config)
+
+	assert.Contains(t, command, `raw_value = os.environ.get("GH_AW_MAX_AI_CREDITS", "").strip()`, "expected runtime updater script to read GH_AW_MAX_AI_CREDITS")
+	assert.Contains(t, command, `api_proxy["maxAiCredits"] = max_ai_credits`, "expected runtime updater script to update apiProxy.maxAiCredits")
+	assert.Contains(t, command, `api_proxy.pop("maxAiCredits", None)`, "expected runtime updater script to support disabling maxAiCredits with -1")
+}
+
 func TestBuildAWFCommand_PreservesGitHubExpressionOperatorsInConfigJSON(t *testing.T) {
 	config := AWFCommandConfig{
 		EngineName:     "copilot",

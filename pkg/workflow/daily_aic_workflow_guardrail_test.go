@@ -31,11 +31,11 @@ func TestResolveMaxDailyAIC(t *testing.T) {
 		}
 	})
 
-	t.Run("uses enterprise default when unset", func(t *testing.T) {
+	t.Run("uses GitHub variable fallback when unset even with compiler env override", func(t *testing.T) {
 		t.Setenv(compilerenv.DefaultMaxDailyAICredits, "2222")
 		got := resolveMaxDailyAIC(map[string]any{}, "")
-		if got == nil || *got != "${{ vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS || '2222' }}" {
-			t.Fatalf("expected enterprise default, got %v", got)
+		if got == nil || *got != "${{ vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS || '5000' }}" {
+			t.Fatalf("expected GitHub variable fallback with built-in default, got %v", got)
 		}
 	})
 

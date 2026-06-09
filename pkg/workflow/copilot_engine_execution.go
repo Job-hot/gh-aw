@@ -534,6 +534,7 @@ touch %s
 		env["COPILOT_GITHUB_TOKEN"] = copilotGitHubToken
 	}
 	injectWorkflowCallNetworkAllowedEnv(env, workflowData)
+	injectMaxAICreditsEnv(env, workflowData)
 
 	// When permissions.copilot-requests is write, set S2STOKENS=true to allow the Copilot CLI
 	// to accept GitHub App installation tokens (ghs_*) such as ${{ github.token }}.

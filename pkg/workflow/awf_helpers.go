@@ -166,6 +166,48 @@ except OSError as exc:
 PY`, string(WorkflowCallNetworkAllowedEnvVar), string(ecosystemJSON)), nil
 }
 
+func buildMaxAICreditsConfigUpdateScript() string {
+	return fmt.Sprintf(`python - <<'PY'
+import json
+import os
+from pathlib import Path
+
+runner_temp = os.environ.get("RUNNER_TEMP")
+if not runner_temp:
+    raise SystemExit("RUNNER_TEMP is not set")
+
+config_path = Path(runner_temp) / "gh-aw" / "awf-config.json"
+try:
+    config = json.loads(config_path.read_text())
+except FileNotFoundError as exc:
+    raise SystemExit(f"Missing AWF config file at {config_path}") from exc
+except json.JSONDecodeError as exc:
+    raise SystemExit(f"Invalid AWF config JSON at {config_path}: {exc}") from exc
+except OSError as exc:
+    raise SystemExit(f"Failed to read AWF config file at {config_path}: {exc}") from exc
+
+raw_value = os.environ.get(%q, "").strip()
+if raw_value:
+    api_proxy = config.setdefault("apiProxy", {})
+    if raw_value == "-1":
+        api_proxy.pop("maxAiCredits", None)
+        api_proxy.pop("enableTokenSteering", None)
+    else:
+        try:
+            max_ai_credits = int(raw_value)
+        except ValueError as exc:
+            raise SystemExit(f"Invalid %s value: {raw_value}") from exc
+        if max_ai_credits <= 0:
+            raise SystemExit(f"Invalid %s value: {raw_value}")
+        api_proxy["maxAiCredits"] = max_ai_credits
+
+try:
+    config_path.write_text(json.dumps(config, separators=(",", ":"), ensure_ascii=False) + "\n")
+except OSError as exc:
+    raise SystemExit(f"Failed to write AWF config file at {config_path}: {exc}") from exc
+PY`, maxAICreditsEnvVar, maxAICreditsEnvVar, maxAICreditsEnvVar)
+}
+
 // BuildAWFCommand builds a complete AWF command with all arguments.
 // This consolidates the AWF command building logic that was duplicated across
 // Copilot, Claude, and Codex engines.
@@ -263,6 +305,7 @@ fi`,
 				configFileSetup += "\n" + updateScript
 			}
 		}
+		configFileSetup += "\n" + buildMaxAICreditsConfigUpdateScript()
 		configFileSetup += "\n" + buildModelMultipliersFromFileScript()
 		configFileSetup += fmt.Sprintf("\ncp %q %s", awfConfigRuntimePathExpr, constants.AWFConfigFilePath)
 		// Add --config as the first expandable arg so it appears before --container-workdir.
