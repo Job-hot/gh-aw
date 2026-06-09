@@ -751,6 +751,8 @@ module.exports = {
   main,
   isForkRepository,
   statusEmoji,
+  Status,
+  makePostRequest,
   testGitHubRESTAPI,
   testGitHubGraphQLAPI,
   testCopilotCLI,

@@ -1,7 +1,22 @@
 // @ts-check
 
-import { describe, it, expect } from "vitest";
-import { testGitHubRESTAPI, testGitHubGraphQLAPI, testCopilotCLI, testAnthropicAPI, testOpenAIAPI, testBraveSearchAPI, testNotionAPI, generateMarkdownReport, isForkRepository, statusEmoji } from "./validate_secrets.cjs";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import https from "https";
+import { EventEmitter } from "events";
+import {
+  makePostRequest,
+  testGitHubRESTAPI,
+  testGitHubGraphQLAPI,
+  testCopilotCLI,
+  testAnthropicAPI,
+  testOpenAIAPI,
+  testBraveSearchAPI,
+  testNotionAPI,
+  generateMarkdownReport,
+  isForkRepository,
+  statusEmoji,
+  Status,
+} from "./validate_secrets.cjs";
 
 describe("validate_secrets", () => {
   describe("testGitHubRESTAPI", () => {
@@ -69,6 +84,69 @@ describe("validate_secrets", () => {
       const result = await testNotionAPI("");
       expect(result.status).toBe("not_set");
       expect(result.message).toBe("Token not set");
+    });
+  });
+
+  describe("makePostRequest", () => {
+    /** @type {EventEmitter & {setTimeout: any, destroy: any, write: any, end: any}} */
+    let mockRequest;
+    /** @type {EventEmitter & {statusCode: number}} */
+    let mockResponse;
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    function setupHttpsMock(onEnd) {
+      mockResponse = Object.assign(new EventEmitter(), { statusCode: 200 });
+      mockRequest = Object.assign(new EventEmitter(), {
+        setTimeout: vi.fn().mockImplementation((ms, cb) => {
+          mockRequest._timeoutCb = cb;
+        }),
+        destroy: vi.fn(),
+        write: vi.fn(),
+        end: vi.fn().mockImplementation(() => {
+          if (onEnd) onEnd();
+        }),
+      });
+      vi.spyOn(https, "request").mockImplementation((_options, callback) => {
+        process.nextTick(() => callback && callback(/** @type {any} */ mockResponse));
+        return /** @type {any} */ mockRequest;
+      });
+    }
+
+    it("resolves with statusCode and data on success", async () => {
+      setupHttpsMock(() => {
+        process.nextTick(() => {
+          mockResponse.emit("data", '{"ok":true}');
+          mockResponse.emit("end");
+        });
+      });
+
+      const result = await makePostRequest("api.example.com", "/v1/test", { "Content-Type": "application/json" }, '{"query":"test"}');
+      expect(result.statusCode).toBe(200);
+      expect(result.data).toBe('{"ok":true}');
+    });
+
+    it("rejects on request error", async () => {
+      setupHttpsMock(null);
+      const networkError = new Error("connection refused");
+
+      const promise = makePostRequest("api.example.com", "/v1/test", {}, "{}");
+      process.nextTick(() => mockRequest.emit("error", networkError));
+
+      await expect(promise).rejects.toThrow("connection refused");
+    });
+
+    it("rejects with timeout error after 10 s", async () => {
+      setupHttpsMock(null);
+
+      const promise = makePostRequest("api.example.com", "/v1/test", {}, "{}");
+      // Trigger the timeout callback registered via req.setTimeout
+      process.nextTick(() => mockRequest._timeoutCb && mockRequest._timeoutCb());
+
+      await expect(promise).rejects.toThrow("Request timeout");
+      expect(mockRequest.destroy).toHaveBeenCalled();
     });
   });
 
@@ -210,6 +288,21 @@ describe("validate_secrets", () => {
       expect(report).toContain("GitHub REST API");
       expect(report).toContain("GitHub GraphQL API");
     });
+
+    it("generateMarkdownReport matches snapshot", () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2024-01-15T12:00:00.000Z"));
+      try {
+        const results = [
+          { secret: "GH_AW_GITHUB_TOKEN", test: "REST API", status: "failure", message: "401" },
+          { secret: "ANTHROPIC_API_KEY", test: "Anthropic", status: "not_set", message: "not set" },
+          { secret: "BRAVE_API_KEY", test: "Brave", status: "success", message: "OK" },
+        ];
+        expect(generateMarkdownReport(results)).toMatchSnapshot();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 
   describe("isForkRepository", () => {
@@ -244,19 +337,19 @@ describe("validate_secrets", () => {
 
   describe("statusEmoji", () => {
     it("should return ✅ for success", () => {
-      expect(statusEmoji("success")).toBe("✅");
+      expect(statusEmoji(Status.SUCCESS)).toBe("✅");
     });
 
     it("should return ❌ for failure", () => {
-      expect(statusEmoji("failure")).toBe("❌");
+      expect(statusEmoji(Status.FAILURE)).toBe("❌");
     });
 
     it("should return ⚪ for not_set", () => {
-      expect(statusEmoji("not_set")).toBe("⚪");
+      expect(statusEmoji(Status.NOT_SET)).toBe("⚪");
     });
 
     it("should return ⏭️ for skipped", () => {
-      expect(statusEmoji("skipped")).toBe("⏭️");
+      expect(statusEmoji(Status.SKIPPED)).toBe("⏭️");
     });
 
     it("should return ❓ for unknown status", () => {
