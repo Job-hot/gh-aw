@@ -1,136 +1,148 @@
 {
-"updated": "2026-06-08T21:50Z",
-"anomalies": [
-{
-"id": "anom-activation-guardrail-cjs-missing",
-"date": "2026-06-07",
-"wf": "TQS / PR Code Quality Reviewer / Design Decision Gate / Matt Pocock Skills Reviewer",
-"run": "27103538546,27103538547,27103538566,27103538567",
-"kind": "activation-guardrail-cjs-module-not-found",
-"persistence": 1,
-"escalation": "NEW-MEDIUM",
-"detail": "Activation job 'Cannot find module check_daily_effective_workflow_guardrail.cjs' on all 4 PR review workflows of branch copilot/fix-daily-credit-limit-test. Agent correctly SKIPPED but activation failure reds the run. Dev-confined to the feature PR developing the daily-credit guardrail; packaging gap that would hit main if merged unbundled. 4/8 fails this window.",
-"status": "ACTIVE"
-},
-{
-"id": "anom-sdk-minimatch-crash",
-"date": "2026-06-06",
-"wf": "6 copilot workflows",
-"run": "27069431407,27069682890,27069819378,27069914133,27070138441,27070604747",
-"kind": "sdk-driver-minimatch-module-not-found",
-"persistence": 1,
-"escalation": "DE-ESCALATED",
-"detail": "ABSENT 2026-06-07: not observed in any of 28 copilot runs. Was the single biggest driver 06-06 (6/16). Tentatively fixed; one more clean window to close.",
-"status": "RESOLVED-THIS-WINDOW"
-},
-{
-"id": "anom-sdk-toolperm-reescalate",
-"date": "2026-06-07",
-"wf": "Daily Safe Output Integrator",
-"run": "27101776716",
-"kind": "sdk-driver-tool-permission-lockout",
-"persistence": 3,
-"escalation": "PERSISTING-NARROWER",
-"detail": "RECUR 06-07 on 1 prod-main schedule (Safe Output Integrator): denies read(*_test.go)/shell(sed), 13 denials, 5-denial abort. Down from 3 wf on 06-06. sdk-driver path now 1/8 fails (minimatch gone).",
-"status": "ACTIVE"
-},
-{
-"id": "anom-detection-parse-fail",
-"date": "2026-06-06",
-"wf": "Design Decision Gate",
-"run": 27065879421,
-"kind": "detection-no-threat-result-parse-fail",
-"persistence": 1,
-"escalation": "NEW",
-"detail": "Agent OK (turns=3) but detection job reddened: ERR_PARSE no THREAT_DETECTION_RESULT despite continue-on-error=true.",
-"status": "ACTIVE"
-},
-{
-"id": "anom-ambient-back-under-cap",
-"date": "2026-06-06",
-"wf": "Daily Ambient Context Optimizer",
-"run": null,
-"kind": "effective-token-back-under-cap",
-"persistence": 4,
-"escalation": "DE-ESCALATED",
-"detail": "21.48M eff this window, comfortably UNDER the 25M cap (was 25.37M over-cap 06-05, 25.12M 429-fail 06-04). token-budget-429 quiet. Watch continues but trending safe.",
-"status": "WATCH"
-},
-{
-"id": "anom-model-config-effort",
-"date": "2026-06-07",
-"wf": "Daily Caveman Optimizer",
-"run": 27104658186,
-"kind": "model-config-effort-unsupported",
-"persistence": 3,
-"escalation": "PERSISTING-ESCALATE",
-"detail": "RECUR 3rd consecutive day: 400 'This model does not support the effort parameter' (run 27104658186, now retries 1/11) on prod main schedule; all retries exhausted, 0 tokens. Unfixed 3 days \u2014 static config, should be a one-line frontmatter fix.",
-"status": "ACTIVE"
-},
-{
-"id": "anom-model-config-notfound",
-"date": "2026-06-07",
-"wf": "Daily Cache Strategy Analyzer",
-"run": 27101492605,
-"kind": "model-config-model-not-found",
-"persistence": 3,
-"escalation": "PERSISTING-ESCALATE",
-"detail": "RECUR 3rd consecutive day: 404 'Model not found gpt-5-codex-alpha-2025-11-07' (run 27101492605) on prod main schedule. Model id ROTATED from adelie-alpha-2026-02-19 but STILL 404 \u2014 chasing a moving endpoint; needs a valid/aliased model id, not another pin.",
-"status": "ACTIVE"
-},
-{
-"id": "anom-ambient-over-cap-survived",
-"date": "2026-06-05",
-"wf": "Daily Ambient Context Optimizer",
-"run": null,
-"kind": "effective-token-over-cap-survived",
-"persistence": 3,
-"escalation": "WATCH",
-"detail": "25.37M effective tokens (OVER the 25M cap) yet SUCCEEDED. Top eff-tok of the window. token-budget-429 did not trigger but the workflow sits at the cap edge across multiple windows.",
-"status": "ACTIVE"
-},
-{
-"id": "anom-token-429-prod-main",
-"date": "2026-06-04",
-"wf": "Daily Ambient Context Optimizer",
-"run": 26977176731,
-"kind": "token-cap-exceeded",
-"persistence": 2,
-"escalation": "RESOLVED-THIS-WINDOW",
-"detail": "Was 25.12M/25M 429 failure on 06-04; on 06-05 the same workflow ran 25.37M and succeeded. Folded into anom-ambient-over-cap-survived.",
-"status": "RESOLVED"
-},
-{
-"id": "anom-sdk-tool-lockout",
-"date": "2026-06-04",
-"wf": "PR Code Quality Reviewer",
-"run": 26968772279,
-"kind": "sdk-tool-permission-lockout",
-"persistence": 1,
-"escalation": "RESOLVED-THIS-WINDOW",
-"detail": "06-04 all-tools-denied -> 600s idle timeout. 06-05: PR Code Quality Reviewer 2/2 success. Not observed.",
-"status": "RESOLVED"
-},
-{
-"id": "anom-safeoutput-targetstar",
-"date": "2026-06-04",
-"wf": "Contribution Check / PR Sous Chef",
-"run": "26980232370,26979726834",
-"kind": "safe-output-target-star-no-itemnumber",
-"persistence": 3,
-"escalation": "RESOLVED-THIS-WINDOW",
-"detail": "06-04 reddened 2 prod wf. 06-05: PR Sous Chef 5/5 + Contribution Check 1/1 success. Not observed.",
-"status": "RESOLVED"
-},
-{
-"id": "anom-pat-not-supported-400-incident",
-"date": "2026-06-08",
-"wf": "~15 copilot workflows (prod-main + PR + smoke)",
-"run": "27162345496 (first), through 27168543679",
-"kind": "copilot-pat-not-supported-400",
-"persistence": 1,
-"escalation": "NEW-CRITICAL-ACTIVE",
-"detail": "ACTIVE production incident. Onset 2026-06-08T19:40:19Z, still firing 21:37Z. Copilot harness+sdk token-check POSTs PAT to endpoint that rejects PATs -> '400 Personal Access Tokens are not supported for this endpoint', exit1, turns=0. Dropped fleet success 88% (pre-19:40) -> 58% (post). prod-main hits: Daily Ambient Context Optimizer, Contribution Check, Daily Project Performance Summary. In-flight fix branch pelikhan/fix-pat-400-retry observed."
-}
-]
+ "updated": "2026-06-09T21:55Z",
+ "anomalies": [
+  {
+   "id": "anom-activation-guardrail-cjs-missing",
+   "date": "2026-06-07",
+   "wf": "TQS / PR Code Quality Reviewer / Design Decision Gate / Matt Pocock Skills Reviewer",
+   "run": "27103538546,27103538547,27103538566,27103538567",
+   "kind": "activation-guardrail-cjs-module-not-found",
+   "persistence": 1,
+   "escalation": "NEW-MEDIUM",
+   "detail": "Activation job 'Cannot find module check_daily_effective_workflow_guardrail.cjs' on all 4 PR review workflows of branch copilot/fix-daily-credit-limit-test. Agent correctly SKIPPED but activation failure reds the run. Dev-confined to the feature PR developing the daily-credit guardrail; packaging gap that would hit main if merged unbundled. 4/8 fails this window.",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-sdk-minimatch-crash",
+   "date": "2026-06-06",
+   "wf": "6 copilot workflows",
+   "run": "27069431407,27069682890,27069819378,27069914133,27070138441,27070604747",
+   "kind": "sdk-driver-minimatch-module-not-found",
+   "persistence": 1,
+   "escalation": "DE-ESCALATED",
+   "detail": "ABSENT 2026-06-07: not observed in any of 28 copilot runs. Was the single biggest driver 06-06 (6/16). Tentatively fixed; one more clean window to close.",
+   "status": "RESOLVED-THIS-WINDOW"
+  },
+  {
+   "id": "anom-sdk-toolperm-reescalate",
+   "date": "2026-06-07",
+   "wf": "Daily Safe Output Integrator",
+   "run": "27101776716",
+   "kind": "sdk-driver-tool-permission-lockout",
+   "persistence": 3,
+   "escalation": "PERSISTING-NARROWER",
+   "detail": "RECUR 06-07 on 1 prod-main schedule (Safe Output Integrator): denies read(*_test.go)/shell(sed), 13 denials, 5-denial abort. Down from 3 wf on 06-06. sdk-driver path now 1/8 fails (minimatch gone).",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-detection-parse-fail",
+   "date": "2026-06-06",
+   "wf": "Design Decision Gate",
+   "run": 27065879421,
+   "kind": "detection-no-threat-result-parse-fail",
+   "persistence": 1,
+   "escalation": "NEW",
+   "detail": "Agent OK (turns=3) but detection job reddened: ERR_PARSE no THREAT_DETECTION_RESULT despite continue-on-error=true.",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-ambient-back-under-cap",
+   "date": "2026-06-06",
+   "wf": "Daily Ambient Context Optimizer",
+   "run": null,
+   "kind": "effective-token-back-under-cap",
+   "persistence": 4,
+   "escalation": "DE-ESCALATED",
+   "detail": "21.48M eff this window, comfortably UNDER the 25M cap (was 25.37M over-cap 06-05, 25.12M 429-fail 06-04). token-budget-429 quiet. Watch continues but trending safe.",
+   "status": "WATCH"
+  },
+  {
+   "id": "anom-model-config-effort",
+   "date": "2026-06-07",
+   "wf": "Daily Caveman Optimizer",
+   "run": 27104658186,
+   "kind": "model-config-effort-unsupported",
+   "persistence": 3,
+   "escalation": "PERSISTING-ESCALATE",
+   "detail": "RECUR 3rd consecutive day: 400 'This model does not support the effort parameter' (run 27104658186, now retries 1/11) on prod main schedule; all retries exhausted, 0 tokens. Unfixed 3 days \u2014 static config, should be a one-line frontmatter fix.",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-model-config-notfound",
+   "date": "2026-06-07",
+   "wf": "Daily Cache Strategy Analyzer",
+   "run": 27101492605,
+   "kind": "model-config-model-not-found",
+   "persistence": 3,
+   "escalation": "PERSISTING-ESCALATE",
+   "detail": "RECUR 3rd consecutive day: 404 'Model not found gpt-5-codex-alpha-2025-11-07' (run 27101492605) on prod main schedule. Model id ROTATED from adelie-alpha-2026-02-19 but STILL 404 \u2014 chasing a moving endpoint; needs a valid/aliased model id, not another pin.",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-ambient-over-cap-survived",
+   "date": "2026-06-05",
+   "wf": "Daily Ambient Context Optimizer",
+   "run": null,
+   "kind": "effective-token-over-cap-survived",
+   "persistence": 3,
+   "escalation": "WATCH",
+   "detail": "25.37M effective tokens (OVER the 25M cap) yet SUCCEEDED. Top eff-tok of the window. token-budget-429 did not trigger but the workflow sits at the cap edge across multiple windows.",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-token-429-prod-main",
+   "date": "2026-06-04",
+   "wf": "Daily Ambient Context Optimizer",
+   "run": 26977176731,
+   "kind": "token-cap-exceeded",
+   "persistence": 2,
+   "escalation": "RESOLVED-THIS-WINDOW",
+   "detail": "Was 25.12M/25M 429 failure on 06-04; on 06-05 the same workflow ran 25.37M and succeeded. Folded into anom-ambient-over-cap-survived.",
+   "status": "RESOLVED"
+  },
+  {
+   "id": "anom-sdk-tool-lockout",
+   "date": "2026-06-04",
+   "wf": "PR Code Quality Reviewer",
+   "run": 26968772279,
+   "kind": "sdk-tool-permission-lockout",
+   "persistence": 1,
+   "escalation": "RESOLVED-THIS-WINDOW",
+   "detail": "06-04 all-tools-denied -> 600s idle timeout. 06-05: PR Code Quality Reviewer 2/2 success. Not observed.",
+   "status": "RESOLVED"
+  },
+  {
+   "id": "anom-safeoutput-targetstar",
+   "date": "2026-06-04",
+   "wf": "Contribution Check / PR Sous Chef",
+   "run": "26980232370,26979726834",
+   "kind": "safe-output-target-star-no-itemnumber",
+   "persistence": 3,
+   "escalation": "RESOLVED-THIS-WINDOW",
+   "detail": "06-04 reddened 2 prod wf. 06-05: PR Sous Chef 5/5 + Contribution Check 1/1 success. Not observed.",
+   "status": "RESOLVED"
+  },
+  {
+   "id": "anom-pat-not-supported-400-incident",
+   "date": "2026-06-08",
+   "wf": "~15 copilot workflows (prod-main + PR + smoke)",
+   "run": "27162345496 (first), through 27168543679",
+   "kind": "copilot-pat-not-supported-400",
+   "persistence": 1,
+   "escalation": "NEW-CRITICAL-ACTIVE",
+   "detail": "ACTIVE production incident. Onset 2026-06-08T19:40:19Z, still firing 21:37Z. Copilot harness+sdk token-check POSTs PAT to endpoint that rejects PATs -> '400 Personal Access Tokens are not supported for this endpoint', exit1, turns=0. Dropped fleet success 88% (pre-19:40) -> 58% (post). prod-main hits: Daily Ambient Context Optimizer, Contribution Check, Daily Project Performance Summary. In-flight fix branch pelikhan/fix-pat-400-retry observed.",
+   "state": "RESOLVED",
+   "last_seen": "2026-06-09",
+   "note": "RESOLVED 2026-06-09: signature still appears in 4 runs but all succeed on attempt 1 (retry/tolerance fix landed). Escalation cleared."
+  },
+  {
+   "id": "anom-ai-credits-cap-429",
+   "first_seen": "2026-06-09",
+   "last_seen": "2026-06-09",
+   "persistence": 1,
+   "state": "new",
+   "severity": "high",
+   "note": "Daily Ambient Context Optimizer prod-main hit account daily AI-credits cap 429 (1026.78/1000) at turn 57, 3.0M tokens wasted. Watch whether this recurs as heavy aggregators routinely cross the ~1000-credit cap."
+  }
+ ]
 }
