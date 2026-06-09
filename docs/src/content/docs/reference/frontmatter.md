@@ -467,6 +467,16 @@ check-for-updates: true
 
 When `true` (default), the activation job verifies the compiled version is not blocked and meets the minimum supported version. Set to `false` to disable this check (not allowed in strict mode).
 
+### `disable-model-invocation`
+
+Controls whether the custom agent file produced by the workflow can be auto-invoked by a host model. When set to `true`, downstream tooling treats the agent as documentation-only and will not call into it.
+
+```yaml wrap
+disable-model-invocation: true
+```
+
+Use this on skill or sub-agent files that should be loaded as reference material rather than executed (for example, `.github/aw/*.md` skill files). The `gh aw fix --write` codemod `infer-to-disable-model-invocation` migrates the deprecated `infer:` field to this one, inverting the boolean.
+
 ### Feature Flags (`features:`)
 
 Enable experimental or optional compiler and runtime behaviors as key-value pairs. See [Feature Flags](/gh-aw/reference/feature-flags/) for complete documentation.
