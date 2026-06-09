@@ -148,6 +148,15 @@ func BuildDefaultMaxTurnsExpression() string {
 	return fmt.Sprintf("${{ vars.%s || '' }}", DefaultMaxTurns)
 }
 
+// BuildDefaultMaxDailyAICreditsExpression builds a vars expression that resolves
+// the daily AI credits guardrail at runtime from the
+// GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS GitHub variable before falling back to the
+// compiler-resolved default.
+func BuildDefaultMaxDailyAICreditsExpression(fallback string) string {
+	escaped := strings.ReplaceAll(fallback, "'", "''")
+	return fmt.Sprintf("${{ vars.%s || '%s' }}", DefaultMaxDailyAICredits, escaped)
+}
+
 // BuildModelOverrideExpression builds a vars expression with primary model var, enterprise
 // default model var, and built-in fallback model.
 func BuildModelOverrideExpression(primaryVar, enterpriseDefaultVar, builtinFallback string) string {

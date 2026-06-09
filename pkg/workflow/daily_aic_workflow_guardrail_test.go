@@ -34,7 +34,7 @@ func TestResolveMaxDailyAIC(t *testing.T) {
 	t.Run("uses enterprise default when unset", func(t *testing.T) {
 		t.Setenv(compilerenv.DefaultMaxDailyAICredits, "2222")
 		got := resolveMaxDailyAIC(map[string]any{}, "")
-		if got == nil || *got != "2222" {
+		if got == nil || *got != "${{ vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS || '2222' }}" {
 			t.Fatalf("expected enterprise default, got %v", got)
 		}
 	})
@@ -42,7 +42,7 @@ func TestResolveMaxDailyAIC(t *testing.T) {
 	t.Run("uses built-in 5k default when no frontmatter and no env vars", func(t *testing.T) {
 		t.Setenv(compilerenv.DefaultMaxDailyAICredits, "")
 		got := resolveMaxDailyAIC(map[string]any{}, "")
-		if got == nil || *got != "5000" {
+		if got == nil || *got != "${{ vars.GH_AW_DEFAULT_MAX_DAILY_AI_CREDITS || '5000' }}" {
 			t.Fatalf("expected built-in 5k default, got %v", got)
 		}
 	})
