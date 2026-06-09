@@ -70,6 +70,14 @@ func resolveMaxDailyAICFromRaw(raw any) (*string, bool) {
 	return nil, false
 }
 
+func resolveDefaultMaxDailyAIC() *string {
+	defaultValue := compilerenv.ResolveDefaultMaxDailyAICredits(constants.DefaultMaxDailyAICredits)
+	if defaultValue == "-1" {
+		return nil
+	}
+	return parseMaxDailyAICValue(compilerenv.BuildDefaultMaxDailyAICreditsExpression(defaultValue))
+}
+
 func resolveMaxDailyAIC(frontmatter map[string]any, importedJSON string) *string {
 	if value, found := resolveMaxDailyAICFromRaw(frontmatter[maxDailyAICreditsField]); found {
 		dailyAICWorkflowLog.Print("Resolved max-daily-ai-credits from workflow frontmatter")
@@ -78,19 +86,13 @@ func resolveMaxDailyAIC(frontmatter map[string]any, importedJSON string) *string
 	if importedJSON == "" {
 		defaultValue := compilerenv.ResolveDefaultMaxDailyAICredits(constants.DefaultMaxDailyAICredits)
 		dailyAICWorkflowLog.Printf("No frontmatter value and no imported config; using default max-daily-ai-credits=%s", defaultValue)
-		if defaultValue == "-1" {
-			return nil
-		}
-		return parseMaxDailyAICValue(compilerenv.BuildDefaultMaxDailyAICreditsExpression(defaultValue))
+		return resolveDefaultMaxDailyAIC()
 	}
 	var imported any
 	if err := json.Unmarshal([]byte(importedJSON), &imported); err != nil {
 		defaultValue := compilerenv.ResolveDefaultMaxDailyAICredits(constants.DefaultMaxDailyAICredits)
 		dailyAICWorkflowLog.Printf("Failed to unmarshal imported max-daily-ai-credits JSON, using default max-daily-ai-credits=%s: %v", defaultValue, err)
-		if defaultValue == "-1" {
-			return nil
-		}
-		return parseMaxDailyAICValue(compilerenv.BuildDefaultMaxDailyAICreditsExpression(defaultValue))
+		return resolveDefaultMaxDailyAIC()
 	}
 	if value, found := resolveMaxDailyAICFromRaw(imported); found {
 		dailyAICWorkflowLog.Print("Resolved max-daily-ai-credits from imported config")
@@ -98,10 +100,7 @@ func resolveMaxDailyAIC(frontmatter map[string]any, importedJSON string) *string
 	}
 	defaultValue := compilerenv.ResolveDefaultMaxDailyAICredits(constants.DefaultMaxDailyAICredits)
 	dailyAICWorkflowLog.Printf("Imported config did not provide a usable value; using default max-daily-ai-credits=%s", defaultValue)
-	if defaultValue == "-1" {
-		return nil
-	}
-	return parseMaxDailyAICValue(compilerenv.BuildDefaultMaxDailyAICreditsExpression(defaultValue))
+	return resolveDefaultMaxDailyAIC()
 }
 
 // hasMaxDailyAICGuardrail reports whether compiler should emit the
