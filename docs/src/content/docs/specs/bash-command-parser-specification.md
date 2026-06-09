@@ -304,6 +304,10 @@ Conforming projects SHOULD apply all of the following:
 
 This parser is not a shell sandbox and MUST NOT be treated as proof of command safety. Consumers MUST keep permission checks default-deny when command identification fails. Ambiguous/unparseable input SHOULD result in deny behavior at integration layer.
 
+**R-SEC-001**: When parsing fails to extract a command name or returns an ambiguous result, integration consumers **MUST** apply deny-by-default behavior and **MUST NOT** allow the command based on partial parsing.
+
+**R-SEC-002**: Conformance test suites **MUST** include a test that asserts deny behavior on empty extraction results from §6.1 vectors (including malformed or ambiguity-inducing inputs).
+
 ---
 
 ## 12. References
@@ -316,3 +320,9 @@ This parser is not a shell sandbox and MUST NOT be treated as proof of command s
 
 - Copilot SDK Shell Permission Integration (implementation-defined binding)
 - Repository Conformance Vectors (implementation-defined location)
+
+### 12.3 Change Management
+
+- **Ownership**: The specification editors (GitHub Agentic Workflows Team) own normative updates for this document.
+- **PR coupling rule**: Any implementation change affecting parser behavior or integration semantics MUST include a linked specification PR in the same change or within 3 business days. The 3-business-day bound applies to opening the linked spec PR; merge may occur later after review, but releases MUST NOT ship parser behavior changes until the linked spec PR is merged.
+- **Required reviewers**: At least one workflow/compiler maintainer and one JavaScript runtime maintainer MUST review normative specification changes.

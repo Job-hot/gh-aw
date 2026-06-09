@@ -218,6 +218,16 @@ Catalog refresh processes SHOULD use normalized upstream model inventories and S
 
 Catalog updates MUST preserve JSON validity and MUST maintain backward-safe handling for historical model IDs that remain in the catalog but are absent from current live inventories.
 
+### 5.4 Freshness Norms
+
+To reduce pricing drift risk, catalog mirrors MUST satisfy the following freshness requirements:
+
+- `pkg/cli/data/models.json` MUST be refreshed from the canonical pricing source at least once every 30 days.
+- `actions/setup/js/models.json` MUST be synchronized from the same canonical dataset in the same pull request as `pkg/cli/data/models.json`.
+- If either catalog exceeds 30 days of age without refresh, release publication MUST be blocked until refresh is completed.
+
+Implementations SHOULD enforce this with a CI freshness gate that compares file modification age (or embedded catalog metadata timestamp) against the 30-day maximum and fails release workflows when the bound is exceeded.
+
 ---
 
 ## 6. Copilot Billing Reference Requirements
@@ -258,6 +268,7 @@ A conformance test suite MUST include at least the following test cases:
 - **T-AIC-006**: Verify provider key normalization and `github` to `github-copilot` mapping behavior.
 - **T-AIC-007**: Verify catalog mirror consistency between CLI and setup runtime paths.
 - **T-AIC-008**: Verify reporting outputs include per-run AIC values.
+- **T-AIC-009**: Verify stale catalog detection fails conformance when either mirror is older than 30 days.
 
 ### 8.2 Compliance Checklist
 
@@ -271,6 +282,7 @@ A conformance test suite MUST include at least the following test cases:
 | Provider/model normalization behavior | T-AIC-006 | 2 | Required |
 | Mirrored catalog consistency | T-AIC-007 | 3 | Required |
 | AIC reporting visibility | T-AIC-008 | 3 | Required |
+| Catalog freshness and staleness blocking | T-AIC-009 | 3 | Required |
 
 ---
 

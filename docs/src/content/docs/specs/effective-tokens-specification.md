@@ -32,6 +32,54 @@ This section describes the status of this document at the time of publication. T
 
 This document is governed by the GitHub Agentic Workflows project specifications process.
 
+### ET → AIC Migration Guide
+
+Effective Tokens (ET) output is retained for backward compatibility, but new integrations SHOULD read AI Credits (AIC) as the authoritative cost metric. The following mapping defines the migration path from ET fields to AIC equivalents.
+
+| ET output field | ET meaning | AIC equivalent | Migration guidance |
+|---|---|---|---|
+| `summary.effective_tokens` | Weighted usage proxy | `summary.ai_credits` | Replace ET-driven budget thresholds with AIC thresholds (`1 AIC = $0.01 USD`). |
+| `summary.total_raw_tokens` | Aggregate raw tokens | `summary.total_raw_tokens` (unchanged) | Keep for diagnostics only; do not use as billing proxy. |
+| `summary.total_invocations` | Invocation count | `summary.total_invocations` (unchanged) | Continue to use for activity volume and denominator metrics. |
+| `summary.by_model[].effective_tokens` | Per-model weighted proxy | `summary.by_model[].ai_credits` | Update dashboards to rank or alert by AIC cost contribution per model. |
+| `otel.llm.token.effective_total` | ET OTel metric | `otel.llm.usage.cost.ai_credits` | Emit AIC attribute as canonical metric; ET MAY be emitted only during migration. |
+| `audit/footer ET total` | Human-readable ET total | `audit/footer AIC total` | Prefer AIC in summary/footer displays and report ET only as legacy context. |
+
+Example ET-era summary:
+
+```json
+{
+  "summary": {
+    "effective_tokens": 15420,
+    "total_raw_tokens": 11200,
+    "total_invocations": 14
+  }
+}
+```
+
+Example AIC-era summary:
+
+```json
+{
+  "summary": {
+    "ai_credits": 7.84,
+    "total_raw_tokens": 11200,
+    "total_invocations": 14
+  }
+}
+```
+
+### Deprecation Sunset Plan
+
+The ET implementation remains available only for a bounded migration window. Removal milestones are:
+
+| Milestone | Target version | Target date | File-level action |
+|---|---|---|---|
+| Legacy-warning hardening | v1.8.0 | 2026-07-15 | `pkg/cli/effective_tokens.go` emits explicit deprecation warnings in ET-only paths. |
+| Dual-metric default transition | v1.9.0 | 2026-08-15 | `pkg/cli/audit_report.go` defaults summary display to AIC-first, ET optional. |
+| Legacy render-path freeze | v1.10.0 | 2026-09-15 | `pkg/cli/audit_report_render_tools.go` receives only security/bugfix changes for ET views. |
+| ET implementation removal | v2.0.0 | 2026-10-31 | Remove ET computation/reporting code paths in `pkg/cli/effective_tokens.go`, `pkg/cli/audit_report.go`, and `pkg/cli/audit_report_render_tools.go` after migration completion. |
+
 ## Table of Contents
 
 1. [Introduction](#1-introduction)

@@ -36,7 +36,8 @@ This document is governed by the GitHub Agentic Workflows project specifications
 8. [Compliance Testing](#8-compliance-testing)
 9. [Appendices](#9-appendices)
 10. [References](#10-references)
-11. [Change Log](#11-change-log)
+11. [Sync Notes](#sync-notes)
+12. [Change Log](#12-change-log)
 
 ---
 
@@ -114,7 +115,9 @@ A conforming implementation MUST execute the following sequence:
 
 ### 3.3 Event Persistence
 
-A complete implementation (Level 3) SHOULD serialize non-ephemeral session events to a JSON Lines stream compatible with downstream timeline rendering.
+A complete implementation (Level 3) MUST serialize non-ephemeral session events to a JSON Lines stream compatible with downstream timeline rendering.
+
+This requirement is strengthened from SHOULD to MUST to ensure cross-run auditability and deterministic timeline reconstruction for complete-conformance implementations. Existing Level 3 implementations that do not yet persist non-ephemeral events MUST add this behavior before claiming Level 3 conformance in a release.
 
 ### 3.4 Harness Connection Token Flow
 
@@ -363,7 +366,7 @@ The implementation MUST perform best-effort cleanup of event streams, session ha
 
 ### 8.1 Test Suite Requirements
 
-Implementations MUST provide automated tests for all Level 1 and Level 2 requirements.
+Implementations MUST provide automated tests for all Level 1 and Level 2 requirements. Implementations claiming Level 3 conformance MUST also provide automated tests for Level 3 logging requirements.
 
 #### 8.1.1 Configuration Tests
 
@@ -410,7 +413,7 @@ Implementations MUST provide automated tests for all Level 1 and Level 2 require
 | Scoped MCP/shell enforcement                  | T-CSD-108..109       | 2     | Required    |
 | Unknown-kind rejection                        | T-CSD-110            | 2     | Required    |
 | Permission denial diagnostics                 | T-CSD-111, T-CSD-202 | 2     | Required    |
-| Lifecycle logging coverage                    | T-CSD-201            | 3     | Recommended |
+| Lifecycle logging coverage                    | T-CSD-201            | 3     | Required    |
 
 ---
 
@@ -462,7 +465,21 @@ A conforming implementation SHOULD:
 
 ---
 
-## 11. Change Log
+## 11. Sync Notes
+
+This section maps normative sections §3–§7 to implementation files for the TypeScript sample driver and the Go harness/runtime integration.
+
+| Spec section | Scope | Primary implementation file(s) |
+|---|---|---|
+| §3 Driver Execution Model | Session lifecycle and SDK driver launch flow | `.github/drivers/copilot_sdk_driver_sample_typescript.ts`, `pkg/workflow/copilot_engine_execution.go`, `pkg/workflow/copilot_engine.go` |
+| §4 Configuration and Environment Variables | Required env var contract (`GH_AW_PROMPT`, `COPILOT_SDK_URI`, `COPILOT_CONNECTION_TOKEN`, timeout/log level) | `.github/drivers/copilot_sdk_driver_sample_typescript.ts`, `actions/setup/js/copilot_sdk_driver.cjs`, `pkg/workflow/copilot_engine_execution.go` |
+| §5 Permission Checking Model | Permission handler resolution and scoped allow behavior | `.github/drivers/copilot_sdk_driver_sample_typescript.ts`, `actions/setup/js/copilot_sdk_driver.cjs`, `pkg/workflow/copilot_engine_execution.go` |
+| §6 Logging Requirements | Lifecycle and denial logging expectations (including Level 3 complete behavior) | `.github/drivers/copilot_sdk_driver_sample_typescript.ts`, `actions/setup/js/copilot_sdk_driver.cjs`, `pkg/workflow/copilot_engine_execution.go` |
+| §7 Error Handling and Exit Behavior | Non-zero exit behavior, result mapping, cleanup | `.github/drivers/copilot_sdk_driver_sample_typescript.ts`, `actions/setup/js/copilot_sdk_driver.cjs`, `pkg/workflow/copilot_engine_execution.go` |
+
+---
+
+## 12. Change Log
 
 ### Version 1.0.2 (Draft Specification)
 
