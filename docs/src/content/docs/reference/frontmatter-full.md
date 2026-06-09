@@ -1408,6 +1408,11 @@ permissions:
   # (optional)
   checks: "read"
 
+  # Permission level for Copilot requests (write/none only). Set to write to allow
+  # Copilot inference via the GitHub Actions token.
+  # (optional)
+  copilot-requests: "write"
+
   # Permission for repository contents (read: view files, write: modify
   # files/branches, none: no access)
   # (optional)
@@ -1557,8 +1562,7 @@ runs-on-slim: "example-value"
 # Format 1: integer
 timeout-minutes: 1
 
-# Format 2: GitHub Actions expression that resolves to an integer (e.g. '${{
-# inputs.timeout }}')
+# Format 2: GitHub Actions expression that resolves to an integer at runtime
 timeout-minutes: "example-value"
 
 # Concurrency control to limit concurrent workflow runs (GitHub Actions standard
@@ -1633,18 +1637,6 @@ env: "example-value"
 features:
   {}
 
-# Named model alias definitions with ordered fallback lists, resolved recursively
-# by AWF. Each key is an alias name (use empty string "" for the default policy).
-# Each value is an ordered list of vendor/modelid glob patterns or other alias
-# names to try in sequence. Entries defined here are merged on top of the builtin
-# aliases; the main workflow file always wins over imported aliases. Builtin
-# aliases include: sonnet, sonnet-6x, haiku, opus, gpt-5, gpt-5-mini, gpt-5-codex,
-# gemini-flash, gemini-pro, small, mini, large, auto, any, agent, copilot, claude,
-# codex, gemini.
-# (optional)
-models:
-  {}
-
 # A/B testing experiments. Each key is an experiment name; the value is either an
 # array of two or more variant strings (bare-array form) or an object with a
 # 'variants' field plus optional metadata fields (description, metric, weight,
@@ -1664,16 +1656,11 @@ experiments:
   # Storage backend for experiment state. 'repo' (default) persists state to a git
   # branch named 'experiments/{sanitizedWorkflowID}' (workflow ID lowercased with
   # hyphens removed, e.g. 'my-workflow' -> 'experiments/myworkflow') for durability
-  # across cache evictions. 'cache' uses GitHub Actions cache (legacy behavior).
+  # across cache evictions. 'cache' uses GitHub Actions cache (legacy behaviour).
   # Repo storage is recommended because experiment data is valuable and more durable
   # than cache.
   # (optional)
   storage: "cache"
-
-# Controls whether the custom agent should disable model invocation. When set to
-# true, the agent will not make additional model calls.
-# (optional)
-disable-model-invocation: true
 
 # Secret values passed to workflow execution. Secrets can be defined as simple
 # strings (GitHub Actions expressions) or objects with 'value' and 'description'
@@ -2089,18 +2076,6 @@ engine:
   # (optional)
   permission-mode: "auto"
 
-  # Maximum number of chat iterations per run. Helps prevent runaway loops and
-  # control costs. Has sensible defaults and can typically be omitted. Note: Only
-  # supported by the claude engine.
-  # (optional)
-  # Accepted formats:
-
-  # Format 1: Maximum number of chat iterations per run as an integer value
-  max-turns: 1
-
-  # Format 2: Maximum number of chat iterations per run as a string value
-  max-turns: "example-value"
-
   # Maximum number of continuations for multi-run autopilot mode. Default is 1
   # (single run, no autopilot). Values greater than 1 enable --autopilot mode for
   # the copilot engine with --max-autopilot-continues set to this value. Note: Only
@@ -2226,7 +2201,7 @@ engine:
   # (optional)
   api-target: "example-value"
 
-  # Custom model token weights for legacy Effective Tokens (ET) computation. Overrides or extends
+  # Custom model token weights for effective token computation. Overrides or extends
   # the built-in model multipliers from model_multipliers.json. Useful for custom
   # models or adjusted cost ratios.
   # (optional)
@@ -2303,9 +2278,11 @@ engine:
   # (optional)
   copilot-sdk: true
 
-  # Custom Node.js Copilot SDK driver script filename (copilot engine only). This is
-  # only used when copilot-sdk: true is set and must be a safe basename ending with
-  # .js, .cjs, or .mjs.
+  # Custom Copilot SDK driver script or command (copilot engine only). Setting this
+  # field implies `copilot-sdk: true`. Accepts a relative path from the workspace
+  # root with a supported language extension (.js, .cjs, .mjs, .py, .ts, .mts, .rb),
+  # e.g. `.github/drivers/my_driver.py`, or a bare command name without an extension
+  # for an arbitrary executable in PATH.
   # (optional)
   copilot-sdk-driver: "example-value"
 
@@ -2529,42 +2506,57 @@ engine:
   # the default engine when engine.id is not specified.
   model: "example-value"
 
-# Explicit AI Credits budget control for firewall cost enforcement. Omit this
-# field to leave AIC budget protection unset. Set to -1 to disable budget
-# enforcement.
+# AWF turn cap (`max_turns`) applied consistently across all agentic engines.
+# Supports GitHub Actions expressions (e.g. '${{ inputs.max-turns }}') for
+# reusable workflow_call workflows.
 # (optional)
 # Accepted formats:
 
-# Format 1: Maximum AI Credits (AIC) budget for AWF API proxy enforcement.
-max-ai-credits: 1
-
-# Format 2: Maximum AI Credits (AIC) budget as a numeric string with optional
-# K/M suffix or GitHub Actions expression.
-max-ai-credits: "example-value"
-
-# Explicit daily AI Credits guardrail per workflow across the previous 24-hour
-# window. Omit to disable, or set to -1 to explicitly disable.
-# (optional)
-# Accepted formats:
-
-# Format 1: Maximum daily AI Credits (AIC) budget.
-max-daily-ai-credits: 1
-
-# Format 2: Maximum daily AI Credits (AIC) budget as a numeric string with
-# optional K/M suffix or GitHub Actions expression.
-max-daily-ai-credits: "example-value"
-
-# DEPRECATED: Legacy alias for AWF invocation cap (`apiProxy.maxRuns`).
-# Use `max-turns` instead. Defaults to 500 when omitted.
-# (optional)
-# Accepted formats:
-
-# Format 1: Maximum number of LLM invocations allowed per run.
+# Format 1: integer
 max-turns: 1
 
-# Format 2: Maximum number of LLM invocations allowed per run as a numeric string
-# or GitHub Actions expression.
+# Format 2: GitHub Actions expression that resolves to an integer at runtime
 max-turns: "example-value"
+
+# Copilot SDK safeguard threshold for repeated tool denials before stopping
+# inference. Defaults to 5 when omitted. Supports GitHub Actions expressions (for
+# example, '${{ inputs.max-tool-denials }}'). Supported only with engine 'copilot'
+# and engine.copilot-sdk: true.
+# (optional)
+# Accepted formats:
+
+# Format 1: integer
+max-tool-denials: 1
+
+# Format 2: GitHub Actions expression that resolves to an integer at runtime
+max-tool-denials: "example-value"
+
+# Per-run AI Credits budget control for firewall cost enforcement. Enabled by
+# default at 1000 (1k) when omitted. Set to -1 to disable both budget enforcement
+# and token steering. Supports GitHub Actions expressions.
+# (optional)
+# Accepted formats:
+
+# Format 1: Configuration object
+
+# Format 2: integer
+max-ai-credits: 1
+
+# Format 3: string
+max-ai-credits: "example-value"
+
+# 24-hour AI Credits guardrail for runs triggered by the same user. Omit the field
+# to leave the guardrail disabled. Supports GitHub Actions expressions.
+# (optional)
+# Accepted formats:
+
+# Format 1: Configuration object
+
+# Format 2: integer
+max-daily-ai-credits: 1
+
+# Format 3: string
+max-daily-ai-credits: "example-value"
 
 # MCP server definitions
 # (optional)
@@ -3166,6 +3158,24 @@ tools:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Format 2: Enable (true) or disable (false) comment-memory.
   comment-memory: true
 
@@ -3505,6 +3515,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Format 2: Enable issue creation with default configuration
   create-issue: null
 
@@ -3556,6 +3584,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Format 2: Enable agent session creation with default configuration
   create-agent-task: null
 
@@ -3606,6 +3652,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable agent session creation with default configuration
   create-agent-session: null
@@ -3719,6 +3783,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Format 2: Enable project management with default configuration (max=10)
   update-project: null
 
@@ -3813,6 +3895,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Format 2: Enable project creation with default configuration (max=1)
   create-project: null
 
@@ -3857,6 +3957,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable project status updates with default configuration (max=1)
   create-project-status-update: null
@@ -3984,6 +4102,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Format 2: Enable discussion creation with default configuration
   create-discussion: null
 
@@ -4029,10 +4165,34 @@ safe-outputs:
     # (optional)
     target-repo: "example-value"
 
+    # List of additional repositories in format 'owner/repo' that discussions can be
+    # closed in. The target repository is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
+
     # If true, emit step summary messages instead of making GitHub API calls for this
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable discussion closing with default configuration
   close-discussion: null
@@ -4085,6 +4245,12 @@ safe-outputs:
     # (optional)
     target-repo: "example-value"
 
+    # List of additional repositories in format 'owner/repo' that discussions can be
+    # updated in. The target repository is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
+
     # Controls whether AI-generated footer is added when updating the discussion body.
     # When false, the visible footer content is omitted. Defaults to true. Only
     # applies when 'body' is enabled.
@@ -4095,6 +4261,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
     # GitHub token to use for this specific output type. Overrides global github-token
     # if specified.
@@ -4155,6 +4339,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
     # Reason for closing the issue (default: completed)
     # (optional)
     state-reason: "completed"
@@ -4200,6 +4402,12 @@ safe-outputs:
     # (optional)
     target-repo: "example-value"
 
+    # List of additional repositories in format 'owner/repo' that pull requests can be
+    # closed in. The target repository is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
+
     # GitHub token to use for this specific output type. Overrides global github-token
     # if specified.
     # (optional)
@@ -4209,6 +4417,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable pull request closing with default configuration
   close-pull-request: null
@@ -4251,6 +4477,12 @@ safe-outputs:
     # (optional)
     target-repo: "example-value"
 
+    # List of additional repositories in format 'owner/repo' that pull requests can be
+    # marked as ready in. The target repository is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
+
     # GitHub token to use for this specific output type. Overrides global github-token
     # if specified.
     # (optional)
@@ -4260,6 +4492,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable marking pull requests as ready for review with default
   # configuration
@@ -4314,16 +4564,33 @@ safe-outputs:
 
     # When true, minimizes/hides all previous comments from the same agentic workflow
     # (identified by tracker-id) before creating the new comment. Supports literal
-    # boolean or GitHub Actions expression (e.g. '${{ inputs.hide-older-comments }}').
-    # Default: false.
+    # boolean, GitHub Actions expression (e.g. '${{ inputs.hide-older-comments }}'),
+    # or object form for advanced matching. Default: false.
     # (optional)
     # Accepted formats:
 
-    # Format 1: boolean
-    hide-older-comments: true
+    # Format 1: A boolean value that may also be specified as a GitHub Actions
+    # expression string that resolves to a boolean at runtime (e.g. '${{
+    # inputs.my-flag }}').
 
-    # Format 2: GitHub Actions expression that resolves to a boolean at runtime
-    hide-older-comments: "example-value"
+    # Format 2: object
+    hide-older-comments:
+      # Enable or disable hide-older-comments when using object form. Defaults to true
+      # when omitted.
+      # (optional)
+      # Accepted formats:
+
+      # Format 1: boolean
+      enabled: true
+
+      # Format 2: GitHub Actions expression that resolves to a boolean at runtime
+      enabled: "example-value"
+
+      # Additional workflow-id values to fully match when selecting older comments to
+      # hide.
+      # (optional)
+      match: []
+        # Array of strings
 
     # List of allowed reasons for hiding older comments when hide-older-comments is
     # enabled. Default: all reasons allowed (spam, abuse, off_topic, outdated,
@@ -4377,6 +4644,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable issue comment creation with default configuration
   add-comment: null
@@ -4503,7 +4788,9 @@ safe-outputs:
     allow-empty: true
 
     # Target repository in format 'owner/repo' for cross-repository pull request
-    # creation. Takes precedence over trial target repo settings.
+    # creation, or '*' to let the agent choose the target repository at runtime
+    # (requires checkout: configs with path: for each possible target). Takes
+    # precedence over trial target repo settings.
     # (optional)
     target-repo: "example-value"
 
@@ -4619,6 +4906,20 @@ safe-outputs:
     # expression.
     # (optional)
     auto-close-issue: null
+
+    # When true, automatically close older open pull requests with the same
+    # workflow-id marker (or close-older-key when set) with a comment linking to the
+    # new PR. Maximum 10 PRs will be closed. Only runs if PR creation succeeds.
+    # (optional)
+    close-older-pull-requests: null
+
+    # Optional explicit deduplication key for close-older-pull-requests matching. When
+    # set, a `<!-- gh-aw-close-key: <value> -->` marker is embedded in the PR body and
+    # used as the primary key for searching and filtering older PRs instead of the
+    # workflow-id markers. The value is normalized to identifier style (lowercase
+    # alphanumeric, dashes, underscores).
+    # (optional)
+    close-older-key: "example-value"
 
     # Token used to push an empty commit after PR creation to trigger CI events. Works
     # around the GITHUB_TOKEN limitation where pushes don't trigger workflow runs.
@@ -4737,26 +5038,28 @@ safe-outputs:
     # (optional)
     signed-commits: true
 
-    # When true, automatically close older open pull requests from the same workflow
-    # (identified by the workflow-id marker in the PR body) with a comment linking to
-    # the new PR. Searches for open PRs containing the workflow-id marker. Maximum 10
-    # pull requests will be closed. Only runs if PR creation succeeds.
-    # (optional)
-    close-older-pull-requests: true
-
-    # Optional explicit deduplication key for close-older matching. When set, a `<!--
-    # gh-aw-close-key: <value> -->` marker is embedded in the PR body and used as the
-    # primary key for searching and filtering older pull requests instead of the
-    # workflow-id markers. This gives deterministic isolation across caller workflows
-    # and is stable across workflow renames. The value is normalized to identifier
-    # style (lowercase alphanumeric, dashes, underscores).
-    # (optional)
-    close-older-key: "example-value"
-
     # If true, emit step summary messages instead of making GitHub API calls for this
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
     # When true, adds workflows: write to the GitHub App token permissions. Required
     # when allowed-files targets .github/workflows/ paths. Requires
@@ -4818,6 +5121,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
     # All of these labels must be present on the target item for this operation to
     # proceed
@@ -4914,6 +5235,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
     # All of these labels must be present on the target item for this operation to
     # proceed
     # (optional)
@@ -4973,6 +5312,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
     # All of these labels must be present on the target item for this operation to
     # proceed
     # (optional)
@@ -4987,14 +5344,16 @@ safe-outputs:
   # Format 2: Enable with default configuration
   reply-to-pull-request-review-comment: null
 
-  # Enable AI agents to resolve review threads on the triggering pull request after
-  # addressing feedback.
+  # Enable AI agents to resolve review threads on pull requests after addressing
+  # feedback. Supports cross-repository resolution via target, target-repo, and
+  # allowed-repos.
   # (optional)
   # Accepted formats:
 
-  # Format 1: Configuration for resolving review threads on pull requests.
-  # Resolution is scoped to the triggering PR only — threads on other PRs cannot be
-  # resolved.
+  # Format 1: Configuration for resolving review threads on pull requests. By
+  # default, resolution is scoped to the triggering PR only. When target,
+  # target-repo, or allowed-repos are specified, cross-repository thread resolution
+  # is supported.
   resolve-pull-request-review-thread:
     # Maximum number of review threads to resolve (default: 10) Supports integer or
     # GitHub Actions expression (e.g. '${{ inputs.max }}').
@@ -5007,6 +5366,26 @@ safe-outputs:
     # Format 2: GitHub Actions expression that resolves to an integer at runtime
     max: "example-value"
 
+    # Target PR for thread resolution: 'triggering' (default, current PR), '*' (any
+    # PR, requires pull_request_number in agent output), or explicit PR number (e.g.
+    # ${{ github.event.inputs.pr_number }}). Required when workflow is not triggered
+    # by a pull request (e.g. workflow_dispatch).
+    # (optional)
+    target: "example-value"
+
+    # Target repository in format 'owner/repo' for cross-repository PR review thread
+    # resolution. Takes precedence over trial target repo settings.
+    # (optional)
+    target-repo: "example-value"
+
+    # List of additional repositories in format 'owner/repo' that PR review threads
+    # can be resolved in. When specified, the agent can use a 'repo' field in the
+    # output to specify which repository to resolve threads in. The target repository
+    # (current or target-repo) is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
+
     # GitHub token to use for this specific output type. Overrides global github-token
     # if specified.
     # (optional)
@@ -5016,6 +5395,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
     # All of these labels must be present on the target item for this operation to
     # proceed
@@ -5078,6 +5475,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Format 2: Enable code scanning alert creation with default configuration
   # (unlimited findings)
   create-code-scanning-alert: null
@@ -5109,6 +5524,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable code scanning autofix creation with default configuration (max:
   # 10)
@@ -5147,6 +5580,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
     # GitHub App credentials for minting an installation access token scoped to
     # checks:write for this handler. When set, a short-lived token is minted before
@@ -5435,6 +5886,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Enable AI agents to remove labels from GitHub issues or pull requests.
   # (optional)
   # Accepted formats:
@@ -5508,6 +5977,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Enable AI agents to request reviews from users or teams on pull requests based
   # on code changes or expertise matching.
   # (optional)
@@ -5558,6 +6045,12 @@ safe-outputs:
     # (optional)
     target-repo: "example-value"
 
+    # List of additional repositories in format 'owner/repo' that reviewers can be
+    # added in. The target repository is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
+
     # GitHub token to use for this specific output type. Overrides global github-token
     # if specified.
     # (optional)
@@ -5567,6 +6060,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
     # All of these labels must be present on the target item for this operation to
     # proceed
@@ -5607,10 +6118,21 @@ safe-outputs:
     # Format 2: GitHub Actions expression that resolves to an integer at runtime
     max: "example-value"
 
+    # Target for milestone assignment: 'triggering' (default, current issue/PR), '*'
+    # (any issue/PR), or explicit number.
+    # (optional)
+    target: "example-value"
+
     # Target repository in format 'owner/repo' for cross-repository milestone
     # assignment. Takes precedence over trial target repo settings.
     # (optional)
     target-repo: "example-value"
+
+    # List of additional repositories in format 'owner/repo' that milestone
+    # assignments can target. The target repository is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
 
     # GitHub token to use for this specific output type. Overrides global github-token
     # if specified.
@@ -5621,6 +6143,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
     # All of these labels must be present on the target item for this operation to
     # proceed
@@ -5694,6 +6234,12 @@ safe-outputs:
     # (optional)
     target-repo: "example-value"
 
+    # List of additional repositories in format 'owner/repo' that agents can be
+    # assigned in. The target repository is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
+
     # Target repository where the pull request should be created, in format
     # 'owner/repo'. If omitted, the PR will be created in the same repository as the
     # issue (specified by target-repo or the workflow's repository). This allows
@@ -5731,6 +6277,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Enable AI agents to assign issues or pull requests to specific GitHub users
   # based on workflow logic or expertise matching.
@@ -5797,6 +6361,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
     # All of these labels must be present on the target item for this operation to
     # proceed
@@ -5870,6 +6452,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
     # All of these labels must be present on the target item for this operation to
     # proceed
     # (optional)
@@ -5903,6 +6503,11 @@ safe-outputs:
     # Format 2: GitHub Actions expression that resolves to an integer at runtime
     max: "example-value"
 
+    # Target for sub-issue linking: 'triggering' (default, current issue), '*' (any
+    # issue), or explicit issue number.
+    # (optional)
+    target: "example-value"
+
     # Optional list of labels that parent issues must have to be eligible for linking
     # (optional)
     parent-required-labels: []
@@ -5926,6 +6531,12 @@ safe-outputs:
     # (optional)
     target-repo: "example-value"
 
+    # List of additional repositories in format 'owner/repo' that sub-issue linking
+    # can target. The target repository is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
+
     # GitHub token to use for this specific output type. Overrides global github-token
     # if specified.
     # (optional)
@@ -5935,6 +6546,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Enable AI agents to edit and update existing GitHub issue content, titles,
   # labels, assignees, and metadata.
@@ -6007,6 +6636,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
     # All of these labels must be present on the target item for this operation to
     # proceed
     # (optional)
@@ -6074,6 +6721,12 @@ safe-outputs:
     # (optional)
     target-repo: "example-value"
 
+    # List of additional repositories in format 'owner/repo' that pull requests can be
+    # updated in. The target repository is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
+
     # GitHub token to use for this specific output type. Overrides global github-token
     # if specified.
     # (optional)
@@ -6083,6 +6736,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
     # All of these labels must be present on the target item for this operation to
     # proceed
@@ -6232,6 +6903,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
     # Token used to push an empty commit after pushing changes to trigger CI events.
     # Works around the GITHUB_TOKEN limitation where pushes don't trigger workflow
     # runs. Defaults to the magic secret GH_AW_CI_TRIGGER_TOKEN if set in the
@@ -6255,7 +6944,9 @@ safe-outputs:
     signed-commits: true
 
     # Target repository in format 'owner/repo' for cross-repository push to pull
-    # request branch. Takes precedence over trial target repo settings.
+    # request branch, or '*' to let the agent choose the target repository at runtime
+    # (requires checkout: configs with path: for each possible target). Takes
+    # precedence over trial target repo settings.
     # (optional)
     target-repo: "example-value"
 
@@ -6393,10 +7084,21 @@ safe-outputs:
     # Format 2: GitHub Actions expression that resolves to an integer at runtime
     max: "example-value"
 
+    # Target for comment hiding: 'triggering' (default, current issue/PR), '*' (any
+    # item), or explicit number.
+    # (optional)
+    target: "example-value"
+
     # Target repository in format 'owner/repo' for cross-repository comment hiding.
     # Takes precedence over trial target repo settings.
     # (optional)
     target-repo: "example-value"
+
+    # List of additional repositories in format 'owner/repo' that comment hiding can
+    # target. The target repository is always implicitly allowed.
+    # (optional)
+    allowed-repos: []
+      # Array of strings
 
     # List of allowed reasons for hiding comments. Default: all reasons allowed (spam,
     # abuse, off_topic, outdated, resolved, low_quality).
@@ -6415,6 +7117,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
     # All of these labels must be present on the target item for this operation to
     # proceed
@@ -6483,6 +7203,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
     # All of these labels must be present on the target item for this operation to
     # proceed
     # (optional)
@@ -6549,6 +7287,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
     # All of these labels must be present on the target item for this operation to
     # proceed
     # (optional)
@@ -6606,6 +7362,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Format 2: Shorthand array format: list of workflow names (without .md extension)
   # to allow dispatching
   dispatch-workflow: []
@@ -6653,6 +7427,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Shorthand array format: list of workflow names (without .md extension)
   # to allow calling
@@ -6708,6 +7500,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable missing tool reporting with default configuration
   missing-tool: null
@@ -6768,6 +7578,24 @@ safe-outputs:
     # (optional)
     staged: true
 
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
+
   # Format 2: Enable missing data reporting with default configuration
   missing-data: null
 
@@ -6808,6 +7636,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable noop output with default configuration (max: 1)
   noop: null
@@ -6856,6 +7702,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable asset publishing with default configuration
   upload-asset: null
@@ -6923,7 +7787,7 @@ safe-outputs:
     # Default values injected when the model omits a field
     # (optional)
     defaults:
-      # Behavior when no files match: 'error' (default) or 'ignore'
+      # Behaviour when no files match: 'error' (default) or 'ignore'
       # (optional)
       if-no-files: "error"
 
@@ -6972,6 +7836,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable release updates with default configuration
   update-release: null
@@ -7590,6 +8472,24 @@ safe-outputs:
     # specific output type (preview mode)
     # (optional)
     staged: true
+
+    # Internal hidden feature. Optional list of declarative sample payloads that
+    # exercise this safe-output handler. Used by the hidden `gh aw compile
+    # --use-samples` flag to replace the agentic step with a deterministic replay
+    # through the safe-outputs MCP server. Each entry should conform to the
+    # corresponding MCP tool inputSchema; recognized sidecar keys (currently `patch`
+    # for create-pull-request and push-to-pull-request-branch) are stripped before
+    # schema validation and consumed by the replay driver.
+    # (optional)
+    # Accepted formats:
+
+    # Format 1: array
+    samples: []
+      # Array items: object
+
+    # Format 2: object
+    samples:
+      {}
 
   # Format 2: Enable report_incomplete with default configuration
   report-incomplete: null
