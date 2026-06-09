@@ -182,9 +182,15 @@ func setGHHostStepOutputEnv(stepMap map[string]any) {
 			env["GH_HOST"] = ghesHostStepOutputExpression
 		}
 	case map[string]string:
-		if _, exists := env["GH_HOST"]; !exists {
-			env["GH_HOST"] = ghesHostStepOutputExpression
+		if _, exists := env["GH_HOST"]; exists {
+			return
 		}
+		mergedEnv := make(map[string]any, len(env)+1)
+		for k, v := range env {
+			mergedEnv[k] = v
+		}
+		mergedEnv["GH_HOST"] = ghesHostStepOutputExpression
+		stepMap["env"] = mergedEnv
 	}
 }
 
