@@ -88,7 +88,7 @@ describe("validate_secrets", () => {
   });
 
   describe("makePostRequest", () => {
-    /** @type {EventEmitter & {setTimeout: any, destroy: any, write: any, end: any}} */
+    /** @type {EventEmitter & {setTimeout: any, destroy: any, write: any, end: any, timeoutCallback?: () => void}} */
     let mockRequest;
     /** @type {EventEmitter & {statusCode: number}} */
     let mockResponse;
@@ -101,7 +101,7 @@ describe("validate_secrets", () => {
       mockResponse = Object.assign(new EventEmitter(), { statusCode: 200 });
       mockRequest = Object.assign(new EventEmitter(), {
         setTimeout: vi.fn().mockImplementation((ms, cb) => {
-          mockRequest._timeoutCb = cb;
+          mockRequest.timeoutCallback = cb;
         }),
         destroy: vi.fn(),
         write: vi.fn(),
@@ -110,8 +110,8 @@ describe("validate_secrets", () => {
         }),
       });
       vi.spyOn(https, "request").mockImplementation((_options, callback) => {
-        process.nextTick(() => callback && callback(/** @type {any} */ mockResponse));
-        return /** @type {any} */ mockRequest;
+        process.nextTick(() => callback?.(/** @type {any} */ (mockResponse)));
+        return /** @type {any} */ (mockRequest);
       });
     }
 
@@ -143,7 +143,7 @@ describe("validate_secrets", () => {
 
       const promise = makePostRequest("api.example.com", "/v1/test", {}, "{}");
       // Trigger the timeout callback registered via req.setTimeout
-      process.nextTick(() => mockRequest._timeoutCb && mockRequest._timeoutCb());
+      process.nextTick(() => mockRequest.timeoutCallback?.());
 
       await expect(promise).rejects.toThrow("Request timeout");
       expect(mockRequest.destroy).toHaveBeenCalled();
