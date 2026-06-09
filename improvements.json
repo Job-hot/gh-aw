@@ -1,6 +1,20 @@
 {
-  "last_updated": "2026-06-01",
+  "last_updated": "2026-06-09",
   "pending_tasks": [
+    {
+      "file": ".github/workflows/scout.md",
+      "created": "2026-06-09",
+      "status": "pending",
+      "priority": "high",
+      "title": "Replace adventure-themed run messages with professional, actionable equivalents"
+    },
+    {
+      "file": "docs/src/content/docs/blog/2026-01-13-meet-the-workflows-metrics-analytics.md",
+      "created": "2026-06-09",
+      "status": "pending",
+      "priority": "medium",
+      "title": "Fix broken github.github.com Quick Start URLs"
+    },
     {
       "file": ".github/workflows/smoke-codex.md",
       "created": "2026-06-01",
@@ -48,6 +62,8 @@
   "quality_trends": {
     "2026-05-24": {"professional": 2, "needs_minor_work": 2, "needs_significant_work": 1},
     "2026-05-27": {"professional": 3, "needs_minor_work": 2, "needs_significant_work": 0},
-    "2026-06-01": {"professional": 3, "needs_minor_work": 1, "needs_significant_work": 1}
+    "2026-06-01": {"professional": 3, "needs_minor_work": 1, "needs_significant_work": 1},
+    "2026-06-02": {"professional": 3, "needs_minor_work": 2, "needs_significant_work": 0},
+    "2026-06-09": {"professional": 4, "needs_minor_work": 1, "needs_significant_work": 1}
   }
 }
