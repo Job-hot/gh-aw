@@ -301,6 +301,7 @@ func BuildAWFConfigJSON(config AWFCommandConfig) (string, error) {
 		MaxAICredits:        maxAICredits,
 		EnableTokenSteering: enableTokenSteering && awfSupportsTokenSteering(firewallConfig),
 	}
+	awfConfigLog.Printf("API proxy: resolved maxAiCredits=%d", maxAICredits)
 
 	if !enableTokenSteering {
 		awfConfigLog.Printf("Skipping apiProxy.enableTokenSteering: max-ai-credits is negative (disabled)")

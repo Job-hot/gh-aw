@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/creack/pty"
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/fileutil"
 )
 
@@ -227,6 +228,53 @@ Please check the repository for any open issues and create a summary.
 	}
 
 	t.Logf("Integration test passed - successfully compiled workflow to %s", lockFilePath)
+}
+
+func TestCompileIntegration_DefaultAICreditLogs(t *testing.T) {
+	setup := setupIntegrationTest(t)
+	defer setup.cleanup()
+
+	testWorkflow := `---
+name: Default AI credit log test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+engine: claude
+---
+
+# Default AI credit log test
+`
+
+	testWorkflowPath := filepath.Join(setup.workflowsDir, "default-ai-credits.md")
+	if err := os.WriteFile(testWorkflowPath, []byte(testWorkflow), 0o644); err != nil {
+		t.Fatalf("Failed to write test workflow file: %v", err)
+	}
+
+	cmd := exec.Command(setup.binaryPath, "compile", testWorkflowPath)
+	cmd.Env = append(os.Environ(), "DEBUG=workflow:daily_effective_workflow,workflow:awf_config")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("CLI compile command failed: %v\nOutput: %s", err, string(output))
+	}
+
+	logFilePath := filepath.Join(setup.tempDir, "compile.log")
+	if err := os.WriteFile(logFilePath, output, 0o644); err != nil {
+		t.Fatalf("Failed to write compile log file: %v", err)
+	}
+
+	logContent, err := os.ReadFile(logFilePath)
+	if err != nil {
+		t.Fatalf("Failed to read compile log file: %v", err)
+	}
+	logOutput := string(logContent)
+
+	if !strings.Contains(logOutput, "using default max-daily-ai-credits="+constants.DefaultMaxDailyAICredits) {
+		t.Fatalf("expected compile log to contain default max-daily-ai-credits=%s, got:\n%s", constants.DefaultMaxDailyAICredits, logOutput)
+	}
+	if !strings.Contains(logOutput, "API proxy: resolved maxAiCredits=1000") {
+		t.Fatalf("expected compile log to contain default maxAiCredits=1000, got:\n%s", logOutput)
+	}
 }
 
 func TestCompileWithIncludeWithEmptyFrontmatterUnderPty(t *testing.T) {

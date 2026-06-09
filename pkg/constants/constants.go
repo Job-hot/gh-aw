@@ -272,6 +272,9 @@ const DefaultHTTPClientTimeout = 30 * time.Second
 // DefaultMaxAICredits is the default AI Credits budget enforced by the AWF API proxy.
 const DefaultMaxAICredits int64 = 1000
 
+// DefaultMaxDailyAICredits is the default daily AI Credits guardrail enforced by workflow activation.
+const DefaultMaxDailyAICredits = "5000"
+
 // DefaultMaxRuns is the default AWF invocation cap enforced by the AWF API proxy.
 const DefaultMaxRuns = 500
 

@@ -72,7 +72,7 @@ func TestResolveDefaultsTarget(t *testing.T) {
 func TestDefaultsFileYAMLKeys(t *testing.T) {
 	file := defaultsFile{
 		DefaultMaxAICredits:      new("1000"),
-		DefaultMaxDailyAICredits: new("500000"),
+		DefaultMaxDailyAICredits: new("5000"),
 		DefaultMaxTurns:          new("42"),
 		DefaultTimeoutMinutes:    new("90"),
 		DefaultDetectionModel:    new("claude-sonnet-4.6"),
@@ -133,7 +133,7 @@ func TestDefaultsValidateFile(t *testing.T) {
 	t.Run("accepts valid values", func(t *testing.T) {
 		err := defaultsValidateFile(&defaultsFile{
 			DefaultMaxAICredits:      new("1000"),
-			DefaultMaxDailyAICredits: new("500000"),
+			DefaultMaxDailyAICredits: new("5000"),
 			DefaultMaxTurns:          new("12"),
 			DefaultTimeoutMinutes:    new("30"),
 			DefaultDetectionModel:    new("claude-sonnet-4.6"),
