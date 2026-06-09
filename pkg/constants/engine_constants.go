@@ -260,7 +260,13 @@ const (
 	CopilotCLIIntegrationIDEnvVar = "GITHUB_COPILOT_INTEGRATION_ID"
 
 	// CopilotCLIIntegrationIDValue is the value of the integration ID for agentic workflows.
+	// Used when authenticating with the GitHub Actions token (permissions.copilot-requests: write).
 	CopilotCLIIntegrationIDValue = "agentic-workflows"
+
+	// CopilotCLIIntegrationIDUserPATValue is the copilot-sdk integration ID used when
+	// authenticating with a user PAT (COPILOT_GITHUB_TOKEN secret) instead of the
+	// GitHub Actions token. This matches the integration ID expected by the Copilot SDK.
+	CopilotCLIIntegrationIDUserPATValue = "copilot-cli"
 
 	// CopilotSDKURIEnvVar is the environment variable name for the Copilot SDK URI.
 	// When copilot-sdk: true is set, this env var holds the HTTP endpoint URI

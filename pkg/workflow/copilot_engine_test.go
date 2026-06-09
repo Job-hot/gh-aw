@@ -164,8 +164,8 @@ func TestCopilotEngineExecutionSteps(t *testing.T) {
 		t.Errorf("Expected COPILOT_GITHUB_TOKEN environment variable in step content:\n%s", stepContent)
 	}
 
-	if !strings.Contains(stepContent, constants.CopilotCLIIntegrationIDEnvVar+": "+constants.CopilotCLIIntegrationIDValue) {
-		t.Errorf("Expected %s environment variable in step content:\n%s", constants.CopilotCLIIntegrationIDEnvVar, stepContent)
+	if !strings.Contains(stepContent, constants.CopilotCLIIntegrationIDEnvVar+": "+constants.CopilotCLIIntegrationIDUserPATValue) {
+		t.Errorf("Expected %s=%s (user PAT mode) in step content:\n%s", constants.CopilotCLIIntegrationIDEnvVar, constants.CopilotCLIIntegrationIDUserPATValue, stepContent)
 	}
 
 	// Test that GITHUB_HEAD_REF and GITHUB_REF_NAME are present for branch resolution
@@ -592,16 +592,40 @@ func TestCopilotEngineExecutionStepsAlwaysInjectsIntegrationIDAfterEnvMerges(t *
 		t.Fatalf("Expected 1 execution step, got %d", len(steps))
 	}
 
+	// No copilot-requests: write permission → user PAT mode → expects copilot-cli
 	stepContent := strings.Join([]string(steps[0]), "\n")
-	expected := constants.CopilotCLIIntegrationIDEnvVar + ": " + constants.CopilotCLIIntegrationIDValue
+	expected := constants.CopilotCLIIntegrationIDEnvVar + ": " + constants.CopilotCLIIntegrationIDUserPATValue
 	if !strings.Contains(stepContent, expected) {
-		t.Fatalf("Expected integration ID env to be forced to %q, got:\n%s", expected, stepContent)
+		t.Fatalf("Expected integration ID env to be forced to %q (user PAT mode), got:\n%s", expected, stepContent)
 	}
 	if strings.Contains(stepContent, constants.CopilotCLIIntegrationIDEnvVar+": override-from-agent") {
 		t.Fatalf("Expected agent override to be ignored for %s, got:\n%s", constants.CopilotCLIIntegrationIDEnvVar, stepContent)
 	}
 	if strings.Contains(stepContent, constants.CopilotCLIIntegrationIDEnvVar+": override-from-engine") {
 		t.Fatalf("Expected engine override to be ignored for %s, got:\n%s", constants.CopilotCLIIntegrationIDEnvVar, stepContent)
+	}
+}
+
+func TestCopilotEngineExecutionStepsWithCopilotRequestsUsesAgenticWorkflowsIntegrationID(t *testing.T) {
+	engine := NewCopilotEngine()
+	workflowData := &WorkflowData{
+		Name:        "test-workflow",
+		Permissions: "permissions:\n  copilot-requests: write",
+	}
+
+	steps := engine.GetExecutionSteps(workflowData, "/tmp/gh-aw/test.log")
+	if len(steps) != 1 {
+		t.Fatalf("Expected 1 execution step, got %d", len(steps))
+	}
+
+	// copilot-requests: write → GitHub Actions token mode → expects agentic-workflows
+	stepContent := strings.Join([]string(steps[0]), "\n")
+	expected := constants.CopilotCLIIntegrationIDEnvVar + ": " + constants.CopilotCLIIntegrationIDValue
+	if !strings.Contains(stepContent, expected) {
+		t.Fatalf("Expected integration ID env to be %q when using copilot-requests:write, got:\n%s", expected, stepContent)
+	}
+	if strings.Contains(stepContent, constants.CopilotCLIIntegrationIDEnvVar+": "+constants.CopilotCLIIntegrationIDUserPATValue) {
+		t.Fatalf("Expected copilot-cli integration ID NOT to be used with copilot-requests:write, got:\n%s", stepContent)
 	}
 }
 

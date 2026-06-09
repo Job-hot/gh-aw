@@ -648,9 +648,16 @@ touch %s
 		copilotExecLog.Printf("Added %d custom env vars from agent config", len(agentConfig.Env))
 	}
 
-	// Always inject the Copilot integration ID for agentic workflows after all env merges
-	// so user-supplied env does not override this value.
-	env[constants.CopilotCLIIntegrationIDEnvVar] = constants.CopilotCLIIntegrationIDValue
+	// Always inject the Copilot integration ID after all env merges so user-supplied env
+	// does not override this value. When authenticating with a user PAT
+	// (COPILOT_GITHUB_TOKEN secret, i.e. not BYOK mode and not copilot-requests: write),
+	// use the copilot-sdk integration ID ("copilot-cli"). In all other cases (GitHub
+	// Actions token via copilot-requests: write) use the agentic-workflows ID.
+	integrationIDValue := constants.CopilotCLIIntegrationIDValue
+	if !isBYOKMode && !useCopilotRequests {
+		integrationIDValue = constants.CopilotCLIIntegrationIDUserPATValue
+	}
+	env[constants.CopilotCLIIntegrationIDEnvVar] = integrationIDValue
 
 	// Inject the dummy BYOK sentinel and AWF_REFLECT_ENABLED only when the AWF sandbox
 	// is active. The COPILOT_API_KEY (set to this value) triggers AWF's runtime BYOK
