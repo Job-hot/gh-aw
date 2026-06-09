@@ -1820,9 +1820,9 @@ jobs:
             break
           }
           if ($attempt -eq $maxRetries) {
-            throw "Failed to install gocover-cobertura after $maxRetries attempts"
+            throw "❌ Failed to install gocover-cobertura after $maxRetries attempts"
           }
-          Write-Host "Install failed, retrying in ${retryDelaySeconds}s..."
+          Write-Host "⚠️ Install failed, retrying in ${retryDelaySeconds}s..."
           Start-Sleep -Seconds $retryDelaySeconds
         }
         $gocover = "$(go env GOPATH)/bin/gocover-cobertura.exe"
