@@ -110,8 +110,8 @@ describe("validate_secrets", () => {
         }),
       });
       vi.spyOn(https, "request").mockImplementation((_options, callback) => {
-        process.nextTick(() => callback?.(/** @type {any} */ (mockResponse)));
-        return /** @type {any} */ (mockRequest);
+        process.nextTick(() => callback?.(/** @type {any} */ mockResponse));
+        return /** @type {any} */ mockRequest;
       });
     }
 
