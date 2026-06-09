@@ -36,7 +36,7 @@ This document is governed by the GitHub Agentic Workflows project specifications
 8. [Compliance Testing](#8-compliance-testing)
 9. [Appendices](#9-appendices)
 10. [References](#10-references)
-11. [Sync Notes](#sync-notes)
+11. [Sync Notes](#11-sync-notes)
 12. [Change Log](#12-change-log)
 
 ---
