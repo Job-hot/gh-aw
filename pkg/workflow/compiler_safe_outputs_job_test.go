@@ -1351,3 +1351,52 @@ func TestCreateCodeScanningAlertUploadJob(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildConsolidatedSafeOutputsJobUsesGHHostStepOutput(t *testing.T) {
+	compiler := NewCompiler()
+	compiler.jobManager = NewJobManager()
+
+	workflowData := &WorkflowData{
+		Name: "Test Workflow",
+		SafeOutputs: &SafeOutputsConfig{
+			CreateIssues: &CreateIssuesConfig{},
+		},
+	}
+
+	job, _, err := compiler.buildConsolidatedSafeOutputsJob(workflowData, string(constants.AgentJobName), "test-workflow.md")
+	require.NoError(t, err)
+	require.NotNil(t, job)
+
+	steps := strings.Join(job.Steps, "")
+	assert.Contains(t, steps, "id: ghes-host-config", "safe_outputs job should include GH_HOST setup step")
+	assert.Contains(t, steps, "gh_host=", "GH_HOST setup should emit a step output")
+	assert.Contains(t, steps, "$GITHUB_OUTPUT", "GH_HOST setup should write to GITHUB_OUTPUT")
+	assert.NotContains(t, steps, "$GITHUB_ENV", "safe_outputs GH_HOST setup should avoid GITHUB_ENV writes")
+	assert.Contains(t, steps, "GH_HOST: ${{ steps.ghes-host-config.outputs.gh_host || 'github.com' }}",
+		"process safe outputs step should consume GH_HOST from the setup step output")
+}
+
+func TestSetGHHostStepOutputEnv(t *testing.T) {
+	t.Run("adds env when missing", func(t *testing.T) {
+		step := map[string]any{
+			"name": "My Step",
+			"run":  "echo hi",
+		}
+		setGHHostStepOutputEnv(step)
+		env, ok := step["env"].(map[string]any)
+		require.True(t, ok)
+		assert.Equal(t, ghesHostStepOutputExpression, env["GH_HOST"])
+	})
+
+	t.Run("does not override existing GH_HOST", func(t *testing.T) {
+		step := map[string]any{
+			"env": map[string]any{
+				"GH_HOST": "example.com",
+			},
+		}
+		setGHHostStepOutputEnv(step)
+		env, ok := step["env"].(map[string]any)
+		require.True(t, ok)
+		assert.Equal(t, "example.com", env["GH_HOST"])
+	})
+}

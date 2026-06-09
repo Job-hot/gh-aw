@@ -139,10 +139,9 @@ func (c *Compiler) buildSafeOutputsSetupAndDownloadSteps(data *WorkflowData, age
 
 	// Configure GH_HOST for GHES/GHEC compatibility.
 	// The safe-outputs job runs as an independent GitHub Actions job and does not
-	// inherit GITHUB_ENV from the agent job. User-provided steps (below) and future
-	// safe-output handlers that invoke the gh CLI need GH_HOST to target the
-	// correct enterprise instance.
-	steps = append(steps, generateGHESHostConfigurationStep())
+	// inherit GITHUB_ENV from the agent job. This emits a step output that is then
+	// passed to downstream safe-outputs steps as step-scoped env.
+	steps = append(steps, generateGHESHostConfigurationOutputStep())
 
 	// Add user-provided steps after checkout/setup, before safe-output code
 	if len(data.SafeOutputs.Steps) > 0 {
@@ -158,7 +157,9 @@ func (c *Compiler) buildSafeOutputsSetupAndDownloadSteps(data *WorkflowData, age
 				return nil, fmt.Errorf("failed to convert safe-outputs step at index %d to typed step: %w", i, err)
 			}
 			pinnedStep := applyActionPinToTypedStep(typedStep, data)
-			stepYAML, err := ConvertStepToYAML(pinnedStep.ToMap())
+			pinnedStepMap := pinnedStep.ToMap()
+			setGHHostStepOutputEnv(pinnedStepMap)
+			stepYAML, err := ConvertStepToYAML(pinnedStepMap)
 			if err != nil {
 				return nil, fmt.Errorf("failed to convert safe-outputs step at index %d to YAML: %w", i, err)
 			}
@@ -167,6 +168,24 @@ func (c *Compiler) buildSafeOutputsSetupAndDownloadSteps(data *WorkflowData, age
 	}
 
 	return steps, nil
+}
+
+func setGHHostStepOutputEnv(stepMap map[string]any) {
+	if stepMap == nil {
+		return
+	}
+	switch env := stepMap["env"].(type) {
+	case nil:
+		stepMap["env"] = map[string]any{"GH_HOST": ghesHostStepOutputExpression}
+	case map[string]any:
+		if _, exists := env["GH_HOST"]; !exists {
+			env["GH_HOST"] = ghesHostStepOutputExpression
+		}
+	case map[string]string:
+		if _, exists := env["GH_HOST"]; !exists {
+			env["GH_HOST"] = ghesHostStepOutputExpression
+		}
+	}
 }
 
 // buildSafeOutputsHandlerOutputsAndActionSteps builds the handler-manager step (if needed),

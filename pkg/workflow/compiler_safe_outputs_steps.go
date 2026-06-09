@@ -538,6 +538,7 @@ func (c *Compiler) buildHandlerManagerStep(data *WorkflowData) ([]string, error)
 	// Pass GitHub server/API URLs so buildAllowedDomains() can add GHES domains dynamically
 	steps = append(steps, "          GITHUB_SERVER_URL: ${{ github.server_url }}\n")
 	steps = append(steps, "          GITHUB_API_URL: ${{ github.api_url }}\n")
+	steps = append(steps, fmt.Sprintf("          GH_HOST: %s\n", ghesHostStepOutputExpression))
 
 	// Note: The project handler manager has been removed.
 	// All project-related operations are now handled by the unified handler.
