@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "log_fetch_strategy": {
+      "lazy": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "27236720770",
+      "timestamp": "2026-06-09T21:24:39.044Z",
+      "assignments": {
+        "log_fetch_strategy": "lazy"
+      }
+    }
+  ]
+}
