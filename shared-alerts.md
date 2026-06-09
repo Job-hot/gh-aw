@@ -1,29 +1,27 @@
-# Shared Alerts — 2026-06-08T14:02Z
-
-## P0 (Critical) 🚨
-- **Failure Cascade** (#37721 OPEN Jun 8): awf-cli-proxy container exit (1) + LLM max_runs_exceeded (50/50). Root cause NOT patched. Possibly related to firewall bump #37707 (v0.25.66). DO NOT RE-FILE.
+# Shared Alerts — 2026-06-09T06:00Z
 
 ## P1 (High) 🚨
-- **CJS typecheck** (#aw_cjs8 filed Jun 8): Re-regression after #37503 closed prematurely Jun 7. Still failing on main. DO NOT RE-FILE.
-- **CGO unit tests** (#35028 OPEN): 100% failing Jun 8. DO NOT RE-FILE.
-- **Daily Compiler Quality Check** (#37730 OPEN, 3rd day): Excessive tool denials (5/5). Escalated to P1 via comment Jun 8. DO NOT RE-FILE.
+- **Daily Compiler Quality Check** (#38021 OPEN, 4th day Jun 6–9): `guard.tool_denials_exceeded` (5/5) — agent uses `shell(python3 -c ...)` inline one-liners to read Go source, blocked by tool allowlist. Fix: use `view`/`grep`/`glob` tools. Escalation comment added Jun 9. DO NOT RE-FILE.
+- **Tool Denial Cluster** (#aw_tdcluster9 filed Jun 9): 3 workflows affected — Compiler Quality + Copilot CLI Deep Research + jsweep. Systemic `shell()` pattern issue. DO NOT RE-FILE.
 
 ## P2 (Watch) ⚠️
-- **AI Moderator** (#37723, cascade-suspected): Still failing. Covered under cascade #37721. Monitor.
-- **Safe Output Health Monitor** (#37759 OPEN Jun 8): Re-failing after Jun 7 success. Token exhaustion. DO NOT RE-FILE.
-- **Code Simplifier** (#37733 OPEN): Re-failed Jun 8 after Jun 7 success. First recurrence — monitor.
-- **Daily Model Inventory Checker**: Failed Jun 8 (auto-filed #37683, then closed). Auto-cycle continuing. Monitor.
-- **Issue Lifecycle Gap** (#aw_isg_jun8 OPEN Jun 8): Systemic process issue — premature P1 closure. Action: improvement issue filed.
+- **Safe Output Health Monitor** (#38039 OPEN Jun 9): AI credits budget exceeded — recurring. DO NOT RE-FILE.
+- **Code Simplifier** (#38026 OPEN Jun 9): Missing tools reported. DO NOT RE-FILE.
+- **AI Credits cluster**: Test Quality Sentinel (#38025), Matt Pocock Skills Reviewer (#38024), Safe Output Health Monitor (#38039) — 3 workflows hitting max-ai-credits guardrail on Jun 9.
+- **Issue Lifecycle Gap** (ongoing): Compiler Quality 4th recurrence after prior issue closed prematurely. Systemic process issue persists.
 
-## Resolved ✅ (since Jun 7)
-- **Daily Documentation Healer**: SUCCESS Jun 8 ✅ — model pinning fix (#37505) confirmed
-- **Daily Sentrux Report**: Continuing healthy ✅
-- **PR Sous Chef**: Healthy ✅
+## Resolved ✅ (Jun 8)
+- **Failure Cascade** (#37721 CLOSED): awf-cli-proxy exit resolved ✅
+- **Daily Compiler Quality (prior)** (#37730 CLOSED) ✅
+- **Safe Output Health Monitor (prior)** (#37759 CLOSED) ✅
+- **CGO unit tests** (#35028 CLOSED) ✅
+- **CJS typecheck**: Now passing Jun 9 ✅
+- **CGO**: Mostly passing Jun 9 ✅
 
 ## Systemic Notes
-- **awf-cli-proxy cascade**: 10+ smoke + agentic workflows affected; batch-close path needs root cause fix first
-- **CI blockage cluster**: CJS + CGO both failing on main — all PR branches lack full CI validation
-- **Tool denial cluster (Day 3)**: Compiler Quality + Safe Output Health both hitting tool denial limit
-- **Issue lifecycle gap (2nd occurrence)**: CJS #37503 closed prematurely again — systemic improvement issue filed (#aw_isg_jun8)
-- **Health score trend**: 82→81→78→74→71→68 (6-day decline) — cascade significantly worsening trajectory
-- **copilot-swe-agent**: Continued healthy throughput; 7 merges Jun 8; counterbalancing quality decline
+- **Health score trend**: 82→81→78→74→71→68→**83** (RECOVERED Jun 9 — cascade resolved)
+- **Tool denial cluster (Day 4)**: Compiler Quality + Deep Research + jsweep all using disallowed `shell()` patterns
+- **AI credits guardrail**: 3 analysis-heavy workflows hitting budget limit
+- **Issue lifecycle gap**: 4th Compiler Quality recurrence — #38021 needs real fix, not just re-filing
+- **copilot-swe-agent**: Continued healthy throughput; counterbalancing quality issues
+- **Run success rate**: ~94% Jun 9 (44/47 conclusive = massive improvement from cascade era)
