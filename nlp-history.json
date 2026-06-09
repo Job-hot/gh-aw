@@ -1,14 +1,67 @@
-[
-  {
-    "date": "2026-05-18",
-    "pr_count": 41,
-    "avg_sentiment": 0.0005951980655813408,
-    "top_keywords": [
-      "block",
-      "command",
-      "triggering",
-      "http",
-      "workflow"
-    ]
-  }
-]
+{
+  "daily_analysis": [
+    {
+      "date": "2026-05-28",
+      "pr_count": 60,
+      "avg_sentiment": 0.128,
+      "positive_count": 38,
+      "neutral_count": 2,
+      "negative_count": 20,
+      "top_topic": "workflow / step / model",
+      "top_keywords": [
+        "added",
+        "workflow",
+        "pr",
+        "updated",
+        "model",
+        "workflows",
+        "change",
+        "coverage",
+        "default",
+        "fallback"
+      ]
+    },
+    {
+      "date": "2026-06-08",
+      "pr_count": 76,
+      "avg_sentiment": 0.06,
+      "positive_count": 41,
+      "neutral_count": 4,
+      "negative_count": 31,
+      "top_topic": "Testing & CI / AI Credits Migration",
+      "top_keywords": [
+        "updated",
+        "behavior",
+        "output",
+        "daily",
+        "guardrail",
+        "credits",
+        "path",
+        "failure",
+        "test",
+        "aic"
+      ]
+    },
+    {
+      "date": "2026-06-09",
+      "pr_count": 46,
+      "avg_sentiment": -0.0028,
+      "positive_count": 17,
+      "neutral_count": 9,
+      "negative_count": 20,
+      "top_topic": "Bug Fixes & Error Handling",
+      "top_keywords": [
+        "workflow",
+        "test",
+        "run",
+        "failure",
+        "path",
+        "review",
+        "window",
+        "behavior",
+        "output",
+        "issue"
+      ]
+    }
+  ]
+}
