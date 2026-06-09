@@ -290,7 +290,19 @@ jobs:
     - name: Convert integration coverage to Cobertura
       if: always() && hashFiles(format('coverage-integration-{0}.out', steps.run-tests.outputs.safe_name)) != ''
       run: |
-        go install github.com/boumenot/gocover-cobertura@v1.5.0
+        MAX_RETRIES=3
+        RETRY_DELAY=5
+        for i in $(seq 1 $MAX_RETRIES); do
+          if go install github.com/boumenot/gocover-cobertura@v1.5.0; then
+            break
+          fi
+          if [ $i -eq $MAX_RETRIES ]; then
+            echo "❌ Failed to install gocover-cobertura after $MAX_RETRIES attempts"
+            exit 1
+          fi
+          echo "⚠️ Install failed, retrying in ${RETRY_DELAY}s..."
+          sleep $RETRY_DELAY
+        done
         "$(go env GOPATH)/bin/gocover-cobertura" < "coverage-integration-${{ steps.run-tests.outputs.safe_name }}.out" > "coverage-integration-${{ steps.run-tests.outputs.safe_name }}.xml"
 
     - name: Upload integration coverage to code coverage API
@@ -1162,7 +1174,19 @@ jobs:
     - name: Convert unauthenticated coverage to Cobertura
       if: always() && hashFiles('coverage-integration-unauthenticated.out') != ''
       run: |
-        go install github.com/boumenot/gocover-cobertura@v1.5.0
+        MAX_RETRIES=3
+        RETRY_DELAY=5
+        for i in $(seq 1 $MAX_RETRIES); do
+          if go install github.com/boumenot/gocover-cobertura@v1.5.0; then
+            break
+          fi
+          if [ $i -eq $MAX_RETRIES ]; then
+            echo "❌ Failed to install gocover-cobertura after $MAX_RETRIES attempts"
+            exit 1
+          fi
+          echo "⚠️ Install failed, retrying in ${RETRY_DELAY}s..."
+          sleep $RETRY_DELAY
+        done
         "$(go env GOPATH)/bin/gocover-cobertura" < coverage-integration-unauthenticated.out > coverage-integration-unauthenticated.xml
 
     - name: Upload unauthenticated coverage to code coverage API
@@ -1237,7 +1261,19 @@ jobs:
     - name: Convert dispatch-workflow coverage to Cobertura
       if: always() && hashFiles('coverage-integration-add-dispatch-workflow.out') != ''
       run: |
-        go install github.com/boumenot/gocover-cobertura@v1.5.0
+        MAX_RETRIES=3
+        RETRY_DELAY=5
+        for i in $(seq 1 $MAX_RETRIES); do
+          if go install github.com/boumenot/gocover-cobertura@v1.5.0; then
+            break
+          fi
+          if [ $i -eq $MAX_RETRIES ]; then
+            echo "❌ Failed to install gocover-cobertura after $MAX_RETRIES attempts"
+            exit 1
+          fi
+          echo "⚠️ Install failed, retrying in ${RETRY_DELAY}s..."
+          sleep $RETRY_DELAY
+        done
         "$(go env GOPATH)/bin/gocover-cobertura" < coverage-integration-add-dispatch-workflow.out > coverage-integration-add-dispatch-workflow.xml
 
     - name: Upload dispatch-workflow coverage to code coverage API
@@ -1776,7 +1812,19 @@ jobs:
     - name: Convert redirect test coverage to Cobertura
       if: always() && hashFiles(format('coverage-redirect-{0}.out', matrix.os)) != ''
       run: |
-        go install github.com/boumenot/gocover-cobertura@v1.5.0
+        $maxRetries = 3
+        $retryDelaySeconds = 5
+        for ($attempt = 1; $attempt -le $maxRetries; $attempt++) {
+          go install github.com/boumenot/gocover-cobertura@v1.5.0
+          if ($LASTEXITCODE -eq 0) {
+            break
+          }
+          if ($attempt -eq $maxRetries) {
+            throw "Failed to install gocover-cobertura after $maxRetries attempts"
+          }
+          Write-Host "Install failed, retrying in ${retryDelaySeconds}s..."
+          Start-Sleep -Seconds $retryDelaySeconds
+        }
         $gocover = "$(go env GOPATH)/bin/gocover-cobertura.exe"
         if (-not (Test-Path $gocover)) { $gocover = "$(go env GOPATH)/bin/gocover-cobertura" }
         Get-Content "coverage-redirect-${{ matrix.os }}.out" | & $gocover | Out-File "coverage-redirect-${{ matrix.os }}.xml" -Encoding utf8
