@@ -1,21 +1,30 @@
-## PR Triage Summary - 2026-06-08 (Run 27160323558)
+# PR Triage Memory
+Last: 2026-06-09T07:34:31Z | Run: 27190969512 | Fork PRs: 0
+## PR Triage Summary - 2026-06-09 (Run 27190969512)
 
 ### Status
 **No fork PRs to triage**
 
 ### Details
-- **Run ID**: 27160323558
-- **Open Agent PRs Found**: 5 (all branch-based, skipped)
+- **Run ID**: 27190969512
+- **Open Agent PRs Found**: 15 (all branch-based, skipped)
 - **Fork PRs Found**: 0
 - **PRs Triaged**: 0
 
-### Branch PRs Skipped
+### Branch PRs Skipped (app/copilot-swe-agent)
 Per workflow instructions (fork PRs only — `isCrossRepository: false` = skip):
-- #37896 - Always key mermaid nodes with descriptive IDs; never delete mermaid diagrams in unbloat (DRAFT, `app/copilot-swe-agent`)
-- #37885 - Bump default MCP Gateway to v0.3.25 and firewall to v0.25.67 (open, `app/copilot-swe-agent`)
-- #37829 - Allow DIFC proxy host port in AWF args for gh-proxy workflows (DRAFT, `app/copilot-swe-agent`)
-- #37761 - Allow `sandbox` in shared workflow partials and merge imported `sandbox.agent.mounts` (DRAFT, `app/copilot-swe-agent`)
-- #37760 - Fix runtime env expansion for `sandbox.agent.mounts` in AWF command generation (DRAFT, `app/copilot-swe-agent`)
+- #38056 - Condense MCP CLI help output for first-20-line readability (open, `app/copilot-swe-agent`)
+- #38053 - sortslice: match stdlib sort calls by type identity (DRAFT, `app/copilot-swe-agent`)
+- #38052 - Sync sortslice into linters namespace docs (DRAFT, `app/copilot-swe-agent`)
+- #38051 - Harden workflow prompts against systemic tool-denial pattern (DRAFT, `app/copilot-swe-agent`)
+- #38050 - Eliminate persistent zizmor github-env finding (DRAFT, `app/copilot-swe-agent`)
+- #38049 - Compact generated system prompt blocks (open, `app/copilot-swe-agent`)
+- #38048 - Add dedicated daily Windows CLI integration workflow (DRAFT, `app/copilot-swe-agent`)
+- #38020 - Refactor linters to share AST helpers (open, `app/copilot-swe-agent`)
+- #37966 - Fix tool-cache fallback ordering in ADR-35802 (open, `app/copilot-swe-agent`, `closed:ci-failure`)
+- #37829 - Allow DIFC proxy host port in AWF args (DRAFT, `app/copilot-swe-agent`)
+- #37761 - Allow sandbox in shared workflow partials (DRAFT, `app/copilot-swe-agent`)
+- #37760 - Fix runtime env expansion for sandbox.agent.mounts (DRAFT, `app/copilot-swe-agent`)
 
 ### Policy
 This triage agent only processes PRs opened from forks (head_repo ≠ base_repo). All current agent PRs are branch-based within the same repository (`isCrossRepository: false`).
@@ -32,5 +41,4 @@ This triage agent only processes PRs opened from forks (head_repo ≠ base_repo)
 - 2026-06-08 (run 27110872118, 01:25Z): 0 fork PRs (1 branch PR - #37694 DRAFT)
 - 2026-06-08 (run 27141913977, 13:47Z): 0 fork PRs (4 branch PRs)
 - 2026-06-08 (run 27160323558, 19:06Z): 0 fork PRs (5 branch PRs)
-# PR Triage Memory
-Last: 2026-06-08T19:06:01Z | Run: 27160323558 | Fork PRs: 0
+- 2026-06-09 (run 27190969512, 07:34Z): 0 fork PRs (15 branch PRs)
