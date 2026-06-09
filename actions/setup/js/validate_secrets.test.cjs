@@ -1,7 +1,7 @@
 // @ts-check
 
 import { describe, it, expect } from "vitest";
-import { testGitHubRESTAPI, testGitHubGraphQLAPI, testCopilotCLI, testAnthropicAPI, testOpenAIAPI, testBraveSearchAPI, testNotionAPI, generateMarkdownReport, isForkRepository } from "./validate_secrets.cjs";
+import { testGitHubRESTAPI, testGitHubGraphQLAPI, testCopilotCLI, testAnthropicAPI, testOpenAIAPI, testBraveSearchAPI, testNotionAPI, generateMarkdownReport, isForkRepository, statusEmoji } from "./validate_secrets.cjs";
 
 describe("validate_secrets", () => {
   describe("testGitHubRESTAPI", () => {
@@ -239,6 +239,32 @@ describe("validate_secrets", () => {
 
     it("should return false when payload is undefined", () => {
       expect(isForkRepository(undefined)).toBe(false);
+    });
+  });
+
+  describe("statusEmoji", () => {
+    it("should return ✅ for success", () => {
+      expect(statusEmoji("success")).toBe("✅");
+    });
+
+    it("should return ❌ for failure", () => {
+      expect(statusEmoji("failure")).toBe("❌");
+    });
+
+    it("should return ⚪ for not_set", () => {
+      expect(statusEmoji("not_set")).toBe("⚪");
+    });
+
+    it("should return ⏭️ for skipped", () => {
+      expect(statusEmoji("skipped")).toBe("⏭️");
+    });
+
+    it("should return ❓ for unknown status", () => {
+      expect(statusEmoji("unknown")).toBe("❓");
+    });
+
+    it("should return ❓ for empty string", () => {
+      expect(statusEmoji("")).toBe("❓");
     });
   });
 });
