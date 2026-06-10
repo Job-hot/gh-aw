@@ -12,9 +12,16 @@ const {
   readDedupedTokenUsage,
   getSummaryTitle,
   buildStepSummarySection,
+  readApiProxySteeringEntries,
+  generateApiProxySteeringEventsSummary,
+  formatSteeringEventTime,
+  escapeSteeringTableCell,
   TOKEN_USAGE_AUDIT_PATH,
   TOKEN_USAGE_PATH,
   TOKEN_USAGE_PATHS,
+  PROXY_EVENTS_AUDIT_PATH,
+  PROXY_EVENTS_PATH,
+  PROXY_EVENTS_PATHS,
   AGENT_USAGE_PATH,
   DEFAULT_SUMMARY_TITLE,
 } = require("./parse_token_usage.cjs");
@@ -535,6 +542,142 @@ describe("parse_token_usage", () => {
       expect(section).toContain("### Token Usage");
       expect(section).toContain("<details>");
       expect(section).toContain("<summary>Per-request AI credits and token totals</summary>");
+    });
+
+    test("PROXY_EVENTS_PATHS contains primary and audit paths", () => {
+      expect(PROXY_EVENTS_PATHS).toContain(PROXY_EVENTS_PATH);
+      expect(PROXY_EVENTS_PATHS).toContain(PROXY_EVENTS_AUDIT_PATH);
+    });
+
+    test("formatSteeringEventTime formats ISO timestamp for display", () => {
+      expect(formatSteeringEventTime("2024-01-15T10:05:00.000Z")).toBe("2024-01-15 10:05:00Z");
+      expect(formatSteeringEventTime("2024-01-15T10:05:00Z")).toBe("2024-01-15 10:05:00Z");
+      expect(formatSteeringEventTime("")).toBe("-");
+    });
+
+    test("escapeSteeringTableCell handles pipes and newlines", () => {
+      expect(escapeSteeringTableCell("a|b")).toBe("a\\|b");
+      expect(escapeSteeringTableCell("a\nb")).toBe("a b");
+      expect(escapeSteeringTableCell(null)).toBe("-");
+      expect(escapeSteeringTableCell(undefined)).toBe("-");
+    });
+  });
+
+  describe("readApiProxySteeringEntries", () => {
+    const TOKEN_MSG = "[AWF TOKEN WARNING] You have used 80% of your effective token budget.";
+    const TIMEOUT_MSG = "[AWF TIME WARNING] You have used 80% of your allotted run time.";
+    let originalExistsSync;
+    let originalReadFileSync;
+
+    beforeEach(() => {
+      originalExistsSync = fs.existsSync;
+      originalReadFileSync = fs.readFileSync;
+      global.core = { warning: vi.fn() };
+    });
+
+    afterEach(() => {
+      fs.existsSync = originalExistsSync;
+      fs.readFileSync = originalReadFileSync;
+      delete global.core;
+    });
+
+    test("returns empty array when no events files exist", () => {
+      fs.existsSync = vi.fn(() => false);
+      expect(readApiProxySteeringEntries(PROXY_EVENTS_PATHS)).toEqual([]);
+    });
+
+    test("returns empty array when events file has no steering entries", () => {
+      fs.existsSync = vi.fn(p => p === PROXY_EVENTS_PATH);
+      fs.readFileSync = vi.fn(() => '{"event":"request","message":"hello"}\n');
+      expect(readApiProxySteeringEntries(PROXY_EVENTS_PATHS)).toEqual([]);
+    });
+
+    test("returns steering entries from events file", () => {
+      const content = `{"event":"token_steering","message":"${TOKEN_MSG}","timestamp":"2024-01-15T10:05:00.000Z"}\n`;
+      fs.existsSync = vi.fn(p => p === PROXY_EVENTS_PATH);
+      fs.readFileSync = vi.fn(() => content);
+      const entries = readApiProxySteeringEntries(PROXY_EVENTS_PATHS);
+      expect(entries).toHaveLength(1);
+      expect(entries[0]).toMatchObject({ eventName: "token_steering", message: TOKEN_MSG });
+    });
+
+    test("deduplicates identical entries across audit and primary paths", () => {
+      const line = `{"event":"token_steering","message":"${TOKEN_MSG}","timestamp":"2024-01-15T10:05:00Z"}`;
+      fs.existsSync = vi.fn(() => true);
+      fs.readFileSync = vi.fn(() => line);
+      const entries = readApiProxySteeringEntries([PROXY_EVENTS_AUDIT_PATH, PROXY_EVENTS_PATH]);
+      expect(entries).toHaveLength(1);
+    });
+
+    test("does not deduplicate entries with different timestamps", () => {
+      fs.existsSync = vi.fn(p => p === PROXY_EVENTS_PATH);
+      const content = [`{"event":"token_steering","message":"${TOKEN_MSG}","timestamp":"2024-01-15T10:05:00Z"}`, `{"event":"token_steering","message":"${TOKEN_MSG}","timestamp":"2024-01-15T10:10:00Z"}`].join("\n");
+      fs.readFileSync = vi.fn(() => content);
+      expect(readApiProxySteeringEntries(PROXY_EVENTS_PATHS)).toHaveLength(2);
+    });
+
+    test("warns and skips when readFileSync throws", () => {
+      fs.existsSync = vi.fn(() => true);
+      fs.readFileSync = vi.fn(() => {
+        throw new Error("read error");
+      });
+      const entries = readApiProxySteeringEntries(PROXY_EVENTS_PATHS);
+      expect(entries).toEqual([]);
+      expect(global.core.warning).toHaveBeenCalled();
+    });
+  });
+
+  describe("generateApiProxySteeringEventsSummary", () => {
+    const TOKEN_MSG = "[AWF TOKEN WARNING] You have used 80% of your effective token budget.";
+    const TIMEOUT_MSG = "[AWF TIME WARNING] You have used 80% of your allotted run time.";
+
+    test("returns empty string for empty entries", () => {
+      expect(generateApiProxySteeringEventsSummary([])).toBe("");
+      expect(generateApiProxySteeringEventsSummary(null)).toBe("");
+    });
+
+    test("renders a collapsible details block with entry count", () => {
+      const entries = [{ eventName: "token_steering", message: TOKEN_MSG, timestamp: "2024-01-15T10:05:00.000Z" }];
+      const result = generateApiProxySteeringEventsSummary(entries);
+      expect(result).toContain("<details>");
+      expect(result).toContain("Token Steering Events (1)");
+      expect(result).toContain("</details>");
+    });
+
+    test("renders table header with Time, Type, Message columns", () => {
+      const entries = [{ eventName: "token_steering", message: TOKEN_MSG, timestamp: "2024-01-15T10:05:00.000Z" }];
+      const result = generateApiProxySteeringEventsSummary(entries);
+      expect(result).toContain("| Time | Type | Message |");
+      expect(result).toContain("|------|------|---------|");
+    });
+
+    test("renders formatted timestamp in Time column", () => {
+      const entries = [{ eventName: "token_steering", message: TOKEN_MSG, timestamp: "2024-01-15T10:05:00.000Z" }];
+      const result = generateApiProxySteeringEventsSummary(entries);
+      expect(result).toContain("2024-01-15 10:05:00Z");
+    });
+
+    test("renders '-' in Time column when timestamp is absent", () => {
+      const entries = [{ eventName: "token_steering", message: TOKEN_MSG, timestamp: "" }];
+      const result = generateApiProxySteeringEventsSummary(entries);
+      expect(result).toContain("| - | token_steering |");
+    });
+
+    test("renders both token_steering and timeout_steering entries", () => {
+      const entries = [
+        { eventName: "token_steering", message: TOKEN_MSG, timestamp: "2024-01-15T10:05:00Z" },
+        { eventName: "timeout_steering", message: TIMEOUT_MSG, timestamp: "2024-01-15T10:06:00Z" },
+      ];
+      const result = generateApiProxySteeringEventsSummary(entries);
+      expect(result).toContain("Token Steering Events (2)");
+      expect(result).toContain("token_steering");
+      expect(result).toContain("timeout_steering");
+    });
+
+    test("escapes pipe characters in message", () => {
+      const entries = [{ eventName: "token_steering", message: "a|b", timestamp: "" }];
+      const result = generateApiProxySteeringEventsSummary(entries);
+      expect(result).toContain("a\\|b");
     });
   });
 });

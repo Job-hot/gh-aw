@@ -5,6 +5,7 @@ const fs = require("fs");
 const { getErrorMessage } = require("./error_helpers.cjs");
 const { ERR_PARSE } = require("./error_codes.cjs");
 const { parseTokenUsageJsonl, generateTokenUsageSummary } = require("./parse_mcp_gateway_log.cjs");
+const { extractSteeringEntriesFromApiProxyJsonl } = require("./steering_helpers.cjs");
 
 /**
  * Parses the firewall proxy token-usage.jsonl and appends a collapsible markdown
@@ -17,6 +18,9 @@ const { parseTokenUsageJsonl, generateTokenUsageSummary } = require("./parse_mcp
 const TOKEN_USAGE_AUDIT_PATH = "/tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl";
 const TOKEN_USAGE_PATH = "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl";
 const TOKEN_USAGE_PATHS = [TOKEN_USAGE_AUDIT_PATH, TOKEN_USAGE_PATH];
+const PROXY_EVENTS_AUDIT_PATH = "/tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/events.jsonl";
+const PROXY_EVENTS_PATH = "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/events.jsonl";
+const PROXY_EVENTS_PATHS = [PROXY_EVENTS_AUDIT_PATH, PROXY_EVENTS_PATH];
 const AGENT_USAGE_PATH = "/tmp/gh-aw/agent_usage.json";
 const DEFAULT_SUMMARY_TITLE = "Token Usage";
 
@@ -93,6 +97,80 @@ function getSummaryTitle() {
 }
 
 /**
+ * Reads and deduplicates spec-compliant steering entries from api-proxy events.jsonl files.
+ * Tries all provided paths and deduplicates by (eventName, timestamp, message).
+ * @param {string[]} paths
+ * @returns {Array<{eventName: string, message: string, timestamp: string}>}
+ */
+function readApiProxySteeringEntries(paths) {
+  const seen = new Set();
+  /** @type {Array<{eventName: string, message: string, timestamp: string}>} */
+  const allEntries = [];
+  for (const filePath of paths) {
+    try {
+      if (!fs.existsSync(filePath)) continue;
+      const content = fs.readFileSync(filePath, "utf8");
+      for (const entry of extractSteeringEntriesFromApiProxyJsonl(content)) {
+        const key = `${entry.eventName}\x00${entry.timestamp}\x00${entry.message}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        allEntries.push(entry);
+      }
+    } catch (error) {
+      core.warning(`Skipping unreadable events file ${filePath}: ${getErrorMessage(error)}`);
+    }
+  }
+  return allEntries;
+}
+
+/**
+ * Formats a steering event timestamp for display in the step summary.
+ * @param {string} timestamp
+ * @returns {string}
+ */
+function formatSteeringEventTime(timestamp) {
+  return timestamp ? timestamp.replace("T", " ").replace(/\.\d+Z$/, "Z") : "-";
+}
+
+/**
+ * Escapes a value for safe display inside a markdown table cell.
+ * @param {unknown} value
+ * @returns {string}
+ */
+function escapeSteeringTableCell(value) {
+  return String(value ?? "-")
+    .replace(/\n/g, " ")
+    .replace(/\|/g, "\\|");
+}
+
+/**
+ * Generates a collapsible markdown step summary section for api-proxy steering events.
+ * Returns an empty string when the entries array is empty.
+ * @param {Array<{eventName: string, message: string, timestamp: string}>} entries
+ * @returns {string}
+ */
+function generateApiProxySteeringEventsSummary(entries) {
+  if (!entries || entries.length === 0) return "";
+
+  const lines = [];
+  lines.push("<details>");
+  lines.push(`<summary>⚠️ Token Steering Events (${entries.length})</summary>\n`);
+  lines.push("");
+  lines.push("The firewall API proxy injected AI credit budget warnings into upstream requests.\n");
+  lines.push("");
+  lines.push("| Time | Type | Message |");
+  lines.push("|------|------|---------|");
+
+  for (const entry of entries) {
+    lines.push(`| ${escapeSteeringTableCell(formatSteeringEventTime(entry.timestamp))} | ${escapeSteeringTableCell(entry.eventName)} | ${escapeSteeringTableCell(entry.message)} |`);
+  }
+
+  lines.push("");
+  lines.push("</details>\n");
+  return lines.join("\n");
+}
+
+/**
  * Builds the token usage section for the GitHub step summary.
  * @param {string} title
  * @param {string} markdown
@@ -147,6 +225,22 @@ async function main() {
 
     core.info("Token usage summary appended to step summary");
 
+    // Render api-proxy steering events from events.jsonl, if any.
+    const steeringEntries = readApiProxySteeringEntries(PROXY_EVENTS_PATHS);
+    if (steeringEntries.length > 0) {
+      const steeringMarkdown = generateApiProxySteeringEventsSummary(steeringEntries);
+      if (steeringMarkdown.length > 0) {
+        const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+        if (summaryPath) {
+          fs.appendFileSync(summaryPath, steeringMarkdown, "utf8");
+        } else {
+          core.summary.addRaw(steeringMarkdown, true);
+          await core.summary.write();
+        }
+        core.info(`Steering events summary appended to step summary (${steeringEntries.length} event(s))`);
+      }
+    }
+
     // Write agent_usage.json so the aggregated totals are bundled in the agent
     // artifact and accessible to third-party tools without parsing the step summary.
     // Determine the primary model: the one with the highest AI credits.
@@ -199,9 +293,16 @@ if (typeof module !== "undefined" && module.exports) {
     getSummaryTitle,
     buildStepSummarySection,
     appendStepSummarySection,
+    readApiProxySteeringEntries,
+    generateApiProxySteeringEventsSummary,
+    formatSteeringEventTime,
+    escapeSteeringTableCell,
     TOKEN_USAGE_AUDIT_PATH,
     TOKEN_USAGE_PATH,
     TOKEN_USAGE_PATHS,
+    PROXY_EVENTS_AUDIT_PATH,
+    PROXY_EVENTS_PATH,
+    PROXY_EVENTS_PATHS,
     AGENT_USAGE_PATH,
     DEFAULT_SUMMARY_TITLE,
   };
