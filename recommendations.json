@@ -1,114 +1,121 @@
 {
- "updated": "2026-06-10T09:58Z",
- "recommendations": [
-  {
-   "id": "rec-guardrail-cjs-bundle",
-   "linked_issue": "activation-guardrail-cjs-module-not-found",
-   "priority": "MEDIUM",
-   "text": "Before merging the daily-credit-limit guardrail feature (PR branch copilot/fix-daily-credit-limit-test), bundle check_daily_effective_workflow_guardrail.cjs into the action package \u2014 the compiled activation job require()s it but it is not p\u2026",
-   "first_seen": "2026-06-07",
-   "last_seen": "2026-06-07",
-   "recurrence": 1
-  },
-  {
-   "id": "rec-model-config-preflight",
-   "linked_issue": "model-param-config-incompatibility",
-   "priority": "HIGH",
-   "text": "ESCALATE \u2014 unfixed 3 consecutive days (06-05/06/07), failing 2 prod-main schedules DAILY. Add model/param preflight validation at compile or activation time: (1) reject/warn when an engine config pins a model that does not exist at the prov\u2026",
-   "first_seen": "2026-06-05",
-   "last_seen": "2026-06-07",
-   "recurrence": 3
-  },
-  {
-   "id": "rec-sdk-driver-stability",
-   "linked_issue": "copilot-sdk-driver-failures",
-   "priority": "MEDIUM",
-   "text": "Fix copilot-sdk-driver tool-permission mapping: the sdk-driver denies read on repo source/_test.go files and shell(sed/ls/cat) on /tmp/gh-aw/cache-memory that the workflow legitimately configures, aborting after 5 denials. Reconcile the all\u2026",
-   "first_seen": "2026-06-02",
-   "last_seen": "2026-06-07",
-   "recurrence": 5
-  },
-  {
-   "id": "rec-pat-400-rollback-or-fix",
-   "linked_issue": "copilot-pat-not-supported-400",
-   "priority": "CRITICAL",
-   "date": "2026-06-08",
-   "text": "ACTIVE INCIDENT (onset 2026-06-08T19:40Z, ongoing): copilot token-check sends a PAT to an endpoint that now returns '400 Personal Access Tokens are not supported for this endpoint', failing ~15 copilot runs/window including prod-main schedu\u2026",
-   "status": "DONE",
-   "note": "Resolved 2026-06-09 via pelikhan/fix-pat-400-retry: harness now tolerates/retries past the PAT token-check 400; runs succeed on attempt 1."
-  },
-  {
-   "id": "rec-cli-proxy-liveness-retry",
-   "linked_issue": "cli-proxy-difc-liveness-probe-failed",
-   "priority": "MEDIUM",
-   "date": "2026-06-08",
-   "text": "awf-cli-proxy container DIFC liveness probe failed (localhost:18443 connection refused) on 2 runs (PR Description Updater, Issue Monster), aborting the agent before it starts (turns=0). Add a bounded retry/health-wait on the cli-proxy liven\u2026",
-   "note": "Still OPEN \u2014 DIFC liveness-probe-18443 recurred day2 (Issue Monster, PR Sous Chef turns=0). Intermittent; add probe retry/backoff before declaring the proxy dead."
-  },
-  {
-   "id": "rec-sdk-session-idle-emit-then-timeout",
-   "linked_issue": "copilot-sdk-driver-failures",
-   "priority": "MEDIUM",
-   "date": "2026-06-08",
-   "text": "PR Code Quality Reviewer (27160990743) emitted a complete, valid review (findings JSON in assistant.message) but then hit 'Timeout 870000ms waiting for session.idle' and exit1, discarding the work and reddening the job. The sdk-driver shoul\u2026"
-  },
-  {
-   "id": "rec-ai-credits-soft-cap-guard",
-   "status": "OPEN",
-   "severity": "high",
-   "first_seen": "2026-06-09",
-   "linked_issue": "daily-ai-credits-cap-429",
-   "linked_workflows": [
-    "Daily Ambient Context Optimizer"
-   ],
-   "recommendation": "Add a soft pre-cap AI-credits guard to heavy daily aggregators (esp. Daily Ambient Context Optimizer): check remaining daily credits before the heaviest turns and degrade gracefully (emit partial output + noop) instead of 429-aborting at turn 57 and wasting 3M tokens. Alternatively raise the cap for the few heavy prod-main aggregators or shard their work."
-  },
-  {
-   "id": "rec-copilot-harness-timeout-checkpoint",
-   "status": "OPEN",
-   "severity": "medium",
-   "first_seen": "2026-06-09",
-   "linked_issue": "copilot-harness-15min-action-timeout",
-   "linked_workflows": [
-    "Test Quality Sentinel"
-   ],
-   "recommendation": "Raise the Copilot CLI step timeout for review-heavy workflows and/or flush buffered safe-outputs periodically so a 15-min action timeout still emits the in-flight review instead of reddening with no output."
-  },
-  {
-   "id": "rec-node-image-ghcr-mirror",
-   "linked_issue": "docker-hub-registry-pull-timeout",
-   "priority": "HIGH",
-   "text": "Remove the agent setup's dependency on Docker Hub. download_docker_images.sh pulls all ghcr.io images fine but times out on the single Docker Hub image node:lts-alpine (registry-1.docker.io context-deadline/i-o-timeout across all 3 retries\u2026",
-   "first_seen": "2026-06-10",
-   "last_seen": "2026-06-10",
-   "recurrence": 1
-  },
-  {
-   "id": "rec-loop-detection-guard",
-   "linked_issue": "copilot-harness-15min-action-timeout",
-   "priority": "MEDIUM",
-   "text": "Add a degenerate-loop / repeated-identical-tool-call guard to the copilot harness. GitHub Remote MCP Auth Test ran the IDENTICAL command `date -u +%Y-%m-%d %H:%M:%S UTC` 130+ times across 136 turns, burning 3.7M tokens before the 5-minute s\u2026",
-   "first_seen": "2026-06-10",
-   "last_seen": "2026-06-10",
-   "recurrence": 1
-  },
-  {
-   "id": "rec-repo-memory-signed-seed",
-   "linked_issue": "repo-memory-push-signed-commit-seeding",
-   "priority": "MEDIUM",
-   "text": "Fix the repo-memory push for brand-new orphan branches under signed-commit rulesets. Daily Safe Outputs Git Simulator's AGENT succeeded but push_repo_memory failed 4/4 (GH013 rule violation) because the first commit to the never-before-seen\u2026",
-   "first_seen": "2026-06-10",
-   "last_seen": "2026-06-10",
-   "recurrence": 1
-  },
-  {
-   "id": "rec-cli-proxy-liveness-hardening",
-   "linked_issue": "cli-proxy-difc-liveness-probe-failed",
-   "priority": "MEDIUM",
-   "text": "cli-proxy DIFC liveness-probe failure (localhost:18443 connection refused, turns=0) has now recurred 3 consecutive days (06-08 PR Description Updater/Issue Monster, 06-09 Issue Monster/PR Sous Chef, 06-10 Sub-Issue Closer/Auto-Triage). It i\u2026",
-   "first_seen": "2026-06-08",
-   "last_seen": "2026-06-10",
-   "recurrence": 3
-  }
- ]
+  "updated": "2026-06-10T21:50Z",
+  "recommendations": [
+    {
+      "id": "rec-guardrail-cjs-bundle",
+      "linked_issue": "activation-guardrail-cjs-module-not-found",
+      "priority": "MEDIUM",
+      "text": "Before merging the daily-credit-limit guardrail feature (PR branch copilot/fix-daily-credit-limit-test), bundle check_daily_effective_workflow_guardrail.cjs into the action package — the compiled activation job require()s it but it is not p…",
+      "first_seen": "2026-06-07",
+      "last_seen": "2026-06-07",
+      "recurrence": 1
+    },
+    {
+      "id": "rec-model-config-preflight",
+      "linked_issue": "model-param-config-incompatibility",
+      "priority": "HIGH",
+      "text": "ESCALATE — unfixed 3 consecutive days (06-05/06/07), failing 2 prod-main schedules DAILY. Add model/param preflight validation at compile or activation time: (1) reject/warn when an engine config pins a model that does not exist at the prov…",
+      "first_seen": "2026-06-05",
+      "last_seen": "2026-06-07",
+      "recurrence": 3
+    },
+    {
+      "id": "rec-sdk-driver-stability",
+      "linked_issue": "copilot-sdk-driver-failures",
+      "priority": "MEDIUM",
+      "text": "Fix copilot-sdk-driver tool-permission mapping: the sdk-driver denies read on repo source/_test.go files and shell(sed/ls/cat) on /tmp/gh-aw/cache-memory that the workflow legitimately configures, aborting after 5 denials. Reconcile the all…",
+      "first_seen": "2026-06-02",
+      "last_seen": "2026-06-10",
+      "recurrence": 5,
+      "note": "Reconfirmed 06-10: Daily Safe Output Integrator tool-perm-lockout recurred (5 denials, read repo dir + sed). Either widen the workflow allowed-tools to include the repo-source reads/sed it legitimately needs, or stop the agent probing denied paths."
+    },
+    {
+      "id": "rec-pat-400-rollback-or-fix",
+      "linked_issue": "copilot-pat-not-supported-400",
+      "priority": "CRITICAL",
+      "date": "2026-06-08",
+      "text": "ACTIVE INCIDENT (onset 2026-06-08T19:40Z, ongoing): copilot token-check sends a PAT to an endpoint that now returns '400 Personal Access Tokens are not supported for this endpoint', failing ~15 copilot runs/window including prod-main schedu…",
+      "status": "DONE",
+      "note": "Resolved 2026-06-09 via pelikhan/fix-pat-400-retry: harness now tolerates/retries past the PAT token-check 400; runs succeed on attempt 1."
+    },
+    {
+      "id": "rec-cli-proxy-liveness-retry",
+      "linked_issue": "cli-proxy-difc-liveness-probe-failed",
+      "priority": "MEDIUM",
+      "date": "2026-06-08",
+      "text": "awf-cli-proxy container DIFC liveness probe failed (localhost:18443 connection refused) on 2 runs (PR Description Updater, Issue Monster), aborting the agent before it starts (turns=0). Add a bounded retry/health-wait on the cli-proxy liven…",
+      "note": "Still OPEN — DIFC liveness-probe-18443 recurred day2 (Issue Monster, PR Sous Chef turns=0). Intermittent; add probe retry/backoff before declaring the proxy dead."
+    },
+    {
+      "id": "rec-sdk-session-idle-emit-then-timeout",
+      "linked_issue": "copilot-sdk-driver-failures",
+      "priority": "HIGH",
+      "date": "2026-06-08",
+      "text": "PR Code Quality Reviewer (27160990743) emitted a complete, valid review (findings JSON in assistant.message) but then hit 'Timeout 870000ms waiting for session.idle' and exit1, discarding the work and reddening the job. The sdk-driver shoul…",
+      "last_seen": "2026-06-10",
+      "note": "Reconfirmed 06-10 evening: 2 PR CQR hard-fails from session.idle 870s with hasOutput=true. The SDK driver should detect terminal/idle from the emitted final assistant message and flush safe-output instead of blocking 14.5min then exit 1. High-value: this class caused 2 of 5 fails today."
+    },
+    {
+      "id": "rec-ai-credits-soft-cap-guard",
+      "status": "OPEN",
+      "severity": "high",
+      "first_seen": "2026-06-09",
+      "linked_issue": "daily-ai-credits-cap-429",
+      "linked_workflows": [
+        "Daily Ambient Context Optimizer"
+      ],
+      "recommendation": "Add a soft pre-cap AI-credits guard to heavy daily aggregators (esp. Daily Ambient Context Optimizer): check remaining daily credits before the heaviest turns and degrade gracefully (emit partial output + noop) instead of 429-aborting at turn 57 and wasting 3M tokens. Alternatively raise the cap for the few heavy prod-main aggregators or shard their work.",
+      "last_seen": "2026-06-10",
+      "priority": "HIGH",
+      "note": "Reconfirmed 06-10: Daily Ambient Context Optimizer 429 cap recurred (rec=2). Pre-cap credit check + graceful partial-output degrade needed before heaviest aggregation turns."
+    },
+    {
+      "id": "rec-copilot-harness-timeout-checkpoint",
+      "status": "OPEN",
+      "severity": "medium",
+      "first_seen": "2026-06-09",
+      "linked_issue": "copilot-harness-15min-action-timeout",
+      "linked_workflows": [
+        "Test Quality Sentinel"
+      ],
+      "recommendation": "Raise the Copilot CLI step timeout for review-heavy workflows and/or flush buffered safe-outputs periodically so a 15-min action timeout still emits the in-flight review instead of reddening with no output."
+    },
+    {
+      "id": "rec-node-image-ghcr-mirror",
+      "linked_issue": "docker-hub-registry-pull-timeout",
+      "priority": "HIGH",
+      "text": "Remove the agent setup's dependency on Docker Hub. download_docker_images.sh pulls all ghcr.io images fine but times out on the single Docker Hub image node:lts-alpine (registry-1.docker.io context-deadline/i-o-timeout across all 3 retries…",
+      "first_seen": "2026-06-10",
+      "last_seen": "2026-06-10",
+      "recurrence": 1
+    },
+    {
+      "id": "rec-loop-detection-guard",
+      "linked_issue": "copilot-harness-15min-action-timeout",
+      "priority": "MEDIUM",
+      "text": "Add a degenerate-loop / repeated-identical-tool-call guard to the copilot harness. GitHub Remote MCP Auth Test ran the IDENTICAL command `date -u +%Y-%m-%d %H:%M:%S UTC` 130+ times across 136 turns, burning 3.7M tokens before the 5-minute s…",
+      "first_seen": "2026-06-10",
+      "last_seen": "2026-06-10",
+      "recurrence": 1
+    },
+    {
+      "id": "rec-repo-memory-signed-seed",
+      "linked_issue": "repo-memory-push-signed-commit-seeding",
+      "priority": "MEDIUM",
+      "text": "Fix the repo-memory push for brand-new orphan branches under signed-commit rulesets. Daily Safe Outputs Git Simulator's AGENT succeeded but push_repo_memory failed 4/4 (GH013 rule violation) because the first commit to the never-before-seen…",
+      "first_seen": "2026-06-10",
+      "last_seen": "2026-06-10",
+      "recurrence": 1
+    },
+    {
+      "id": "rec-cli-proxy-liveness-hardening",
+      "linked_issue": "cli-proxy-difc-liveness-probe-failed",
+      "priority": "MEDIUM",
+      "text": "cli-proxy DIFC liveness-probe failure (localhost:18443 connection refused, turns=0) has now recurred 3 consecutive days (06-08 PR Description Updater/Issue Monster, 06-09 Issue Monster/PR Sous Chef, 06-10 Sub-Issue Closer/Auto-Triage). It i…",
+      "first_seen": "2026-06-08",
+      "last_seen": "2026-06-10",
+      "recurrence": 3,
+      "note": " | RECONFIRM day4: Daily Secrets Analysis Agent never invoked (turns=0)."
+    }
+  ]
 }

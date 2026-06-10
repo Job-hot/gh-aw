@@ -1,222 +1,219 @@
 {
- "updated": "2026-06-10T09:58Z",
- "date": "2026-06-10",
- "partial": true,
- "latest_window": "PARTIAL ~4.2h morning cluster (05:33-09:46Z; logs tool timeout at 67s, 48 in-window runs, ~20h unobserved). 40 success / 6 failure / 2 in-progress = 87.0% (30d avg ~84%). DOMINANT NEW: docker-hub-registry-pull-timeout x2 (Windows Terminal, Hippo Learn) \u2014 node:lts-alpine DockerHub pull exit 123, ghcr.io fine. cli-proxy DIFC liveness-18443 RECUR DAY3 x2 (Sub-Issue Closer, Auto-Triage). NEW degenerate-loop: Remote MCP Auth Test repeated `date -u` 130+x -> 5-min action timeout, 3.7M tok wasted. NEW repo-memory signed-commit seeding gap reddened Git Simulator (claude) DESPITE agent success. ALL agent-exec failures copilot; claude 15/15, codex 1/1. PAT-400 still resolved; daily-ai-credits-429 absent; token-budget-429 absent. firewall 0.69% clean. EffectiveTokens unpopulated again (data-quality).",
- "totals": {
-  "r": 48,
-  "completed": 46,
-  "s": 40,
-  "f": 6,
-  "in_prog": 2,
-  "rate": 87.0,
-  "prod_main_rate": null,
-  "tok": 43438981,
-  "eff_tok": 0,
-  "aic": 7487.81,
-  "turns": 843,
-  "min": 479,
-  "cost_est_usd": 30.44,
-  "errors": 6,
-  "github_api_calls": 1005,
-  "fw_req": 2747,
-  "fw_blk": 19,
-  "fw_blk_pct": 0.69,
-  "missing_tools": 0,
-  "missing_data": 0,
-  "mcp_failures": 0,
-  "safe_items": 5,
-  "note": "PARTIAL morning window; NEW docker-hub pull timeout dominant; all agent fails copilot"
- },
- "engines": {
-  "copilot": 32,
-  "claude": 15,
-  "codex": 1
- },
- "history": [
-  {
-   "d": "2026-05-20",
-   "r": 78,
-   "s": 67,
-   "rate": 85.9,
-   "$": 26.72,
-   "tok": 59645141
+  "updated": "2026-06-10T21:50Z",
+  "date": "2026-06-10",
+  "partial": true,
+  "latest_window": "EVENING window 17:46-21:45Z (47 runs; separate from morning 48-run cluster). 41 success / 5 failure / 1 in-progress(audit-self) = 89.1% of 46 terminal (30d avg ~84%). ALL 5 hard fails copilot & map to KNOWN RECURRING issues — nothing new. DOMINANT: copilot-sdk-driver session.idle 870s timeout (14m30s, hasOutput=true, wasted review) hard-failed BOTH PR Code Quality Reviewer runs. tool-perm-lockout RECUR Daily Safe Output Integrator (5 denials). daily-ai-credits-429 RECUR (Ambient 1003/1000, rec=2). cli-proxy DIFC liveness-18443 RECUR day4 (Daily Secrets, agent never invoked). claude 11/11 + codex 1/1 = 100%. firewall 1.0% blocked = ALL benign Chrome/Google telemetry (accounts.google, googleapis autofill/safebrowsing) on Smoke Claude. GitHub status=completed MASKS conclusion=failure.",
+  "totals": {
+    "r": 47,
+    "completed": 46,
+    "in_prog": 1,
+    "s": 41,
+    "f": 5,
+    "rate": 89.1,
+    "tok": 26185423,
+    "eff_tok": 0,
+    "aic": 5468.19,
+    "turns": 607,
+    "min": 555,
+    "errors": 7,
+    "github_api_calls": 1137,
+    "fw_req": 3136,
+    "fw_blk": 32,
+    "fw_blk_pct": 1.0,
+    "missing_tools": 1,
+    "missing_data": 0,
+    "mcp_failures": 0,
+    "safe_items": 19,
+    "note": "evening window; all 5 fails copilot & known-recurring"
   },
-  {
-   "d": "2026-05-21",
-   "r": 41,
-   "s": 31,
-   "rate": 75.6,
-   "$": 19.96,
-   "tok": 35895593
+  "engines": {
+    "copilot": 34,
+    "claude": 12,
+    "codex": 1
   },
-  {
-   "d": "2026-05-23",
-   "r": 77,
-   "s": 32,
-   "rate": 41.6,
-   "$": 24.6145,
-   "tok": 46179750
-  },
-  {
-   "d": "2026-05-24",
-   "r": 38,
-   "s": 30,
-   "rate": 81.1,
-   "$": 23.058685,
-   "tok": 38562917
-  },
-  {
-   "d": "2026-05-25",
-   "r": 174,
-   "s": 162,
-   "rate": 94.7,
-   "$": 26.2265,
-   "tok": 56839455
-  },
-  {
-   "d": "2026-05-26",
-   "r": 49,
-   "s": 42,
-   "rate": 85.7,
-   "$": 26.366459,
-   "tok": 54489070
-  },
-  {
-   "d": "2026-05-27",
-   "r": 37,
-   "s": 30,
-   "rate": 90.9,
-   "$": 12.0,
-   "tok": 17283384,
-   "partial": true
-  },
-  {
-   "d": "2026-05-28",
-   "r": 64,
-   "s": 47,
-   "rate": 81.0,
-   "$": 29.354164,
-   "tok": 48923104,
-   "partial": true
-  },
-  {
-   "d": "2026-05-29",
-   "r": 21,
-   "s": 17,
-   "rate": 89.5,
-   "$": 7.18,
-   "tok": 14553338,
-   "partial": true,
-   "note": "small mid-cycle window; $ is claude-only"
-  },
-  {
-   "d": "2026-05-30",
-   "r": 56,
-   "s": 51,
-   "rate": 91.1,
-   "$": 24.55,
-   "tok": 49889280,
-   "note": "full window; $ claude-measured (copilot/codex cost not reported)"
-  },
-  {
-   "d": "2026-05-31",
-   "r": 59,
-   "s": 53,
-   "rate": 89.8,
-   "$": 31.63,
-   "tok": 68838688,
-   "note": "full window; $ claude-measured. Cost up on Go Logger Enhancement $8.30 outlier (success)."
-  },
-  {
-   "d": "2026-06-01",
-   "r": 53,
-   "s": 51,
-   "rate": 96.2,
-   "$": 15.62,
-   "tok": 38076235,
-   "note": "full window; $ claude-measured. BEST success rate in 14-day window. Both failures = same safe-output target=* class."
-  },
-  {
-   "d": "2026-06-02",
-   "r": 57,
-   "s": 48,
-   "rate": 84.2,
-   "$": 15.05,
-   "tok": 32731221,
-   "note": "full window; $ claude-measured. Success DOWN from 96.2% peak. 9 failures/3 classes: token-budget-429 RE-ESCALATED (2 wf over 25M cap), safe-output partial-failure-intolerance (3 wf), NEW copilot-sdk-session-auth (4 dev-iteration runs on 1 experimental wf). Cos\u2026"
-  },
-  {
-   "d": "2026-06-03",
-   "r": 17,
-   "s": 13,
-   "rate": 76.5,
-   "$": 6.75,
-   "tok": 6839253,
-   "note": "window since 06-02 night audit (17 completed/19, 2 in-prog). $ claude-measured. 4 failures: 3x copilot-sdk-session-auth (100% of sdk-driver runs, ESCALATED to prod main) + 1 safe-output target=* (Contribution Check)."
-  },
-  {
-   "d": "2026-06-04",
-   "r": 64,
-   "s": 57,
-   "rate": 89.1,
-   "$": 19.23,
-   "tok": 31739017,
-   "partial": true,
-   "note": "PARTIAL ~4h window (logs timeout). 7 fail: token-budget-429 RECUR prod main + safe-output target=* x2 (Contribution Check/PR Sous Chef) + copilot-sdk-tool-permission-lockout (PR Code Quality Reviewer) + 3 by-design smoke probes."
-  },
-  {
-   "d": "2026-06-05",
-   "r": 53,
-   "s": 48,
-   "rate": 90.6,
-   "tok": 30404314,
-   "note": "full window (~4h evening cluster; continuation returned 0 older runs). 5 fail: NEW model/param config-incompatibility x2 prod-main (Caveman effort-unsupported 400, Cache Strategy model-not-found 404) + TQS copilot agent-job redden w/ valid output + 2 by-design\u2026"
-  },
-  {
-   "d": "2026-06-06",
-   "r": 97,
-   "s": 81,
-   "rate": 83.5,
-   "tok": 41627101,
-   "partial": true,
-   "note": "PARTIAL ~6h window (15:11-21:29Z; logs tool timed out at 120s, newest 100 runs only, ~18h unobserved). 16 fail. DOMINANT: copilot SDK-driver path broken = 9/16 (NEW minimatch MODULE_NOT_FOUND x6 + RECUR tool-perm-lockout x3). Also: model/param config RECUR x2\u2026"
-  },
-  {
-   "d": "2026-06-07",
-   "r": 54,
-   "s": 46,
-   "rate": 85.2,
-   "tok": 23994237,
-   "note": "FULL but SMALL 24h window (~3.7h active cluster 17:56-21:38Z; continuation returned 0 older runs \u2014 quiet Sunday). PROD-MAIN 39/42 real = 92.9% (excl 1 intentional-fail). 8 fail/4 classes: NEW guardrail-module-missing x4 (PR branch copilot/fix-daily-credit-limi\u2026"
-  },
-  {
-   "d": "2026-06-08",
-   "r": 88,
-   "s": 66,
-   "rate": 75.0,
-   "tok": 24367927,
-   "partial": true,
-   "note": "PARTIAL ~3.3h evening cluster (18:21-21:40Z; logs timeout, 93/260 dirs had summaries). ACTIVE INCIDENT copilot-pat-not-supported-400 (NEW) onset 19:40Z still firing 21:37Z: '400 Personal Access Tokens are not supported for this endpoint' on copilot harness+sdk\u2026"
-  },
-  {
-   "d": "2026-06-09",
-   "r": 37,
-   "s": 31,
-   "rate": 83.8,
-   "tok": 23834861,
-   "partial": true,
-   "note": "PARTIAL ~2.5h evening cluster (19:13-21:41Z, 38 in-window). PAT-400 incident RESOLVED (4 signature-carrying runs all SUCCEEDED attempt1; pelikhan/fix-pat-400-retry landed). 6 fail ALL copilot: NEW daily-ai-credits-cap-429 (Ambient 1026.78/1000 prod-main), cli-\u2026"
-  },
-  {
-   "d": "2026-06-10",
-   "r": 46,
-   "s": 40,
-   "rate": 87.0,
-   "$": 30.44,
-   "tok": 43438981,
-   "partial": true,
-   "note": "PARTIAL ~4.2h morning cluster (48 in-window, logs timeout). 6 fail: NEW docker-hub-registry-pull-timeout x2 (Windows Terminal/Hippo Learn, node:lts-alpine DockerHub exit123), cli-proxy DIFC liveness-18443 RECUR day3 x2 (Sub-Issue Closer/Auto-Triage), NEW degen\u2026"
-  }
- ]
+  "history": [
+    {
+      "d": "2026-05-20",
+      "r": 78,
+      "s": 67,
+      "rate": 85.9,
+      "$": 26.72,
+      "tok": 59645141
+    },
+    {
+      "d": "2026-05-21",
+      "r": 41,
+      "s": 31,
+      "rate": 75.6,
+      "$": 19.96,
+      "tok": 35895593
+    },
+    {
+      "d": "2026-05-23",
+      "r": 77,
+      "s": 32,
+      "rate": 41.6,
+      "$": 24.6145,
+      "tok": 46179750
+    },
+    {
+      "d": "2026-05-24",
+      "r": 38,
+      "s": 30,
+      "rate": 81.1,
+      "$": 23.058685,
+      "tok": 38562917
+    },
+    {
+      "d": "2026-05-25",
+      "r": 174,
+      "s": 162,
+      "rate": 94.7,
+      "$": 26.2265,
+      "tok": 56839455
+    },
+    {
+      "d": "2026-05-26",
+      "r": 49,
+      "s": 42,
+      "rate": 85.7,
+      "$": 26.366459,
+      "tok": 54489070
+    },
+    {
+      "d": "2026-05-27",
+      "r": 37,
+      "s": 30,
+      "rate": 90.9,
+      "$": 12.0,
+      "tok": 17283384,
+      "partial": true
+    },
+    {
+      "d": "2026-05-28",
+      "r": 64,
+      "s": 47,
+      "rate": 81.0,
+      "$": 29.354164,
+      "tok": 48923104,
+      "partial": true
+    },
+    {
+      "d": "2026-05-29",
+      "r": 21,
+      "s": 17,
+      "rate": 89.5,
+      "$": 7.18,
+      "tok": 14553338,
+      "partial": true,
+      "note": "small mid-cycle window; $ is claude-only"
+    },
+    {
+      "d": "2026-05-30",
+      "r": 56,
+      "s": 51,
+      "rate": 91.1,
+      "$": 24.55,
+      "tok": 49889280,
+      "note": "full window; $ claude-measured (copilot/codex cost not reported)"
+    },
+    {
+      "d": "2026-05-31",
+      "r": 59,
+      "s": 53,
+      "rate": 89.8,
+      "$": 31.63,
+      "tok": 68838688,
+      "note": "full window; $ claude-measured. Cost up on Go Logger Enhancement $8.30 outlier (success)."
+    },
+    {
+      "d": "2026-06-01",
+      "r": 53,
+      "s": 51,
+      "rate": 96.2,
+      "$": 15.62,
+      "tok": 38076235,
+      "note": "full window; $ claude-measured. BEST success rate in 14-day window. Both failures = same safe-output target=* class."
+    },
+    {
+      "d": "2026-06-02",
+      "r": 57,
+      "s": 48,
+      "rate": 84.2,
+      "$": 15.05,
+      "tok": 32731221,
+      "note": "full window; $ claude-measured. Success DOWN from 96.2% peak. 9 failures/3 classes: token-budget-429 RE-ESCALATED (2 wf over 25M cap), safe-output partial-failure-intolerance (3 wf), NEW copilot-sdk-session-auth (4 dev-iteration runs on 1 experimental wf). Cos…"
+    },
+    {
+      "d": "2026-06-03",
+      "r": 17,
+      "s": 13,
+      "rate": 76.5,
+      "$": 6.75,
+      "tok": 6839253,
+      "note": "window since 06-02 night audit (17 completed/19, 2 in-prog). $ claude-measured. 4 failures: 3x copilot-sdk-session-auth (100% of sdk-driver runs, ESCALATED to prod main) + 1 safe-output target=* (Contribution Check)."
+    },
+    {
+      "d": "2026-06-04",
+      "r": 64,
+      "s": 57,
+      "rate": 89.1,
+      "$": 19.23,
+      "tok": 31739017,
+      "partial": true,
+      "note": "PARTIAL ~4h window (logs timeout). 7 fail: token-budget-429 RECUR prod main + safe-output target=* x2 (Contribution Check/PR Sous Chef) + copilot-sdk-tool-permission-lockout (PR Code Quality Reviewer) + 3 by-design smoke probes."
+    },
+    {
+      "d": "2026-06-05",
+      "r": 53,
+      "s": 48,
+      "rate": 90.6,
+      "tok": 30404314,
+      "note": "full window (~4h evening cluster; continuation returned 0 older runs). 5 fail: NEW model/param config-incompatibility x2 prod-main (Caveman effort-unsupported 400, Cache Strategy model-not-found 404) + TQS copilot agent-job redden w/ valid output + 2 by-design…"
+    },
+    {
+      "d": "2026-06-06",
+      "r": 97,
+      "s": 81,
+      "rate": 83.5,
+      "tok": 41627101,
+      "partial": true,
+      "note": "PARTIAL ~6h window (15:11-21:29Z; logs tool timed out at 120s, newest 100 runs only, ~18h unobserved). 16 fail. DOMINANT: copilot SDK-driver path broken = 9/16 (NEW minimatch MODULE_NOT_FOUND x6 + RECUR tool-perm-lockout x3). Also: model/param config RECUR x2…"
+    },
+    {
+      "d": "2026-06-07",
+      "r": 54,
+      "s": 46,
+      "rate": 85.2,
+      "tok": 23994237,
+      "note": "FULL but SMALL 24h window (~3.7h active cluster 17:56-21:38Z; continuation returned 0 older runs — quiet Sunday). PROD-MAIN 39/42 real = 92.9% (excl 1 intentional-fail). 8 fail/4 classes: NEW guardrail-module-missing x4 (PR branch copilot/fix-daily-credit-limi…"
+    },
+    {
+      "d": "2026-06-08",
+      "r": 88,
+      "s": 66,
+      "rate": 75.0,
+      "tok": 24367927,
+      "partial": true,
+      "note": "PARTIAL ~3.3h evening cluster (18:21-21:40Z; logs timeout, 93/260 dirs had summaries). ACTIVE INCIDENT copilot-pat-not-supported-400 (NEW) onset 19:40Z still firing 21:37Z: '400 Personal Access Tokens are not supported for this endpoint' on copilot harness+sdk…"
+    },
+    {
+      "d": "2026-06-09",
+      "r": 37,
+      "s": 31,
+      "rate": 83.8,
+      "tok": 23834861,
+      "partial": true,
+      "note": "PARTIAL ~2.5h evening cluster (19:13-21:41Z, 38 in-window). PAT-400 incident RESOLVED (4 signature-carrying runs all SUCCEEDED attempt1; pelikhan/fix-pat-400-retry landed). 6 fail ALL copilot: NEW daily-ai-credits-cap-429 (Ambient 1026.78/1000 prod-main), cli-…"
+    },
+    {
+      "d": "2026-06-10",
+      "r": 93,
+      "s": 81,
+      "rate": 88.0,
+      "tok": 69624404,
+      "partial": true,
+      "note": "morning48+evening47 merged; mid-day gap"
+    }
+  ]
 }
