@@ -88,9 +88,89 @@ flowchart LR
 
 Useful for component-based architectures where multiple teams need a shared visibility layer, cross-project initiatives, or aggregating metrics from distributed repositories. See [Cross-Repo Issue Tracking](/gh-aw/examples/multi-repo/issue-tracking/) for a complete example.
 
+## The Central Repo as an Agentic Factory
+
+Beyond dispatching work and aggregating events, the central repository can serve as a **packaging envelope** for your entire suite of agentic processes. A single repository holds all the workflows your organization needs. Drop it into a new org, configure the required secrets, and it immediately starts running — no workflow reconstruction required.
+
+This makes the central repo an **agentic factory**: a self-contained, production-ready bundle that any team can instantiate with minimal effort.
+
+### Template Repository Structure
+
+A well-structured agentic factory repository organizes its workflows, shared components, and an `aw.yml` manifest together:
+
+```
+agentic-workflows/
+├── aw.yml                        # package manifest
+├── README.md                     # setup guide with secrets checklist
+├── .github/
+│   └── workflows/
+│       ├── rollout.md            # org-wide rollout orchestrator
+│       ├── triage.md             # cross-repo issue triage
+│       ├── quality-monitor.md    # code quality monitoring
+│       └── dependabot.md         # dependency management
+└── shared/
+    ├── mcp-config.md             # shared MCP server definitions
+    └── safety-policy.md          # shared safe-outputs policies
+```
+
+Mark the repository as a [GitHub template repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-template-repository) so anyone in the organization can instantiate a personal copy in one click without carrying over existing workflow runs or secrets.
+
+### Secrets Checklist
+
+Document the secrets required to activate all workflows in `README.md`. A complete factory typically needs:
+
+| Secret | Purpose |
+| ------ | ------- |
+| `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` | AI engine for agent runs |
+| `GH_AW_READ_ORG_TOKEN` | Read org metadata and repository list |
+| `GH_AW_CROSS_REPO_PAT` | Write safe outputs to target repositories |
+| `ORG_REPO_CHECKOUT_TOKEN` | Check out target repositories for workers |
+
+> [!TIP]
+> Use a GitHub App rather than PATs for cross-repository tokens where possible. GitHub Apps provide automatic token rotation and fine-grained per-repository scoping. See [Authentication](/gh-aw/reference/auth/) for setup.
+
+### Activation: Drop In, Configure, Run
+
+1. **Instantiate** — Create a new repository from the factory template in the target org (or fork it for independent configuration).
+2. **Configure** — Add the required secrets to the new repository's **Settings → Secrets → Actions**.
+3. **Enable Actions** — Confirm GitHub Actions is enabled for the repository and that scheduled workflows are not paused.
+4. **Verify** — Trigger a `workflow_dispatch` on one workflow to confirm end-to-end connectivity before the first scheduled run fires.
+
+Once secrets are in place, all scheduled workflows activate automatically and the factory is producing.
+
+### Distribution via `aw.yml`
+
+Add an `aw.yml` manifest to make the factory installable as a versioned package. Teams can then install individual workflows from the factory rather than copying the whole repository:
+
+```yaml
+name: Acme Org Agentic Factory
+emoji: 🏭
+description: Standard agentic workflows for Acme org repositories
+min-version: v0.40.0
+includes:
+  - .github/workflows/rollout.md
+  - .github/workflows/triage.md
+  - .github/workflows/quality-monitor.md
+  - .github/workflows/dependabot.md
+  - shared/mcp-config.md
+  - shared/safety-policy.md
+```
+
+A consuming repository installs a specific workflow:
+
+```bash
+gh aw add acme-org/agentic-workflows/triage@v1.0.0
+```
+
+Pin consumers to a release tag for stability. As the factory evolves, run `gh aw update` in consuming repositories to pull in upstream changes with a 3-way merge that preserves local edits.
+
+See [Sharing Workflows in the Organization](/gh-aw/practices/sharing-workflows/) for versioning strategy, governance recommendations, and the recommended enterprise pattern for a central `agentic-workflows` repository.
+
 ## Related Documentation
 
 - [MultiRepoOps](/gh-aw/patterns/multi-repo-ops/) — Side repo and downstream sync patterns
+- [Sharing Workflows in the Organization](/gh-aw/practices/sharing-workflows/) — Versioning, governance, and enterprise patterns
+- [Package Manifest (aw.yml)](/gh-aw/reference/aw-yml-package-manifest/) — Manifest format for installable packages
 - [Dependabot Rollout](/gh-aw/examples/multi-repo/dependabot-rollout/) — End-to-end org-wide rollout example
 - [Cross-Repo Issue Tracking](/gh-aw/examples/multi-repo/issue-tracking/) — Aggregated issue tracking example
 - [Cross-Repository Safe Outputs](/gh-aw/reference/cross-repository/) — Configuration reference
