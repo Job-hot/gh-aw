@@ -45,9 +45,9 @@ func collectDockerImages(tools map[string]any, workflowData *WorkflowData, actio
 		}
 	}
 
-	// Check for safe-outputs MCP server (uses node:lts-alpine container)
+	// Check for safe-outputs MCP server (uses node:lts-bookworm container; includes git via buildpack-deps)
 	if workflowData != nil && workflowData.SafeOutputs != nil && HasSafeOutputsEnabled(workflowData.SafeOutputs) {
-		image := constants.DefaultNodeAlpineLTSImage
+		image := constants.DefaultSafeOutputsNodeImage
 		if !imageSet[image] {
 			images = append(images, image)
 			imageSet[image] = true

@@ -358,6 +358,7 @@ dir := constants.GetWorkflowDir()
 
 ```go
 constants.DefaultNodeAlpineLTSImage     // "node:lts-alpine"
+constants.DefaultSafeOutputsNodeImage   // "node:lts-bookworm"
 constants.DefaultPythonAlpineLTSImage   // "python:alpine"
 constants.DefaultAlpineImage            // "alpine:latest"
 constants.DevModeGhAwImage              // "localhost/gh-aw:dev" (local dev only)

@@ -105,7 +105,7 @@ func TestCollectDockerImages_StoresInWorkflowData(t *testing.T) {
 
 	images := collectDockerImages(tools, workflowData, ActionModeRelease)
 
-	// DockerImages on workflowData should now be populated (node:lts-alpine from safe-outputs).
+	// DockerImages on workflowData should now be populated (node:lts-bookworm from safe-outputs).
 	require.NotEmpty(t, workflowData.DockerImages, "DockerImages should be populated after collectDockerImages")
 	assert.Equal(t, images, workflowData.DockerImages, "DockerImages should match the returned slice")
 

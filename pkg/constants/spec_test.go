@@ -535,6 +535,8 @@ func TestSpec_ContainerImages_Values(t *testing.T) {
 	}{
 		// From spec: DefaultNodeAlpineLTSImage // "node:lts-alpine"
 		{name: "DefaultNodeAlpineLTSImage", actual: constants.DefaultNodeAlpineLTSImage, expected: "node:lts-alpine"},
+		// From spec: DefaultSafeOutputsNodeImage // "node:lts-bookworm"
+		{name: "DefaultSafeOutputsNodeImage", actual: constants.DefaultSafeOutputsNodeImage, expected: "node:lts-bookworm"},
 		// From spec: DefaultPythonAlpineLTSImage // "python:alpine"
 		{name: "DefaultPythonAlpineLTSImage", actual: constants.DefaultPythonAlpineLTSImage, expected: "python:alpine"},
 		// From spec: DefaultAlpineImage // "alpine:latest"

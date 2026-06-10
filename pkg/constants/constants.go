@@ -211,6 +211,11 @@ const DefaultFirewallRegistry = "ghcr.io/github/gh-aw-firewall"
 // Using node:lts-alpine provides the latest LTS version with minimal footprint
 const DefaultNodeAlpineLTSImage = "node:lts-alpine"
 
+// DefaultSafeOutputsNodeImage is the Node.js container image for the safe-outputs MCP server.
+// Uses node:lts-bookworm (Debian Bookworm) which is based on buildpack-deps and includes git,
+// so no runtime package installation is needed for git operations in the safe-outputs server.
+const DefaultSafeOutputsNodeImage = "node:lts-bookworm"
+
 // DefaultPythonAlpineLTSImage is the default Python Alpine LTS container image for MCP servers
 // Using python:alpine provides the latest stable version with minimal footprint
 const DefaultPythonAlpineLTSImage = "python:alpine"
