@@ -78,7 +78,7 @@ func TestRenderSharedMCPConfig_CopilotFields(t *testing.T) {
 			expectedContent: []string{
 				// After auto-containerization, npx becomes container with entrypoint
 				`"type": "stdio"`,
-				`"container": "node:lts-alpine"`, // Auto-assigned container for npx
+				`"container": "node:lts-bookworm"`, // Auto-assigned container for npx
 				`"entrypoint": "npx"`,
 				`"entrypointArgs": [`,
 				`"env": {`,

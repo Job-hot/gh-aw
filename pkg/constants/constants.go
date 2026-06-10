@@ -207,14 +207,11 @@ const DefaultMCPGatewayPayloadSizeThreshold = 524288
 // DefaultFirewallRegistry is the container image registry for AWF (gh-aw-firewall) Docker images
 const DefaultFirewallRegistry = "ghcr.io/github/gh-aw-firewall"
 
-// DefaultNodeAlpineLTSImage is the default Node.js Alpine LTS container image for MCP servers
-// Using node:lts-alpine provides the latest LTS version with minimal footprint
-const DefaultNodeAlpineLTSImage = "node:lts-alpine"
-
-// DefaultSafeOutputsNodeImage is the Node.js container image for the safe-outputs MCP server.
-// Uses node:lts-bookworm (Debian Bookworm) which is based on buildpack-deps and includes git,
-// so no runtime package installation is needed for git operations in the safe-outputs server.
-const DefaultSafeOutputsNodeImage = "node:lts-bookworm"
+// DefaultNodeLTSImage is the default Node.js LTS container image for MCP servers.
+// Uses node:lts-bookworm (Debian Bookworm based on buildpack-deps) which includes git,
+// enabling both npx tool auto-containerization and the safe-outputs server to share a
+// single pre-pulled image on the runner.
+const DefaultNodeLTSImage = "node:lts-bookworm"
 
 // DefaultPythonAlpineLTSImage is the default Python Alpine LTS container image for MCP servers
 // Using python:alpine provides the latest stable version with minimal footprint

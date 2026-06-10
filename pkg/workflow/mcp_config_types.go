@@ -9,7 +9,7 @@ var mcpConfigTypesLog = logger.New("workflow:mcp_config_types")
 
 // WellKnownContainer represents a container configuration for a well-known command
 type WellKnownContainer struct {
-	Image      string // Container image (e.g., "node:lts-alpine")
+	Image      string // Container image (e.g., "node:lts-bookworm")
 	Entrypoint string // Entrypoint command (e.g., "npx")
 }
 
@@ -18,7 +18,7 @@ type WellKnownContainer struct {
 func getWellKnownContainer(command string) *WellKnownContainer {
 	wellKnownContainers := map[string]*WellKnownContainer{
 		"npx": {
-			Image:      constants.DefaultNodeAlpineLTSImage,
+			Image:      constants.DefaultNodeLTSImage,
 			Entrypoint: "npx",
 		},
 		"uvx": {
