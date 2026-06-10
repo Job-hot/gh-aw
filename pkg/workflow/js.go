@@ -11,8 +11,7 @@ var jsLog = logger.New("workflow:js")
 
 // All getter functions return empty strings since embedded scripts were removed
 
-func getNotifyCommentErrorScript() string { return "" }
-func getUploadAssetsScript() string       { return "" }
+func getUploadAssetsScript() string { return "" }
 
 // Public Get* functions return empty strings since embedded scripts were removed
 

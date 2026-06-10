@@ -9,6 +9,7 @@ import (
 
 	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
+	"github.com/github/gh-aw/pkg/workflow/compilerenv"
 )
 
 var notifyCommentLog = logger.New("workflow:notify_comment")
@@ -208,9 +209,20 @@ func (c *Compiler) buildConclusionJob(data *WorkflowData, mainJobName string, sa
 		allEnvVars = append(allEnvVars, fmt.Sprintf("          GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.%s.outputs.checkout_pr_success }}\n", mainJobName))
 	}
 
-	// Pass ET usage and AI credits rate-limit detection outputs from the agent job.
+	// Pass ET usage and AI credits outputs from the agent job so the failure handler
+	// can report the number of credits used and the configured limit.
+	// GH_AW_AIC carries the actual credits consumed; GH_AW_MAX_AI_CREDITS carries the
+	// configured per-run budget (either the literal compile-time value when set via
+	// max-ai-credits frontmatter, or the runtime vars expression used by the firewall).
 	allEnvVars = append(allEnvVars, fmt.Sprintf("          GH_AW_EFFECTIVE_TOKENS: ${{ needs.%s.outputs.effective_tokens || '' }}\n", mainJobName))
 	allEnvVars = append(allEnvVars, fmt.Sprintf("          GH_AW_AI_CREDITS_RATE_LIMIT_ERROR: ${{ needs.%s.outputs.ai_credits_rate_limit_error || 'false' }}\n", mainJobName))
+	allEnvVars = append(allEnvVars, fmt.Sprintf("          GH_AW_AIC: ${{ needs.%s.outputs.aic }}\n", mainJobName))
+	if data != nil && data.EngineConfig != nil && data.EngineConfig.MaxAICredits != 0 {
+		allEnvVars = append(allEnvVars, fmt.Sprintf("          GH_AW_MAX_AI_CREDITS: %q\n", strconv.FormatInt(data.EngineConfig.MaxAICredits, 10)))
+	} else {
+		expr := compilerenv.BuildDefaultMaxAICreditsExpression(strconv.FormatInt(constants.DefaultMaxAICredits, 10))
+		allEnvVars = append(allEnvVars, fmt.Sprintf("          GH_AW_MAX_AI_CREDITS: %s\n", expr))
+	}
 
 	// Pass engine error-detection outputs to the conclusion job when the selected engine
 	// provides a host-runner detect-agent-errors step.
@@ -742,7 +754,7 @@ func extractEnvVarKey(line string) string {
 	key := strings.TrimSpace(trimmed[:idx])
 	// Only treat it as a key if it looks like an env var name (uppercase, digits, underscores).
 	for _, ch := range key {
-		if !((ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '_') {
+		if (ch < 'A' || ch > 'Z') && (ch < '0' || ch > '9') && ch != '_' {
 			return ""
 		}
 	}
