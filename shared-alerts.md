@@ -36,3 +36,25 @@
 - #38025: Test Quality Sentinel
 - #38024: Matt Pocock Skills Reviewer
 - #aw_isg_jun8: Issue Lifecycle Gap (premature closure pattern)
+
+## Update — 2026-06-10T06:02Z
+
+### Resolved (since Jun 9) ✅
+- **Daily Compiler Quality Check** (#38021): CLOSED Jun 9–10 ✅
+- **Safe Output Health Monitor** (#38039): CLOSED ✅
+- **Workflow Health Manager AI credits** (#38045): CLOSED ✅
+- **Test Quality Sentinel** (#38025): CLOSED ✅
+- **Matt Pocock Skills Reviewer** (#38024): CLOSED ✅
+- **Code Simplifier** (#38026): CLOSED ✅
+
+### New P1 (Jun 10)
+- **Daily Safe Outputs Git Simulator** (#aw_gitsim10 filed Jun 10): 0% — `push_repo_memory` fails because `memory/git-simulator` orphan branch doesn't exist and requires a signed-commit seed. Pattern: new `memory/*` branches need manual initialization. DO NOT RE-FILE.
+
+### Systemic Notes
+- **Health score trend**: 68→83→87 (steady improvement; all Jun 9 P0/P1 resolved)
+- **memory/* bootstrap problem**: Any new workflow using `repo-memory` with a new branch will fail on first run until branch is manually seeded
+- **AI credits cluster**: Partial persistence — Test Quality, Matt Pocock, Safe Output Health reopened today despite previous closures
+
+## Updated Do Not Re-File
+- #aw_gitsim10: Daily Safe Outputs Git Simulator (memory/git-simulator branch needs signed-commit seed)
+- All previously listed items remain; prior ones closed
