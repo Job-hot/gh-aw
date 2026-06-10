@@ -1,1 +1,2 @@
 {"date":"2026-06-02","pr_count":37,"avg_vader":0.085,"avg_textblob":0.019,"positive":21,"neutral":1,"negative":15,"top_topic":"agent/prompt/cost/workflow","n_clusters":5,"data_source":"pr_metadata_only"}
+{"date": "2026-06-10", "pr_count": 54, "avg_sentiment": -0.0953, "positive_count": 23, "neutral_count": 1, "negative_count": 30, "top_topic": "failure / credits / context", "top_keywords": ["workflow", "updated", "failure", "aic", "behavior", "test", "output", "tests", "runtime", "run"]}

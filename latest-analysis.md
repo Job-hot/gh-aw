@@ -1,8 +1,8 @@
-# NLP Analysis - 2026-06-08
+# NLP Analysis - 2026-06-10
 
-- PRs analyzed: 76
-- Avg sentiment: +0.060 (slightly positive)
-- Positive: 41 (54%), Neutral: 4 (5%), Negative: 31 (41%)
-- Top topic: Testing & CI (17 PRs, 22%)
-- Top keywords: updated, behavior, output, daily, guardrail, credits
-- Run: https://github.com/github/gh-aw/actions/runs/27135411457
+- PRs analyzed: 54
+- Avg sentiment: -0.095 (slightly negative)
+- Positive: 23 (43%), Neutral: 1 (2%), Negative: 30 (56%)
+- Top topic: failure / credits / context (21 PRs, 39%)
+- Top keywords: workflow, updated, failure, aic, behavior, test, output
+- Run: https://github.com/github/gh-aw/actions/runs/27272852377
