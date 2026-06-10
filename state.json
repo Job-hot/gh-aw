@@ -2,7 +2,7 @@
   "counts": {
     "model_size": {
       "agent": 2,
-      "claude-sonnet-4-6": 1,
+      "claude-sonnet-4-6": 2,
       "claude-haiku-4-5-20251001": 2
     }
   },
@@ -40,6 +40,13 @@
       "timestamp": "2026-06-09T12:30:19.862Z",
       "assignments": {
         "model_size": "claude-haiku-4-5-20251001"
+      }
+    },
+    {
+      "run_id": "27276981355",
+      "timestamp": "2026-06-10T12:43:20.045Z",
+      "assignments": {
+        "model_size": "claude-sonnet-4-6"
       }
     }
   ]
