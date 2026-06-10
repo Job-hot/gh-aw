@@ -4,7 +4,7 @@
       "small-agent": 2,
       "agent": 1,
       "claude-sonnet-4.6": 1,
-      "claude-haiku-4.5": 2
+      "claude-haiku-4.5": 3
     }
   },
   "runs": [
@@ -46,6 +46,13 @@
     {
       "run_id": "27250130759",
       "timestamp": "2026-06-10T03:01:03.696Z",
+      "assignments": {
+        "model_size": "claude-haiku-4.5"
+      }
+    },
+    {
+      "run_id": "27307450914",
+      "timestamp": "2026-06-10T21:28:11.505Z",
       "assignments": {
         "model_size": "claude-haiku-4.5"
       }
