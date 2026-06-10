@@ -1,9 +1,6 @@
 {
- "updated": "2026-06-09T21:55Z",
+ "updated": "2026-06-10T09:58Z",
  "workflows": {
-  "_2026-06-07_changes": {
-   "note": "06-07 deltas: minimatch sdk-crash GONE (Linter Miner/Daily Secrets/Daily Testify/PR Triage not in this small window; PR Code Quality Reviewer failure ROOT-CAUSE-CHANGED to guardrail-cjs on PR branch). Caveman + Cache RECUR day 3. Safe Output Integrator RECUR tool-perm-lockout. NEW: 4 PR-review wf fail on activation-guardrail-cjs (copilot/fix-daily-credit-limit-test). Design Decision Gate + PR Sous Chef RECOVERED on main. Top cost: Safe Output Tool Optimizer $6.19, Documentation Unbloat $5.44."
-  },
   "Linter Miner": {
    "last": "2026-06-06",
    "last_concl": "failure",
@@ -135,6 +132,9 @@
   },
   "_2026-06-08_changes": {
    "note": "06-08 PARTIAL ~3.3h window. DOMINANT NEW: copilot-pat-not-supported-400 ACTIVE incident from 19:40Z (~15 runs, prod-main+PR+smoke) -> fleet 88%->58%. Ambient/Contribution Check/Daily Project Perf all RED via PAT-400 (not their usual classes; token-429 ABSENT). PR Code Quality Reviewer: 1 sdk session.idle-870s-timeout-after-valid-output + 3 PAT-400. Daily Safe Output Integrator RECUR tool-perm-lockout. cli-proxy DIFC liveness-probe NEW x2 (PR Description Updater/Issue Monster). Caveman effort-400 NOT seen as failure. Cache Strategy codex RECUR day4. Top cost: Failure Investigator $3.21, Code Metrics $2.12, Safe Output Tool Optimizer $2.09."
+  },
+  "_2026-06-10_changes": {
+   "note": "06-10 morning-window deltas: NEW docker-hub-registry-pull-timeout hit Daily Windows Terminal Integration Builder + Daily Hippo Learn (node:lts-alpine DockerHub pull exit123, turns=0). cli-proxy DIFC liveness-18443 RECUR DAY3 newly hit Sub-Issue Closer + Auto-Triage Issues (turns=0). NEW degenerate `date -u` loop on GitHub Remote MCP Authentication Test (136 turns/3.7M tok -> 5min action timeout). NEW repo-memory signed-commit-seed failure on Daily Safe Outputs Git Simulator (agent SUCCEEDED, push_repo_memory reddened run). Caveman/Cache/Safe Output Integrator NOT in observed window. Top cost: Daily Rendering Scripts Verifier $5.23, Safe Output Health Monitor $5.14, Static Analysis Report $3.06 (all success). claude 15/15 + codex 1/1 clean."
   }
  }
 }

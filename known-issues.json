@@ -1,5 +1,5 @@
 {
- "updated": "2026-06-09T21:55Z",
+ "updated": "2026-06-10T09:58Z",
  "issues": [
   {
    "id": "activation-guardrail-cjs-module-not-found",
@@ -16,7 +16,7 @@
     "Design Decision Gate",
     "Matt Pocock Skills Reviewer"
    ],
-   "note": "activation job runs require('/home/runner/work/_temp/gh-aw/actions/check_daily_effective_workflow_guardrail.cjs') -> '##[error]Unhandled error: Error: Cannot find module ...check_daily_effective_workflow_guardrail.cjs'. The agent job is then correctly SKIPPED (agent.result=skipped) but the activation job failure reddens the whole run. The guardrail .cjs is referenced by compiled lock files on the feature branch but is not bundled in the action package. Same MODULE_NOT_FOUND family as the (now-absent) minimatch crash but in the activation guardrail step. Runs 27103538546/47/66/67. GH_AW_MAX_DAILY_AI_CREDITS=500000 present.",
+   "note": "activation job runs require('/home/runner/work/_temp/gh-aw/actions/check_daily_effective_workflow_guardrail.cjs') -> '##[error]Unhandled error: Error: Cannot find module ...check_daily_effective_workf\u2026",
    "fix": "Bundle check_daily_effective_workflow_guardrail.cjs into the action build before merging the daily-credit-limit feature; add a CI smoke test that node-requires every .cjs the activation job references."
   },
   {
@@ -35,7 +35,7 @@
     "Daily Testify Uber Super Expert",
     "PR Triage Agent"
    ],
-   "note": "node /home/runner/work/_temp/gh-aw/actions/copilot_sdk_driver.cjs throws Error: Cannot find module 'minimatch' at require (copilot_sdk_driver.cjs:42:23), code=MODULE_NOT_FOUND. The bundled sdk-driver requires 'minimatch' which is not installed/bundled in the action's node_modules. Because it is a missing-dependency error the copilot-harness retries (4 attempts) all fail the same way, wasting whole prod-main scheduled runs. Likely introduced by a recent sdk-driver bundling change. Runs: Linter Miner 27069431407, Daily Secrets 27069682890, PR Code Quality Reviewer 27069819378 + 27069914133, Daily Testify 27070138441, PR Triage 27070604747."
+   "note": "node /home/runner/work/_temp/gh-aw/actions/copilot_sdk_driver.cjs throws Error: Cannot find module 'minimatch' at requir\u2026"
   },
   {
    "id": "detection-model-no-threat-result-parse-fail",
@@ -49,7 +49,7 @@
    "affected": [
     "Design Decision Gate"
    ],
-   "note": "Design Decision Gate run 27065879421 (claude, PR): agent succeeded but the detection step emitted 'detection execution outcome: failure' + 'ERR_PARSE: No THREAT_DETECTION_RESULT found in detection log. The detection model may have failed to follow the output format.' Despite GH_AW_DETECTION_CONTINUE_ON_ERROR=true the detection job conclusion is failure, reddening the run. Detection model occasionally omits the required THREAT_DETECTION_RESULT marker; parser then hard-fails."
+   "note": "Design Decision Gate run 27065879421 (claude, PR): agent succeeded but the detection step emitted 'detection execution outcome: failure' + 'ERR_PARSE: No THREAT_DETECTION_RESULT found in detection log\u2026"
   },
   {
    "id": "model-param-config-incompatibility",
@@ -64,7 +64,7 @@
     "Daily Caveman Optimizer",
     "Daily Cache Strategy Analyzer"
    ],
-   "note": "Two variants: (a) Daily Caveman Optimizer [claude] -> 400 invalid_request_error 'This model does not support the effort parameter' (claude model pinned with a reasoning-effort/effort param it rejects); (b) Daily Cache Strategy Analyzer [codex] -> 404 'Model not found <id>' at the responses endpoint (codex model id deprecated/removed; id has rotated adelie-alpha-2026-02-19 -> gpt-5-codex-alpha-2025-11-07, both 404). Both fail fast on every retry, cheap but total. Static config drift after a model/param change.",
+   "note": "Two variants: (a) Daily Caveman Optimizer [claude] -> 400 invalid_request_error 'This model does not support the effort parameter' (claude model pinned with a reasoning-effort/effort param it rejects)\u2026",
    "note_2026_06_08": "Daily Cache Strategy Analyzer codex failed again (day4 plugin-auth); Caveman effort-400 NOT a failure this window"
   },
   {
@@ -111,9 +111,9 @@
     "GEO Optimizer Daily Audit",
     "PR Code Quality Reviewer"
    ],
-   "note": "sdk-driver path denies tools (read on repo source/_test.go files, shell sed) the workflow legitimately needs; after 5 denials the harness aborts the attempt. The denied tools are in the workflow's own tool config but the sdk-driver permission mapping (allow-tool entries from GH_AW_COPILOT_SDK_SERVER_ARGS) does not grant them. Earlier windows saw cache-memory read/shell denials too.",
+   "note": "sdk-driver path denies tools (read on repo source/_test.go files, shell sed) the workflow legitimately needs; after 5 denials the harness aborts the attempt. The denied tools are in the workflow's own\u2026",
    "note_2026_06_08": "session.idle 870s timeout on PR Code Quality Reviewer 27160990743 AFTER emitting valid review (wasted work); tool-perm-lockout on Daily Safe Output Integrator 27161455868 (read test.go denied)",
-   "note_2026_06_09": "RECUR: tool-perm-lockout on Daily Safe Output Integrator (27230190112, 11 permission-denied, turns=1, also the windows 1 missing_tool) + session.idle on PR Code Quality Reviewer PR branch (27233924083, turns=1)."
+   "note_2026_06_09": "RECUR: tool-perm-lockout on Daily Safe Output Integrator (27230190112, 11 permission-denied, turns=1, also the windows 1 missing_tool) + session.idle on PR Code Quality Reviewer PR branch (27233924083\u2026"
   },
   {
    "id": "copilot-agent-job-redden-with-valid-output",
@@ -127,7 +127,7 @@
    "affected": [
     "Test Quality Sentinel"
    ],
-   "note": "06-05: valid 77/100 report yet job reddened (run 27036058696). 06-06: empty {\"items\":[]} output, turns=0, agent job failed (run 27069819373). Possibly two different root causes filed under one id; split if 06-06 shape recurs with a captured minimatch/sdk crash."
+   "note": "06-05: valid 77/100 report yet job reddened (run 27036058696). 06-06: empty {\"items\":[]} output, turns=0, agent job failed (run 27069819373). Possibly two different root causes filed under one id; spl\u2026"
   },
   {
    "id": "pr-sous-chef-update-branch-workflows-perm",
@@ -167,7 +167,7 @@
     "Smoke Claude",
     "Smoke Codex"
    ],
-   "note": "Environment note: manifest exposes only agenticworkflows/mcpscripts/safeoutputs/tavily. Smoke tests expect serena (Claude) and web-fetch MCP (Codex). Likely config drift, not a regression."
+   "note": "Environment note: manifest exposes only agenticworkflows/mcpscripts/safeoutputs/tavily. Smoke tests expect serena (Claud\u2026"
   },
   {
    "id": "firewall-block-rate",
@@ -207,15 +207,16 @@
     "Smoke Copilot",
     "Daily Max AI Credits Test"
    ],
-   "detail": "Onset 2026-06-08T19:40:19Z, ongoing. copilot-harness AND copilot-sdk-driver token-check POST a PAT to an endpoint that rejects PATs -> 400 exit1 turns=0. ~15 runs/window incl prod-main. Pre-incident 88% -> post 58%. In-flight fix branch pelikhan/fix-pat-400-retry.",
-   "first_run": 27162345496
+   "detail": "Onset 2026-06-08T19:40:19Z, ongoing. copilot-harness AND copilot-sdk-driver token-check POST a PAT to an endpoint that r\u2026",
+   "first_run": 27162345496,
+   "note_2026_06_10": "Still RESOLVED/absent \u2014 no 'Personal Access Tokens are not supported' signature in any of 48 runs this window."
   },
   {
    "id": "cli-proxy-difc-liveness-probe-failed",
    "title": "awf-cli-proxy container DIFC liveness probe fails (localhost:18443 connection refused)",
    "first_seen": "2026-06-08",
-   "last_seen": "2026-06-09",
-   "recurrence": 2,
+   "last_seen": "2026-06-10",
+   "recurrence": 3,
    "status": "recurring",
    "severity": "medium",
    "engines": [
@@ -224,10 +225,13 @@
    "affected_workflows": [
     "Issue Monster",
     "PR Description Updater",
-    "PR Sous Chef"
+    "PR Sous Chef",
+    "Sub-Issue Closer",
+    "Auto-Triage Issues"
    ],
    "detail": "awf-cli-proxy container errors at startup; DIFC proxy liveness probe to localhost:18443 connection refused -> agent never starts (turns=0). 2 runs, pre-incident 18:xx.",
-   "note_2026_06_09": "RECUR day2: liveness probe failed for localhost:18443 (gh api exit=0) on Issue Monster (27229956123) and PR Sous Chef (27229990045), both turns=0 \u2014 agent never starts. awf-cli-proxy DIFC probe still flaky. NOTE other PR Sous Chef runs on main succeeded \u2192 intermittent, not deterministic."
+   "note_2026_06_09": "RECUR day2: liveness probe failed for localhost:18443 (gh api exit=0) on Issue Monster (27229956123) and PR Sous Chef (27229990045), both turns=0 \u2014 agent never starts. awf-cli-proxy DIFC probe still f\u2026",
+   "note_2026_06_10": "RECUR day3: localhost:18443 connection refused on Sub-Issue Closer (27261373050) and Auto-Triage Issues (27261698585), both turns=0 \u2014 awf-cli-proxy exits(1), 'Failing fast to avoid repeated in-agent r\u2026"
   },
   {
    "id": "daily-ai-credits-cap-429",
@@ -244,26 +248,66 @@
    "affected": [
     "Daily Ambient Context Optimizer"
    ],
-   "note": "Daily Ambient Context Optimizer (copilot, prod-main, run 27233269431) ran 57 turns / 3.0M tokens then the Copilot API returned CAPIError 429 'Maximum AI credits exceeded (1026.775860 / 1000)' after 5 retries (98.6s wait) -> run failure. This is the ACCOUNT/DAILY AI-CREDITS cap (~1000 credits), DISTINCT from the 25M effective-token cap (token-budget-429-effective-tokens, which was ABSENT). Heavy daily aggregator burns enough credits to cross the cap late in its run, wasting all prior work. Related to the daily-credit-limit guardrail feature.",
-   "fix": "Add a soft pre-cap credit guard that checks remaining daily AI credits before the heaviest aggregation turns and degrades gracefully (emit partial output + noop) instead of 429-aborting; or raise the cap for the few heavy prod-main aggregators; or shard Ambient's work across smaller runs."
+   "note": "Daily Ambient Context Optimizer (copilot, prod-main, run 27233269431) ran 57 turns / 3.0M tokens then the Copilot API returned CAPIError 429 'Maximum AI credits exceeded (1026.775860 / 1000)' after 5\u2026",
+   "fix": "Add a soft pre-cap credit guard that checks remaining daily AI credits before the heaviest aggregation turns and degrades gracefully (emit partial output + noop) instead of 429-aborting; or raise the cap for the few heavy prod-main aggregators; or shard Ambient's work across smaller runs.",
+   "note_2026_06_10": "ABSENT this window (Ambient/heavy prod-main not in observed 4.2h morning cluster). Quiet; keep watching. Still recurrence=1."
   },
   {
    "id": "copilot-harness-15min-action-timeout",
-   "title": "Copilot CLI step hits hard 15-minute action timeout after producing valid work (work wasted, run reddened)",
+   "title": "Copilot CLI step hits hard action timeout (5/15-min tiers) \u2014 legit overrun OR degenerate self-loop",
    "status": "new",
    "severity": "medium",
    "new": true,
    "first_seen": "2026-06-09",
-   "last_seen": "2026-06-09",
-   "recurrence": 1,
+   "last_seen": "2026-06-10",
+   "recurrence": 2,
    "engines": [
     "copilot"
    ],
    "affected": [
-    "Test Quality Sentinel"
+    "Test Quality Sentinel",
+    "GitHub Remote MCP Authentication Test"
    ],
-   "note": "Test Quality Sentinel (copilot, PR branch copilot/feature-dangerously-disable-sandbox-agent, run 27234356749) ran 20 turns / 649k tokens of valid review work, then '##[error]The action Execute GitHub Copilot CLI has timed out after 15 minutes' -> failure. Distinct from sdk session.idle; this is the GitHub Actions step-level timeout on the copilot_harness.cjs invocation. Valid in-flight work lost. Sibling TQS runs on other PR branches succeeded.",
-   "fix": "Raise the Copilot CLI step timeout for review-heavy workflows, or add periodic checkpoint flushing of the review so a timeout still emits the buffered safe-output instead of reddening with nothing."
+   "note": "Test Quality Sentinel (copilot, PR branch copilot/feature-dangerously-disable-sandbox-agent, run 27234356749) ran 20 turns / 649k tokens of valid review work, then '##[error]The action Execute GitHub\u2026",
+   "fix": "Raise the Copilot CLI step timeout for review-heavy workflows, or add periodic checkpoint flushing of the review so a timeout still emits the buffered safe-output instead of reddening with nothing.",
+   "note_2026_06_10": "RECUR day2 (different timeout tier): GitHub Remote MCP Authentication Test (copilot, main, run 27258574627) hit '##[error]The action Execute GitHub Copilot CLI has timed out after 5 minutes' after a D\u2026"
+  },
+  {
+   "id": "docker-hub-registry-pull-timeout",
+   "title": "Image download step fails pulling node:lts-alpine from Docker Hub (registry-1.docker.io) \u2014 exit 123, agent never starts",
+   "first_seen": "2026-06-10",
+   "last_seen": "2026-06-10",
+   "recurrence": 1,
+   "status": "new",
+   "severity": "high",
+   "new": true,
+   "engines": [
+    "copilot"
+   ],
+   "affected": [
+    "Daily Windows Terminal Integration Builder",
+    "Daily Hippo Learn"
+   ],
+   "note": "download_docker_images.sh pulls all ghcr.io images successfully but TIMES OUT on the single Docker Hub image node:lts-alpine: 'Error response from daemon: Get https://registry-1.docker.io/v2/: context\u2026",
+   "fix": "Mirror/cache node:lts-alpine in ghcr.io (or pin to a ghcr-hosted node image) so the agent setup no longer depends on Docker Hub; alternatively authenticate Docker Hub pulls to lift the anonymous rate limit, or add a longer/backed-off retry."
+  },
+  {
+   "id": "repo-memory-push-signed-commit-seeding",
+   "title": "repo-memory push fails: new orphan memory branch needs a manually-seeded signed first commit (GH013 rule violation)",
+   "first_seen": "2026-06-10",
+   "last_seen": "2026-06-10",
+   "recurrence": 1,
+   "status": "new",
+   "severity": "low",
+   "new": true,
+   "engines": [
+    "claude"
+   ],
+   "affected": [
+    "Daily Safe Outputs Git Simulator"
+   ],
+   "note": "AGENT SUCCEEDED (agent/detection/safe_outputs all success) but the post-agent push_repo_memory job failed 4/4 attempts: 'remote: error: GH013: Repository rule violations found for refs/heads/memory/gi\u2026",
+   "fix": "Seed memory/git-simulator manually with one signed commit (per the harness instructions), OR have the repo-memory push step create the orphan branch's first commit as a signed commit, OR exempt memory/* branches from the signed-commit ruleset."
   }
  ]
 }
