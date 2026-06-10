@@ -1318,10 +1318,10 @@ jobs:
       cancel-in-progress: false
       queue: max
     outputs:
-      incomplete_count: ${{ steps.report_incomplete.outputs.incomplete_count }}
-      noop_message: ${{ steps.noop.outputs.noop_message }}
-      tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
-      total_count: ${{ steps.missing_tool.outputs.total_count }}
+      incomplete_count: ${{ steps.run_conclusion.outputs.incomplete_count }}
+      noop_message: ${{ steps.run_conclusion.outputs.noop_message }}
+      tools_reported: ${{ steps.run_conclusion.outputs.tools_reported }}
+      total_count: ${{ steps.run_conclusion.outputs.total_count }}
     steps:
       - name: Checkout actions folder
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -1392,11 +1392,13 @@ jobs:
             /tmp/gh-aw/usage/agent/token_usage.jsonl
             /tmp/gh-aw/usage/detection/token_usage.jsonl
           if-no-files-found: ignore
-      - name: Process no-op messages
-        id: noop
+      - name: Run conclusion handlers
+        id: run_conclusion
+        if: always()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+          GH_AW_NOOP_ENABLED: "true"
           GH_AW_NOOP_MAX: "1"
           GH_AW_WORKFLOW_NAME: "Daily News"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/daily-news.md"
@@ -1408,75 +1410,13 @@ jobs:
           GH_AW_THREAT_DETECTION_AIC: ${{ needs.detection.outputs.aic }}
           GH_AW_AMBIENT_CONTEXT: ${{ needs.agent.outputs.ambient_context }}
           GH_AW_WORKFLOW_ID: "daily-news"
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io, getOctokit);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_noop_message.cjs');
-            await main();
-      - name: Log detection run
-        id: detection_runs
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Daily News"
-          GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/daily-news.md"
-          GH_AW_TRACKER_ID: "daily-news-weekday"
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_AW_DETECTION_ENABLED: "true"
           GH_AW_DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
           GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io, getOctokit);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_detection_runs.cjs');
-            await main();
-      - name: Record missing tool
-        id: missing_tool
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+          GH_AW_MISSING_TOOL_ENABLED: "true"
           GH_AW_MISSING_TOOL_CREATE_ISSUE: "true"
-          GH_AW_WORKFLOW_NAME: "Daily News"
-          GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/daily-news.md"
-          GH_AW_TRACKER_ID: "daily-news-weekday"
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io, getOctokit);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/missing_tool.cjs');
-            await main();
-      - name: Record incomplete
-        id: report_incomplete
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+          GH_AW_REPORT_INCOMPLETE_ENABLED: "true"
           GH_AW_REPORT_INCOMPLETE_CREATE_ISSUE: "true"
-          GH_AW_WORKFLOW_NAME: "Daily News"
-          GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/daily-news.md"
-          GH_AW_TRACKER_ID: "daily-news-weekday"
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io, getOctokit);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/report_incomplete_handler.cjs');
-            await main();
-      - name: Handle agent failure
-        id: handle_agent_failure
-        if: always()
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Daily News"
-          GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/daily-news.md"
-          GH_AW_TRACKER_ID: "daily-news-weekday"
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "daily-news"
           GH_AW_ACTION_FAILURE_ISSUE_EXPIRES_HOURS: "12"
           GH_AW_ENGINE_ID: "copilot"
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
@@ -1509,7 +1449,7 @@ jobs:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io, getOctokit);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_agent_failure.cjs');
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/conclusion_runner.cjs');
             await main();
 
   detection:

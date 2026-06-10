@@ -1029,8 +1029,8 @@ jobs:
             /tmp/gh-aw/usage/agent/token_usage.jsonl
             /tmp/gh-aw/usage/detection/token_usage.jsonl
           if-no-files-found: ignore
-      - name: Handle agent failure
-        id: handle_agent_failure
+      - name: Run conclusion handlers
+        id: run_conclusion
         if: always()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -1066,7 +1066,7 @@ jobs:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io, getOctokit);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_agent_failure.cjs');
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/conclusion_runner.cjs');
             await main();
 
   safe_outputs:

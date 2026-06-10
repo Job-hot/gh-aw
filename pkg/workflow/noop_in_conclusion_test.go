@@ -63,10 +63,10 @@ Test that noop step is generated inside the conclusion job.
 		t.Error("Conclusion job should exist")
 	}
 
-	// Verify that "Process no-op messages" step is in the conclusion job
+	// Verify that "Run conclusion handlers" step is in the conclusion job
 	conclusionSection := extractJobSection(compiled, "conclusion")
-	if !strings.Contains(conclusionSection, "Process no-op messages") {
-		t.Error("Conclusion job should contain 'Process no-op messages' step")
+	if !strings.Contains(conclusionSection, "Run conclusion handlers") {
+		t.Error("Conclusion job should contain 'Run conclusion handlers' step")
 	}
 
 	// Verify that conclusion job has noop_message output
@@ -137,10 +137,10 @@ Test that missing_tool step is generated inside the conclusion job.
 		t.Error("Conclusion job should exist")
 	}
 
-	// Verify that "Record missing tool" step is in the conclusion job
+	// Verify that "Run conclusion handlers" step is in the conclusion job
 	conclusionSection := extractJobSection(compiled, "conclusion")
-	if !strings.Contains(conclusionSection, "Record missing tool") {
-		t.Error("Conclusion job should contain 'Record missing tool' step")
+	if !strings.Contains(conclusionSection, "Run conclusion handlers") {
+		t.Error("Conclusion job should contain 'Run conclusion handlers' step")
 	}
 
 	// Verify that conclusion job has missing_tool outputs
@@ -216,11 +216,11 @@ Test that both noop and missing_tool steps are generated inside the conclusion j
 
 	// Verify that conclusion job exists and contains both steps
 	conclusionSection := extractJobSection(compiled, "conclusion")
-	if !strings.Contains(conclusionSection, "Process no-op messages") {
-		t.Error("Conclusion job should contain 'Process no-op messages' step")
+	if !strings.Contains(conclusionSection, "Run conclusion handlers") {
+		t.Error("Conclusion job should contain 'Run conclusion handlers' step")
 	}
-	if !strings.Contains(conclusionSection, "Record missing tool") {
-		t.Error("Conclusion job should contain 'Record missing tool' step")
+	if !strings.Contains(conclusionSection, "Run conclusion handlers") {
+		t.Error("Conclusion job should contain 'Run conclusion handlers' step")
 	}
 
 	// Verify that conclusion job has all outputs
@@ -287,10 +287,10 @@ Test that report_incomplete step is generated inside the conclusion job.
 		t.Error("Conclusion job should exist")
 	}
 
-	// Verify that "Record incomplete" step is in the conclusion job
+	// Verify that "Run conclusion handlers" step is in the conclusion job
 	conclusionSection := extractJobSection(compiled, "conclusion")
-	if !strings.Contains(conclusionSection, "Record incomplete") {
-		t.Error("Conclusion job should contain 'Record incomplete' step")
+	if !strings.Contains(conclusionSection, "Run conclusion handlers") {
+		t.Error("Conclusion job should contain 'Run conclusion handlers' step")
 	}
 
 	// Verify that conclusion job has report_incomplete output

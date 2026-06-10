@@ -903,8 +903,10 @@ func TestStatusCommentDecoupling(t *testing.T) {
 
 			conclusionSteps := strings.Join(conclusionJob.Steps, "")
 
-			// Check for conclusion update step
-			hasConclusionUpdate := strings.Contains(conclusionSteps, "Update reaction comment with completion status")
+			// Check for conclusion update step — with the merged runner, the step is always
+			// "Run conclusion handlers", but the status-comment handler is gated via
+			// GH_AW_STATUS_COMMENT_ENABLED: "true" in its env vars.
+			hasConclusionUpdate := strings.Contains(conclusionSteps, "GH_AW_STATUS_COMMENT_ENABLED")
 			if hasConclusionUpdate != tt.expectConclusionUpdate {
 				t.Errorf("Expected conclusion update step: %v, got: %v", tt.expectConclusionUpdate, hasConclusionUpdate)
 			}

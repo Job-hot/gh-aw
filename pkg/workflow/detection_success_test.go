@@ -168,7 +168,7 @@ Create outputs.
 }
 
 // TestDetectionRunsStepInConclusionJob verifies that when threat detection is enabled,
-// the conclusion job contains a "Log detection run" step.
+// the conclusion job contains a "Run conclusion handlers" step.
 func TestDetectionRunsStepInConclusionJob(t *testing.T) {
 	tmpDir := testutil.TempDir(t, "test-*")
 	workflowPath := filepath.Join(tmpDir, "test-workflow.md")
@@ -210,9 +210,9 @@ Create an issue.
 		t.Fatal("Conclusion job not found in compiled YAML")
 	}
 
-	// Verify that "Log detection run" step is in the conclusion job
-	if !strings.Contains(conclusionSection, "Log detection run") {
-		t.Error("Conclusion job should contain 'Log detection run' step")
+	// Verify that "Run conclusion handlers" step is in the conclusion job
+	if !strings.Contains(conclusionSection, "Run conclusion handlers") {
+		t.Error("Conclusion job should contain 'Run conclusion handlers' step")
 	}
 
 	// Verify step has detection conclusion/reason env vars
@@ -228,9 +228,9 @@ Create an issue.
 		t.Error("Detection runs step missing GH_AW_RUN_URL env var")
 	}
 
-	// Verify the step uses handle_detection_runs.cjs
-	if !strings.Contains(conclusionSection, "handle_detection_runs.cjs") {
-		t.Error("Detection runs step should use handle_detection_runs.cjs")
+	// Verify the step uses conclusion_runner.cjs
+	if !strings.Contains(conclusionSection, "conclusion_runner.cjs") {
+		t.Error("Detection runs step should use conclusion_runner.cjs")
 	}
 }
 
@@ -272,8 +272,8 @@ Emit noop output.
 	if conclusionSection == "" {
 		t.Fatal("Conclusion job not found in compiled YAML")
 	}
-	if !strings.Contains(conclusionSection, "Process no-op messages") {
-		t.Fatal("Conclusion job should contain 'Process no-op messages' step")
+	if !strings.Contains(conclusionSection, "Run conclusion handlers") {
+		t.Fatal("Conclusion job should contain 'Run conclusion handlers' step")
 	}
 	if !strings.Contains(conclusionSection, "GH_AW_THREAT_DETECTION_AIC: ${{ needs.detection.outputs.aic }}") {
 		t.Error("No-op step should receive threat-detection AI Credits env var")

@@ -1055,8 +1055,8 @@ jobs:
             /tmp/gh-aw/usage/agent/token_usage.jsonl
             /tmp/gh-aw/usage/detection/token_usage.jsonl
           if-no-files-found: ignore
-      - name: Handle agent failure
-        id: handle_agent_failure
+      - name: Run conclusion handlers
+        id: run_conclusion
         if: always()
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -1086,30 +1086,16 @@ jobs:
           GH_AW_MISSING_TOOL_REPORT_AS_FAILURE: "true"
           GH_AW_MISSING_DATA_REPORT_AS_FAILURE: "true"
           GH_AW_TIMEOUT_MINUTES: "10"
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io, getOctokit);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_agent_failure.cjs');
-            await main();
-      - name: Update reaction comment with completion status
-        id: conclusion
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+          GH_AW_STATUS_COMMENT_ENABLED: "true"
           GH_AW_COMMENT_ID: ${{ needs.activation.outputs.comment_id }}
           GH_AW_COMMENT_REPO: ${{ needs.activation.outputs.comment_repo }}
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GH_AW_WORKFLOW_NAME: "ACE Editor Session"
-          GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_SAFE_OUTPUTS_RESULT: ${{ needs.safe_outputs.result }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io, getOctokit);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/notify_comment_error.cjs');
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/conclusion_runner.cjs');
             await main();
 
   post_ace_link:

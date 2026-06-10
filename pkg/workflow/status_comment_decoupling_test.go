@@ -59,7 +59,7 @@ Test workflow with ai-reaction but no status comments.
 	// Verify the workflow does NOT have status comment steps
 	assert.NotContains(t, lockContentStr, "Add comment with workflow run link",
 		"Should NOT have activation comment step")
-	assert.NotContains(t, lockContentStr, "Update reaction comment with completion status",
+	assert.NotContains(t, lockContentStr, "GH_AW_STATUS_COMMENT_ENABLED",
 		"Should NOT have conclusion update step")
 
 	// Test reaction without status-comment (breaking change - no automatic bundling)
@@ -98,7 +98,7 @@ Test workflow with ai-reaction but no status-comment field (should NOT create st
 		"Should have reaction step in pre-activation job")
 	assert.NotContains(t, lockContentStr2, "Add comment with workflow run link",
 		"Should NOT have activation comment step (no automatic bundling)")
-	assert.NotContains(t, lockContentStr2, "Update reaction comment with completion status",
+	assert.NotContains(t, lockContentStr2, "GH_AW_STATUS_COMMENT_ENABLED",
 		"Should NOT have conclusion update step (no automatic bundling)")
 
 	// Test explicit status-comment: true
@@ -138,6 +138,6 @@ Test workflow with explicit status-comment: true.
 		"Should have reaction step in pre-activation job")
 	assert.Contains(t, lockContentStr3, "Add comment with workflow run link",
 		"Should have activation comment step when explicit true")
-	assert.Contains(t, lockContentStr3, "Update reaction comment with completion status",
+	assert.Contains(t, lockContentStr3, "GH_AW_STATUS_COMMENT_ENABLED",
 		"Should have conclusion update step when explicit true")
 }
