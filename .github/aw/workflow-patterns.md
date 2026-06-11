@@ -129,6 +129,8 @@ For pull requests that add or modify database migration files:
 - output: `add-comment` with a safety summary flagging risky operations; use `noop` when no concerns are detected
 - prompt: suggest migration best practices in the agent prompt
 
+See also: [database-migrations.md](database-migrations.md)
+
 ## Cross-Repository Pattern
 
 For cross-repository reads and writes:

@@ -9,6 +9,7 @@
   "context.md",
   "create-agentic-workflow.md",
   "create-shared-agentic-workflow.md",
+  "database-migrations.md",
   "debug-agentic-workflow.md",
   "dependabot.md",
   "deployment-status.md",

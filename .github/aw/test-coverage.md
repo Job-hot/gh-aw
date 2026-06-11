@@ -32,7 +32,13 @@ on:
     types: [opened, synchronize]
 permissions:
   actions: read         # download artifacts
-network: defaults
+network:
+  allowed:
+    - defaults
+    # Artifact-download path only needs defaults.
+    # If tests must run as fallback, add the project's package ecosystem.
+    # Detect with: gh aw domains <workflow-file>
+    # Common additions: node | python | go | java | dotnet | ruby | rust
 tools:
   github:
     toolsets: [default, actions]  # actions toolset enables artifact download
@@ -50,3 +56,19 @@ Use **only when** no prior CI artifact exists or CI doesn't upload coverage. Sup
 | Node.js | `npx jest --coverage --coverageReporters=json-summary` |
 | Python | `python -m pytest --cov=src --cov-report=json` |
 | Go | `go test ./... -coverprofile=/tmp/coverage.out` |
+
+### Network for Fallback Execution
+
+`network: defaults` alone does not cover package registries. When tests may need to install or resolve dependencies at runtime, extend the `network.allowed` list with the matching ecosystem identifier. Infer the ecosystem from repository files:
+
+| Repository file | Add to `network.allowed` |
+|---|---|
+| `package.json`, `yarn.lock`, `pnpm-lock.yaml` | `node` |
+| `requirements.txt`, `pyproject.toml`, `uv.lock` | `python` |
+| `go.mod` | `go` |
+| `pom.xml`, `build.gradle` | `java` |
+| `*.csproj`, `*.sln` | `dotnet` |
+| `Gemfile` | `ruby` |
+| `Cargo.toml` | `rust` |
+
+See [network.md](network.md) for the full list of ecosystem identifiers.

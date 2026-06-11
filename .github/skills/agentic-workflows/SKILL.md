@@ -21,6 +21,7 @@ Load these files from `github/gh-aw` (they are not available locally).
 - `.github/aw/context.md`
 - `.github/aw/create-agentic-workflow.md`
 - `.github/aw/create-shared-agentic-workflow.md`
+- `.github/aw/database-migrations.md`
 - `.github/aw/debug-agentic-workflow.md`
 - `.github/aw/dependabot.md`
 - `.github/aw/deployment-status.md`

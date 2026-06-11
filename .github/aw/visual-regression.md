@@ -56,3 +56,37 @@ Otherwise compare each screenshot to its baseline. Post a comment summarizing: p
 - **`retention-days: 30`** — keeps baselines beyond the default 7-day cache expiry
 - **Filesystem-safe timestamps** — `YYYY-MM-DD-HH-MM-SS` format; colons are invalid in artifact filenames
 - **Minimal permissions** — all PR writes go through `safe-outputs`, not GitHub tools
+
+## Optional: Screenshot Diff Artifacts
+
+For detailed diff images that are too large for a PR comment, upload them as workflow artifacts and link to them from the comment. Add an `actions: write` permission and a `bash` step after the agent job:
+
+```yaml
+permissions:
+  contents: read
+  pull-requests: read
+  actions: write        # required to upload artifacts
+```
+
+Add this `steps:` block after the agent step to collect and upload any diffs the agent wrote to `/tmp/visual-regression/diffs/`:
+
+```yaml
+steps:
+  - name: Upload screenshot diffs
+    if: always()
+    uses: actions/upload-artifact@v4
+    with:
+      name: visual-regression-diffs-${{ github.event.pull_request.number }}
+      path: /tmp/visual-regression/diffs/
+      retention-days: 14
+      if-no-files-found: ignore
+```
+
+Keep PR comments concise: include only the pass/fail counts and a link to the artifact. Example comment format:
+
+```
+Visual regression: 2 pages changed, 5 unchanged.
+Screenshot diffs: [view artifacts](<artifact-url>)
+```
+
+> ⚠️ The agent cannot directly generate the artifact URL at comment-post time. Either omit the link or use a pre-step to compute the run URL (`${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`).
