@@ -1,6 +1,8 @@
 // @ts-check
 /// <reference types="@actions/github-script" />
 
+require("./shim.cjs");
+
 const childProcess = require("child_process");
 const { randomBytes } = require("crypto");
 const fs = require("fs");
@@ -2135,15 +2137,15 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   // above and no gh-aw.aic attribute has been pushed yet — these files are the
   // sole source of AIC for conclusion spans.
   if (jobName === "conclusion" && typeof aiCredits !== "number") {
-    console.log("[otlp] conclusion: parsing AI credits from usage JSONL files");
-    console.log(`[otlp] conclusion: reading ${AGENTS_USAGE_JSONL_PATH}`);
+    core.info("[otlp] conclusion: parsing AI credits from usage JSONL files");
+    core.info(`[otlp] conclusion: reading ${AGENTS_USAGE_JSONL_PATH}`);
     const agentsAIC = parseAICreditsFromUsageJsonl(AGENTS_USAGE_JSONL_PATH);
-    console.log(`[otlp] conclusion: agent AIC = ${agentsAIC}`);
-    console.log(`[otlp] conclusion: reading ${DETECTION_USAGE_JSONL_PATH}`);
+    core.info(`[otlp] conclusion: agent AIC = ${agentsAIC}`);
+    core.info(`[otlp] conclusion: reading ${DETECTION_USAGE_JSONL_PATH}`);
     const detectionAIC = parseAICreditsFromUsageJsonl(DETECTION_USAGE_JSONL_PATH);
-    console.log(`[otlp] conclusion: detection AIC = ${detectionAIC}`);
+    core.info(`[otlp] conclusion: detection AIC = ${detectionAIC}`);
     const usageFileAIC = agentsAIC + detectionAIC;
-    console.log(`[otlp] conclusion: total AIC = ${usageFileAIC} (agent: ${agentsAIC}, detection: ${detectionAIC})`);
+    core.info(`[otlp] conclusion: total AIC = ${usageFileAIC} (agent: ${agentsAIC}, detection: ${detectionAIC})`);
     if (usageFileAIC > 0) {
       attributes.push(buildAttr("gh-aw.aic", usageFileAIC));
     }
@@ -2434,14 +2436,14 @@ async function sendJobConclusionSpan(spanName, options = {}) {
 
   // Log detailed payload information for conclusion job spans to aid debugging
   if (jobName === "conclusion") {
-    console.log(`[otlp] conclusion: built span payload with ${attributes.length} attributes`);
-    console.log(`[otlp] conclusion: span name = "${spanName}"`);
-    console.log(`[otlp] conclusion: trace ID = ${traceId}`);
-    console.log(`[otlp] conclusion: span ID = ${conclusionSpanId}`);
+    core.info(`[otlp] conclusion: built span payload with ${attributes.length} attributes`);
+    core.info(`[otlp] conclusion: span name = "${spanName}"`);
+    core.info(`[otlp] conclusion: trace ID = ${traceId}`);
+    core.info(`[otlp] conclusion: span ID = ${conclusionSpanId}`);
     if (parentSpanId) {
-      console.log(`[otlp] conclusion: parent span ID = ${parentSpanId}`);
+      core.info(`[otlp] conclusion: parent span ID = ${parentSpanId}`);
     }
-    console.log(`[otlp] conclusion: status = ${statusCode}${statusMessage ? ` (${statusMessage})` : ""}`);
+    core.info(`[otlp] conclusion: status = ${statusCode}${statusMessage ? ` (${statusMessage})` : ""}`);
     // Log key attributes for easier debugging
     const aicAttr = attributes.find(a => a.key === "gh-aw.aic");
     const agentAicAttr = attributes.find(a => a.key === "gh-aw.aic.agent");
@@ -2451,17 +2453,17 @@ async function sendJobConclusionSpan(spanName, options = {}) {
       if (aicAttr) aicSummary.push(`total=${aicAttr.value.doubleValue || aicAttr.value.intValue}`);
       if (agentAicAttr) aicSummary.push(`agent=${agentAicAttr.value.doubleValue || agentAicAttr.value.intValue}`);
       if (detectionAicAttr) aicSummary.push(`detection=${detectionAicAttr.value.doubleValue || detectionAicAttr.value.intValue}`);
-      console.log(`[otlp] conclusion: AI credits: ${aicSummary.join(", ")}`);
+      core.info(`[otlp] conclusion: AI credits: ${aicSummary.join(", ")}`);
     }
     // Log serialized payload size for observability
     try {
       const payloadJson = JSON.stringify(payload);
-      console.log(`[otlp] conclusion: payload size = ${payloadJson.length} bytes`);
+      core.info(`[otlp] conclusion: payload size = ${payloadJson.length} bytes`);
       // Log first 500 chars of payload for debugging (truncated to avoid log spam)
       const preview = payloadJson.length > 500 ? payloadJson.slice(0, 500) + "..." : payloadJson;
-      console.log(`[otlp] conclusion: payload preview = ${preview}`);
+      core.info(`[otlp] conclusion: payload preview = ${preview}`);
     } catch (err) {
-      console.log(`[otlp] conclusion: failed to serialize payload for logging: ${err.message}`);
+      core.info(`[otlp] conclusion: failed to serialize payload for logging: ${err.message}`);
     }
   }
 

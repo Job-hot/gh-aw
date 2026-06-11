@@ -24,7 +24,11 @@ describe("action_conclusion_otlp.cjs", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(console, "log").mockImplementation(() => {});
+    // Mock core.info instead of console.log
+    if (!global.core) {
+      global.core = {};
+    }
+    vi.spyOn(global.core, "info").mockImplementation(() => {});
     mockSendJobConclusionSpan.mockResolvedValue(undefined);
     // Patch the shared CJS exports object — run() accesses this at call time
     sendOtlpModule.sendJobConclusionSpan = mockSendJobConclusionSpan;
@@ -53,7 +57,7 @@ describe("action_conclusion_otlp.cjs", () => {
     it("should log that OTLP export is skipped and JSONL mirror will be attempted", async () => {
       await run();
 
-      expect(console.log).toHaveBeenCalledWith("[otlp] GH_AW_OTLP_ENDPOINTS not set, skipping OTLP export (will attempt JSONL mirror)");
+      expect(global.core.info).toHaveBeenCalledWith("[otlp] GH_AW_OTLP_ENDPOINTS not set, skipping OTLP export (will attempt JSONL mirror)");
     });
 
     it("should still call sendJobConclusionSpan for JSONL mirror", async () => {
@@ -78,13 +82,13 @@ describe("action_conclusion_otlp.cjs", () => {
     it("should log the conclusion span export as attempted", async () => {
       await run();
 
-      expect(console.log).toHaveBeenCalledWith("[otlp] conclusion span export attempted");
+      expect(global.core.info).toHaveBeenCalledWith("[otlp] conclusion span export attempted");
     });
 
     it("should log the endpoint URL in the sending message", async () => {
       await run();
 
-      expect(console.log).toHaveBeenCalledWith(expect.stringContaining("configured endpoints"));
+      expect(global.core.info).toHaveBeenCalledWith(expect.stringContaining("configured endpoints"));
     });
 
     describe("span name construction", () => {
@@ -116,7 +120,7 @@ describe("action_conclusion_otlp.cjs", () => {
 
         await run();
 
-        expect(console.log).toHaveBeenCalledWith('[otlp] sending conclusion span "gh-aw.setup.conclusion" to configured endpoints');
+        expect(global.core.info).toHaveBeenCalledWith('[otlp] sending conclusion span "gh-aw.setup.conclusion" to configured endpoints');
       });
 
       it("should handle different job names correctly", async () => {
@@ -198,7 +202,7 @@ describe("action_conclusion_otlp.cjs", () => {
       mockSendJobConclusionSpan.mockRejectedValueOnce(new Error("fail"));
 
       await expect(run()).rejects.toThrow("fail");
-      expect(console.log).not.toHaveBeenCalledWith("[otlp] conclusion span export attempted");
+      expect(global.core.info).not.toHaveBeenCalledWith("[otlp] conclusion span export attempted");
     });
   });
 });
