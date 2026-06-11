@@ -1438,18 +1438,32 @@ const OTLP_EXPORT_ERROR_DETAILS_PATH = "/tmp/gh-aw/otlp-export-errors.jsonl";
 const FAILURE_CATEGORIES_PATH = "/tmp/gh-aw/failure_categories.json";
 
 /**
- * Path to the aggregated agent job AI usage JSONL file in the usage artifact directory.
- * Read by the conclusion job post-step before /tmp/gh-aw/ is deleted.
- * @type {string}
+ * Possible paths to the agent job AI usage JSONL files.
+ * The conclusion job post-step checks these locations in order to find usage data
+ * before /tmp/gh-aw/ is deleted. Artifact download may place files at different
+ * locations depending on the artifact structure.
+ * @type {string[]}
  */
-const AGENTS_USAGE_JSONL_PATH = "/tmp/gh-aw/usage/agent/token_usage.jsonl";
+const AGENTS_USAGE_JSONL_PATHS = [
+  "/tmp/gh-aw/usage/agent/token_usage.jsonl",
+  "/tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl",
+  "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl",
+  "/tmp/gh-aw/sandbox/firewall/audit/api-proxy-logs/token-usage.jsonl",
+];
 
 /**
- * Path to the aggregated detection job AI usage JSONL file in the usage artifact directory.
- * Read by the conclusion job post-step before /tmp/gh-aw/ is deleted.
- * @type {string}
+ * Possible paths to the detection job AI usage JSONL files.
+ * The conclusion job post-step checks these locations in order to find usage data
+ * before /tmp/gh-aw/ is deleted. Artifact download may place files at different
+ * locations depending on the artifact structure.
+ * @type {string[]}
  */
-const DETECTION_USAGE_JSONL_PATH = "/tmp/gh-aw/usage/detection/token_usage.jsonl";
+const DETECTION_USAGE_JSONL_PATHS = [
+  "/tmp/gh-aw/usage/detection/token_usage.jsonl",
+  "/tmp/gh-aw/threat-detection/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl",
+  "/tmp/gh-aw/threat-detection/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl",
+  "/tmp/gh-aw/threat-detection/sandbox/firewall/audit/api-proxy-logs/token-usage.jsonl",
+];
 
 /**
  * Path to the agent stdio log file.
@@ -1842,6 +1856,36 @@ function parseAICreditsFromUsageJsonl(filePath) {
 }
 
 /**
+ * Parse AI credits from multiple possible usage file locations.
+ *
+ * Tries each path in the array in order until a file is found. Uses
+ * first-available-wins semantics: the first file found is parsed and returned,
+ * remaining paths are not checked. This handles cases where artifact download
+ * places files at different locations depending on the artifact structure.
+ *
+ * @param {string[]} filePaths - Array of absolute paths to try, in order of preference
+ * @param {string} sourceLabel - Label for logging (e.g., "agent" or "detection")
+ * @returns {number} Total AI credits from the first file found, or 0 if none exist
+ */
+function parseAICreditsFromMultiplePaths(filePaths, sourceLabel) {
+  core.info(`[otlp] parseAICreditsFromMultiplePaths(${sourceLabel}): checking ${filePaths.length} possible locations`);
+  
+  for (const filePath of filePaths) {
+    if (fs.existsSync(filePath)) {
+      core.info(`[otlp] parseAICreditsFromMultiplePaths(${sourceLabel}): found file at ${filePath}`);
+      const credits = parseAICreditsFromUsageJsonl(filePath);
+      core.info(`[otlp] parseAICreditsFromMultiplePaths(${sourceLabel}): parsed ${credits} credits from ${filePath}`);
+      return credits;
+    } else {
+      core.info(`[otlp] parseAICreditsFromMultiplePaths(${sourceLabel}): file not found at ${filePath}`);
+    }
+  }
+  
+  core.info(`[otlp] parseAICreditsFromMultiplePaths(${sourceLabel}): no files found in any of the ${filePaths.length} locations`);
+  return 0;
+}
+
+/**
  * Read steering-event count from the first available API proxy event-log JSONL.
  *
  * Uses first-available-wins semantics: the first non-empty file encountered is
@@ -2224,13 +2268,13 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   // The conclusion job is not in jobEmitsOwnTokenUsage, so aiCredits is undefined
   // above and no gh-aw.aic attribute has been pushed yet — these files are the
   // sole source of AIC for conclusion spans.
+  // Artifact download may place files at different locations depending on structure,
+  // so we check multiple possible paths for each source.
   if (jobName === "conclusion" && typeof aiCredits !== "number") {
     core.info("[otlp] conclusion: parsing AI credits from usage JSONL files");
-    core.info(`[otlp] conclusion: reading ${AGENTS_USAGE_JSONL_PATH}`);
-    const agentsAIC = parseAICreditsFromUsageJsonl(AGENTS_USAGE_JSONL_PATH);
+    const agentsAIC = parseAICreditsFromMultiplePaths(AGENTS_USAGE_JSONL_PATHS, "agent");
     core.info(`[otlp] conclusion: agent AIC = ${agentsAIC}`);
-    core.info(`[otlp] conclusion: reading ${DETECTION_USAGE_JSONL_PATH}`);
-    const detectionAIC = parseAICreditsFromUsageJsonl(DETECTION_USAGE_JSONL_PATH);
+    const detectionAIC = parseAICreditsFromMultiplePaths(DETECTION_USAGE_JSONL_PATHS, "detection");
     core.info(`[otlp] conclusion: detection AIC = ${detectionAIC}`);
     const usageFileAIC = agentsAIC + detectionAIC;
     core.info(`[otlp] conclusion: total AIC = ${usageFileAIC} (agent: ${agentsAIC}, detection: ${detectionAIC})`);
@@ -2597,9 +2641,10 @@ module.exports = {
   resolveEngineId,
   GITHUB_RATE_LIMITS_JSONL_PATH,
   FAILURE_CATEGORIES_PATH,
-  AGENTS_USAGE_JSONL_PATH,
-  DETECTION_USAGE_JSONL_PATH,
+  AGENTS_USAGE_JSONL_PATHS,
+  DETECTION_USAGE_JSONL_PATHS,
   parseAICreditsFromUsageJsonl,
+  parseAICreditsFromMultiplePaths,
   sendJobSetupSpan,
   sendJobConclusionSpan,
   OTEL_JSONL_PATH,
