@@ -6783,15 +6783,18 @@ describe("sendJobConclusionSpan does not emit OTLP metrics", () => {
 
 describe("parseAICreditsFromUsageJsonl", () => {
   let readFileSpy;
+  let existsSyncSpy;
 
   beforeEach(() => {
     readFileSpy = vi.spyOn(fs, "readFileSync").mockImplementation(() => {
       throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
     });
+    existsSyncSpy = vi.spyOn(fs, "existsSync").mockReturnValue(false);
   });
 
   afterEach(() => {
     readFileSpy.mockRestore();
+    existsSyncSpy.mockRestore();
   });
 
   it("returns 0 when the file does not exist", () => {
@@ -6799,76 +6802,88 @@ describe("parseAICreditsFromUsageJsonl", () => {
   });
 
   it("returns 0 for an empty file", () => {
+    existsSyncSpy.mockReturnValue(true);
     readFileSpy.mockImplementation(() => "");
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(0);
   });
 
   it("returns 0 for a file with only whitespace", () => {
+    existsSyncSpy.mockReturnValue(true);
     readFileSpy.mockImplementation(() => "   \n  \n");
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(0);
   });
 
   it("sums ai_credits from a single-entry file", () => {
+    existsSyncSpy.mockReturnValue(true);
     readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits: 1.5, model: "gpt-4o" }) + "\n");
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(1.5);
   });
 
   it("sums ai_credits across multiple entries", () => {
+    existsSyncSpy.mockReturnValue(true);
     const lines = [JSON.stringify({ ai_credits: 1.0, model: "gpt-4o" }), JSON.stringify({ ai_credits: 0.5, model: "claude-3-5-sonnet" }), JSON.stringify({ ai_credits: 0.25 })].join("\n");
     readFileSpy.mockImplementation(() => lines);
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(1.75);
   });
 
   it("supports camelCase aiCredits field", () => {
+    existsSyncSpy.mockReturnValue(true);
     readFileSpy.mockImplementation(() => JSON.stringify({ aiCredits: 2.0 }) + "\n");
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(2.0);
   });
 
   it("prefers snake_case ai_credits over camelCase aiCredits when both are present", () => {
+    existsSyncSpy.mockReturnValue(true);
     readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits: 1.0, aiCredits: 9.0 }) + "\n");
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(1.0);
   });
 
   it("skips entries without an ai_credits or aiCredits field", () => {
+    existsSyncSpy.mockReturnValue(true);
     const lines = [JSON.stringify({ model: "gpt-4o", input_tokens: 100 }), JSON.stringify({ ai_credits: 0.75 })].join("\n");
     readFileSpy.mockImplementation(() => lines);
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(0.75);
   });
 
   it("skips malformed JSON lines without throwing", () => {
+    existsSyncSpy.mockReturnValue(true);
     const lines = ["{not valid json}", JSON.stringify({ ai_credits: 1.0 }), "also bad"].join("\n");
     readFileSpy.mockImplementation(() => lines);
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(1.0);
   });
 
   it("skips entries with negative ai_credits", () => {
+    existsSyncSpy.mockReturnValue(true);
     const lines = [JSON.stringify({ ai_credits: -0.5 }), JSON.stringify({ ai_credits: 1.0 })].join("\n");
     readFileSpy.mockImplementation(() => lines);
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(1.0);
   });
 
   it("skips entries where ai_credits is a non-numeric string", () => {
+    existsSyncSpy.mockReturnValue(true);
     const lines = [JSON.stringify({ ai_credits: "invalid" }), JSON.stringify({ ai_credits: 0.5 })].join("\n");
     readFileSpy.mockImplementation(() => lines);
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(0.5);
   });
 
   it("accepts ai_credits expressed as a numeric string", () => {
+    existsSyncSpy.mockReturnValue(true);
     readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits: "1.234" }) + "\n");
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBeCloseTo(1.234);
   });
 
   it("accepts ai_credits of zero", () => {
+    existsSyncSpy.mockReturnValue(true);
     readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits: 0 }) + "\n");
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(0);
   });
 
   it("uses the AGENTS_USAGE_JSONL_PATH constant for the agents file", () => {
-    expect(AGENTS_USAGE_JSONL_PATH).toBe("/tmp/gh-aw/agent_usage.jsonl");
+    expect(AGENTS_USAGE_JSONL_PATH).toBe("/tmp/gh-aw/usage/agent/token_usage.jsonl");
   });
 
   it("uses the DETECTION_USAGE_JSONL_PATH constant for the detection file", () => {
-    expect(DETECTION_USAGE_JSONL_PATH).toBe("/tmp/gh-aw/detection_usage.jsonl");
+    expect(DETECTION_USAGE_JSONL_PATH).toBe("/tmp/gh-aw/usage/detection/token_usage.jsonl");
   });
 });
 
@@ -6880,7 +6895,7 @@ describe("sendJobConclusionSpan conclusion job AI credits from usage files", () 
   /** @type {Record<string, string | undefined>} */
   const savedEnv = {};
   const envKeys = ["GH_AW_OTLP_ENDPOINTS", "INPUT_JOB_NAME", "GH_AW_AIC", "GH_AW_AGENT_CONCLUSION", "GITHUB_RUN_ID", "GITHUB_ACTOR", "GITHUB_REPOSITORY"];
-  let mkdirSpy, appendSpy, readFileSpy;
+  let mkdirSpy, appendSpy, readFileSpy, existsSyncSpy;
 
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" }));
@@ -6890,6 +6905,10 @@ describe("sendJobConclusionSpan conclusion job AI credits from usage files", () 
     }
     mkdirSpy = vi.spyOn(fs, "mkdirSync").mockImplementation(() => {});
     appendSpy = vi.spyOn(fs, "appendFileSync").mockImplementation(() => {});
+    existsSyncSpy = vi.spyOn(fs, "existsSync").mockImplementation(filePath => {
+      // Return true for paths that will be read by readFileSpy
+      return filePath === AGENTS_USAGE_JSONL_PATH || filePath === DETECTION_USAGE_JSONL_PATH;
+    });
     readFileSpy = vi.spyOn(fs, "readFileSync").mockImplementation(() => {
       throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
     });
@@ -6909,6 +6928,7 @@ describe("sendJobConclusionSpan conclusion job AI credits from usage files", () 
     mkdirSpy.mockRestore();
     appendSpy.mockRestore();
     readFileSpy.mockRestore();
+    existsSyncSpy.mockRestore();
   });
 
   /**
@@ -7004,7 +7024,7 @@ describe("sendJobConclusionSpan conclusion job AI credits from usage files", () 
   it("reads usage files from the fixed /tmp/gh-aw/ paths regardless of GH_AW_AGENT_OUTPUT", async () => {
     process.env.GH_AW_AGENT_OUTPUT = "/custom/path/output.json";
     readFileSpy.mockImplementation(filePath => {
-      if (filePath === "/tmp/gh-aw/agent_usage.jsonl") return JSON.stringify({ ai_credits: 2.0 }) + "\n";
+      if (filePath === AGENTS_USAGE_JSONL_PATH) return JSON.stringify({ ai_credits: 2.0 }) + "\n";
       throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
     });
 

@@ -650,7 +650,7 @@ func (c *Compiler) buildConclusionJob(data *WorkflowData, mainJobName string, sa
 }
 
 // buildUsageArtifactUploadSteps creates steps that collect and upload a compact usage artifact.
-// The artifact includes aw-info.jsonl, agent_usage.jsonl, detection_usage.jsonl, and agent/detection token usage JSONL files (when present).
+// The artifact includes aw-info.jsonl and aggregated token usage JSONL files from agent/detection sandbox locations.
 func buildUsageArtifactUploadSteps(prefix string, pinAction func(string) string) []string {
 	usageArtifactName := prefix + "usage"
 	return []string{
@@ -660,12 +660,10 @@ func buildUsageArtifactUploadSteps(prefix string, pinAction func(string) string)
 		"        run: |\n",
 		"          mkdir -p /tmp/gh-aw/usage/agent /tmp/gh-aw/usage/detection\n",
 		"          echo \"Usage artifact source file status:\"\n",
-		fmt.Sprintf("          for file in /tmp/gh-aw/aw-info.jsonl /tmp/gh-aw/%s /tmp/gh-aw/%s /tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/sandbox/firewall/audit/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/threat-detection/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/threat-detection/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/threat-detection/sandbox/firewall/audit/api-proxy-logs/token-usage.jsonl; do\n", constants.AgentUsageJsonlFilename, constants.DetectionUsageJsonlFilename),
+		"          for file in /tmp/gh-aw/aw-info.jsonl /tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/sandbox/firewall/audit/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/threat-detection/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/threat-detection/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/threat-detection/sandbox/firewall/audit/api-proxy-logs/token-usage.jsonl; do\n",
 		"            [ -f \"$file\" ] && echo \"FOUND: $file\" || echo \"MISSING: $file\"\n",
 		"          done\n",
 		"          [ -f /tmp/gh-aw/aw-info.jsonl ] && cp /tmp/gh-aw/aw-info.jsonl /tmp/gh-aw/usage/aw-info.jsonl || true\n",
-		fmt.Sprintf("          [ -f /tmp/gh-aw/%[1]s ] && cp /tmp/gh-aw/%[1]s /tmp/gh-aw/usage/%[1]s || true\n", constants.AgentUsageJsonlFilename),
-		fmt.Sprintf("          [ -f /tmp/gh-aw/%[1]s ] && cp /tmp/gh-aw/%[1]s /tmp/gh-aw/usage/%[1]s || true\n", constants.DetectionUsageJsonlFilename),
 		"          [ -f /tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl ] && cp /tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/usage/agent/token_usage.jsonl || true\n",
 		"          [ -f /tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl ] && cp /tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/usage/agent/token_usage.jsonl || true\n",
 		"          [ -f /tmp/gh-aw/sandbox/firewall/audit/api-proxy-logs/token-usage.jsonl ] && cp /tmp/gh-aw/sandbox/firewall/audit/api-proxy-logs/token-usage.jsonl /tmp/gh-aw/usage/agent/token_usage.jsonl || true\n",
@@ -683,8 +681,6 @@ func buildUsageArtifactUploadSteps(prefix string, pinAction func(string) string)
 		fmt.Sprintf("          name: %s\n", usageArtifactName),
 		"          path: |\n",
 		"            /tmp/gh-aw/usage/aw-info.jsonl\n",
-		"            /tmp/gh-aw/usage/" + constants.AgentUsageJsonlFilename + "\n",
-		"            /tmp/gh-aw/usage/" + constants.DetectionUsageJsonlFilename + "\n",
 		"            /tmp/gh-aw/usage/agent/token_usage.jsonl\n",
 		"            /tmp/gh-aw/usage/detection/token_usage.jsonl\n",
 		"          if-no-files-found: ignore\n",

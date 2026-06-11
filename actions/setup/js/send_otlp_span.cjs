@@ -1438,18 +1438,18 @@ const OTLP_EXPORT_ERROR_DETAILS_PATH = "/tmp/gh-aw/otlp-export-errors.jsonl";
 const FAILURE_CATEGORIES_PATH = "/tmp/gh-aw/failure_categories.json";
 
 /**
- * Path to the per-agent AI usage JSONL file written to the temp folder.
+ * Path to the aggregated agent job AI usage JSONL file in the usage artifact directory.
  * Read by the conclusion job post-step before /tmp/gh-aw/ is deleted.
  * @type {string}
  */
-const AGENTS_USAGE_JSONL_PATH = "/tmp/gh-aw/agent_usage.jsonl";
+const AGENTS_USAGE_JSONL_PATH = "/tmp/gh-aw/usage/agent/token_usage.jsonl";
 
 /**
- * Path to the detection job AI usage JSONL file written to the temp folder.
+ * Path to the aggregated detection job AI usage JSONL file in the usage artifact directory.
  * Read by the conclusion job post-step before /tmp/gh-aw/ is deleted.
  * @type {string}
  */
-const DETECTION_USAGE_JSONL_PATH = "/tmp/gh-aw/detection_usage.jsonl";
+const DETECTION_USAGE_JSONL_PATH = "/tmp/gh-aw/usage/detection/token_usage.jsonl";
 
 /**
  * Path to the agent stdio log file.
@@ -1768,8 +1768,8 @@ function normalizeRuntimeTokenUsage(rawUsage) {
  * non-negative numeric AI-credits field are silently skipped.
  *
  * Used by the conclusion job post-step to read AI usage data from
- * `/tmp/gh-aw/agent_usage.jsonl` and `/tmp/gh-aw/detection_usage.jsonl`
- * before the temp folder is deleted.
+ * `/tmp/gh-aw/usage/agent/token_usage.jsonl` and
+ * `/tmp/gh-aw/usage/detection/token_usage.jsonl` before the temp folder is deleted.
  *
  * @param {string} filePath - Absolute path to the JSONL usage file
  * @returns {number} Total AI credits summed across all valid entries (0 when the
@@ -1777,6 +1777,14 @@ function normalizeRuntimeTokenUsage(rawUsage) {
  */
 function parseAICreditsFromUsageJsonl(filePath) {
   try {
+    // Check if file exists and log it
+    if (fs.existsSync(filePath)) {
+      core.info(`[otlp] parseAICreditsFromUsageJsonl: file exists at ${filePath}`);
+    } else {
+      core.info(`[otlp] parseAICreditsFromUsageJsonl: file not found at ${filePath}`);
+      return 0;
+    }
+
     const content = fs.readFileSync(filePath, "utf8");
     if (!content.trim()) return 0;
     let total = 0;
@@ -1787,7 +1795,8 @@ function parseAICreditsFromUsageJsonl(filePath) {
       if (typeof parsed === "number") total += parsed;
     }
     return total;
-  } catch {
+  } catch (error) {
+    core.info(`[otlp] parseAICreditsFromUsageJsonl: error reading ${filePath}: ${error.message}`);
     return 0;
   }
 }
