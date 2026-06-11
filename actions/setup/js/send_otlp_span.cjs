@@ -1869,7 +1869,7 @@ function parseAICreditsFromUsageJsonl(filePath) {
  */
 function parseAICreditsFromMultiplePaths(filePaths, sourceLabel) {
   core.info(`[otlp] parseAICreditsFromMultiplePaths(${sourceLabel}): checking ${filePaths.length} possible locations`);
-  
+
   for (const filePath of filePaths) {
     if (fs.existsSync(filePath)) {
       core.info(`[otlp] parseAICreditsFromMultiplePaths(${sourceLabel}): found file at ${filePath}`);
@@ -1880,7 +1880,7 @@ function parseAICreditsFromMultiplePaths(filePaths, sourceLabel) {
       core.info(`[otlp] parseAICreditsFromMultiplePaths(${sourceLabel}): file not found at ${filePath}`);
     }
   }
-  
+
   core.info(`[otlp] parseAICreditsFromMultiplePaths(${sourceLabel}): no files found in any of the ${filePaths.length} locations`);
   return 0;
 }
