@@ -96,21 +96,20 @@ This makes the central repo an **agentic factory**: a self-contained, production
 
 ### Template Repository Structure
 
-A factory repository is self-contained: the `README.md` is the activation manual, and the workflows under `.github/workflows/` are ready to run once secrets are configured. An `aw.yml` manifest can be added later to enable `gh aw add` installs — but the factory works without one.
+A factory repository is self-contained: the `README.md` is the activation manual, and the workflows under `.github/workflows/` are ready to run once secrets are configured.
 
 ```
 agentic-workflows/
 ├── README.md                     # activation manual (secrets, setup, verify)
-├── .github/
-│   └── workflows/
-│       ├── rollout.md            # org-wide rollout orchestrator
-│       ├── triage.md             # cross-repo issue triage
-│       ├── quality-monitor.md    # code quality monitoring
-│       ├── dependabot.md         # dependency management
-│       └── shared/
-│           ├── mcp-config.md     # shared MCP server definitions
-│           └── safety-policy.md  # shared safe-outputs policies
-└── aw.yml                        # optional: enables gh aw add installs
+└── .github/
+    └── workflows/
+        ├── rollout.md            # org-wide rollout orchestrator
+        ├── triage.md             # cross-repo issue triage
+        ├── quality-monitor.md    # code quality monitoring
+        ├── dependabot.md         # dependency management
+        └── shared/
+            ├── mcp-config.md     # shared MCP server definitions
+            └── safety-policy.md  # shared safe-outputs policies
 ```
 
 Mark the repository as a [GitHub template repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-template-repository) so anyone in the organization can instantiate a personal copy in one click without carrying over existing workflow runs or secrets.
@@ -138,39 +137,10 @@ The `README.md` should include a complete secrets checklist so anyone instantiat
 
 Once secrets are in place, all scheduled workflows activate automatically and the factory is producing.
 
-### Optional: Distribution via `aw.yml`
-
-Adding an `aw.yml` manifest is optional but enables teams to install individual workflows from the factory using `gh aw add` rather than cloning or forking the whole repository:
-
-```yaml
-name: Acme Org Agentic Factory
-emoji: 🏭
-description: Standard agentic workflows for Acme org repositories
-min-version: v0.40.0
-includes:
-  - .github/workflows/rollout.md
-  - .github/workflows/triage.md
-  - .github/workflows/quality-monitor.md
-  - .github/workflows/dependabot.md
-  - .github/workflows/shared/mcp-config.md
-  - .github/workflows/shared/safety-policy.md
-```
-
-A consuming repository installs a specific workflow:
-
-```bash
-gh aw add acme-org/agentic-workflows/triage@v1.0.0
-```
-
-Pin consumers to a release tag for stability. As the factory evolves, run `gh aw update` in consuming repositories to pull in upstream changes with a 3-way merge that preserves local edits.
-
-See [Sharing Workflows in the Organization](/gh-aw/practices/sharing-workflows/) for versioning strategy, governance recommendations, and the recommended enterprise pattern for a central `agentic-workflows` repository.
-
 ## Related Documentation
 
 - [MultiRepoOps](/gh-aw/patterns/multi-repo-ops/) — Side repo and downstream sync patterns
 - [Sharing Workflows in the Organization](/gh-aw/practices/sharing-workflows/) — Versioning, governance, and enterprise patterns
-- [Package Manifest (aw.yml)](/gh-aw/reference/aw-yml-package-manifest/) — Manifest format for installable packages
 - [Dependabot Rollout](/gh-aw/examples/multi-repo/dependabot-rollout/) — End-to-end org-wide rollout example
 - [Cross-Repo Issue Tracking](/gh-aw/examples/multi-repo/issue-tracking/) — Aggregated issue tracking example
 - [Cross-Repository Safe Outputs](/gh-aw/reference/cross-repository/) — Configuration reference
