@@ -112,6 +112,16 @@ const SafeOutputsFilename = "safeoutputs.jsonl"
 // consume structured token data without parsing the step summary or GITHUB_OUTPUT.
 const TokenUsageFilename = "agent_usage.json"
 
+// AgentUsageJsonlFilename is the filename of the per-run agent AI credit usage JSONL file written to /tmp/gh-aw/.
+// Each line is a JSON object with an ai_credits (or aiCredits) field tracking credit consumption.
+// This file is read by the conclusion job post-step to aggregate AIC before the temp folder is removed.
+const AgentUsageJsonlFilename = "agent_usage.jsonl"
+
+// DetectionUsageJsonlFilename is the filename of the per-run detection job AI credit usage JSONL file written to /tmp/gh-aw/.
+// Each line is a JSON object with an ai_credits (or aiCredits) field tracking credit consumption.
+// This file is read by the conclusion job post-step to aggregate AIC before the temp folder is removed.
+const DetectionUsageJsonlFilename = "detection_usage.jsonl"
+
 // GithubRateLimitsFilename is the filename of the GitHub API rate-limit log written to /tmp/gh-aw/.
 // Each line is a JSON object recording the x-ratelimit-* headers (or rate-limit API snapshot)
 // captured during github.rest API calls, enabling post-run analysis of rate-limit consumption.

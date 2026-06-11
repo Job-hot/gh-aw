@@ -1401,14 +1401,14 @@ const FAILURE_CATEGORIES_PATH = "/tmp/gh-aw/failure_categories.json";
  * Read by the conclusion job post-step before /tmp/gh-aw/ is deleted.
  * @type {string}
  */
-const AGENTS_USAGE_JSONL_PATH = "/tmp/gh-aw/AgentsUsage.jsonl";
+const AGENTS_USAGE_JSONL_PATH = "/tmp/gh-aw/agent_usage.jsonl";
 
 /**
  * Path to the detection job AI usage JSONL file written to the temp folder.
  * Read by the conclusion job post-step before /tmp/gh-aw/ is deleted.
  * @type {string}
  */
-const DETECTION_USAGE_JSONL_PATH = "/tmp/gh-aw/DetectionUsage.jsonl";
+const DETECTION_USAGE_JSONL_PATH = "/tmp/gh-aw/detection_usage.jsonl";
 
 /**
  * Path to the agent stdio log file.
@@ -1727,7 +1727,7 @@ function normalizeRuntimeTokenUsage(rawUsage) {
  * non-negative numeric AI-credits field are silently skipped.
  *
  * Used by the conclusion job post-step to read AI usage data from
- * `/tmp/gh-aw/AgentsUsage.jsonl` and `/tmp/gh-aw/DetectionUsage.jsonl`
+ * `/tmp/gh-aw/agent_usage.jsonl` and `/tmp/gh-aw/detection_usage.jsonl`
  * before the temp folder is deleted.
  *
  * @param {string} filePath - Absolute path to the JSONL usage file
