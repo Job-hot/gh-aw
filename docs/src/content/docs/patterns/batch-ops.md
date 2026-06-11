@@ -28,15 +28,6 @@ flowchart LR
 
 Split work into fixed-size pages using `GITHUB_RUN_NUMBER`. Each run processes one page, picking up the next slice on the next scheduled run. Items must have a stable sort key (creation date, issue number) so pagination is deterministic.
 
-```mermaid
-flowchart LR
-    run([Run N]) --> fetch[Fetch page N]
-    fetch --> agent[AI processes batch]
-    agent --> next([Run N+1, next page])
-```
-
-Example workflow:
-
 ```aw wrap title=".github/workflows/stale-processor.md"
 ---
 on:
@@ -81,15 +72,6 @@ This run covers offset ${{ steps.compute-page.outputs.page_offset }} with page s
 
 Use GitHub Actions matrix to run multiple batch workers in parallel, each responsible for a non-overlapping shard. Use `fail-fast: false` so one shard failure doesn't cancel the others. Each shard gets its own token and API rate limit quota.
 
-```mermaid
-flowchart LR
-    trigger([Trigger]) --> s0[Shard 0]
-    trigger --> s1[Shard 1]
-    trigger --> s2[Shard 2]
-```
-
-Example workflow:
-
 ```aw wrap title=".github/workflows/batch-worker.md"
 ---
 on:
@@ -129,15 +111,6 @@ Process only issues where `(issue_number % ${{ inputs.total_shards }}) == ${{ ma
 ## Batch Strategy 3: Rate-Limit-Aware Batching
 
 Throttle API calls by processing items in small sub-batches with explicit pauses. Slower than unbounded processing but dramatically reduces rate-limit errors. Use [Rate Limiting Controls](/gh-aw/reference/rate-limiting-controls/) for built-in throttling.
-
-```mermaid
-flowchart LR
-    trigger([Trigger]) --> batch[Process sub-batch]
-    batch --> pause[Pause between batches]
-    pause --> report[Report totals]
-```
-
-Example workflow:
 
 ```aw wrap title=".github/workflows/rate-limited-batch.md"
 ---
@@ -179,15 +152,6 @@ Process all open issues in sub-batches of ${{ inputs.batch_size }}, pausing ${{ 
 ## Batch Strategy 4: Result Aggregation
 
 Collect results from multiple batch workers or runs and aggregate them into a single summary issue. Use [cache-memory](/gh-aw/reference/cache-memory/) to store intermediate results when runs span multiple days.
-
-```mermaid
-flowchart LR
-    runs[Past batch runs] --> cache[cache-memory]
-    cache --> agent[AI agent]
-    agent --> issue[Update tracking issue]
-```
-
-Example workflow:
 
 ```aw wrap title=".github/workflows/batch-aggregator.md"
 ---
