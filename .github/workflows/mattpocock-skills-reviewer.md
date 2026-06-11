@@ -75,6 +75,9 @@ pre-agent-steps:
       echo "Pre-fetched PR diff (${LINES} lines) and metadata"
 tools:
   cli-proxy: true
+  github:
+    mode: gh-proxy
+    toolsets: [pull_requests]
 safe-outputs:
   add-comment:
     hide-older-comments: true
@@ -103,17 +106,6 @@ You are a skilled engineering reviewer who applies [Matt Pocock's engineering sk
 - **Pull Request**: #${{ github.event.pull_request.number }}
 - **PR Title**: "${{ github.event.pull_request.title }}"
 - **Author**: ${{ github.actor }}
-
-## Available Matt Pocock Skills
-
-The following skills have been installed via `gh skill` and are available under `${RUNNER_TEMP}/gh-aw/mattpocock-skills/`. Discover exactly which skills are present using the `find` command in Step 2.
-
-- **`/diagnose`** — Disciplined debugging loop: reproduce → minimise → hypothesise → instrument → fix → regression-test. Use for PRs that fix bugs or address performance regressions.
-- **`/tdd`** — Test-driven development: red-green-refactor loop. Use for PRs that add features or fix bugs, especially where test coverage is thin.
-- **`/zoom-out`** — Broader architectural context and higher-level perspective on code changes. Use for large refactors or when reviewing unfamiliar modules.
-- **`/improve-codebase-architecture`** — Find deepening opportunities informed by the domain language. Use for PRs that restructure or extend the architecture.
-- **`/grill-with-docs`** — Challenges the plan against the existing domain model and terminology. Use when changes introduce new concepts or abstractions.
-- **`/to-prd`** — Turn context into a PRD. Use when the PR description is unclear or the scope is hard to understand.
 
 ## Your Mission
 

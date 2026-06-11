@@ -50,6 +50,11 @@ steps:
         --name-only | grep -E '(_test\.go|\.test\.cjs|\.test\.js)$' \
         > /tmp/gh-aw/agent/test-files.txt || true
 
+      # List of newly added Go test files (for build tag checking)
+      gh pr diff "$PR_NUMBER" \
+        --name-only --diff-filter=A | grep '_test\.go$' \
+        > /tmp/gh-aw/agent/new-go-test-files.txt || true
+
       # Diff for test files only (empty file is fine if no test files changed)
       if [ -s /tmp/gh-aw/agent/test-files.txt ]; then
         # shellcheck disable=SC2046
@@ -110,6 +115,9 @@ cat /tmp/gh-aw/agent/pr-meta.json
 # List of changed test files
 cat /tmp/gh-aw/agent/test-files.txt
 
+# List of newly added Go test files only (--diff-filter=A), used for build tag checking
+cat /tmp/gh-aw/agent/new-go-test-files.txt
+
 # Diff for test files only
 cat /tmp/gh-aw/agent/test-diff.txt
 
@@ -143,22 +151,22 @@ For each test, collect:
 Use bash tools to help parse the diff if needed:
 
 ```bash
-# For Go: find Test* function definitions in the diff
-git diff ${{ github.event.pull_request.base.sha }}...HEAD -- '*_test.go' | grep -E "^\+func Test"
+# For Go: find Test* function definitions in the pre-fetched test diff
+grep -E "^\+func Test" /tmp/gh-aw/agent/test-diff.txt
 
 # For JavaScript (.test.cjs is the primary format; .test.js used in scripts/)
-git diff ${{ github.event.pull_request.base.sha }}...HEAD -- '*.test.cjs' '*.test.js' | grep -E "^\+(it|test|describe)\("
+grep -E "^\+(it|test|describe)\(" /tmp/gh-aw/agent/test-diff.txt
 ```
 
-Also check for missing build tags in new Go test files — every `*_test.go` file must begin with either `//go:build !integration` (for unit tests) or `//go:build integration` (for integration tests):
+Also check for missing build tags using the pre-fetched list of newly added Go test files:
 
 ```bash
-# List any newly added Go test files that are missing the mandatory build tag
-git diff ${{ github.event.pull_request.base.sha }}...HEAD --diff-filter=A --name-only | grep '_test\.go$' | while read f; do
+# Check each newly added Go test file for missing mandatory build tag
+while read f; do
   if ! head -1 "$f" | grep -qE '^//go:build'; then
     echo "MISSING BUILD TAG: $f"
   fi
-done
+done < /tmp/gh-aw/agent/new-go-test-files.txt
 ```
 
 ## Step 3: AST-Assisted Structural Analysis
@@ -235,12 +243,7 @@ Mark a test as **suspicious** if it shows any of these patterns:
 
 ## Step 5: Count Lines in Test Files vs. Production Files
 
-Calculate the test inflation ratio for each changed test file:
-
-```bash
-# Count lines added to test files vs. production files
-cat /tmp/gh-aw/agent/diff-numstat.txt
-```
+Calculate the test inflation ratio for each changed test file using the diff-numstat data already read in Step 1 (`/tmp/gh-aw/agent/diff-numstat.txt`).
 
 For each **Go and JavaScript** test file, find the corresponding production file and compare the ratio of lines added:
 
@@ -489,14 +492,14 @@ END { if (test_name) print test_name, "assertions=" assertions, "errors=" errors
 '
 ```
 
-Also check for newly added Go test files missing the mandatory build tag:
+Also check for newly added Go test files missing the mandatory build tag using the pre-fetched list:
 
 ```bash
-git diff ${{ github.event.pull_request.base.sha }}...HEAD --diff-filter=A --name-only | grep '_test\.go$' | while read f; do
+while read f; do
   if ! head -1 "$f" | grep -qE '^//go:build'; then
     echo "MISSING BUILD TAG: $f"
   fi
-done
+done < /tmp/gh-aw/agent/new-go-test-files.txt
 ```
 
 Return:

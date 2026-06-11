@@ -28,7 +28,6 @@ imports:
   - uses: shared/daily-audit-base.md
     with:
       title-prefix: "[daily-code-metrics] "
-  - shared/python-dataviz.md
   - shared/trends.md
 
 
