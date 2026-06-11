@@ -1,26 +1,30 @@
-# Shared Alerts — 2026-06-10T13:53Z
+# Shared Alerts — 2026-06-11T06:07Z
 
 ## P1 (High) 🚨
-- **AI Credits Cluster Expansion** (#aw_aic_exp9, Jun 9 OPEN, Day 2): 8 workflows hitting max-ai-credits — Daily AgentRx, CLI Tools Tester, WH Manager, Impact Efficiency, Safe Output Health, Test Quality, Matt Pocock, Smoke Gemini. Systemic budget config fix needed. DO NOT RE-FILE individuals.
+- **AI Credits Cluster June 11** (#aw_aic11, filed Jun 11 OPEN): Code Simplifier, Ubuntu Actions Image Analyzer, Workflow Skill Extractor (all 1K max hit), Matt Pocock (5K 24h limit). Fix: raise max-ai-credits to 2000. DO NOT RE-FILE individuals already tracked: #38499, #38500, #38501, #38497.
+- **Daily News Node.js chroot** (#38379, Jun 10 OPEN): Node.js unreachable in AWF chroot (exit 127). Assigned @zarenner. DO NOT RE-FILE.
 - **Daily Safe Outputs Git Simulator** (#aw_gitsim10, Jun 10 OPEN): memory/git-simulator branch missing signed-commit seed. DO NOT RE-FILE.
 
 ## P2 (Watch) ⚠️
-- **Auto-Triage + Sub-Issue Closer** (#38309, Jun 10): Both failed on transient incident. Covered by composite aw-failures issue. DO NOT RE-FILE.
-- **agentic workflows out of sync** (#38274, Jun 10): maintenance issue open.
+- **jsweep tool denial** (#38505, Jun 11): Agent attempted `rm -rf /tmp/x`; guardrail fired (2/2). One-off, monitor.
+- **agentic workflows out of sync** (#38274, Jun 10, CLOSED): maintenance resolved.
 
-## Resolved (Jun 9→10) ✅
-- #38021 Daily Compiler Quality (tool denial), #38039 Safe Output Health, #38045 WH Manager (AI credits), #38025 Test Quality, #38024 Matt Pocock, #38026 Code Simplifier — all CLOSED Jun 9-10.
-- Jun 9 P0/P1 fully resolved; health 68→83→87.
+## Resolved (Jun 9→11) ✅
+- #38119 AI credits cluster tracker — CLOSED (old tracker)
+- #38389 Failure cascade — CLOSED
+- Jun 10 bulk individual failures — most CLOSED on credits reset
+- Prior P0/P1 issues from Jun 9-10 all resolved
 
 ## Systemic Notes
-- **Health score trend:** 68→83→87 (stable; cascade resolved)
-- **AI credits cluster Day 2:** 8 workflows still failing; new individual issues created daily (#38288, #38259, #38329, #38260, #38300, #38302, #38278, #38296) — all covered by #aw_aic_exp9
-- **memory/* bootstrap:** New memory branches need manual signed-commit seed on first push
-- **copilot-swe-agent:** 8 active PRs Jun 10 (55% historical merge rate); healthy throughput
-- **action_required:** Q + AI Moderator — EXPECTED human-review behavior, NOT failures
+- **Health score trend:** 68→83→87→85 (slight dip, AI credits cluster persists)
+- **AI credits persistent pattern:** Analysis-heavy workflows at 1K limit routinely exceed. Fix needed: raise to 2K. Third day of same pattern.
+- **memory/* bootstrap:** New memory branches require signed-commit for first push. Manual intervention required.
+- **Daily News AWF chroot:** Node.js PATH resolution failing; fix: bind-mount node runtime. @zarenner assigned.
+- **Smoke tests:** Some smoke test failures (Gemini #38515, Pi #38513, Antigravity #38512) — likely from PR testing, not systemic.
 
 ## Do Not Re-File (Active Issues)
-- #aw_aic_exp9: AI Credits Cluster (8 workflows) — budget config fix needed
+- #aw_aic11: AI Credits Cluster June 11 (4 workflows)
 - #aw_gitsim10: Daily Safe Outputs Git Simulator (memory branch needs seed)
-- #38309: Auto-Triage + Sub-Issue Closer (composite aw-failures, Jun 10)
-- #38278, #38288, #38259, #38329, #38260, #38300, #38302, #38296: AI credits individuals — covered by #aw_aic_exp9
+- #38379: Daily News chroot (assigned @zarenner)
+- #38499, #38500, #38501, #38497: AI credits individual failures — covered by #aw_aic11
+- #38505: jsweep tool denial
