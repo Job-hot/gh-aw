@@ -1,21 +1,76 @@
 {
-  "run_date": "2026-06-11T01:25:24Z",
-  "run_id": "27317433737",
+  "run_date": "2026-06-11T08:02:37Z",
+  "run_id": "27332607959",
   "fork_prs": 0,
-  "agent_prs_found": 2,
+  "agent_prs_found": 5,
   "prs_found": [],
   "branch_prs_skipped": [
     {
-      "number": 38462,
-      "title": "docs: expand CentralRepoOps with agentic factory pattern",
+      "number": 38550,
+      "title": "Add AI credit cap observability attributes to OTLP conclusion spans",
+      "author": "copilot-swe-agent",
+      "state": "OPEN",
+      "isDraft": false,
+      "isCrossRepository": false,
+      "labels": ["otel"],
+      "additions": 82,
+      "deletions": 0,
+      "changedFiles": 4,
+      "category": "feature",
+      "risk": "medium",
+      "estimated_priority": 50,
+      "otel": true,
+      "note": "NEW"
+    },
+    {
+      "number": 38547,
+      "title": "feat: shared MCP wrapper for codebase-memory-mcp with cache-hosted incremental index",
       "author": "copilot-swe-agent",
       "state": "DRAFT",
       "isDraft": true,
       "isCrossRepository": false,
       "labels": [],
-      "additions": 101,
-      "deletions": 2,
-      "changedFiles": 13,
+      "additions": 162,
+      "deletions": 0,
+      "changedFiles": 1,
+      "category": "feature",
+      "risk": "medium",
+      "estimated_priority": 38,
+      "otel": false,
+      "note": "NEW"
+    },
+    {
+      "number": 38544,
+      "title": "Add a 4-process guardrail for Go MCP server child gh invocations",
+      "author": "copilot-swe-agent",
+      "state": "OPEN",
+      "isDraft": false,
+      "isCrossRepository": false,
+      "labels": [],
+      "additions": 212,
+      "deletions": 23,
+      "changedFiles": 10,
+      "category": "feature",
+      "risk": "high",
+      "estimated_priority": 65,
+      "otel": false,
+      "note": "NEW"
+    },
+    {
+      "number": 38506,
+      "title": "feat: aggregate AI credits from aggregated usage JSONL files in conclusion post-step",
+      "author": "copilot-swe-agent",
+      "state": "OPEN",
+      "isDraft": false,
+      "isCrossRepository": false,
+      "labels": ["smoke", "smoke-claude", "otel"],
+      "additions": 708,
+      "deletions": 1246,
+      "changedFiles": 252,
+      "category": "feature",
+      "risk": "high",
+      "estimated_priority": 54,
+      "otel": true,
       "note": "NEW"
     },
     {
@@ -28,18 +83,17 @@
       "labels": [],
       "additions": 5,
       "deletions": 3,
-      "changedFiles": 3
+      "changedFiles": 3,
+      "category": "docs",
+      "risk": "low",
+      "estimated_priority": 37,
+      "otel": false
     }
   ],
-  "new_since_last_run": [
-    38462
-  ],
-  "closed_or_gone_since_last_run": [
-    38412,
-    38336,
-    37966
-  ],
-  "notes": "2 open agent PRs (all copilot-swe-agent, all isCrossRepository:false). 1 new since last run. #38412 merged. #38336, #37966 closed. Fork-only policy: 0 fork PRs found, 0 triaged.",
+  "new_since_last_run": [38550, 38547, 38544, 38506],
+  "closed_or_gone_since_last_run": [38462],
+  "otel_prs": [38550, 38506],
+  "notes": "5 open agent PRs (all copilot-swe-agent, all isCrossRepository:false). 4 new since last run. #38462 closed. Fork-only policy: 0 fork PRs found, 0 triaged. OTEL PRs flagged: #38550, #38506.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
@@ -47,9 +101,9 @@
   "batches": {},
   "close_candidates": [],
   "statistics": {
-    "by_category": {},
-    "by_risk": {},
-    "by_priority": {},
+    "by_category": {"feature": 4, "docs": 1},
+    "by_risk": {"high": 2, "medium": 2, "low": 1},
+    "by_priority": {"medium_40_69": 2, "low_0_39": 3},
     "by_action": {}
   }
 }
