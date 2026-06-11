@@ -33,10 +33,9 @@ pre-agent-steps:
       http.server.HTTPServer(("0.0.0.0", PORT), OTLPHandler).serve_forever()
       PYEOF
 
-      python3 /tmp/gh-aw/otlp-test-server.py \
+      nohup python3 /tmp/gh-aw/otlp-test-server.py \
         >> /tmp/gh-aw/otlp-test-server.log 2>&1 &
       SERVER_PID=$!
-      disown "$SERVER_PID"
       echo "$SERVER_PID" > /tmp/gh-aw/otlp-test-server.pid
       echo "OTLP test server started on port 4318 (PID: $SERVER_PID)"
 
