@@ -17,6 +17,7 @@ const RATE_LIMIT_RESERVE = 100;
 const REQUEST_OVERHEAD_BUDGET = MAX_WORKFLOW_RUN_PAGES + 4;
 const ESTIMATED_API_OPERATIONS_PER_RUN = 2;
 const INTEGER_FORMATTER = new Intl.NumberFormat("en-US");
+const DAILY_AIC_GUARDRAIL_DOCS_URL = "https://github.github.com/gh-aw/reference/cost-management/";
 
 /**
  * @returns {Promise<import("@actions/artifact").DefaultArtifactClient>}
@@ -53,6 +54,15 @@ function formatDailyGuardrailLogMessage(message, details) {
  */
 function logDailyGuardrail(message, details) {
   core.info(formatDailyGuardrailLogMessage(message, details));
+}
+
+/**
+ * @param {unknown} error
+ * @returns {boolean}
+ */
+function isMissingArtifactDownloadError(error) {
+  const message = getErrorMessage(error).toLowerCase();
+  return message.includes("unable to download artifact") && message.includes("artifact not found");
 }
 
 /**
@@ -285,16 +295,16 @@ async function appendDailyAICSummary(workflowName, actorLogin, threshold, counte
  *
  * Error handling: all GitHub API interactions after the initial guard checks are wrapped
  * in a top-level try-catch. Any unexpected error (network failure, permission error, etc.)
- * is logged as a warning and the function returns cleanly with `daily_effective_workflow_exceeded`
+ * is logged as a warning and the function returns cleanly with `daily_ai_credits_exceeded`
  * left at its default value of `"false"`. This design ensures the step never fails the
  * activation job — a guardrail error results in a safe bypass (agent allowed to run) rather
  * than a confusing workflow failure that blocks the agent entirely.
  */
 async function main() {
-  core.setOutput("daily_effective_workflow_exceeded", "false");
-  core.setOutput("daily_effective_workflow_total_effective_tokens", "");
-  core.setOutput("daily_effective_workflow_total_ai_credits", "");
-  core.setOutput("daily_effective_workflow_threshold", "");
+  core.setOutput("daily_ai_credits_exceeded", "false");
+  core.setOutput("daily_ai_credits_total_effective_tokens", "");
+  core.setOutput("daily_ai_credits_total_ai_credits", "");
+  core.setOutput("daily_ai_credits_threshold", "");
   const threshold = parsePositiveCompactNumber(process.env.GH_AW_MAX_DAILY_AI_CREDITS);
   if (threshold <= 0) {
     return;
@@ -312,7 +322,7 @@ async function main() {
 
   // Wrap all GitHub API interactions in a top-level try-catch so that transient API
   // errors, permission failures, or unexpected exceptions never fail the activation
-  // job step.  A failure here would leave `daily_effective_workflow_exceeded` at its
+  // job step.  A failure here would leave `daily_ai_credits_exceeded` at its
   // default "false" value, which is the safe fallback: the agent is allowed to run
   // and the guardrail is effectively bypassed for this invocation rather than causing
   // a confusing workflow failure.
@@ -445,13 +455,19 @@ async function main() {
           countedRunIds: countedRuns.map(item => item.id),
         });
       } catch (error) {
+        if (isMissingArtifactDownloadError(error)) {
+          logDailyGuardrail("Skipping run because usage artifact was not found at download time", {
+            runId: run.id,
+          });
+          continue;
+        }
         core.warning(`Failed to inspect token usage for run ${run.id}: ${getErrorMessage(error)}`);
       }
     }
 
-    core.setOutput("daily_effective_workflow_total_effective_tokens", String(totalAIC));
-    core.setOutput("daily_effective_workflow_total_ai_credits", String(totalAIC));
-    core.setOutput("daily_effective_workflow_threshold", String(threshold));
+    core.setOutput("daily_ai_credits_total_effective_tokens", String(totalAIC));
+    core.setOutput("daily_ai_credits_total_ai_credits", String(totalAIC));
+    core.setOutput("daily_ai_credits_threshold", String(threshold));
 
     /** @type {{candidateRunsCount:number,inspectedRunsCount:number,truncatedByRateLimit:boolean}} */
     const summaryMeta = {
@@ -490,9 +506,11 @@ async function main() {
       return;
     }
 
-    core.setOutput("daily_effective_workflow_exceeded", "true");
+    core.setOutput("daily_ai_credits_exceeded", "true");
     await appendDailyAICSummary(workflowName, actorLogin, threshold, countedRuns, rateLimit, summaryMeta);
-    core.warning(`Daily workflow AIC guardrail exceeded for ${workflowName}: ${totalAIC}/${threshold}.`);
+    const exceededMessage = `Daily workflow AIC guardrail exceeded for ${workflowName}: ${totalAIC}/${threshold}. See ${DAILY_AIC_GUARDRAIL_DOCS_URL}`;
+    core.error(exceededMessage);
+    core.setFailed(exceededMessage);
   } catch (error) {
     // Treat any unexpected error as a non-blocking skip so the step never fails the
     // activation job.  The output stays at the default "false", allowing the agent to
@@ -505,6 +523,7 @@ module.exports = {
   main,
   shouldSkipDailyAICGuardrail,
   matchesGuardrailArtifactName,
+  isMissingArtifactDownloadError,
   findJSONLFiles,
   sumAICFromUsageJSONLFiles,
   calculateDailyAICStats,

@@ -42,6 +42,11 @@ describe("check_daily_aic_workflow_guardrail", () => {
     expect(exports.matchesGuardrailArtifactName("activation")).toBe(false);
   });
 
+  it("recognizes artifact-not-found download errors as non-actionable", () => {
+    expect(exports.isMissingArtifactDownloadError(new Error("Unable to download artifact(s): Artifact not found for name: usage"))).toBe(true);
+    expect(exports.isMissingArtifactDownloadError(new Error("network timeout"))).toBe(false);
+  });
+
   it("sums AI Credits across multiple JSONL files and usage attributes", () => {
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "daily-guardrail-token-usage-"));
     const nestedDir = path.join(tmpDir, "nested");
@@ -173,7 +178,7 @@ describe("check_daily_aic_workflow_guardrail", () => {
 
   it("main() does not fail the step when GitHub API calls throw", async () => {
     // Simulate a scenario where the GitHub API throws during workflow run lookup.
-    // The step should catch the error and NOT rethrow it, keeping daily_effective_workflow_exceeded at "false".
+    // The step should catch the error and NOT rethrow it, keeping daily_ai_credits_exceeded at "false".
     const coreOutputs = {};
     const coreWarnings = [];
     const mockCore = {
@@ -219,7 +224,7 @@ describe("check_daily_aic_workflow_guardrail", () => {
       // Should resolve without throwing even though the API calls throw
       await expect(exports.main()).resolves.toBeUndefined();
       // The default "false" output must be set
-      expect(coreOutputs["daily_effective_workflow_exceeded"]).toBe("false");
+      expect(coreOutputs["daily_ai_credits_exceeded"]).toBe("false");
       // A warning must be emitted describing the error
       expect(coreWarnings.some(w => /unexpected error.*skipped/i.test(w))).toBe(true);
     } finally {
@@ -319,6 +324,112 @@ describe("check_daily_aic_workflow_guardrail", () => {
       delete global.core;
       delete global.github;
       delete global.context;
+      delete process.env.GH_AW_MAX_DAILY_AI_CREDITS;
+      delete process.env.GH_AW_GITHUB_TOKEN;
+    }
+  });
+
+  it("main() marks the step as failed with docs link when daily guardrail is exceeded", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "daily-guardrail-download-"));
+    fs.writeFileSync(path.join(tmpDir, "usage.jsonl"), JSON.stringify({ aic: 50 }), "utf8");
+
+    vi.resetModules();
+    vi.doMock("@actions/artifact", () => ({
+      DefaultArtifactClient: class {
+        async listArtifacts() {
+          return { artifacts: [{ id: 1, name: "usage" }] };
+        }
+        async downloadArtifact() {
+          return { downloadPath: tmpDir };
+        }
+      },
+    }));
+
+    const mod = await import("./check_daily_aic_workflow_guardrail.cjs");
+    const guardrail = mod.default || mod;
+
+    const coreOutputs = {};
+    const coreErrors = [];
+    const coreFailures = [];
+    const mockCore = {
+      setOutput: (key, value) => {
+        coreOutputs[key] = value;
+      },
+      info: () => {},
+      warning: () => {},
+      error: msg => coreErrors.push(msg),
+      setFailed: msg => coreFailures.push(msg),
+      summary: {
+        addDetails: function () {
+          return this;
+        },
+        write: async () => {},
+      },
+    };
+
+    const mockGithub = {
+      rest: {
+        rateLimit: {
+          get: async () => ({
+            data: {
+              resources: {
+                core: { limit: 5000, remaining: 4995, used: 5, reset: Math.floor(Date.now() / 1000) + 3600 },
+              },
+            },
+            headers: {},
+          }),
+        },
+        actions: {
+          getWorkflowRun: async () => ({
+            data: {
+              workflow_id: 777,
+              actor: { login: "octocat" },
+              triggering_actor: { login: "octocat" },
+            },
+            headers: {},
+          }),
+          listWorkflowRuns: async () => ({
+            data: {
+              workflow_runs: [
+                {
+                  id: 1234,
+                  html_url: "https://example.test/runs/1234",
+                  created_at: new Date().toISOString(),
+                  conclusion: "success",
+                },
+              ],
+            },
+            headers: {},
+          }),
+        },
+      },
+    };
+
+    const mockContext = {
+      repo: { owner: "test-owner", repo: "test-repo" },
+      runId: 99,
+    };
+
+    global.core = mockCore;
+    global.github = mockGithub;
+    global.context = mockContext;
+
+    process.env.GH_AW_WORKFLOW_NAME = "N+1 Crusher";
+    process.env.GH_AW_MAX_DAILY_AI_CREDITS = "10";
+    process.env.GH_AW_GITHUB_TOKEN = "fake-token";
+
+    try {
+      await expect(guardrail.main()).resolves.toBeUndefined();
+      expect(coreOutputs["daily_ai_credits_exceeded"]).toBe("true");
+      expect(coreErrors[0]).toContain("Daily workflow AIC guardrail exceeded for N+1 Crusher: 50/10.");
+      expect(coreErrors[0]).toContain("https://github.github.com/gh-aw/reference/cost-management/");
+      expect(coreFailures[0]).toBe(coreErrors[0]);
+    } finally {
+      vi.doUnmock("@actions/artifact");
+      delete global.core;
+      delete global.github;
+      delete global.context;
+      delete process.env.GH_AW_WORKFLOW_NAME;
       delete process.env.GH_AW_MAX_DAILY_AI_CREDITS;
       delete process.env.GH_AW_GITHUB_TOKEN;
     }
