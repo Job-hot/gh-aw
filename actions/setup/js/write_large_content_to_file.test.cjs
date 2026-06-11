@@ -162,4 +162,13 @@ describe("writeLargeContentToFile", () => {
     const content = JSON.stringify({ already: "there" });
     expect(() => writeLargeContentToFile(content)).not.toThrow();
   });
+
+  it("should handle JSON primitive (number)", async () => {
+    const { writeLargeContentToFile } = await import("./write_large_content_to_file.cjs");
+
+    const content = JSON.stringify(42);
+    const result = writeLargeContentToFile(content);
+
+    expect(result.description).toBe("number");
+  });
 });
