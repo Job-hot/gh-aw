@@ -62,6 +62,48 @@
         "output",
         "issue"
       ]
+    },
+    {
+      "date": "2026-06-10",
+      "pr_count": 54,
+      "avg_sentiment": -0.0953,
+      "positive_count": 23,
+      "neutral_count": 1,
+      "negative_count": 30,
+      "top_topic": "failure / credits / context",
+      "top_keywords": [
+        "workflow",
+        "updated",
+        "failure",
+        "aic",
+        "behavior",
+        "test",
+        "output",
+        "tests",
+        "runtime",
+        "run"
+      ]
+    },
+    {
+      "date": "2026-06-11",
+      "pr_count": 32,
+      "avg_sentiment": -0.0099,
+      "positive_count": 11,
+      "neutral_count": 9,
+      "negative_count": 12,
+      "top_topic": "workflow / agent / field",
+      "top_keywords": [
+        "from",
+        "with",
+        "workflow",
+        "when",
+        "agent",
+        "this",
+        "test",
+        "engine",
+        "context",
+        "that"
+      ]
     }
   ]
 }
