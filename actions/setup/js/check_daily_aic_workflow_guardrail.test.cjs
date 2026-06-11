@@ -57,13 +57,14 @@ describe("check_daily_aic_workflow_guardrail", () => {
         JSON.stringify({ aic: 9, usage: { aic: 0.25 } }),
         JSON.stringify({ ai_credits: 8, usage: { ai_credits: 0.1 } }),
         JSON.stringify({ aiCredits: 7, usage: { aiCredits: 0.15 } }),
+        JSON.stringify({ usage: { ai_credits_this_response: 0.25 } }),
         JSON.stringify({ aiCredits: 0.2, usage: { aiCredits: "" } }),
         JSON.stringify({ aic: 0.3, usage: { aic: "" } }),
       ].join("\n"),
       "utf8"
     );
 
-    expect(exports.sumAICFromUsageJSONLFiles(exports.findJSONLFiles(tmpDir))).toBe(5);
+    expect(exports.sumAICFromUsageJSONLFiles(exports.findJSONLFiles(tmpDir))).toBeCloseTo(5.25, 10);
   });
 
   it("computes aggregate AIC statistics for prior runs", () => {

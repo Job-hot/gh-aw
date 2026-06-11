@@ -204,7 +204,7 @@ function sumAICFromUsageJSONLFiles(filePaths) {
         }
 
         const usage = normalizeUsageRecord(parsed.usage);
-        const explicitAICredits = getNumericAliasField(usage, parsed, ["ai_credits", "aiCredits"]);
+        const explicitAICredits = getNumericAliasField(usage, parsed, ["ai_credits_this_response", "aiCreditsThisResponse", "ai_credits", "aiCredits"]);
         if (explicitAICredits > 0) {
           total += explicitAICredits;
           continue;
