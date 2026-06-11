@@ -1737,20 +1737,12 @@ function normalizeRuntimeTokenUsage(rawUsage) {
 function parseAICreditsFromUsageJsonl(filePath) {
   try {
     const content = fs.readFileSync(filePath, "utf8");
-    if (!content.trim()) return 0;
     let total = 0;
-    for (const line of content.split("\n")) {
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-      try {
-        const entry = JSON.parse(trimmed);
-        if (!entry || typeof entry !== "object") continue;
-        const raw = "ai_credits" in entry ? entry.ai_credits : "aiCredits" in entry ? entry.aiCredits : undefined;
-        const parsed = normalizeNonNegativeNumber(raw);
-        if (typeof parsed === "number") total += parsed;
-      } catch {
-        // ignore malformed lines
-      }
+    for (const entry of parseJsonlContent(content)) {
+      if (!entry || typeof entry !== "object") continue;
+      const raw = "ai_credits" in entry ? entry.ai_credits : "aiCredits" in entry ? entry.aiCredits : undefined;
+      const parsed = normalizeNonNegativeNumber(raw);
+      if (typeof parsed === "number") total += parsed;
     }
     return total;
   } catch {
