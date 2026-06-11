@@ -54,7 +54,9 @@ steps:
         echo "🔗 Created ~/.cache/codebase-memory-mcp → cache-memory/codebase-memory-mcp-store"
       elif [ -d ~/.cache/codebase-memory-mcp ] && [ ! -L ~/.cache/codebase-memory-mcp ]; then
         # Plain directory present (e.g. first run after adding this import) — migrate
-        cp -r ~/.cache/codebase-memory-mcp/. /tmp/gh-aw/cache-memory/codebase-memory-mcp-store/ 2>/dev/null || true
+        if ! cp -r ~/.cache/codebase-memory-mcp/. /tmp/gh-aw/cache-memory/codebase-memory-mcp-store/ 2>&1; then
+          echo "warning: migration copy failed; the existing store may be incomplete. Starting fresh." >&2
+        fi
         rm -rf ~/.cache/codebase-memory-mcp
         ln -s /tmp/gh-aw/cache-memory/codebase-memory-mcp-store ~/.cache/codebase-memory-mcp
         echo "🔗 Migrated existing store → cache-memory/codebase-memory-mcp-store"
@@ -68,8 +70,14 @@ steps:
       # On the first run a full graph is built; subsequent runs detect the
       # existing store and only re-index changed files (git-diff-driven).
       echo "Indexing ${GITHUB_WORKSPACE}..."
-      codebase-memory-mcp cli index_repository "{\"repo_path\": \"${GITHUB_WORKSPACE}\"}"
-      codebase-memory-mcp cli index_status "{\"repo_path\": \"${GITHUB_WORKSPACE}\"}" || true
+      if ! codebase-memory-mcp cli index_repository "{\"repo_path\": \"${GITHUB_WORKSPACE}\"}" 2>&1; then
+        echo "error: index_repository failed — check the output above for details." >&2
+        exit 1
+      fi
+      # index_status is best-effort: the server may not yet have flushed all
+      # metadata, so a non-zero exit here is not a fatal condition.
+      codebase-memory-mcp cli index_status "{\"repo_path\": \"${GITHUB_WORKSPACE}\"}" 2>&1 || \
+        echo "warning: index_status returned a non-zero exit code (non-fatal)"
       echo "✅ Codebase memory index ready"
 ---
 
