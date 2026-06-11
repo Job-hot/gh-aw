@@ -40,7 +40,9 @@ mcp-servers:
 steps:
   - name: Install codebase-memory-mcp
     run: |
-      npm install -g codebase-memory-mcp
+      npm install -g codebase-memory-mcp@0.7.0 --ignore-scripts
+      # Explicitly run the binary-download postinstall after reviewing it above.
+      node "$(npm root -g)/codebase-memory-mcp/install.js"
 
   - name: Set up codebase-memory index cache
     run: |
