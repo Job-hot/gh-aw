@@ -27,6 +27,8 @@
 "use strict";
 
 const fs = require("fs");
+const { resolveAICreditsFailureState } = require("./ai_credits_context.cjs");
+const { logSpan } = require("./otlp.cjs");
 
 const LOG_FILE = "/tmp/gh-aw/agent-stdio.log";
 
@@ -58,20 +60,22 @@ const MODEL_NOT_SUPPORTED_PATTERN =
 /**
  * Detect known error patterns in a log string and return detection results.
  * @param {string} logContent - Contents of the agent stdio log
- * @returns {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean }}
+ * @returns {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean, aiCredits: string }}
  */
 function detectErrors(logContent) {
+  const { aiCredits } = resolveAICreditsFailureState();
   return {
     inferenceAccessError: INFERENCE_ACCESS_ERROR_PATTERN.test(logContent),
     mcpPolicyError: MCP_POLICY_BLOCKED_PATTERN.test(logContent),
     agenticEngineTimeout: AGENTIC_ENGINE_TIMEOUT_PATTERN.test(logContent),
     modelNotSupportedError: MODEL_NOT_SUPPORTED_PATTERN.test(logContent),
+    aiCredits,
   };
 }
 
 /**
  * Write GitHub Actions outputs to $GITHUB_OUTPUT.
- * @param {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean }} results
+ * @param {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean, aiCredits: string }} results
  */
 function writeOutputs(results) {
   const outputFile = process.env.GITHUB_OUTPUT;
@@ -85,11 +89,30 @@ function writeOutputs(results) {
     `mcp_policy_error=${results.mcpPolicyError}`,
     `agentic_engine_timeout=${results.agenticEngineTimeout}`,
     `model_not_supported_error=${results.modelNotSupportedError}`,
+    `ai_credits=${results.aiCredits}`,
   ];
   fs.appendFileSync(outputFile, lines.join("\n") + "\n");
 }
 
-function main() {
+/**
+ * @param {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean, aiCredits: string }} results
+ * @returns {Record<string, string | number | boolean>}
+ */
+function buildOTLPAttributes(results) {
+  const attributes = {
+    "detect-agent-errors.inference_access_error": results.inferenceAccessError,
+    "detect-agent-errors.mcp_policy_error": results.mcpPolicyError,
+    "detect-agent-errors.agentic_engine_timeout": results.agenticEngineTimeout,
+    "detect-agent-errors.model_not_supported_error": results.modelNotSupportedError,
+  };
+  const aiCreditsNumber = Number.parseFloat(results.aiCredits);
+  if (Number.isFinite(aiCreditsNumber) && aiCreditsNumber >= 0) {
+    return { ...attributes, "gh-aw.aic": aiCreditsNumber };
+  }
+  return attributes;
+}
+
+async function main() {
   let logContent = "";
 
   if (fs.existsSync(LOG_FILE)) {
@@ -112,12 +135,18 @@ function main() {
   if (results.modelNotSupportedError) {
     process.stderr.write("[detect-agent-errors] Detected model configuration error: configured model is invalid or unavailable for this engine/account\n");
   }
+  process.stderr.write(`[detect-agent-errors] AI Credits: ${results.aiCredits || "unavailable"}\n`);
 
   writeOutputs(results);
+  await logSpan("detect-agent-errors", buildOTLPAttributes(results), {
+    isError: results.inferenceAccessError || results.mcpPolicyError || results.agenticEngineTimeout || results.modelNotSupportedError,
+  });
 }
 
 if (require.main === module) {
-  main();
+  main().catch(error => {
+    process.stderr.write(`[detect-agent-errors] Execution warning: ${error instanceof Error ? error.message : String(error)}\n`);
+  });
 }
 
-module.exports = { detectErrors, INFERENCE_ACCESS_ERROR_PATTERN, MCP_POLICY_BLOCKED_PATTERN, AGENTIC_ENGINE_TIMEOUT_PATTERN, MODEL_NOT_SUPPORTED_PATTERN };
+module.exports = { detectErrors, buildOTLPAttributes, INFERENCE_ACCESS_ERROR_PATTERN, MCP_POLICY_BLOCKED_PATTERN, AGENTIC_ENGINE_TIMEOUT_PATTERN, MODEL_NOT_SUPPORTED_PATTERN };

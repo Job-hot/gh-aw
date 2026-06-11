@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-const { detectErrors, INFERENCE_ACCESS_ERROR_PATTERN, MCP_POLICY_BLOCKED_PATTERN, AGENTIC_ENGINE_TIMEOUT_PATTERN, MODEL_NOT_SUPPORTED_PATTERN } = require("./detect_agent_errors.cjs");
+const { detectErrors, buildOTLPAttributes, INFERENCE_ACCESS_ERROR_PATTERN, MCP_POLICY_BLOCKED_PATTERN, AGENTIC_ENGINE_TIMEOUT_PATTERN, MODEL_NOT_SUPPORTED_PATTERN } = require("./detect_agent_errors.cjs");
 
 describe("detect_agent_errors.cjs", () => {
   describe("INFERENCE_ACCESS_ERROR_PATTERN", () => {
@@ -133,6 +133,7 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(false);
       expect(result.agenticEngineTimeout).toBe(false);
       expect(result.modelNotSupportedError).toBe(false);
+      expect(typeof result.aiCredits).toBe("string");
     });
 
     it("detects inference access error only", () => {
@@ -199,6 +200,32 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(false);
       expect(result.agenticEngineTimeout).toBe(false);
       expect(result.modelNotSupportedError).toBe(false);
+    });
+  });
+
+  describe("buildOTLPAttributes", () => {
+    it("includes numeric gh-aw.aic when aiCredits is valid", () => {
+      const attrs = buildOTLPAttributes({
+        inferenceAccessError: true,
+        mcpPolicyError: false,
+        agenticEngineTimeout: false,
+        modelNotSupportedError: false,
+        aiCredits: "0.125",
+      });
+      expect(attrs["gh-aw.aic"]).toBe(0.125);
+      expect(attrs["detect-agent-errors.inference_access_error"]).toBe(true);
+    });
+
+    it("omits gh-aw.aic when aiCredits is unavailable", () => {
+      const attrs = buildOTLPAttributes({
+        inferenceAccessError: false,
+        mcpPolicyError: false,
+        agenticEngineTimeout: false,
+        modelNotSupportedError: false,
+        aiCredits: "",
+      });
+      expect(attrs["gh-aw.aic"]).toBeUndefined();
+      expect(attrs["detect-agent-errors.model_not_supported_error"]).toBe(false);
     });
   });
 });
