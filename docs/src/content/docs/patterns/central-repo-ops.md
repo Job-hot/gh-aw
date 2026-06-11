@@ -96,28 +96,28 @@ This makes the central repo an **agentic factory**: a self-contained, production
 
 ### Template Repository Structure
 
-A well-structured agentic factory repository organizes its workflows, shared components, and an `aw.yml` manifest together:
+A factory repository is self-contained: the `README.md` is the activation manual, and the workflows under `.github/workflows/` are ready to run once secrets are configured. A `shared/` directory holds reusable components, and an `aw.yml` manifest can be added later to enable `gh aw add` installs — but the factory works without one.
 
 ```
 agentic-workflows/
-├── aw.yml                        # package manifest
-├── README.md                     # setup guide with secrets checklist
+├── README.md                     # activation manual (secrets, setup, verify)
 ├── .github/
 │   └── workflows/
 │       ├── rollout.md            # org-wide rollout orchestrator
 │       ├── triage.md             # cross-repo issue triage
 │       ├── quality-monitor.md    # code quality monitoring
 │       └── dependabot.md         # dependency management
-└── shared/
-    ├── mcp-config.md             # shared MCP server definitions
-    └── safety-policy.md          # shared safe-outputs policies
+├── shared/
+│   ├── mcp-config.md             # shared MCP server definitions
+│   └── safety-policy.md          # shared safe-outputs policies
+└── aw.yml                        # optional: enables gh aw add installs
 ```
 
 Mark the repository as a [GitHub template repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-template-repository) so anyone in the organization can instantiate a personal copy in one click without carrying over existing workflow runs or secrets.
 
 ### Secrets Checklist
 
-Document the secrets required to activate all workflows in `README.md`. A complete factory typically needs:
+The `README.md` should include a complete secrets checklist so anyone instantiating the factory knows exactly what to configure. A typical factory needs:
 
 | Secret | Purpose |
 | ------ | ------- |
@@ -138,9 +138,9 @@ Document the secrets required to activate all workflows in `README.md`. A comple
 
 Once secrets are in place, all scheduled workflows activate automatically and the factory is producing.
 
-### Distribution via `aw.yml`
+### Optional: Distribution via `aw.yml`
 
-Add an `aw.yml` manifest to make the factory installable as a versioned package. Teams can then install individual workflows from the factory rather than copying the whole repository:
+Adding an `aw.yml` manifest is optional but enables teams to install individual workflows from the factory using `gh aw add` rather than cloning or forking the whole repository:
 
 ```yaml
 name: Acme Org Agentic Factory
