@@ -96,7 +96,7 @@ This makes the central repo an **agentic factory**: a self-contained, production
 
 ### Template Repository Structure
 
-A factory repository is self-contained: the `README.md` is the activation manual, and the workflows under `.github/workflows/` are ready to run once secrets are configured. A `shared/` directory holds reusable components, and an `aw.yml` manifest can be added later to enable `gh aw add` installs — but the factory works without one.
+A factory repository is self-contained: the `README.md` is the activation manual, and the workflows under `.github/workflows/` are ready to run once secrets are configured. An `aw.yml` manifest can be added later to enable `gh aw add` installs — but the factory works without one.
 
 ```
 agentic-workflows/
@@ -106,10 +106,10 @@ agentic-workflows/
 │       ├── rollout.md            # org-wide rollout orchestrator
 │       ├── triage.md             # cross-repo issue triage
 │       ├── quality-monitor.md    # code quality monitoring
-│       └── dependabot.md         # dependency management
-├── shared/
-│   ├── mcp-config.md             # shared MCP server definitions
-│   └── safety-policy.md          # shared safe-outputs policies
+│       ├── dependabot.md         # dependency management
+│       └── shared/
+│           ├── mcp-config.md     # shared MCP server definitions
+│           └── safety-policy.md  # shared safe-outputs policies
 └── aw.yml                        # optional: enables gh aw add installs
 ```
 
@@ -152,8 +152,8 @@ includes:
   - .github/workflows/triage.md
   - .github/workflows/quality-monitor.md
   - .github/workflows/dependabot.md
-  - shared/mcp-config.md
-  - shared/safety-policy.md
+  - .github/workflows/shared/mcp-config.md
+  - .github/workflows/shared/safety-policy.md
 ```
 
 A consuming repository installs a specific workflow:
