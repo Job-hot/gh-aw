@@ -6915,6 +6915,8 @@ describe("sendJobConclusionSpan conclusion job AI credits from usage files", () 
 
     const attrs = getSpanAttrMap(fetch);
     expect(attrs["gh-aw.aic"]).toBeCloseTo(1.5);
+    expect(attrs["gh-aw.aic.agent"]).toBeCloseTo(1.5);
+    expect(attrs["gh-aw.aic.detection"]).toBeUndefined();
   });
 
   it("emits gh-aw.aic from detection_usage.jsonl when only that file is present", async () => {
@@ -6927,6 +6929,8 @@ describe("sendJobConclusionSpan conclusion job AI credits from usage files", () 
 
     const attrs = getSpanAttrMap(fetch);
     expect(attrs["gh-aw.aic"]).toBeCloseTo(0.75);
+    expect(attrs["gh-aw.aic.agent"]).toBeUndefined();
+    expect(attrs["gh-aw.aic.detection"]).toBeCloseTo(0.75);
   });
 
   it("emits gh-aw.aic as the sum of both usage files when both are present", async () => {
@@ -6940,6 +6944,8 @@ describe("sendJobConclusionSpan conclusion job AI credits from usage files", () 
 
     const attrs = getSpanAttrMap(fetch);
     expect(attrs["gh-aw.aic"]).toBeCloseTo(1.75);
+    expect(attrs["gh-aw.aic.agent"]).toBeCloseTo(1.5);
+    expect(attrs["gh-aw.aic.detection"]).toBeCloseTo(0.25);
   });
 
   it("does not emit gh-aw.aic when both usage files are absent", async () => {
@@ -6947,6 +6953,8 @@ describe("sendJobConclusionSpan conclusion job AI credits from usage files", () 
 
     const attrs = getSpanAttrMap(fetch);
     expect(attrs["gh-aw.aic"]).toBeUndefined();
+    expect(attrs["gh-aw.aic.agent"]).toBeUndefined();
+    expect(attrs["gh-aw.aic.detection"]).toBeUndefined();
   });
 
   it("does not emit gh-aw.aic when both usage files are empty", async () => {
@@ -6959,6 +6967,8 @@ describe("sendJobConclusionSpan conclusion job AI credits from usage files", () 
 
     const attrs = getSpanAttrMap(fetch);
     expect(attrs["gh-aw.aic"]).toBeUndefined();
+    expect(attrs["gh-aw.aic.agent"]).toBeUndefined();
+    expect(attrs["gh-aw.aic.detection"]).toBeUndefined();
   });
 
   it("does not emit gh-aw.aic from usage files for non-conclusion jobs", async () => {
@@ -6985,6 +6995,8 @@ describe("sendJobConclusionSpan conclusion job AI credits from usage files", () 
 
     const attrs = getSpanAttrMap(fetch);
     expect(attrs["gh-aw.aic"]).toBeCloseTo(2.0);
+    expect(attrs["gh-aw.aic.agent"]).toBeCloseTo(2.0);
+    expect(attrs["gh-aw.aic.detection"]).toBeUndefined();
     delete process.env.GH_AW_AGENT_OUTPUT;
   });
 });
