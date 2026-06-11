@@ -1,25 +1,31 @@
 # PR Triage Memory
-Last: 2026-06-10T19:11:03Z | Run: 27299626106 | Fork PRs: 0
-## PR Triage Summary - 2026-06-10 (Run 27299626106)
+Last: 2026-06-11T01:25:24Z | Run: 27317433737 | Fork PRs: 0
+## PR Triage Summary - 2026-06-11 (Run 27317433737)
 
 ### Status
 **No fork PRs to triage**
 
 ### Details
-- **Run ID**: 27299626106
-- **Open Agent PRs Found**: 4 (all branch-based, skipped)
+- **Run ID**: 27317433737
+- **Open Agent PRs Found**: 2 (all branch-based, skipped)
 - **Fork PRs Found**: 0
 - **PRs Triaged**: 0
-- **New Since Last Run**: #38412, #38410
-- **Merged Since Last Run**: #38362, #38361, #38344, #38342, #38331, #38276
-- **Closed (no merge) Since Last Run**: #38330
+- **New Since Last Run**: #38462
+- **Merged Since Last Run**: #38412
+- **Closed (no merge) Since Last Run**: #38336, #37966
+- **Still Open**: #38410
 
-### Branch PRs Skipped (Copilot)
+### Branch PRs Skipped (copilot-swe-agent)
 Per workflow instructions (fork PRs only — `isCrossRepository: false` = skip):
-- #38412 - Propagate resolved AI credits into failure footer context (open, needs-review, new)
-- #38410 - Recommend `copilot-requests: write` for Copilot-targeted workflows in instruction docs (DRAFT, new)
-- #38336 - Run safe-outputs MCP server in node:lts-bookworm Docker container (DRAFT)
-- #37966 - Fix tool-cache fallback ordering in ADR-35802 normative spec (open, `closed:ci-failure`, 2 days old)
+- #38462 - docs: expand CentralRepoOps with agentic factory pattern (DRAFT, new, 101+/2-, 13 files)
+- #38410 - Recommend `copilot-requests: write` for Copilot-targeted workflows in instruction docs (OPEN, 5+/3-, 3 files)
+
+### Trend (Last 3 Runs)
+| Run | Date | Agent PRs | Fork PRs | Triaged |
+|-----|------|-----------|----------|---------|
+| 27079085262 | 2026-06-07 | ? | 0 | 0 |
+| 27299626106 | 2026-06-10 | 4 | 0 | 0 |
+| 27317433737 | 2026-06-11 | 2 | 0 | 0 |
 
 ### Policy
 This triage agent only processes PRs opened from forks (head_repo ≠ base_repo). All current agent PRs are branch-based within the same repository (`isCrossRepository: false`).

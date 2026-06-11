@@ -1,18 +1,45 @@
 {
-  "run_date": "2026-06-10T19:11:03Z",
-  "run_id": "27299626106",
+  "run_date": "2026-06-11T01:25:24Z",
+  "run_id": "27317433737",
   "fork_prs": 0,
-  "agent_prs_found": 4,
+  "agent_prs_found": 2,
   "prs_found": [],
   "branch_prs_skipped": [
-    {"number": 38412, "title": "Propagate resolved AI credits into failure footer context", "author": "Copilot", "state": "OPEN", "isDraft": false, "isCrossRepository": false, "labels": ["needs-review"], "additions": 201, "deletions": 8, "changedFiles": 4, "note": "NEW"},
-    {"number": 38410, "title": "Recommend `copilot-requests: write` for Copilot-targeted workflows in instruction docs", "author": "Copilot", "state": "OPEN", "isDraft": true, "isCrossRepository": false, "labels": [], "note": "NEW"},
-    {"number": 38336, "title": "Run safe-outputs MCP server in node:lts-bookworm Docker container", "author": "Copilot", "state": "OPEN", "isDraft": true, "isCrossRepository": false, "labels": []},
-    {"number": 37966, "title": "Fix tool-cache fallback ordering in ADR-35802 normative spec", "author": "Copilot", "state": "OPEN", "isDraft": false, "isCrossRepository": false, "labels": ["closed:ci-failure"]}
+    {
+      "number": 38462,
+      "title": "docs: expand CentralRepoOps with agentic factory pattern",
+      "author": "copilot-swe-agent",
+      "state": "DRAFT",
+      "isDraft": true,
+      "isCrossRepository": false,
+      "labels": [],
+      "additions": 101,
+      "deletions": 2,
+      "changedFiles": 13,
+      "note": "NEW"
+    },
+    {
+      "number": 38410,
+      "title": "Recommend copilot-requests: write for Copilot-targeted workflows in instruction docs",
+      "author": "copilot-swe-agent",
+      "state": "OPEN",
+      "isDraft": false,
+      "isCrossRepository": false,
+      "labels": [],
+      "additions": 5,
+      "deletions": 3,
+      "changedFiles": 3
+    }
   ],
-  "new_since_last_run": [38412, 38410],
-  "closed_or_gone_since_last_run": [38362, 38361, 38344, 38342, 38331, 38330, 38276],
-  "notes": "4 open agent PRs (all Copilot, all isCrossRepository:false). 2 new since last run. 5 merged + 2 closed since last run. Fork-only policy: 0 fork PRs found, 0 triaged.",
+  "new_since_last_run": [
+    38462
+  ],
+  "closed_or_gone_since_last_run": [
+    38412,
+    38336,
+    37966
+  ],
+  "notes": "2 open agent PRs (all copilot-swe-agent, all isCrossRepository:false). 1 new since last run. #38412 merged. #38336, #37966 closed. Fork-only policy: 0 fork PRs found, 0 triaged.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
