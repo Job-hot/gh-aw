@@ -5,7 +5,7 @@
       "agent": 1,
       "gpt-5.4-mini": 1,
       "gpt-5-mini": 1,
-      "gpt-5-codex": 1,
+      "gpt-5-codex": 2,
       "gpt-5.4": 1
     }
   },
@@ -50,6 +50,13 @@
       "timestamp": "2026-06-10T19:16:25.639Z",
       "assignments": {
         "model_size": "gpt-5.4"
+      }
+    },
+    {
+      "run_id": "27371497875",
+      "timestamp": "2026-06-11T19:19:10.442Z",
+      "assignments": {
+        "model_size": "gpt-5-codex"
       }
     }
   ]
