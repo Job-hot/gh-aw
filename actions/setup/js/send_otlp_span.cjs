@@ -48,8 +48,28 @@ const ENGINE_TO_SYSTEM_MAP = Object.assign(Object.create(null), {
 });
 
 // ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/**
+ * Maximum length (in characters) of the payload preview logged for conclusion
+ * job spans. Longer payloads are truncated to this length with "..." appended.
+ */
+const PAYLOAD_PREVIEW_MAX_LENGTH = 500;
+
+// ---------------------------------------------------------------------------
 // Low-level helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * Extract the numeric value from an OTLP attribute object.
+ * Handles both intValue and doubleValue fields.
+ * @param {{ key: string, value: { intValue?: number, doubleValue?: number } }} attr
+ * @returns {number | undefined}
+ */
+function extractAttributeValue(attr) {
+  return attr.value.doubleValue ?? attr.value.intValue;
+}
 
 /**
  * Generate a random 16-byte trace ID encoded as a 32-character hex string.
@@ -2450,17 +2470,17 @@ async function sendJobConclusionSpan(spanName, options = {}) {
     const detectionAicAttr = attributes.find(a => a.key === "gh-aw.aic.detection");
     if (aicAttr || agentAicAttr || detectionAicAttr) {
       const aicSummary = [];
-      if (aicAttr) aicSummary.push(`total=${aicAttr.value.doubleValue || aicAttr.value.intValue}`);
-      if (agentAicAttr) aicSummary.push(`agent=${agentAicAttr.value.doubleValue || agentAicAttr.value.intValue}`);
-      if (detectionAicAttr) aicSummary.push(`detection=${detectionAicAttr.value.doubleValue || detectionAicAttr.value.intValue}`);
+      if (aicAttr) aicSummary.push(`total=${extractAttributeValue(aicAttr)}`);
+      if (agentAicAttr) aicSummary.push(`agent=${extractAttributeValue(agentAicAttr)}`);
+      if (detectionAicAttr) aicSummary.push(`detection=${extractAttributeValue(detectionAicAttr)}`);
       core.info(`[otlp] conclusion: AI credits: ${aicSummary.join(", ")}`);
     }
     // Log serialized payload size for observability
     try {
       const payloadJson = JSON.stringify(payload);
       core.info(`[otlp] conclusion: payload size = ${payloadJson.length} bytes`);
-      // Log first 500 chars of payload for debugging (truncated to avoid log spam)
-      const preview = payloadJson.length > 500 ? payloadJson.slice(0, 500) + "..." : payloadJson;
+      // Log first N chars of payload for debugging (truncated to avoid log spam)
+      const preview = payloadJson.length > PAYLOAD_PREVIEW_MAX_LENGTH ? payloadJson.slice(0, PAYLOAD_PREVIEW_MAX_LENGTH) + "..." : payloadJson;
       core.info(`[otlp] conclusion: payload preview = ${preview}`);
     } catch (err) {
       core.info(`[otlp] conclusion: failed to serialize payload for logging: ${err.message}`);
