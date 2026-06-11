@@ -261,10 +261,9 @@ func parseEventsJSONLFile(path string, verbose bool) (workflow.LogMetrics, error
 						model, m.Usage.InputTokens, m.Usage.OutputTokens)
 				}
 				if m.Requests != nil && m.Requests.Cost > 0 {
-					modelAIC := float64(m.Requests.Cost)
-					totalAIC += modelAIC
+					totalAIC += float64(m.Requests.Cost)
 					copilotEventsJSONLLog.Printf("session.shutdown: model=%s aiCredits=%.3f",
-						model, modelAIC)
+						model, float64(m.Requests.Cost))
 				}
 			}
 			copilotEventsJSONLLog.Printf("session.shutdown: type=%s totalTokens=%d totalAIC=%.3f",

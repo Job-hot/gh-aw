@@ -601,10 +601,8 @@ func parseAPIProxyAICEvents(filePath string) (float64, error) {
 		if line == "" {
 			continue
 		}
-		if !strings.Contains(line, "aic") &&
-			!strings.Contains(line, "AIC") &&
-			!strings.Contains(line, "ai_credits") &&
-			!strings.Contains(line, "AI_CREDITS") {
+		lineLower := strings.ToLower(line)
+		if !strings.Contains(lineLower, "aic") && !strings.Contains(lineLower, "ai_credits") {
 			continue
 		}
 
