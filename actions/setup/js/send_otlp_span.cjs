@@ -1786,17 +1786,48 @@ function parseAICreditsFromUsageJsonl(filePath) {
     }
 
     const content = fs.readFileSync(filePath, "utf8");
-    if (!content.trim()) return 0;
-    let total = 0;
-    for (const entry of parseJsonlContent(content)) {
-      if (!entry || typeof entry !== "object") continue;
-      const raw = "ai_credits" in entry ? entry.ai_credits : "aiCredits" in entry ? entry.aiCredits : undefined;
-      const parsed = normalizeNonNegativeNumber(raw);
-      if (typeof parsed === "number") total += parsed;
+    const lineCount = content.split("\n").filter(l => l.trim()).length;
+    core.info(`[otlp] parseAICreditsFromUsageJsonl: file has ${lineCount} non-empty lines`);
+
+    if (!content.trim()) {
+      core.info(`[otlp] parseAICreditsFromUsageJsonl: file is empty`);
+      return 0;
     }
+
+    const entries = parseJsonlContent(content);
+    core.info(`[otlp] parseAICreditsFromUsageJsonl: parsed ${entries.length} valid JSONL entries`);
+
+    let total = 0;
+    let entryIndex = 0;
+    for (const entry of entries) {
+      entryIndex++;
+
+      if (!entry || typeof entry !== "object") {
+        core.info(`[otlp] parseAICreditsFromUsageJsonl: entry ${entryIndex} is not an object (type: ${typeof entry})`);
+        continue;
+      }
+
+      // Log keys found in this entry
+      const keys = Object.keys(entry);
+      core.info(`[otlp] parseAICreditsFromUsageJsonl: entry ${entryIndex} keys: ${keys.join(", ")}`);
+
+      const raw = "ai_credits" in entry ? entry.ai_credits : "aiCredits" in entry ? entry.aiCredits : undefined;
+      core.info(`[otlp] parseAICreditsFromUsageJsonl: entry ${entryIndex} raw AI credits value: ${JSON.stringify(raw)} (type: ${typeof raw})`);
+
+      const parsed = normalizeNonNegativeNumber(raw);
+      core.info(`[otlp] parseAICreditsFromUsageJsonl: entry ${entryIndex} parsed AI credits: ${parsed} (type: ${typeof parsed})`);
+
+      if (typeof parsed === "number") {
+        total += parsed;
+        core.info(`[otlp] parseAICreditsFromUsageJsonl: entry ${entryIndex} added ${parsed} to total (new total: ${total})`);
+      }
+    }
+
+    core.info(`[otlp] parseAICreditsFromUsageJsonl: final total: ${total}`);
     return total;
   } catch (error) {
     core.info(`[otlp] parseAICreditsFromUsageJsonl: error reading ${filePath}: ${error.message}`);
+    core.info(`[otlp] parseAICreditsFromUsageJsonl: error stack: ${error.stack}`);
     return 0;
   }
 }
