@@ -94,49 +94,6 @@ Beyond dispatching work and aggregating events, the central repository can serve
 
 This makes the central repo an **agentic factory**: a self-contained, production-ready bundle that any team can instantiate with minimal effort.
 
-### Template Repository Structure
-
-A factory repository is self-contained: the `README.md` is the activation manual, and the workflows under `.github/workflows/` are ready to run once secrets are configured.
-
-```
-agentic-workflows/
-├── README.md                     # activation manual (secrets, setup, verify)
-└── .github/
-    └── workflows/
-        ├── rollout.md            # org-wide rollout orchestrator
-        ├── triage.md             # cross-repo issue triage
-        ├── quality-monitor.md    # code quality monitoring
-        ├── dependabot.md         # dependency management
-        └── shared/
-            ├── mcp-config.md     # shared MCP server definitions
-            └── safety-policy.md  # shared safe-outputs policies
-```
-
-Mark the repository as a [GitHub template repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-template-repository) so anyone in the organization can instantiate a personal copy in one click without carrying over existing workflow runs or secrets.
-
-### Secrets Checklist
-
-The `README.md` should include a complete secrets checklist so anyone instantiating the factory knows exactly what to configure. A typical factory needs:
-
-| Secret | Purpose |
-| ------ | ------- |
-| `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` | AI engine for agent runs |
-| `GH_AW_READ_ORG_TOKEN` | Read org metadata and repository list |
-| `GH_AW_CROSS_REPO_PAT` | Write safe outputs to target repositories |
-| `ORG_REPO_CHECKOUT_TOKEN` | Check out target repositories for workers |
-
-> [!TIP]
-> Use a GitHub App rather than PATs for cross-repository tokens where possible. GitHub Apps provide automatic token rotation and fine-grained per-repository scoping. See [Authentication](/gh-aw/reference/auth/) for setup.
-
-### Activation: Drop In, Configure, Run
-
-1. **Instantiate** — Create a new repository from the factory template in the target org (or fork it for independent configuration).
-2. **Configure** — Add the required secrets to the new repository's **Settings → Secrets → Actions**.
-3. **Enable Actions** — Confirm GitHub Actions is enabled for the repository and that scheduled workflows are not paused.
-4. **Verify** — Trigger a `workflow_dispatch` on one workflow to confirm end-to-end connectivity before the first scheduled run fires.
-
-Once secrets are in place, all scheduled workflows activate automatically and the factory is producing.
-
 ## Related Documentation
 
 - [MultiRepoOps](/gh-aw/patterns/multi-repo-ops/) — Side repo and downstream sync patterns
