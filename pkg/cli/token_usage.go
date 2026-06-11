@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -597,7 +598,8 @@ func parseAPIProxyAICEvents(filePath string) (float64, error) {
 	scanner.Buffer(buf, maxScannerBufferSize)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		if line == "" || (!strings.Contains(line, "aic") && !strings.Contains(line, "ai_credits")) {
+		lineLower := strings.ToLower(line)
+		if line == "" || (!strings.Contains(lineLower, "aic") && !strings.Contains(lineLower, "ai_credits")) {
 			continue
 		}
 
@@ -657,7 +659,7 @@ func extractNumericField(record map[string]any, key string) (float64, bool) {
 			return parsed, true
 		}
 	case string:
-		parsed, err := json.Number(strings.TrimSpace(typed)).Float64()
+		parsed, err := strconv.ParseFloat(strings.TrimSpace(typed), 64)
 		if err == nil {
 			return parsed, true
 		}
