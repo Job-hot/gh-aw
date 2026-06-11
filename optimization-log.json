@@ -108,5 +108,15 @@
     "recommendations_count": 4,
     "subagent_candidates": 0,
     "estimated_aic_savings_per_run": 155
+  },
+  {
+    "date": "2026-06-11",
+    "workflow_name": "Matt Pocock Skills Reviewer",
+    "workflow_file": "mattpocock-skills-reviewer",
+    "total_aic_analyzed": 806.05131,
+    "runs_audited": 5,
+    "recommendations_count": 4,
+    "subagent_candidates": 0,
+    "estimated_aic_savings_per_run": 93
   }
 ]
