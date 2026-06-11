@@ -188,6 +188,7 @@ describe("model_costs.cjs", () => {
     });
 
     const { computeInferenceAIC } = await import("./model_costs.cjs");
+    // expected USD: 1000*0.0000025 + 200*0.000015 + 400*0.00000025 = 0.0056 → 0.56 AIC
     const got = computeInferenceAIC({
       provider: "copilot",
       model: "gpt-5.4-2026-03-05",
