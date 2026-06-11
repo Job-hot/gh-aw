@@ -171,6 +171,7 @@ func buildByRepoIndex(pins []ActionPin) map[string][]ActionPin {
 		byRepo[pin.Repo] = append(byRepo[pin.Repo], pin)
 	}
 	for _, repoPins := range byRepo {
+		// slices.SortFunc sorts in place, so sorting repoPins also sorts the map entry.
 		slices.SortFunc(repoPins, func(a, b ActionPin) int {
 			v1 := strings.TrimPrefix(a.Version, "v")
 			v2 := strings.TrimPrefix(b.Version, "v")
