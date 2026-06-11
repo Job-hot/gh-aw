@@ -210,7 +210,9 @@ func GenerateMaintenanceWorkflow(ctx context.Context, opts GenerateMaintenanceWo
 		})
 	}
 
-	maintenanceLog.Printf("Maintenance workflow generation triggered: %s", triggerReasons[0])
+	if len(triggerReasons) > 0 {
+		maintenanceLog.Printf("Maintenance workflow generation triggered: %s", triggerReasons[0])
+	}
 	maintenanceLog.Printf("Generating maintenance workflow for expired discussions, issues, and pull requests (minimum expires: %d hours)", minExpires)
 
 	// Convert hours to days for cron schedule generation
