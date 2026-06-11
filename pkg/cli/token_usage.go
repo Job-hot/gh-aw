@@ -598,8 +598,13 @@ func parseAPIProxyAICEvents(filePath string) (float64, error) {
 	scanner.Buffer(buf, maxScannerBufferSize)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		lineLower := strings.ToLower(line)
-		if line == "" || (!strings.Contains(lineLower, "aic") && !strings.Contains(lineLower, "ai_credits")) {
+		if line == "" {
+			continue
+		}
+		if !strings.Contains(line, "aic") &&
+			!strings.Contains(line, "AIC") &&
+			!strings.Contains(line, "ai_credits") &&
+			!strings.Contains(line, "AI_CREDITS") {
 			continue
 		}
 

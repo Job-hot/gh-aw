@@ -458,7 +458,6 @@ func TestAnalyzeTokenUsage(t *testing.T) {
 			assert.Equal(t, "claude-sonnet-4-6", req.EffectiveModel)
 			assert.Equal(t, modelMismatchReasonModelNotObserved, req.ReasonCode)
 		}
-
 	})
 
 	t.Run("records token-usage-missing reason when sub-agent model request is present but no model actuals exist", func(t *testing.T) {
