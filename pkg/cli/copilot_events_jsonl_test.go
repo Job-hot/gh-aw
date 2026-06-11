@@ -89,6 +89,7 @@ func TestParseEventsJSONLFile(t *testing.T) {
 		wantTurns     int
 		wantToolCalls []string // tool names that must appear in ToolCalls
 		wantTokens    int      // expected TokenUsage
+		wantAIC       float64  // expected EstimatedCost (AIC)
 		wantSequences int      // number of tool sequences expected
 		wantErr       bool
 	}{
@@ -107,6 +108,7 @@ func TestParseEventsJSONLFile(t *testing.T) {
 			wantTurns:     2,
 			wantToolCalls: []string{"bash", "read_file"},
 			wantTokens:    805343, // 799195 + 6148
+			wantAIC:       2,
 			wantSequences: 2,
 		},
 		{
@@ -117,6 +119,7 @@ func TestParseEventsJSONLFile(t *testing.T) {
 			wantTurns:     1,
 			wantToolCalls: []string{"mcpscripts-gh"},
 			wantTokens:    5899, // 5442 + 457
+			wantAIC:       0,
 			wantSequences: 1,
 		},
 		{
@@ -128,6 +131,7 @@ func TestParseEventsJSONLFile(t *testing.T) {
 			wantTurns:     1,
 			wantToolCalls: []string{"bash"},
 			wantTokens:    110,
+			wantAIC:       0,
 			wantSequences: 1,
 		},
 		{
@@ -147,6 +151,7 @@ func TestParseEventsJSONLFile(t *testing.T) {
 				realFormatEventsLine("session.shutdown", `{"modelMetrics":{"m":{"usage":{"inputTokens":100,"outputTokens":20}}}}`) + "\n",
 			wantTurns:  1,
 			wantTokens: 120,
+			wantAIC:    0,
 		},
 	}
 
@@ -166,6 +171,7 @@ func TestParseEventsJSONLFile(t *testing.T) {
 			require.NoError(t, err, "should parse without error")
 			assert.Equal(t, tt.wantTurns, metrics.Turns, "turns should match")
 			assert.Equal(t, tt.wantTokens, metrics.TokenUsage, "token usage should match")
+			assert.InDelta(t, tt.wantAIC, metrics.EstimatedCost, 1e-9, "AIC should match")
 
 			if tt.wantSequences > 0 {
 				assert.Len(t, metrics.ToolSequences, tt.wantSequences, "tool sequence count should match")
@@ -212,6 +218,7 @@ func TestParseEventsJSONLFile_RealArtifact(t *testing.T) {
 	assert.Equal(t, 2, metrics.Turns, "should detect 2 turns")
 	// (799195+6148) + (5442+457) = 805343 + 5899 = 811242
 	assert.Equal(t, 811242, metrics.TokenUsage, "should sum tokens from both models")
+	assert.InDelta(t, 2.0, metrics.EstimatedCost, 1e-9, "should sum model request costs as AIC")
 
 	// Should have 2 sequences (one per user.message)
 	assert.Len(t, metrics.ToolSequences, 2, "should have 2 tool sequences")

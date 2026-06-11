@@ -455,23 +455,33 @@ func analyzeTokenUsage(runDir string, verbose bool) (*TokenUsageSummary, error) 
 	}
 
 	agentUsagePath := findAgentUsageFile(runDir)
-	if agentUsagePath == "" {
-		return nil, nil
-	}
-	if verbose {
-		fileInfo, _ := os.Stat(agentUsagePath)
-		if fileInfo != nil {
-			fmt.Fprintf(os.Stderr, "  Found agent usage file: %s (%d bytes)\n", filepath.Base(agentUsagePath), fileInfo.Size())
+	if agentUsagePath != "" {
+		if verbose {
+			fileInfo, _ := os.Stat(agentUsagePath)
+			if fileInfo != nil {
+				fmt.Fprintf(os.Stderr, "  Found agent usage file: %s (%d bytes)\n", filepath.Base(agentUsagePath), fileInfo.Size())
+			}
 		}
+
+		summary, err := parseAgentUsageFile(agentUsagePath)
+		if err != nil || summary == nil {
+			return summary, err
+		}
+		summary.TotalSteeringEvents = countAPIProxySteeringEvents(runDir)
+		augmentSubagentModelAttribution(runDir, summary)
+		return summary, nil
 	}
 
-	summary, err := parseAgentUsageFile(agentUsagePath)
-	if err != nil || summary == nil {
-		return summary, err
+	if aic := extractAICFromEventJSONL(runDir); aic > 0 {
+		summary := &TokenUsageSummary{
+			TotalAIC: aic,
+			ByModel:  make(map[string]*ModelTokenUsage),
+		}
+		summary.TotalSteeringEvents = countAPIProxySteeringEvents(runDir)
+		return summary, nil
 	}
-	summary.TotalSteeringEvents = countAPIProxySteeringEvents(runDir)
-	augmentSubagentModelAttribution(runDir, summary)
-	return summary, nil
+
+	return nil, nil
 }
 
 // analyzeTokenUsageAICOnly parses token usage inputs and computes only TotalAIC.
@@ -524,31 +534,135 @@ func analyzeTokenUsageAICOnly(runDir string, verbose bool) (*TokenUsageSummary, 
 	}
 
 	agentUsagePath := findAgentUsageFile(runDir)
-	if agentUsagePath == "" {
-		return nil, nil
+	if agentUsagePath != "" {
+		if verbose {
+			fileInfo, _ := os.Stat(agentUsagePath)
+			if fileInfo != nil {
+				fmt.Fprintf(os.Stderr, "  Found agent usage file: %s (%d bytes)\n", filepath.Base(agentUsagePath), fileInfo.Size())
+			}
+		}
+
+		data, err := os.ReadFile(filepath.Clean(agentUsagePath))
+		if err != nil {
+			return nil, fmt.Errorf("failed to read agent usage file: %w", err)
+		}
+		var entry TokenUsageEntry
+		if err := json.Unmarshal(data, &entry); err != nil {
+			return nil, fmt.Errorf("failed to parse agent usage file: %w", err)
+		}
+		model := entry.Model
+		if model == "" {
+			model = "unknown"
+		}
+		return &TokenUsageSummary{
+			TotalAIC: computeModelInferenceAIC(entry.Provider, model, entry.InputTokens, entry.OutputTokens, entry.CacheReadTokens, entry.CacheWriteTokens, entry.ReasoningTokens),
+		}, nil
 	}
-	if verbose {
-		fileInfo, _ := os.Stat(agentUsagePath)
-		if fileInfo != nil {
-			fmt.Fprintf(os.Stderr, "  Found agent usage file: %s (%d bytes)\n", filepath.Base(agentUsagePath), fileInfo.Size())
+
+	if aic := extractAICFromEventJSONL(runDir); aic > 0 {
+		return &TokenUsageSummary{TotalAIC: aic}, nil
+	}
+
+	return nil, nil
+}
+
+func extractAICFromEventJSONL(runDir string) float64 {
+	if eventsPath := findEventsJSONLFile(runDir); eventsPath != "" {
+		if metrics, err := parseEventsJSONLFile(eventsPath, false); err == nil && metrics.EstimatedCost > 0 {
+			return metrics.EstimatedCost
 		}
 	}
 
-	data, err := os.ReadFile(filepath.Clean(agentUsagePath))
+	if proxyEventsPath := findAPIProxyEventsFile(runDir); proxyEventsPath != "" {
+		aic, err := parseAPIProxyAICEvents(proxyEventsPath)
+		if err == nil && aic > 0 {
+			return aic
+		}
+	}
+
+	return 0
+}
+
+func parseAPIProxyAICEvents(filePath string) (float64, error) {
+	file, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read agent usage file: %w", err)
+		return 0, err
 	}
-	var entry TokenUsageEntry
-	if err := json.Unmarshal(data, &entry); err != nil {
-		return nil, fmt.Errorf("failed to parse agent usage file: %w", err)
+	defer file.Close()
+
+	totalAIC := 0.0
+	found := false
+	scanner := bufio.NewScanner(file)
+	buf := make([]byte, maxScannerBufferSize)
+	scanner.Buffer(buf, maxScannerBufferSize)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || (!strings.Contains(line, "aic") && !strings.Contains(line, "ai_credits")) {
+			continue
+		}
+
+		var record map[string]any
+		if err := json.Unmarshal([]byte(line), &record); err != nil {
+			continue
+		}
+		if value, ok := extractAICFromJSONMap(record); ok && value > 0 {
+			totalAIC += value
+			found = true
+		}
 	}
-	model := entry.Model
-	if model == "" {
-		model = "unknown"
+	if err := scanner.Err(); err != nil {
+		return 0, err
 	}
-	return &TokenUsageSummary{
-		TotalAIC: computeModelInferenceAIC(entry.Provider, model, entry.InputTokens, entry.OutputTokens, entry.CacheReadTokens, entry.CacheWriteTokens, entry.ReasoningTokens),
-	}, nil
+	if !found {
+		return 0, nil
+	}
+	return totalAIC, nil
+}
+
+func extractAICFromJSONMap(record map[string]any) (float64, bool) {
+	if value, ok := extractNumericField(record, "aic"); ok {
+		return value, true
+	}
+	if value, ok := extractNumericField(record, "ai_credits"); ok {
+		return value, true
+	}
+	if dataRaw, ok := record["data"]; ok {
+		if dataMap, ok := dataRaw.(map[string]any); ok {
+			if value, ok := extractNumericField(dataMap, "aic"); ok {
+				return value, true
+			}
+			if value, ok := extractNumericField(dataMap, "ai_credits"); ok {
+				return value, true
+			}
+		}
+	}
+	return 0, false
+}
+
+func extractNumericField(record map[string]any, key string) (float64, bool) {
+	value, ok := record[key]
+	if !ok {
+		return 0, false
+	}
+	switch typed := value.(type) {
+	case float64:
+		return typed, true
+	case int:
+		return float64(typed), true
+	case int64:
+		return float64(typed), true
+	case json.Number:
+		parsed, err := typed.Float64()
+		if err == nil {
+			return parsed, true
+		}
+	case string:
+		parsed, err := json.Number(strings.TrimSpace(typed)).Float64()
+		if err == nil {
+			return parsed, true
+		}
+	}
+	return 0, false
 }
 
 func countAPIProxySteeringEvents(runDir string) int {

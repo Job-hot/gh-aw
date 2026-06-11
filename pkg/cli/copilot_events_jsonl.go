@@ -188,6 +188,7 @@ func parseEventsJSONLFile(path string, verbose bool) (workflow.LogMetrics, error
 	var currentSequence []string
 	turns := 0
 	totalTokens := 0
+	totalAIC := 0.0
 	foundAnyEvent := false
 
 	// Per-turn timestamps used to compute Time Between Turns (TBT)
@@ -259,9 +260,15 @@ func parseEventsJSONLFile(path string, verbose bool) (workflow.LogMetrics, error
 					copilotEventsJSONLLog.Printf("session.shutdown: model=%s inputTokens=%d outputTokens=%d",
 						model, m.Usage.InputTokens, m.Usage.OutputTokens)
 				}
+				if m.Requests != nil && m.Requests.Cost > 0 {
+					modelAIC := float64(m.Requests.Cost)
+					totalAIC += modelAIC
+					copilotEventsJSONLLog.Printf("session.shutdown: model=%s aiCredits=%.3f",
+						model, modelAIC)
+				}
 			}
-			copilotEventsJSONLLog.Printf("session.shutdown: type=%s totalTokens=%d",
-				entry.Data.ShutdownType, totalTokens)
+			copilotEventsJSONLLog.Printf("session.shutdown: type=%s totalTokens=%d totalAIC=%.3f",
+				entry.Data.ShutdownType, totalTokens, totalAIC)
 		}
 	}
 
@@ -284,6 +291,7 @@ func parseEventsJSONLFile(path string, verbose bool) (workflow.LogMetrics, error
 	}
 
 	metrics.TokenUsage = totalTokens
+	metrics.EstimatedCost = totalAIC
 	metrics.Turns = turns
 
 	// Compute Time Between Turns (TBT) from per-turn timestamps.
@@ -309,8 +317,8 @@ func parseEventsJSONLFile(path string, verbose bool) (workflow.LogMetrics, error
 		}
 	}
 
-	copilotEventsJSONLLog.Printf("Parsed events.jsonl: turns=%d totalTokens=%d toolCalls=%d sequences=%d",
-		turns, totalTokens, len(toolCallMap), len(metrics.ToolSequences))
+	copilotEventsJSONLLog.Printf("Parsed events.jsonl: turns=%d totalTokens=%d totalAIC=%.3f toolCalls=%d sequences=%d",
+		turns, totalTokens, totalAIC, len(toolCallMap), len(metrics.ToolSequences))
 
 	if verbose {
 		fmt.Fprintln(os.Stderr, console.FormatSuccessMessage(

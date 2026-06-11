@@ -288,6 +288,23 @@ func TestAnalyzeTokenUsage(t *testing.T) {
 		assert.Nil(t, summary, "should return nil when no file found")
 	})
 
+	t.Run("falls back to Copilot events.jsonl AI Credits when token files are missing", func(t *testing.T) {
+		tmpDir := testutil.TempDir(t, "analyze-token-usage-events-aic")
+		sessionDir := filepath.Join(tmpDir, "sandbox", "agent", "logs", "copilot-session-state", "session-123")
+		require.NoError(t, os.MkdirAll(sessionDir, 0o755))
+		eventsFile := filepath.Join(sessionDir, "events.jsonl")
+		eventsContent := strings.Join([]string{
+			realFormatEventsLine("user.message", `{"content":"Do work"}`),
+			realFormatEventsLine("session.shutdown", `{"shutdownType":"routine","modelMetrics":{"claude-sonnet-4.6":{"requests":{"count":3,"cost":2},"usage":{"inputTokens":100,"outputTokens":10}},"claude-haiku-4.5":{"requests":{"count":2,"cost":1},"usage":{"inputTokens":50,"outputTokens":5}}}}`),
+		}, "\n")
+		require.NoError(t, os.WriteFile(eventsFile, []byte(eventsContent+"\n"), 0o644))
+
+		summary, err := analyzeTokenUsage(tmpDir, false)
+		require.NoError(t, err)
+		require.NotNil(t, summary)
+		assert.InDelta(t, 3.0, summary.TotalAIC, 1e-9, "should sum AIC from session.shutdown modelMetrics requests.cost")
+	})
+
 	t.Run("parses file from sandbox path", func(t *testing.T) {
 		tmpDir := testutil.TempDir(t, "analyze-token-usage")
 		logsDir := filepath.Join(tmpDir, "sandbox", "firewall", "logs", "api-proxy-logs")
@@ -441,6 +458,7 @@ func TestAnalyzeTokenUsage(t *testing.T) {
 			assert.Equal(t, "claude-sonnet-4-6", req.EffectiveModel)
 			assert.Equal(t, modelMismatchReasonModelNotObserved, req.ReasonCode)
 		}
+
 	})
 
 	t.Run("records token-usage-missing reason when sub-agent model request is present but no model actuals exist", func(t *testing.T) {
@@ -477,6 +495,25 @@ func TestAnalyzeTokenUsage(t *testing.T) {
 		assert.Equal(t, modelMismatchReasonModelNotObserved, summary.SubagentModelRequests[0].ReasonCode)
 		assert.Equal(t, 1, summary.MismatchCount)
 		require.Contains(t, summary.Warnings, subagentStdioWarning)
+	})
+}
+
+func TestAnalyzeTokenUsageAICOnly(t *testing.T) {
+	t.Run("falls back to Copilot events.jsonl AI Credits when token files are missing", func(t *testing.T) {
+		tmpDir := testutil.TempDir(t, "analyze-token-usage-aic-only-events")
+		sessionDir := filepath.Join(tmpDir, "sandbox", "agent", "logs", "copilot-session-state", "session-xyz")
+		require.NoError(t, os.MkdirAll(sessionDir, 0o755))
+		eventsFile := filepath.Join(sessionDir, "events.jsonl")
+		eventsContent := strings.Join([]string{
+			realFormatEventsLine("session.start", `{"sessionId":"s1","copilotVersion":"1.0.0"}`),
+			realFormatEventsLine("session.shutdown", `{"shutdownType":"routine","modelMetrics":{"claude-sonnet-4.6":{"requests":{"count":1,"cost":4},"usage":{"inputTokens":10,"outputTokens":2}}}}`),
+		}, "\n")
+		require.NoError(t, os.WriteFile(eventsFile, []byte(eventsContent+"\n"), 0o644))
+
+		summary, err := analyzeTokenUsageAICOnly(tmpDir, false)
+		require.NoError(t, err)
+		require.NotNil(t, summary)
+		assert.InDelta(t, 4.0, summary.TotalAIC, 1e-9, "should extract AIC from events.jsonl fallback")
 	})
 }
 
