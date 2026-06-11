@@ -1763,9 +1763,14 @@ function normalizeRuntimeTokenUsage(rawUsage) {
 /**
  * Parse a JSONL usage file and return the total AI credits consumed.
  *
- * Each line is expected to be a JSON object containing an `ai_credits` or
- * `aiCredits` field.  Lines that are missing, malformed, or lack a valid
- * non-negative numeric AI-credits field are silently skipped.
+ * Each line is expected to be a JSON object containing an AI credits field.
+ * Supported field names (in order of preference):
+ * - `ai_credits` (legacy/standard field)
+ * - `ai_credits_this_response` (per-request credit cost from firewall logs)
+ * - `aiCredits` (camelCase variant)
+ *
+ * Lines that are missing, malformed, or lack a valid non-negative numeric
+ * AI-credits field are silently skipped.
  *
  * Used by the conclusion job post-step to read AI usage data from
  * `/tmp/gh-aw/usage/agent/token_usage.jsonl` and
@@ -1811,7 +1816,11 @@ function parseAICreditsFromUsageJsonl(filePath) {
       const keys = Object.keys(entry);
       core.info(`[otlp] parseAICreditsFromUsageJsonl: entry ${entryIndex} keys: ${keys.join(", ")}`);
 
-      const raw = "ai_credits" in entry ? entry.ai_credits : "aiCredits" in entry ? entry.aiCredits : undefined;
+      // Check for AI credits field in order of preference:
+      // 1. ai_credits (legacy/standard field)
+      // 2. ai_credits_this_response (per-request credit cost from firewall logs)
+      // 3. aiCredits (camelCase variant)
+      const raw = "ai_credits" in entry ? entry.ai_credits : "ai_credits_this_response" in entry ? entry.ai_credits_this_response : "aiCredits" in entry ? entry.aiCredits : undefined;
       core.info(`[otlp] parseAICreditsFromUsageJsonl: entry ${entryIndex} raw AI credits value: ${JSON.stringify(raw)} (type: ${typeof raw})`);
 
       const parsed = normalizeNonNegativeNumber(raw);

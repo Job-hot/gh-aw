@@ -6832,10 +6832,29 @@ describe("parseAICreditsFromUsageJsonl", () => {
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(2.0);
   });
 
+  it("supports ai_credits_this_response field from firewall logs", () => {
+    existsSyncSpy.mockReturnValue(true);
+    readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits_this_response: 3.5 }) + "\n");
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(3.5);
+  });
+
+  it("prefers ai_credits over ai_credits_this_response when both are present", () => {
+    existsSyncSpy.mockReturnValue(true);
+    readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits: 1.0, ai_credits_this_response: 9.0 }) + "\n");
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(1.0);
+  });
+
   it("prefers snake_case ai_credits over camelCase aiCredits when both are present", () => {
     existsSyncSpy.mockReturnValue(true);
     readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits: 1.0, aiCredits: 9.0 }) + "\n");
     expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(1.0);
+  });
+
+  it("sums ai_credits_this_response across multiple firewall log entries", () => {
+    existsSyncSpy.mockReturnValue(true);
+    const lines = [JSON.stringify({ ai_credits_this_response: 1.0, model: "gpt-4o" }), JSON.stringify({ ai_credits_this_response: 0.5, model: "claude-3-5-sonnet" }), JSON.stringify({ ai_credits_this_response: 0.25 })].join("\n");
+    readFileSpy.mockImplementation(() => lines);
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/agent_usage.jsonl")).toBe(1.75);
   });
 
   it("skips entries without an ai_credits or aiCredits field", () => {
