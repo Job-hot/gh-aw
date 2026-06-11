@@ -85,3 +85,10 @@ func TestComputeModelInferenceAICLiveCopilotData(t *testing.T) {
 		})
 	}
 }
+
+func TestComputeModelInferenceAICCopilotCacheRead(t *testing.T) {
+	// gpt-5.4 pricing in data/models.json:
+	// input=0.0000025, output=0.000015, cache_read=0.00000025 (USD/token)
+	got := computeModelInferenceAIC("copilot", "gpt-5.4-2026-03-05", 1000, 200, 400, 0, 0)
+	assert.InDelta(t, 0.56, got, 1e-9)
+}

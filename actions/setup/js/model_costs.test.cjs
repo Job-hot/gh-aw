@@ -171,4 +171,31 @@ describe("model_costs.cjs", () => {
       expect(got).toBeCloseTo(sample.wantAIC, 9);
     }
   });
+
+  it("includes cache read pricing for copilot gpt-5.4 dated model", async () => {
+    writeModelsFixture({
+      "github-copilot": {
+        models: {
+          "gpt-5.4": {
+            cost: {
+              input: "0.0000025",
+              output: "0.000015",
+              cache_read: "0.00000025",
+            },
+          },
+        },
+      },
+    });
+
+    const { computeInferenceAIC } = await import("./model_costs.cjs");
+    const got = computeInferenceAIC({
+      provider: "copilot",
+      model: "gpt-5.4-2026-03-05",
+      inputTokens: 1000,
+      outputTokens: 200,
+      cacheReadTokens: 400,
+      cacheWriteTokens: 0,
+    });
+    expect(got).toBeCloseTo(0.56, 9);
+  });
 });
