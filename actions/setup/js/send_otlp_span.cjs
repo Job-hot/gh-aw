@@ -2138,7 +2138,10 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   // that reside in /tmp/gh-aw/ and must be read before the temp folder is deleted
   // in the post-step.  These files are written by the agent and detection jobs
   // and carry the actual AI credit consumption for each job in the workflow run.
-  if (jobName === "conclusion") {
+  // The conclusion job is not in jobEmitsOwnTokenUsage, so aiCredits is undefined
+  // above and no gh-aw.aic attribute has been pushed yet — these files are the
+  // sole source of AIC for conclusion spans.
+  if (jobName === "conclusion" && typeof aiCredits !== "number") {
     const agentsAIC = parseAICreditsFromUsageJsonl(AGENTS_USAGE_JSONL_PATH);
     const detectionAIC = parseAICreditsFromUsageJsonl(DETECTION_USAGE_JSONL_PATH);
     const usageFileAIC = agentsAIC + detectionAIC;
