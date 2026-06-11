@@ -21,6 +21,7 @@
 
 const fs = require("fs");
 const { nowMs } = require("./performance_now.cjs");
+const { AW_INFO_PATH } = require("./constants.cjs");
 
 const {
   generateTraceId,
@@ -36,7 +37,6 @@ const {
   buildCustomOTLPAttributes,
 } = require("./send_otlp_span.cjs");
 
-const AW_INFO_PATH = "/tmp/gh-aw/aw_info.json";
 const EVALUATIONS_PATH = "/tmp/gh-aw/outcome-evaluations.jsonl";
 const SUMMARY_PATH = "/tmp/gh-aw/outcome-summary.json";
 const OTLP_STATUS_UNSET = 0;

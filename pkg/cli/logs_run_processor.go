@@ -205,7 +205,7 @@ func downloadRunArtifactsConcurrent(ctx context.Context, runs []WorkflowRun, out
 				// scheduled or agentic workflow runs), infer it from aw_info.json so that
 				// the cached RunSummary and downstream consumers have a usable identifier.
 				if result.Run.WorkflowPath == "" {
-					awInfoPath := filepath.Join(runOutputDir, "aw_info.json")
+					awInfoPath := filepath.Join(runOutputDir, constants.AwInfoFilename)
 					if info, err := parseAwInfo(awInfoPath, false); err == nil && info != nil && info.WorkflowName != "" {
 						result.Run.WorkflowPath = inferWorkflowPathFromDisplayName(info.WorkflowName)
 					}
@@ -458,10 +458,20 @@ func runContainsSafeOutputType(runDir string, safeOutputType string, verbose boo
 
 	// Support both new flattened form and old directory form
 	if stat, err := os.Stat(agentOutputPath); err != nil || stat.IsDir() {
-		// Try old structure
-		oldPath := filepath.Join(runDir, constants.AgentOutputArtifactName, constants.AgentOutputArtifactName)
-		if _, err := os.Stat(oldPath); err == nil {
-			agentOutputPath = oldPath
+		// Try old structures.
+		legacyPaths := []string{
+			filepath.Join(runDir, constants.AgentOutputArtifactName, constants.AgentOutputFilename),
+			filepath.Join(runDir, constants.LegacyAgentOutputArtifactName, constants.AgentOutputFilename),
+		}
+		foundLegacyPath := ""
+		for _, legacyPath := range legacyPaths {
+			if _, err := os.Stat(legacyPath); err == nil {
+				foundLegacyPath = legacyPath
+				break
+			}
+		}
+		if foundLegacyPath != "" {
+			agentOutputPath = foundLegacyPath
 		} else {
 			// No agent_output.json found
 			return false, nil

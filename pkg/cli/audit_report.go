@@ -281,7 +281,7 @@ func buildAuditData(processedRun ProcessedRun, metrics LogMetrics, mcpToolUsage 
 	}
 
 	if run.LogsPath != "" {
-		awInfoPath := filepath.Join(run.LogsPath, "aw_info.json")
+		awInfoPath := filepath.Join(run.LogsPath, constants.AwInfoFilename)
 		if awInfo, err := parseAwInfo(awInfoPath, false); err == nil && awInfo != nil {
 			overview.AwContext = awInfo.Context
 		}
@@ -544,8 +544,8 @@ func extractCreatedItemsFromManifest(logsPath string) []CreatedItemReport {
 // describeFile provides a short description for known artifact files
 func describeFile(filename string) string {
 	descriptions := map[string]string{
-		"aw_info.json":                  "Engine configuration and workflow metadata",
-		"safe_output.jsonl":             "Safe outputs from workflow execution",
+		constants.AwInfoFilename:        "Engine configuration and workflow metadata",
+		constants.SafeOutputRawFilename: "Safe outputs from workflow execution",
 		safeOutputItemsManifestFilename: "Created items manifest (audit trail)",
 		constants.AgentOutputFilename:   "Validated safe outputs",
 		"aw.patch":                      "Git patch of changes made during execution",
@@ -553,7 +553,7 @@ func describeFile(filename string) string {
 		"log.md":                        "Human-readable agent session summary",
 		"firewall.md":                   "Firewall log analysis report",
 		"run_summary.json":              "Cached summary of workflow run analysis",
-		"prompt.txt":                    "Input prompt for AI agent",
+		constants.PromptFilename:        "Input prompt for AI agent",
 	}
 
 	if desc, ok := descriptions[filename]; ok {

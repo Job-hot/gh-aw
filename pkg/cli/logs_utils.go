@@ -101,7 +101,7 @@ func findAgentOutputFile(logDir string) (string, bool) {
 		if info == nil {
 			return nil
 		}
-		if !info.IsDir() && strings.EqualFold(info.Name(), constants.AgentOutputArtifactName) {
+		if !info.IsDir() && strings.EqualFold(info.Name(), constants.AgentOutputFilename) {
 			foundPath = path
 			return errWalkStop
 		}
@@ -131,7 +131,7 @@ func findAgentLogFile(logDir string, engine workflow.CodingAgentEngine) (string,
 	// look in the agent_output artifact directory or flattened location
 	if logFileForParsing != "" && logFileForParsing != defaultAgentStdioLogPath {
 		// Check for agent_output directory (artifact, before flattening)
-		agentOutputDir := filepath.Join(logDir, "agent_output")
+		agentOutputDir := filepath.Join(logDir, constants.LegacyAgentOutputArtifactName)
 		if fileutil.DirExists(agentOutputDir) {
 			// Find the first file in this directory
 			var foundFile string

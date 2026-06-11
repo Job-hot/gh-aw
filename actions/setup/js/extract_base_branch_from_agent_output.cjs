@@ -2,8 +2,8 @@
 /// <reference types="@actions/github-script" />
 
 const fs = require("fs");
+const { AGENT_OUTPUT_PATH } = require("./constants.cjs");
 
-const AGENT_OUTPUT_PATH = "/tmp/gh-aw/agent_output.json";
 const SAFE_BRANCH_NAME_REGEX = /^[a-zA-Z0-9/_.-]+$/;
 
 /**

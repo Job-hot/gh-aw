@@ -87,8 +87,13 @@ var KnownBuiltInJobNames = map[string]struct{}{
 }
 
 // Artifact name constants
+const AwInfoArtifactName = "aw-info"
+const PromptArtifactName = "prompt"
 const SafeOutputArtifactName = "safe-output"
 const AgentOutputArtifactName = "agent-output"
+const LegacyAwInfoArtifactName = "aw_info"
+const LegacySafeOutputArtifactName = "safe_output"
+const LegacyAgentOutputArtifactName = "agent_output"
 
 // AgentArtifactName is the name of the unified agent artifact that contains all agent job outputs,
 // including safe outputs, agent output, engine logs, and other agent-related files.
@@ -101,8 +106,17 @@ const DetectionArtifactName = "detection"
 // Kept for backward compatibility when downloading artifacts from older workflow runs.
 const LegacyDetectionArtifactName = "threat-detection.log"
 
-// AgentOutputFilename is the filename of the agent output JSON file
+// AwInfoFilename is the filename of the aw info JSON file.
+const AwInfoFilename = "aw_info.json"
+
+// SafeOutputRawFilename is the filename of the raw safe outputs NDJSON file.
+const SafeOutputRawFilename = "safe_output.jsonl"
+
+// AgentOutputFilename is the filename of the agent output JSON file.
 const AgentOutputFilename = "agent_output.json"
+
+// PromptFilename is the filename of the compiled prompt file.
+const PromptFilename = "prompt.txt"
 
 // SafeOutputsFilename is the filename of the raw safe outputs NDJSON file copied to /tmp/gh-aw/
 const SafeOutputsFilename = "safeoutputs.jsonl"

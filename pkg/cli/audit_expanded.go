@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/timeutil"
 	"github.com/github/gh-aw/pkg/workflow"
@@ -108,8 +109,8 @@ type MCPSlowestToolCall struct {
 // The activation artifact may or may not have been flattened to the root directory.
 func findAwInfoPath(logsPath string) string {
 	candidates := []string{
-		filepath.Join(logsPath, "aw_info.json"),
-		filepath.Join(logsPath, "activation", "aw_info.json"),
+		filepath.Join(logsPath, constants.AwInfoFilename),
+		filepath.Join(logsPath, constants.ActivationArtifactName, constants.AwInfoFilename),
 	}
 	for _, p := range candidates {
 		if _, err := os.Stat(p); err == nil {
@@ -258,10 +259,10 @@ func extractPromptAnalysis(logsPath string) *PromptAnalysis {
 	// Try multiple possible locations for prompt.txt.
 	// The activation artifact may or may not have been flattened to the root.
 	promptPaths := []string{
-		filepath.Join(logsPath, "prompt.txt"),
-		filepath.Join(logsPath, "aw-prompts", "prompt.txt"),
-		filepath.Join(logsPath, "activation", "aw-prompts", "prompt.txt"),
-		filepath.Join(logsPath, "agent", "aw-prompts", "prompt.txt"),
+		filepath.Join(logsPath, constants.PromptFilename),
+		filepath.Join(logsPath, "aw-prompts", constants.PromptFilename),
+		filepath.Join(logsPath, constants.ActivationArtifactName, "aw-prompts", constants.PromptFilename),
+		filepath.Join(logsPath, constants.AgentArtifactName, "aw-prompts", constants.PromptFilename),
 	}
 
 	for _, promptPath := range promptPaths {

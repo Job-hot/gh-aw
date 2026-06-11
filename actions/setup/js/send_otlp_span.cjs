@@ -11,6 +11,7 @@ const { buildWorkflowRunUrl } = require("./workflow_metadata_helpers.cjs");
 const { readExperimentAssignments, EXPERIMENT_ASSIGNMENTS_PATH } = require("./experiment_helpers.cjs");
 const { parseJsonlContent } = require("./jsonl_helpers.cjs");
 const { countSteeringEventsInApiProxyJsonl } = require("./steering_helpers.cjs");
+const { TMP_GH_AW_PATH, AW_INFO_PATH, AGENT_OUTPUT_PATH, OTEL_JSONL_PATH, GITHUB_RATE_LIMITS_JSONL_PATH } = require("./constants.cjs");
 
 /**
  * send_otlp_span.cjs
@@ -617,14 +618,6 @@ function buildOTLPPayload({ traceId, spanId, parentSpanId, spanName, startMs, en
 // ---------------------------------------------------------------------------
 
 /**
- * Path to the OTLP telemetry mirror file.
- * Every OTLP span payload is also appended here as a JSON line so that it can
- * be inspected via GitHub Actions artifacts without needing a live collector.
- * @type {string}
- */
-const OTEL_JSONL_PATH = "/tmp/gh-aw/otel.jsonl";
-
-/**
  * Append an OTLP payload as a single JSON line to the local telemetry mirror
  * file.  Creates the `/tmp/gh-aw` directory if it does not already exist.
  * Errors are silently swallowed — mirror failures must never break the workflow.
@@ -634,7 +627,7 @@ const OTEL_JSONL_PATH = "/tmp/gh-aw/otel.jsonl";
  */
 function appendToOTLPJSONL(payload) {
   try {
-    fs.mkdirSync("/tmp/gh-aw", { recursive: true });
+    fs.mkdirSync(TMP_GH_AW_PATH, { recursive: true });
     fs.appendFileSync(OTEL_JSONL_PATH, JSON.stringify(payload) + "\n");
   } catch {
     // Mirror failures are non-fatal; do not propagate.
@@ -1209,7 +1202,7 @@ async function sendJobSetupSpan(options = {}) {
   // When this job was dispatched by a parent workflow, the parent's trace ID is
   // propagated via aw_context.otel_trace_id → aw_info.context.otel_trace_id so that
   // composite-action spans share a single trace with their caller.
-  const awInfo = readJSONIfExists("/tmp/gh-aw/aw_info.json") || {};
+  const awInfo = readJSONIfExists(AW_INFO_PATH) || {};
   const setupAwContext = parseSetupAwContext(process.env.GH_AW_SETUP_AW_CONTEXT);
   if ((!awInfo.context || typeof awInfo.context !== "object") && Object.keys(setupAwContext).length > 0) {
     awInfo.context = setupAwContext;
@@ -1385,14 +1378,6 @@ function readJSONIfExists(filePath) {
     return null;
   }
 }
-
-/**
- * Path to the GitHub rate-limit JSONL log file.
- * Mirrors GITHUB_RATE_LIMITS_JSONL_PATH from constants.cjs without introducing
- * a runtime require() dependency on that module.
- * @type {string}
- */
-const GITHUB_RATE_LIMITS_JSONL_PATH = "/tmp/gh-aw/github_rate_limits.jsonl";
 
 /**
  * Path to the persisted OTLP export error counter.
@@ -1917,7 +1902,7 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   const endMs = nowMs();
 
   // Read workflow metadata from aw_info.json (written by the agent job setup step).
-  const awInfo = readJSONIfExists("/tmp/gh-aw/aw_info.json") || {};
+  const awInfo = readJSONIfExists(AW_INFO_PATH) || {};
 
   const serviceName = process.env.OTEL_SERVICE_NAME || "gh-aw";
   const version = awInfo.agent_version || awInfo.version || process.env.GH_AW_INFO_VERSION || awInfo.cli_version || process.env.GH_AW_INFO_CLI_VERSION || process.env.GITHUB_SHA || "unknown";
@@ -2005,7 +1990,7 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   }
 
   // Always read agent_output.json so output metrics are available on all outcomes.
-  const rawAgentOutput = readJSONIfExists("/tmp/gh-aw/agent_output.json");
+  const rawAgentOutput = readJSONIfExists(AGENT_OUTPUT_PATH);
   const agentOutput = rawAgentOutput || {};
   // readJSONIfExists returns null when the file is absent OR unreadable (e.g. partial/corrupt write).
   const hasNoReadableAgentOutput = rawAgentOutput === null;
@@ -2275,7 +2260,7 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   })();
   let agentEndMs = null;
   try {
-    agentEndMs = fs.statSync("/tmp/gh-aw/agent_output.json").mtimeMs;
+    agentEndMs = fs.statSync(AGENT_OUTPUT_PATH).mtimeMs;
   } catch {
     // agent_output.json may be absent for agent failures and cancellations,
     // including timed-out or manually-cancelled runs where the process was

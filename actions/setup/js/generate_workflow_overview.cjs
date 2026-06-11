@@ -2,6 +2,7 @@
 /// <reference types="@actions/github-script" />
 
 const { jsonObjectToMarkdown } = require("./json_object_to_markdown.cjs");
+const { AW_INFO_PATH } = require("./constants.cjs");
 
 /**
  * Generate workflow overview step that writes an agentic workflow run overview
@@ -13,7 +14,7 @@ const { jsonObjectToMarkdown } = require("./json_object_to_markdown.cjs");
  */
 async function generateWorkflowOverview(core) {
   const fs = require("fs");
-  const awInfoPath = "/tmp/gh-aw/aw_info.json";
+  const awInfoPath = AW_INFO_PATH;
 
   // Load aw_info.json
   const awInfo = JSON.parse(fs.readFileSync(awInfoPath, "utf8"));

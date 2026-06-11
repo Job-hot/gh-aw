@@ -25,6 +25,7 @@
  */
 
 const path = require("path");
+const { AW_INFO_PATH } = require("./constants.cjs");
 
 // Ensures global.core / global.context shims are available when this module
 // is loaded outside the github-script runtime (e.g., in plain Node.js or the
@@ -103,7 +104,7 @@ async function logSpan(toolName, attributes = {}, options = {}) {
     // GH_AW_INFO_STAGED are only present during the setup step and are not
     // exported to later github-script steps.  aw_info.json is the authoritative
     // source (written by generate_aw_info.cjs and read by conclusion spans).
-    const awInfo = readJSONIfExists("/tmp/gh-aw/aw_info.json") || {};
+    const awInfo = readJSONIfExists(AW_INFO_PATH) || {};
     const staged = awInfo.staged === true || process.env.GH_AW_INFO_STAGED === "true";
     const scopeVersion = awInfo.agent_version || awInfo.version || process.env.GH_AW_INFO_VERSION || "unknown";
     const awfVersion = (typeof awInfo.awf_version === "string" ? awInfo.awf_version : "") || process.env.GH_AW_INFO_AWF_VERSION || "";

@@ -236,7 +236,7 @@ func buildLogsData(processedRuns []ProcessedRun, outputDir string, continuation 
 		engineName := ""
 		var awContext *AwContext
 		var awInfo *AwInfo
-		awInfoPath := filepath.Join(run.LogsPath, "aw_info.json")
+		awInfoPath := filepath.Join(run.LogsPath, constants.AwInfoFilename)
 		if info, err := parseAwInfo(awInfoPath, false); err == nil && info != nil {
 			awInfo = info
 			engineID = info.EngineID

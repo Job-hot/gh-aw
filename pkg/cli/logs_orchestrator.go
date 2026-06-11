@@ -304,7 +304,7 @@ func DownloadWorkflowLogs(ctx context.Context, opts LogsDownloadOptions) error {
 				// Parse aw_info.json once for all filters that need it (optimization)
 				var awInfo *AwInfo
 				var awInfoErr error
-				awInfoPath := filepath.Join(result.LogsPath, "aw_info.json")
+				awInfoPath := filepath.Join(result.LogsPath, constants.AwInfoFilename)
 
 				// Only parse if we need it for any filter
 				if engine != "" || noStaged || firewallOnly || noFirewall {
@@ -475,7 +475,7 @@ func DownloadWorkflowLogs(ctx context.Context, opts LogsDownloadOptions) error {
 				// If --parse flag is set, parse the agent log and write to log.md
 				if parse {
 					// Get the engine from aw_info.json
-					awInfoPath := filepath.Join(result.LogsPath, "aw_info.json")
+					awInfoPath := filepath.Join(result.LogsPath, constants.AwInfoFilename)
 					detectedEngine := extractEngineFromAwInfo(awInfoPath, verbose)
 
 					if err := parseAgentLog(result.LogsPath, detectedEngine, verbose); err != nil {
@@ -889,7 +889,7 @@ func DownloadWorkflowLogsFromStdin(ctx context.Context, opts StdinLogsOptions) e
 			continue
 		}
 
-		awInfoPath := filepath.Join(result.LogsPath, "aw_info.json")
+		awInfoPath := filepath.Join(result.LogsPath, constants.AwInfoFilename)
 		var awInfo *AwInfo
 		var awInfoErr error
 		if opts.Engine != "" || opts.NoStaged || opts.FirewallOnly || opts.NoFirewall {

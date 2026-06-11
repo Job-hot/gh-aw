@@ -10,10 +10,28 @@
  */
 
 /**
+ * AwInfoFilename is the filename of the aw info JSON file
+ * @type {string}
+ */
+const AW_INFO_FILENAME = "aw_info.json";
+
+/**
+ * SafeOutputRawFilename is the filename of the raw safe outputs NDJSON file
+ * @type {string}
+ */
+const SAFE_OUTPUT_RAW_FILENAME = "safe_output.jsonl";
+
+/**
  * AgentOutputFilename is the filename of the agent output JSON file
  * @type {string}
  */
 const AGENT_OUTPUT_FILENAME = "agent_output.json";
+
+/**
+ * PromptFilename is the filename of the compiled prompt file
+ * @type {string}
+ */
+const PROMPT_FILENAME = "prompt.txt";
 
 /**
  * Base path for temporary gh-aw files
@@ -70,6 +88,18 @@ const MAX_ASSIGNEES = 5;
 // ---------------------------------------------------------------------------
 // File paths
 // ---------------------------------------------------------------------------
+
+/**
+ * Path to the aw info JSON file
+ * @type {string}
+ */
+const AW_INFO_PATH = `${TMP_GH_AW_PATH}/${AW_INFO_FILENAME}`;
+
+/**
+ * Path to the agent output JSON file
+ * @type {string}
+ */
+const AGENT_OUTPUT_PATH = `${TMP_GH_AW_PATH}/${AGENT_OUTPUT_FILENAME}`;
 
 /**
  * Path to the MCP gateway JSONL log file
@@ -131,8 +161,13 @@ const DETECTION_LOG_FILENAME = "detection.log";
 const DETECTION_RESULT_FILENAME = "detection_result.json";
 
 module.exports = {
+  AW_INFO_FILENAME,
+  SAFE_OUTPUT_RAW_FILENAME,
   AGENT_OUTPUT_FILENAME,
+  PROMPT_FILENAME,
   TMP_GH_AW_PATH,
+  AW_INFO_PATH,
+  AGENT_OUTPUT_PATH,
   COPILOT_REVIEWER_BOT,
   COPILOT_REVIEWER_BOT_ID,
   FAQ_CREATE_PR_PERMISSIONS_URL,

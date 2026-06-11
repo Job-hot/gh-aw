@@ -2,12 +2,11 @@
 /// <reference types="@actions/github-script" />
 
 const fs = require("fs");
+const { AW_INFO_PATH, AGENT_OUTPUT_PATH, TMP_GH_AW_PATH } = require("./constants.cjs");
 
-const AW_INFO_PATH = "/tmp/gh-aw/aw_info.json";
-const AGENT_OUTPUT_PATH = "/tmp/gh-aw/agent_output.json";
-const OTLP_EXPORT_ERRORS_PATH = "/tmp/gh-aw/otlp-export-errors.count";
-const OTLP_EXPORT_ERROR_DETAILS_PATH = "/tmp/gh-aw/otlp-export-errors.jsonl";
-const gatewayEventPaths = ["/tmp/gh-aw/mcp-logs/gateway.jsonl", "/tmp/gh-aw/mcp-logs/rpc-messages.jsonl"];
+const OTLP_EXPORT_ERRORS_PATH = `${TMP_GH_AW_PATH}/otlp-export-errors.count`;
+const OTLP_EXPORT_ERROR_DETAILS_PATH = `${TMP_GH_AW_PATH}/otlp-export-errors.jsonl`;
+const gatewayEventPaths = [`${TMP_GH_AW_PATH}/mcp-logs/gateway.jsonl`, `${TMP_GH_AW_PATH}/mcp-logs/rpc-messages.jsonl`];
 
 function readJSONIfExists(path) {
   if (!fs.existsSync(path)) {

@@ -804,7 +804,7 @@ func parseAuditLogsIfRequested(runID int64, runOutputDir string, opts AuditOptio
 }
 
 func parseAgentLogIfRequested(runID int64, runOutputDir string, verbose bool) {
-	awInfoPath := filepath.Join(runOutputDir, "aw_info.json")
+	awInfoPath := filepath.Join(runOutputDir, constants.AwInfoFilename)
 	engine := extractEngineFromAwInfo(awInfoPath, verbose)
 	if engine == nil {
 		if verbose {

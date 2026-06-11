@@ -1,8 +1,13 @@
 // @ts-check
 import { describe, it, expect } from "vitest";
 const {
+  AW_INFO_FILENAME,
+  SAFE_OUTPUT_RAW_FILENAME,
   AGENT_OUTPUT_FILENAME,
+  PROMPT_FILENAME,
   TMP_GH_AW_PATH,
+  AW_INFO_PATH,
+  AGENT_OUTPUT_PATH,
   COPILOT_REVIEWER_BOT,
   COPILOT_REVIEWER_BOT_ID,
   FAQ_CREATE_PR_PERMISSIONS_URL,
@@ -17,8 +22,20 @@ const {
 
 describe("constants", () => {
   describe("file names", () => {
+    it("should export AW_INFO_FILENAME", () => {
+      expect(AW_INFO_FILENAME).toBe("aw_info.json");
+    });
+
+    it("should export SAFE_OUTPUT_RAW_FILENAME", () => {
+      expect(SAFE_OUTPUT_RAW_FILENAME).toBe("safe_output.jsonl");
+    });
+
     it("should export AGENT_OUTPUT_FILENAME", () => {
       expect(AGENT_OUTPUT_FILENAME).toBe("agent_output.json");
+    });
+
+    it("should export PROMPT_FILENAME", () => {
+      expect(PROMPT_FILENAME).toBe("prompt.txt");
     });
 
     it("should export DETECTION_LOG_FILENAME", () => {
@@ -34,6 +51,16 @@ describe("constants", () => {
     it("should export GATEWAY_JSONL_PATH under TMP_GH_AW_PATH", () => {
       expect(GATEWAY_JSONL_PATH).toBe("/tmp/gh-aw/mcp-logs/gateway.jsonl");
       expect(GATEWAY_JSONL_PATH.startsWith(TMP_GH_AW_PATH)).toBe(true);
+    });
+
+    it("should export AW_INFO_PATH under TMP_GH_AW_PATH", () => {
+      expect(AW_INFO_PATH).toBe("/tmp/gh-aw/aw_info.json");
+      expect(AW_INFO_PATH.startsWith(TMP_GH_AW_PATH)).toBe(true);
+    });
+
+    it("should export AGENT_OUTPUT_PATH under TMP_GH_AW_PATH", () => {
+      expect(AGENT_OUTPUT_PATH).toBe("/tmp/gh-aw/agent_output.json");
+      expect(AGENT_OUTPUT_PATH.startsWith(TMP_GH_AW_PATH)).toBe(true);
     });
 
     it("should export RPC_MESSAGES_PATH under TMP_GH_AW_PATH", () => {
@@ -87,8 +114,13 @@ describe("constants", () => {
     it("should export all expected constants", () => {
       const exported = require("./constants.cjs");
       const expectedKeys = [
+        "AW_INFO_FILENAME",
+        "SAFE_OUTPUT_RAW_FILENAME",
         "AGENT_OUTPUT_FILENAME",
+        "PROMPT_FILENAME",
         "TMP_GH_AW_PATH",
+        "AW_INFO_PATH",
+        "AGENT_OUTPUT_PATH",
         "COPILOT_REVIEWER_BOT",
         "COPILOT_REVIEWER_BOT_ID",
         "FAQ_CREATE_PR_PERMISSIONS_URL",

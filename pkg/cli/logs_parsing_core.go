@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 
 	"github.com/github/gh-aw/pkg/console"
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/workflow"
 )
@@ -47,7 +48,7 @@ func parseAwInfo(infoFilePath string, verbose bool) (*AwInfo, error) {
 
 	if stat.IsDir() {
 		// It's a directory - look for nested aw_info.json
-		nestedPath := filepath.Join(cleanPath, "aw_info.json")
+		nestedPath := filepath.Join(cleanPath, constants.AwInfoFilename)
 		if verbose {
 			fmt.Fprintln(os.Stderr, console.FormatInfoMessage("aw_info.json is a directory, trying nested file: "+nestedPath))
 		}

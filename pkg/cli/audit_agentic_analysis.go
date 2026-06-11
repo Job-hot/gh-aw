@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
 	"github.com/github/gh-aw/pkg/timeutil"
 	"github.com/github/gh-aw/pkg/workflow"
@@ -178,7 +179,7 @@ func deriveRunAgenticAnalysis(processedRun ProcessedRun, metrics LogMetrics) (*A
 	if processedRun.AwContext != nil {
 		awContext = processedRun.AwContext
 	} else if processedRun.Run.LogsPath != "" {
-		awInfoPath := filepath.Join(processedRun.Run.LogsPath, "aw_info.json")
+		awInfoPath := filepath.Join(processedRun.Run.LogsPath, constants.AwInfoFilename)
 		if info, err := parseAwInfo(awInfoPath, false); err == nil && info != nil {
 			awContext = info.Context
 		}

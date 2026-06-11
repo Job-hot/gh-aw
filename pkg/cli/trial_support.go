@@ -82,7 +82,7 @@ func downloadAllArtifacts(hostRepoSlug, runID string, verbose bool) (*TrialArtif
 				artifacts.SafeOutputs = safeOutputs
 			}
 
-		case strings.HasSuffix(path, "aw_info.json"):
+		case strings.HasSuffix(path, constants.AwInfoFilename):
 			// Parse agentic run information
 			trialSupportLog.Printf("Processing agentic run info artifact: %s", relPath)
 			if runInfo := parseJSONArtifact(path, verbose); runInfo != nil {
