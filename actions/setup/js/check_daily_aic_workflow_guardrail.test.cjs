@@ -328,6 +328,10 @@ describe("check_daily_aic_workflow_guardrail", () => {
     const artifactDir = fs.mkdtempSync(path.join(os.tmpdir(), "daily-guardrail-exceeded-"));
     fs.writeFileSync(path.join(artifactDir, "token-usage.jsonl"), JSON.stringify({ usage: { aic: 200 } }) + "\n", "utf8");
 
+    // Register the mock BEFORE resetting modules and re-importing the source. This
+    // follows Vitest's canonical vi.doMock pattern and guarantees getArtifactClient()'s
+    // dynamic import("@actions/artifact") picks up the mock reliably in all
+    // environments, including CI where ACTIONS_RUNTIME_TOKEN may be pre-set.
     vi.doMock("@actions/artifact", () => ({
       DefaultArtifactClient: class {
         async listArtifacts() {
@@ -338,6 +342,9 @@ describe("check_daily_aic_workflow_guardrail", () => {
         }
       },
     }));
+    vi.resetModules();
+    const mod = await import("./check_daily_aic_workflow_guardrail.cjs");
+    const localExports = mod.default || mod;
 
     const coreOutputs = {};
     const setFailed = vi.fn();
@@ -411,7 +418,7 @@ describe("check_daily_aic_workflow_guardrail", () => {
     process.env.GITHUB_TRIGGERING_ACTOR = "octocat";
 
     try {
-      await expect(exports.main()).resolves.toBeUndefined();
+      await expect(localExports.main()).resolves.toBeUndefined();
       expect(coreOutputs["daily_effective_workflow_exceeded"]).toBe("true");
       expect(coreOutputs["daily_effective_workflow_total_ai_credits"]).toBe("200");
       expect(coreOutputs["daily_effective_workflow_total_effective_tokens"]).toBe("200");
