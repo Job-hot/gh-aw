@@ -170,13 +170,12 @@ func buildByRepoIndex(pins []ActionPin) map[string][]ActionPin {
 	for _, pin := range pins {
 		byRepo[pin.Repo] = append(byRepo[pin.Repo], pin)
 	}
-	for repo, repoPins := range byRepo {
+	for _, repoPins := range byRepo {
 		slices.SortFunc(repoPins, func(a, b ActionPin) int {
 			v1 := strings.TrimPrefix(a.Version, "v")
 			v2 := strings.TrimPrefix(b.Version, "v")
 			return semverutil.Compare(v2, v1) // descending by semver
 		})
-		byRepo[repo] = repoPins
 	}
 	return byRepo
 }
@@ -277,10 +276,12 @@ func findCompatiblePin(pins []ActionPin, version string) (ActionPin, bool) {
 }
 
 // initWarnings ensures ctx.Warnings is initialized, avoiding nil map writes.
-func initWarnings(ctx *PinContext) {
+// It returns the warnings map for direct use by the caller.
+func initWarnings(ctx *PinContext) map[string]bool {
 	if ctx.Warnings == nil {
 		ctx.Warnings = make(map[string]bool)
 	}
+	return ctx.Warnings
 }
 
 // recordPinResolutionFailure silently records an unresolved action-ref pinning event
@@ -320,7 +321,6 @@ func ResolveActionPin(actionRepo, version string, ctx *PinContext) (string, erro
 		return FormatPinnedActionReference(actionRepo, version, version), nil
 	}
 
-	initWarnings(ctx)
 	cacheKey := FormatCacheKey(actionRepo, version)
 	errorType := ResolutionErrorTypePinNotFound
 	if ctx.Resolver != nil {
@@ -334,13 +334,14 @@ func ResolveActionPin(actionRepo, version string, ctx *PinContext) (string, erro
 		return "", fmt.Errorf("unable to pin action %s@%s", actionRepo, version)
 	}
 
-	if !ctx.Warnings[cacheKey] {
+	warnings := initWarnings(ctx)
+	if !warnings[cacheKey] {
 		warningMsg := fmt.Sprintf("Unable to pin action %s@%s", actionRepo, version)
 		if ctx.Resolver != nil {
 			warningMsg = fmt.Sprintf("Unable to pin action %s@%s: resolution failed", actionRepo, version)
 		}
 		fmt.Fprintln(os.Stderr, console.FormatWarningMessage(warningMsg))
-		ctx.Warnings[cacheKey] = true
+		warnings[cacheKey] = true
 	}
 	return "", nil
 }
@@ -421,13 +422,13 @@ func resolveNonStrictHardcodedPin(actionRepo, version string, matchingPins []Act
 		actionPinsLog.Printf("No exact match for version %s, no semver-compatible versions found, using highest available: %s", version, selectedPin.Version)
 	}
 
-	initWarnings(ctx)
+	warnings := initWarnings(ctx)
 	cacheKey := FormatCacheKey(actionRepo, version)
-	if !ctx.Warnings[cacheKey] {
+	if !warnings[cacheKey] {
 		warningMsg := fmt.Sprintf("Unable to resolve %s@%s dynamically, using hardcoded pin for %s@%s",
 			actionRepo, version, actionRepo, selectedPin.Version)
 		fmt.Fprintln(os.Stderr, console.FormatWarningMessage(warningMsg))
-		ctx.Warnings[cacheKey] = true
+		warnings[cacheKey] = true
 	}
 
 	actionPinsLog.Printf("Using version in non-strict mode: %s@%s (requested) → %s@%s (used)",
