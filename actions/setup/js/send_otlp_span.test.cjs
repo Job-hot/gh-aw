@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import childProcess from "child_process";
 import fs from "fs";
 
@@ -42,6 +42,15 @@ const {
 } = await import("./send_otlp_span.cjs");
 
 const { readExperimentAssignments, EXPERIMENT_ASSIGNMENTS_PATH } = await import("./experiment_helpers.cjs");
+
+// Pre-warm the model cost catalog and pre-load parse_mcp_gateway_log.cjs so tests
+// that exercise the JSONL→AIC pipeline can compute AI credits without readFileSync
+// intercepting CJS module source loads or models.json while a spy is active.
+// Both modules are lazily loaded inside send_otlp_span.cjs and would otherwise be
+// required for the first time during a test with readFileSync mocked out.
+const { loadCatalog: _warmLoadCatalog } = await import("./model_costs.cjs");
+_warmLoadCatalog();
+await import("./parse_mcp_gateway_log.cjs");
 
 // ---------------------------------------------------------------------------
 // isValidTraceId
@@ -6178,6 +6187,150 @@ describe("sendJobConclusionSpan", () => {
       const keys = span.attributes.map(a => a.key);
       expect(keys.some(k => k.startsWith("gh-aw.experiment."))).toBe(false);
       expect(keys).not.toContain("gh-aw.experiments");
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // JSONL fallback for the AIC pipeline
+  //
+  // These tests verify that when agent_usage.json is absent (e.g. because
+  // parse_token_usage.cjs failed with continue-on-error: true), the post step
+  // still computes and emits gh-aw.aic by reading token-usage.jsonl directly.
+  //
+  // A separate describe is used so that beforeAll can capture the real
+  // fs.readFileSync before any spy replaces it.  The spy installed in
+  // beforeEach then passes through to the original for non-/tmp/ paths,
+  // which lets Node (or vitest's module loader) still read .cjs source files
+  // and models.json while blocking all /tmp/gh-aw/ file reads it isn't
+  // supposed to see.
+  // ---------------------------------------------------------------------------
+  describe("JSONL fallback for AIC pipeline", () => {
+    let readFileSpy;
+    let statSpy;
+    /** @type {typeof import("fs").readFileSync} */
+    let _realReadFileSync;
+
+    beforeAll(() => {
+      // Runs before any beforeEach in this block, so readFileSync is not yet
+      // spied on by the inner beforeEach below.
+      _realReadFileSync = /** @type {typeof import("fs").readFileSync} */ fs.readFileSync.bind(fs);
+    });
+
+    beforeEach(() => {
+      process.env.INPUT_JOB_NAME = "agent";
+      const agentEndMs = 1_700_000_005_000;
+      statSpy = vi.spyOn(fs, "statSync").mockReturnValue(/** @type {Partial<fs.Stats>} */ { mtimeMs: agentEndMs });
+      readFileSpy = vi.spyOn(fs, "readFileSync").mockImplementation((filePath, ...args) => {
+        // Let module source files and models.json through so that Node / vitest's
+        // module loader can still read CJS source files and model_costs.cjs can
+        // load models.json.  Only intercept paths under /tmp/gh-aw/.
+        if (typeof filePath === "string" && filePath.startsWith("/tmp/")) {
+          throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+        }
+        return _realReadFileSync(filePath, ...args);
+      });
+    });
+
+    afterEach(() => {
+      readFileSpy.mockRestore();
+      statSpy.mockRestore();
+    });
+
+    it("reads AI credits from token-usage.jsonl when agent_usage.json is absent (agent job)", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" });
+      vi.stubGlobal("fetch", mockFetch);
+
+      process.env.GH_AW_OTLP_ENDPOINTS = JSON.stringify([{ url: "https://traces.example.com" }]);
+
+      // Simulate a token-usage.jsonl entry for a known model so AIC can be computed.
+      // claude-haiku-4-5 is present in models.json with known pricing.
+      const jsonlLine = JSON.stringify({
+        request_id: "req-fallback-001",
+        model: "claude-haiku-4-5",
+        provider: "anthropic",
+        input_tokens: 1000,
+        output_tokens: 100,
+        cache_read_tokens: 0,
+        cache_write_tokens: 0,
+        duration_ms: 500,
+      });
+
+      statSpy.mockImplementation(filePath => {
+        if (filePath === "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl") {
+          return /** @type {Partial<fs.Stats>} */ { mtimeMs: 1_700_000_003_000, size: jsonlLine.length };
+        }
+        return /** @type {Partial<fs.Stats>} */ { mtimeMs: 1_700_000_005_000 };
+      });
+
+      readFileSpy.mockImplementation((filePath, ...args) => {
+        if (filePath === "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl") {
+          return jsonlLine + "\n";
+        }
+        if (typeof filePath === "string" && filePath.startsWith("/tmp/")) {
+          // agent_usage.json and other /tmp/ paths are absent.
+          throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+        }
+        return _realReadFileSync(filePath, ...args);
+      });
+
+      await sendJobConclusionSpan("gh-aw.agent.conclusion", { startMs: 1_700_000_000_000 });
+
+      // When hasDedicatedAgentSpan is true the agent sub-span is emitted first.
+      const agentBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const agentSpan = agentBody.resourceSpans[0].scopeSpans[0].spans[0];
+      const attrs = Object.fromEntries(agentSpan.attributes.map(a => [a.key, a.value.intValue ?? a.value.doubleValue ?? a.value.stringValue ?? a.value.boolValue]));
+      // AI credits should be non-zero because the JSONL fallback picked up the anthropic usage.
+      expect(typeof attrs["gh-aw.aic"]).toBe("number");
+      expect(attrs["gh-aw.aic"]).toBeGreaterThan(0);
+      // Token breakdown should also be populated from the JSONL.
+      expect(attrs["gen_ai.usage.input_tokens"]).toBe(1000);
+      expect(attrs["gen_ai.usage.output_tokens"]).toBe(100);
+    });
+
+    it("reads AI credits from token-usage.jsonl when agent_usage.json is absent (detection job)", async () => {
+      const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" });
+      vi.stubGlobal("fetch", mockFetch);
+
+      process.env.INPUT_JOB_NAME = "detection";
+      process.env.GH_AW_OTLP_ENDPOINTS = JSON.stringify([{ url: "https://traces.example.com" }]);
+
+      // claude-haiku-4-5 is present in models.json with known pricing.
+      const jsonlLine = JSON.stringify({
+        request_id: "req-detection-001",
+        model: "claude-haiku-4-5",
+        provider: "anthropic",
+        input_tokens: 2000,
+        output_tokens: 200,
+        cache_read_tokens: 0,
+        cache_write_tokens: 0,
+        duration_ms: 800,
+      });
+
+      statSpy.mockImplementation(filePath => {
+        if (filePath === "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl") {
+          return /** @type {Partial<fs.Stats>} */ { mtimeMs: 1_700_000_003_000, size: jsonlLine.length };
+        }
+        return /** @type {Partial<fs.Stats>} */ { mtimeMs: 1_700_000_005_000 };
+      });
+
+      readFileSpy.mockImplementation((filePath, ...args) => {
+        if (filePath === "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl") {
+          return jsonlLine + "\n";
+        }
+        if (typeof filePath === "string" && filePath.startsWith("/tmp/")) {
+          throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+        }
+        return _realReadFileSync(filePath, ...args);
+      });
+
+      await sendJobConclusionSpan("gh-aw.detection.conclusion", { startMs: 1_700_000_000_000 });
+
+      // Detection job has no dedicated agent sub-span; gh-aw.aic is on the conclusion span (calls[0]).
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      const span = body.resourceSpans[0].scopeSpans[0].spans[0];
+      const attrs = Object.fromEntries(span.attributes.map(a => [a.key, a.value.intValue ?? a.value.doubleValue ?? a.value.stringValue ?? a.value.boolValue]));
+      expect(typeof attrs["gh-aw.aic"]).toBe("number");
+      expect(attrs["gh-aw.aic"]).toBeGreaterThan(0);
     });
   });
 });

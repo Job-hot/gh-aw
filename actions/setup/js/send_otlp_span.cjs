@@ -1732,6 +1732,70 @@ function readApiProxySteeringEventCount() {
 }
 
 /**
+ * Paths to the firewall proxy token-usage JSONL files.  These are the same paths
+ * that parse_token_usage.cjs reads.  Listed audit-first so the deduplicated merge
+ * matches the order used by the parse step.
+ */
+const TOKEN_USAGE_JSONL_PATHS = ["/tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl", "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl"];
+
+/**
+ * Reads AI credits and token totals directly from the firewall proxy
+ * token-usage.jsonl files.  Used as a fallback when agent_usage.json is absent
+ * (e.g. the parse_token_usage.cjs step failed with continue-on-error).
+ *
+ * Mirrors the deduplication logic in parse_token_usage.cjs but is self-contained
+ * (no dependency on the `core` global) so it works inside the post.js Node.js
+ * action context as well as in github-script steps.
+ *
+ * @returns {{input_tokens: number, output_tokens: number, cache_read_tokens: number, cache_write_tokens: number, ai_credits: number} | undefined}
+ */
+function readTokenUsageFromJsonl() {
+  // Deduplicate JSONL lines by request_id (mirrors parse_token_usage.cjs behaviour).
+  const uniqueLineKeys = new Set();
+  const dedupedLines = [];
+  for (const filePath of TOKEN_USAGE_JSONL_PATHS) {
+    let content;
+    try {
+      const stat = fs.statSync(filePath);
+      if (!stat || stat.size <= 0) continue;
+      content = fs.readFileSync(filePath, "utf8");
+    } catch {
+      continue;
+    }
+    for (const line of content.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      const match = trimmed.match(/"request_id"\s*:\s*"((?:\\.|[^"\\])*)"/);
+      const dedupeKey = match ? `request_id:${match[1]}` : trimmed;
+      if (uniqueLineKeys.has(dedupeKey)) continue;
+      uniqueLineKeys.add(dedupeKey);
+      dedupedLines.push(trimmed);
+    }
+  }
+
+  if (dedupedLines.length === 0) return undefined;
+
+  try {
+    // Lazy-require parseTokenUsageJsonl to avoid loading parse_mcp_gateway_log.cjs
+    // (and its transitive deps) on every post step.  The require is cached by Node.js
+    // after the first call.
+    const { parseTokenUsageJsonl } = require("./parse_mcp_gateway_log.cjs");
+    const summary = parseTokenUsageJsonl(dedupedLines.join("\n"));
+    if (!summary || summary.totalRequests === 0) return undefined;
+    return {
+      input_tokens: summary.totalInputTokens,
+      output_tokens: summary.totalOutputTokens,
+      cache_read_tokens: summary.totalCacheReadTokens,
+      cache_write_tokens: summary.totalCacheWriteTokens,
+      ai_credits: Number(summary.totalAIC.toFixed(3)),
+    };
+  } catch {
+    // Non-fatal: silently ignore errors in the fallback path.
+    return undefined;
+  }
+}
+
+/**
  * Read turns, token usage, and warning volume from agent-stdio.log.
  *
  * @returns {AgentRuntimeMetrics}
@@ -1970,7 +2034,11 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   const agentUsageFilePath = "/tmp/gh-aw/agent_usage.json";
   const agentUsageRaw = readJSONIfExists(agentUsageFilePath);
   const agentUsageNormalized = normalizeRuntimeTokenUsage(agentUsageRaw);
-  const agentUsage = agentUsageNormalized || runtimeMetrics.tokenUsage || {};
+  // When agent_usage.json is absent (e.g. parse_token_usage.cjs step failed with
+  // continue-on-error), fall back to reading token-usage.jsonl directly so AI
+  // credits are not silently lost.  This covers both agent and detection jobs.
+  const agentUsageFromJsonl = !agentUsageNormalized && jobEmitsOwnTokenUsage ? readTokenUsageFromJsonl() : undefined;
+  const agentUsage = agentUsageNormalized || normalizeRuntimeTokenUsage(agentUsageFromJsonl) || runtimeMetrics.tokenUsage || {};
   // Mark the span as an error when the agent job failed, timed out, or was cancelled.
   const isAgentTimedOut = agentConclusion === "timed_out";
   const isAgentFailure = agentConclusion === "failure" || isAgentTimedOut;
