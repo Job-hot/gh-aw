@@ -132,4 +132,43 @@ describe("model_costs.cjs", () => {
     });
     expect(aic).toBeGreaterThan(0);
   });
+
+  it("matches live Copilot billing arithmetic for gpt-5.4 dated model", async () => {
+    // Live sample from:
+    // https://github.com/github/gh-aw/actions/runs/27355745225/job/80833046748
+    // usage artifact: agent/token_usage.jsonl
+    writeModelsFixture({
+      "github-copilot": {
+        models: {
+          "gpt-5.4": {
+            cost: {
+              input: "0.0000025",
+              output: "0.000015",
+              cache_read: "0.00000025",
+            },
+          },
+        },
+      },
+    });
+
+    const { computeInferenceAIC } = await import("./model_costs.cjs");
+    const samples = [
+      { inputTokens: 20314, outputTokens: 970, wantAIC: 6.5335 },
+      { inputTokens: 24162, outputTokens: 1534, wantAIC: 8.3415 },
+      { inputTokens: 54255, outputTokens: 4411, wantAIC: 20.18025 },
+      { inputTokens: 65750, outputTokens: 224, wantAIC: 16.7735 },
+    ];
+
+    for (const sample of samples) {
+      const got = computeInferenceAIC({
+        provider: "copilot",
+        model: "gpt-5.4-2026-03-05",
+        inputTokens: sample.inputTokens,
+        outputTokens: sample.outputTokens,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0,
+      });
+      expect(got).toBeCloseTo(sample.wantAIC, 9);
+    }
+  });
 });

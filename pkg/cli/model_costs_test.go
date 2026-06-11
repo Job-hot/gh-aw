@@ -61,3 +61,27 @@ func TestComputeModelInferenceAICCopilotAlias(t *testing.T) {
 	assert.Greater(t, aicViaCopilot, 0.0, "copilot provider alias should produce non-zero AIC")
 	assert.InDelta(t, aicViaGitHubCopilot, aicViaCopilot, 1e-9, "copilot and github-copilot should yield identical AIC")
 }
+
+func TestComputeModelInferenceAICLiveCopilotData(t *testing.T) {
+	// Live sample from:
+	// https://github.com/github/gh-aw/actions/runs/27355745225/job/80833046748
+	// usage artifact: agent/token_usage.jsonl
+	tests := []struct {
+		name         string
+		inputTokens  int
+		outputTokens int
+		wantAIC      float64
+	}{
+		{name: "request_1", inputTokens: 20314, outputTokens: 970, wantAIC: 6.5335},
+		{name: "request_2", inputTokens: 24162, outputTokens: 1534, wantAIC: 8.3415},
+		{name: "request_3", inputTokens: 54255, outputTokens: 4411, wantAIC: 20.18025},
+		{name: "request_4", inputTokens: 65750, outputTokens: 224, wantAIC: 16.7735},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := computeModelInferenceAIC("copilot", "gpt-5.4-2026-03-05", tt.inputTokens, tt.outputTokens, 0, 0, 0)
+			assert.InDelta(t, tt.wantAIC, got, 1e-9)
+		})
+	}
+}
