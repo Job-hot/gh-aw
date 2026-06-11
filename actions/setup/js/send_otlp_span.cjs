@@ -1397,6 +1397,20 @@ const OTLP_EXPORT_ERROR_DETAILS_PATH = "/tmp/gh-aw/otlp-export-errors.jsonl";
 const FAILURE_CATEGORIES_PATH = "/tmp/gh-aw/failure_categories.json";
 
 /**
+ * Path to the per-agent AI usage JSONL file written to the temp folder.
+ * Read by the conclusion job post-step before /tmp/gh-aw/ is deleted.
+ * @type {string}
+ */
+const AGENTS_USAGE_JSONL_PATH = "/tmp/gh-aw/AgentsUsage.jsonl";
+
+/**
+ * Path to the detection job AI usage JSONL file written to the temp folder.
+ * Read by the conclusion job post-step before /tmp/gh-aw/ is deleted.
+ * @type {string}
+ */
+const DETECTION_USAGE_JSONL_PATH = "/tmp/gh-aw/DetectionUsage.jsonl";
+
+/**
  * Path to the agent stdio log file.
  * @type {string}
  */
@@ -1703,6 +1717,45 @@ function normalizeRuntimeTokenUsage(rawUsage) {
   }
 
   return Object.keys(normalized).length > 0 ? normalized : undefined;
+}
+
+/**
+ * Parse a JSONL usage file and return the total AI credits consumed.
+ *
+ * Each line is expected to be a JSON object containing an `ai_credits` or
+ * `aiCredits` field.  Lines that are missing, malformed, or lack a valid
+ * non-negative numeric AI-credits field are silently skipped.
+ *
+ * Used by the conclusion job post-step to read AI usage data from
+ * `/tmp/gh-aw/AgentsUsage.jsonl` and `/tmp/gh-aw/DetectionUsage.jsonl`
+ * before the temp folder is deleted.
+ *
+ * @param {string} filePath - Absolute path to the JSONL usage file
+ * @returns {number} Total AI credits summed across all valid entries (0 when the
+ *   file is absent, empty, or contains no entries with a valid AI-credits field)
+ */
+function parseAICreditsFromUsageJsonl(filePath) {
+  try {
+    const content = fs.readFileSync(filePath, "utf8");
+    if (!content.trim()) return 0;
+    let total = 0;
+    for (const line of content.split("\n")) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      try {
+        const entry = JSON.parse(trimmed);
+        if (!entry || typeof entry !== "object") continue;
+        const raw = "ai_credits" in entry ? entry.ai_credits : "aiCredits" in entry ? entry.aiCredits : undefined;
+        const parsed = normalizeNonNegativeNumber(raw);
+        if (typeof parsed === "number") total += parsed;
+      } catch {
+        // ignore malformed lines
+      }
+    }
+    return total;
+  } catch {
+    return 0;
+  }
 }
 
 /**
@@ -2081,6 +2134,18 @@ async function sendJobConclusionSpan(spanName, options = {}) {
   if (typeof aiCredits === "number") {
     attributes.push(buildAttr("gh-aw.aic", aiCredits));
   }
+  // For the conclusion job, aggregate AI credits from per-job usage JSONL files
+  // that reside in /tmp/gh-aw/ and must be read before the temp folder is deleted
+  // in the post-step.  These files are written by the agent and detection jobs
+  // and carry the actual AI credit consumption for each job in the workflow run.
+  if (jobName === "conclusion") {
+    const agentsAIC = parseAICreditsFromUsageJsonl(AGENTS_USAGE_JSONL_PATH);
+    const detectionAIC = parseAICreditsFromUsageJsonl(DETECTION_USAGE_JSONL_PATH);
+    const usageFileAIC = agentsAIC + detectionAIC;
+    if (usageFileAIC > 0) {
+      attributes.push(buildAttr("gh-aw.aic", usageFileAIC));
+    }
+  }
   if (typeof runtimeMetrics.turns === "number") {
     attributes.push(buildAttr("gh-aw.turns", runtimeMetrics.turns));
   }
@@ -2398,6 +2463,9 @@ module.exports = {
   resolveEngineId,
   GITHUB_RATE_LIMITS_JSONL_PATH,
   FAILURE_CATEGORIES_PATH,
+  AGENTS_USAGE_JSONL_PATH,
+  DETECTION_USAGE_JSONL_PATH,
+  parseAICreditsFromUsageJsonl,
   sendJobSetupSpan,
   sendJobConclusionSpan,
   OTEL_JSONL_PATH,

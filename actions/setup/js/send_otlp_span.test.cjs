@@ -39,6 +39,9 @@ const {
   parseOTLPCustomAttributes,
   buildCustomOTLPAttributes,
   FAILURE_CATEGORIES_PATH,
+  AGENTS_USAGE_JSONL_PATH,
+  DETECTION_USAGE_JSONL_PATH,
+  parseAICreditsFromUsageJsonl,
 } = await import("./send_otlp_span.cjs");
 
 const { readExperimentAssignments, EXPERIMENT_ASSIGNMENTS_PATH } = await import("./experiment_helpers.cjs");
@@ -6754,5 +6757,234 @@ describe("sendJobConclusionSpan does not emit OTLP metrics", () => {
 
     const traceCalls = mockFetch.mock.calls.filter(([url]) => url.includes("/v1/traces"));
     expect(traceCalls.length).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseAICreditsFromUsageJsonl
+// ---------------------------------------------------------------------------
+
+describe("parseAICreditsFromUsageJsonl", () => {
+  let readFileSpy;
+
+  beforeEach(() => {
+    readFileSpy = vi.spyOn(fs, "readFileSync").mockImplementation(() => {
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+  });
+
+  afterEach(() => {
+    readFileSpy.mockRestore();
+  });
+
+  it("returns 0 when the file does not exist", () => {
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(0);
+  });
+
+  it("returns 0 for an empty file", () => {
+    readFileSpy.mockImplementation(() => "");
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(0);
+  });
+
+  it("returns 0 for a file with only whitespace", () => {
+    readFileSpy.mockImplementation(() => "   \n  \n");
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(0);
+  });
+
+  it("sums ai_credits from a single-entry file", () => {
+    readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits: 1.5, model: "gpt-4o" }) + "\n");
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(1.5);
+  });
+
+  it("sums ai_credits across multiple entries", () => {
+    const lines = [JSON.stringify({ ai_credits: 1.0, model: "gpt-4o" }), JSON.stringify({ ai_credits: 0.5, model: "claude-3-5-sonnet" }), JSON.stringify({ ai_credits: 0.25 })].join("\n");
+    readFileSpy.mockImplementation(() => lines);
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(1.75);
+  });
+
+  it("supports camelCase aiCredits field", () => {
+    readFileSpy.mockImplementation(() => JSON.stringify({ aiCredits: 2.0 }) + "\n");
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(2.0);
+  });
+
+  it("prefers snake_case ai_credits over camelCase aiCredits when both are present", () => {
+    readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits: 1.0, aiCredits: 9.0 }) + "\n");
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(1.0);
+  });
+
+  it("skips entries without an ai_credits or aiCredits field", () => {
+    const lines = [JSON.stringify({ model: "gpt-4o", input_tokens: 100 }), JSON.stringify({ ai_credits: 0.75 })].join("\n");
+    readFileSpy.mockImplementation(() => lines);
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(0.75);
+  });
+
+  it("skips malformed JSON lines without throwing", () => {
+    const lines = ["{not valid json}", JSON.stringify({ ai_credits: 1.0 }), "also bad"].join("\n");
+    readFileSpy.mockImplementation(() => lines);
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(1.0);
+  });
+
+  it("skips entries with negative ai_credits", () => {
+    const lines = [JSON.stringify({ ai_credits: -0.5 }), JSON.stringify({ ai_credits: 1.0 })].join("\n");
+    readFileSpy.mockImplementation(() => lines);
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(1.0);
+  });
+
+  it("skips entries where ai_credits is a non-numeric string", () => {
+    const lines = [JSON.stringify({ ai_credits: "invalid" }), JSON.stringify({ ai_credits: 0.5 })].join("\n");
+    readFileSpy.mockImplementation(() => lines);
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(0.5);
+  });
+
+  it("accepts ai_credits expressed as a numeric string", () => {
+    readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits: "1.234" }) + "\n");
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBeCloseTo(1.234);
+  });
+
+  it("accepts ai_credits of zero", () => {
+    readFileSpy.mockImplementation(() => JSON.stringify({ ai_credits: 0 }) + "\n");
+    expect(parseAICreditsFromUsageJsonl("/tmp/gh-aw/AgentsUsage.jsonl")).toBe(0);
+  });
+
+  it("uses the AGENTS_USAGE_JSONL_PATH constant for the agents file", () => {
+    expect(AGENTS_USAGE_JSONL_PATH).toBe("/tmp/gh-aw/AgentsUsage.jsonl");
+  });
+
+  it("uses the DETECTION_USAGE_JSONL_PATH constant for the detection file", () => {
+    expect(DETECTION_USAGE_JSONL_PATH).toBe("/tmp/gh-aw/DetectionUsage.jsonl");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sendJobConclusionSpan — conclusion job usage file aggregation
+// ---------------------------------------------------------------------------
+
+describe("sendJobConclusionSpan conclusion job AI credits from usage files", () => {
+  /** @type {Record<string, string | undefined>} */
+  const savedEnv = {};
+  const envKeys = ["GH_AW_OTLP_ENDPOINTS", "INPUT_JOB_NAME", "GH_AW_AIC", "GH_AW_AGENT_CONCLUSION", "GITHUB_RUN_ID", "GITHUB_ACTOR", "GITHUB_REPOSITORY"];
+  let mkdirSpy, appendSpy, readFileSpy;
+
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200, statusText: "OK" }));
+    for (const k of envKeys) {
+      savedEnv[k] = process.env[k];
+      delete process.env[k];
+    }
+    mkdirSpy = vi.spyOn(fs, "mkdirSync").mockImplementation(() => {});
+    appendSpy = vi.spyOn(fs, "appendFileSync").mockImplementation(() => {});
+    readFileSpy = vi.spyOn(fs, "readFileSync").mockImplementation(() => {
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+    process.env.GH_AW_OTLP_ENDPOINTS = JSON.stringify([{ url: "https://traces.example.com" }]);
+    process.env.INPUT_JOB_NAME = "conclusion";
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    for (const k of envKeys) {
+      if (savedEnv[k] !== undefined) {
+        process.env[k] = savedEnv[k];
+      } else {
+        delete process.env[k];
+      }
+    }
+    mkdirSpy.mockRestore();
+    appendSpy.mockRestore();
+    readFileSpy.mockRestore();
+  });
+
+  /**
+   * Extract attributes from the first span in the first fetch call body.
+   * @param {import("vitest").MockInstance} mockFetch
+   * @returns {Record<string, unknown>}
+   */
+  function getSpanAttrMap(mockFetch) {
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    const span = body.resourceSpans[0].scopeSpans[0].spans[0];
+    return Object.fromEntries(span.attributes.map(a => [a.key, a.value.doubleValue ?? a.value.intValue ?? a.value.stringValue ?? a.value.boolValue]));
+  }
+
+  it("emits gh-aw.aic from AgentsUsage.jsonl when only that file is present", async () => {
+    readFileSpy.mockImplementation(filePath => {
+      if (filePath === AGENTS_USAGE_JSONL_PATH) return JSON.stringify({ ai_credits: 1.5 }) + "\n";
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+
+    await sendJobConclusionSpan("gh-aw.conclusion.conclusion", { startMs: 1_700_000_000_000 });
+
+    const attrs = getSpanAttrMap(fetch);
+    expect(attrs["gh-aw.aic"]).toBeCloseTo(1.5);
+  });
+
+  it("emits gh-aw.aic from DetectionUsage.jsonl when only that file is present", async () => {
+    readFileSpy.mockImplementation(filePath => {
+      if (filePath === DETECTION_USAGE_JSONL_PATH) return JSON.stringify({ ai_credits: 0.75 }) + "\n";
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+
+    await sendJobConclusionSpan("gh-aw.conclusion.conclusion", { startMs: 1_700_000_000_000 });
+
+    const attrs = getSpanAttrMap(fetch);
+    expect(attrs["gh-aw.aic"]).toBeCloseTo(0.75);
+  });
+
+  it("emits gh-aw.aic as the sum of both usage files when both are present", async () => {
+    readFileSpy.mockImplementation(filePath => {
+      if (filePath === AGENTS_USAGE_JSONL_PATH) return JSON.stringify({ ai_credits: 1.0 }) + "\n" + JSON.stringify({ ai_credits: 0.5 }) + "\n";
+      if (filePath === DETECTION_USAGE_JSONL_PATH) return JSON.stringify({ ai_credits: 0.25 }) + "\n";
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+
+    await sendJobConclusionSpan("gh-aw.conclusion.conclusion", { startMs: 1_700_000_000_000 });
+
+    const attrs = getSpanAttrMap(fetch);
+    expect(attrs["gh-aw.aic"]).toBeCloseTo(1.75);
+  });
+
+  it("does not emit gh-aw.aic when both usage files are absent", async () => {
+    await sendJobConclusionSpan("gh-aw.conclusion.conclusion", { startMs: 1_700_000_000_000 });
+
+    const attrs = getSpanAttrMap(fetch);
+    expect(attrs["gh-aw.aic"]).toBeUndefined();
+  });
+
+  it("does not emit gh-aw.aic when both usage files are empty", async () => {
+    readFileSpy.mockImplementation(filePath => {
+      if (filePath === AGENTS_USAGE_JSONL_PATH || filePath === DETECTION_USAGE_JSONL_PATH) return "";
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+
+    await sendJobConclusionSpan("gh-aw.conclusion.conclusion", { startMs: 1_700_000_000_000 });
+
+    const attrs = getSpanAttrMap(fetch);
+    expect(attrs["gh-aw.aic"]).toBeUndefined();
+  });
+
+  it("does not emit gh-aw.aic from usage files for non-conclusion jobs", async () => {
+    process.env.INPUT_JOB_NAME = "safe_outputs";
+    readFileSpy.mockImplementation(filePath => {
+      if (filePath === AGENTS_USAGE_JSONL_PATH) return JSON.stringify({ ai_credits: 5.0 }) + "\n";
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+
+    await sendJobConclusionSpan("gh-aw.safe-outputs.conclusion", { startMs: 1_700_000_000_000 });
+
+    const attrs = getSpanAttrMap(fetch);
+    expect(attrs["gh-aw.aic"]).toBeUndefined();
+  });
+
+  it("reads usage files from the fixed /tmp/gh-aw/ paths regardless of GH_AW_AGENT_OUTPUT", async () => {
+    process.env.GH_AW_AGENT_OUTPUT = "/custom/path/output.json";
+    readFileSpy.mockImplementation(filePath => {
+      if (filePath === "/tmp/gh-aw/AgentsUsage.jsonl") return JSON.stringify({ ai_credits: 2.0 }) + "\n";
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+
+    await sendJobConclusionSpan("gh-aw.conclusion.conclusion", { startMs: 1_700_000_000_000 });
+
+    const attrs = getSpanAttrMap(fetch);
+    expect(attrs["gh-aw.aic"]).toBeCloseTo(2.0);
+    delete process.env.GH_AW_AGENT_OUTPUT;
   });
 });
