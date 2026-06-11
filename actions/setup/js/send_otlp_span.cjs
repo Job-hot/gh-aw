@@ -1737,6 +1737,7 @@ function normalizeRuntimeTokenUsage(rawUsage) {
 function parseAICreditsFromUsageJsonl(filePath) {
   try {
     const content = fs.readFileSync(filePath, "utf8");
+    if (!content.trim()) return 0;
     let total = 0;
     for (const entry of parseJsonlContent(content)) {
       if (!entry || typeof entry !== "object") continue;
