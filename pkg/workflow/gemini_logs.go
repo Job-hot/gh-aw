@@ -9,12 +9,6 @@ import (
 
 var geminiLogsLog = logger.New("workflow:gemini_logs")
 
-// GeminiResponse represents the JSON structure returned by Gemini CLI
-type GeminiResponse struct {
-	Response string         `json:"response"`
-	Stats    map[string]any `json:"stats"`
-}
-
 // ParseLogMetrics parses Gemini CLI log output and extracts metrics.
 // Gemini CLI outputs a single JSON response when using --output-format json.
 // We parse the last valid JSON line (most complete response) and aggregate stats.
@@ -39,7 +33,7 @@ func (e *GeminiEngine) ParseLogMetrics(logContent string, verbose bool) LogMetri
 		}
 
 		// Try to parse as JSON
-		var response GeminiResponse
+		var response EngineJSONResponse
 		if err := json.Unmarshal([]byte(line), &response); err != nil {
 			continue
 		}

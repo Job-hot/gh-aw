@@ -9,12 +9,6 @@ import (
 
 var antigravityLogsLog = logger.New("workflow:antigravity_logs")
 
-// AntigravityResponse represents the JSON structure returned by Antigravity CLI
-type AntigravityResponse struct {
-	Response string         `json:"response"`
-	Stats    map[string]any `json:"stats"`
-}
-
 // ParseLogMetrics parses Antigravity CLI log output and extracts metrics.
 // Antigravity CLI outputs a single JSON response when using --output-format json.
 // We parse the last valid JSON line (most complete response) and aggregate stats.
@@ -62,16 +56,16 @@ func (e *AntigravityEngine) ParseLogMetrics(logContent string, verbose bool) Log
 	return metrics
 }
 
-func parseAntigravityResponseLine(line string) (AntigravityResponse, bool) {
-	var response AntigravityResponse
+func parseAntigravityResponseLine(line string) (EngineJSONResponse, bool) {
+	var response EngineJSONResponse
 	if err := json.Unmarshal([]byte(line), &response); err != nil {
-		return AntigravityResponse{}, false
+		return EngineJSONResponse{}, false
 	}
 
 	return response, true
 }
 
-func applyAntigravityResponseMetrics(response AntigravityResponse, metrics *LogMetrics, toolCallCounts map[string]int) {
+func applyAntigravityResponseMetrics(response EngineJSONResponse, metrics *LogMetrics, toolCallCounts map[string]int) {
 	if response.Response != "" {
 		metrics.Turns = 1 // At least one turn if we got a response
 	}
