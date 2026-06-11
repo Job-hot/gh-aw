@@ -73,9 +73,6 @@ func (c *Compiler) buildConclusionJob(data *WorkflowData, mainJobName string, sa
 	// Add artifact download steps once (shared by noop and conclusion steps).
 	// In workflow_call context, use the per-invocation prefix to avoid artifact name clashes.
 	steps = append(steps, buildAgentOutputDownloadSteps(artifactPrefixExprForDownstreamJob(data), c.getActionPin)...)
-	// Package a compact usage artifact so forecasting/analytics commands can fetch
-	// token usage and aw_info without downloading full agent artifacts.
-	steps = append(steps, buildUsageArtifactUploadSteps(artifactPrefixExprForDownstreamJob(data), c.getActionPin)...)
 
 	// Add noop processing step if noop is configured.
 	// This single step replaces the former two-step "Process No-Op Messages" + "Handle No-Op Message"
@@ -444,6 +441,12 @@ func (c *Compiler) buildConclusionJob(data *WorkflowData, mainJobName string, sa
 	})
 	steps = append(steps, agentFailureSteps...)
 
+	// Package a compact usage artifact so forecasting/analytics commands can fetch
+	// token usage and aw_info without downloading full agent artifacts.
+	// This step runs after handle_agent_failure so that the failure_mode.json written
+	// by that step is present in /tmp/gh-aw/usage/ when the artifact is uploaded.
+	steps = append(steps, buildUsageArtifactUploadSteps(artifactPrefixExprForDownstreamJob(data), c.getActionPin)...)
+
 	// Build environment variables for the conclusion script
 	var customEnvVars []string
 	customEnvVars = append(customEnvVars, fmt.Sprintf("          GH_AW_COMMENT_ID: ${{ needs.%s.outputs.comment_id }}\n", constants.ActivationJobName))
@@ -687,6 +690,7 @@ func buildUsageArtifactUploadSteps(prefix string, pinAction func(string) string)
 		"            /tmp/gh-aw/usage/detection_usage.jsonl\n",
 		"            /tmp/gh-aw/usage/agent/token_usage.jsonl\n",
 		"            /tmp/gh-aw/usage/detection/token_usage.jsonl\n",
+		"            /tmp/gh-aw/usage/failure_mode.json\n",
 		"          if-no-files-found: ignore\n",
 	}
 }

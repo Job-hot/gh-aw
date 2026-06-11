@@ -27,6 +27,8 @@ const FAILURE_ISSUE_WINDOW_MS = FAILURE_ISSUE_DEDUP_WINDOW_HOURS * 60 * 60 * 100
 const DEFAULT_OTEL_JSONL_PATH = "/tmp/gh-aw/otel.jsonl";
 /** Path to the failure categories file written by handle_agent_failure and read by the OTLP conclusion span. */
 const FAILURE_CATEGORIES_PATH = "/tmp/gh-aw/failure_categories.json";
+/** Path to the failure mode file written alongside the usage artifact so it is included when the usage artifact is downloaded. */
+const FAILURE_MODE_PATH = "/tmp/gh-aw/usage/failure_mode.json";
 const GITHUB_API_VERSION = "2022-11-28";
 const COPILOT_SESSION_STATE_DIR = path.join(os.tmpdir(), "gh-aw", "sandbox", "agent", "logs", "copilot-session-state");
 // Engine-side 429/rate-limit signatures:
@@ -2659,6 +2661,48 @@ async function main() {
       core.warning(`Failed to write failure categories: ${getErrorMessage(writeError)}`);
     }
 
+    // Persist the failure mode alongside the usage artifact folder so it is included
+    // when the usage artifact is downloaded. The file captures three stages of the
+    // failure-mode pipeline:
+    //   detected  – the raw boolean failure signals read from the environment
+    //   filtered  – the failure categories derived from those signals
+    //   identified – the primary (first sorted) failure category, or null when none
+    try {
+      const failureModePayload = {
+        detected: {
+          agentConclusion,
+          isTimedOut,
+          hasAssignmentErrors,
+          hasAssignCopilotFailures,
+          hasCreateDiscussionErrors,
+          hasCodePushFailures,
+          hasPushRepoMemoryFailure,
+          hasMissingSafeOutputs,
+          hasReportIncomplete,
+          hasMissingTool,
+          hasToolDenialsExceeded,
+          hasMissingData,
+          hasCacheMissMisconfiguration,
+          secretVerificationFailed: secretVerificationResult === "failed",
+          inferenceAccessError,
+          mcpPolicyError,
+          modelNotSupportedError,
+          aiCreditsRateLimitError,
+          maxAICreditsExceeded,
+          hasAppTokenMintingFailed,
+          hasLockdownCheckFailed,
+          hasStaleLockFileFailed,
+          hasDailyAICExceeded,
+        },
+        filtered: failureCategories,
+        identified: failureCategories.length > 0 ? failureCategories[0] : null,
+      };
+      fs.mkdirSync(path.dirname(FAILURE_MODE_PATH), { recursive: true });
+      fs.writeFileSync(FAILURE_MODE_PATH, JSON.stringify(failureModePayload, null, 2));
+    } catch (writeError) {
+      core.warning(`Failed to write failure mode: ${getErrorMessage(writeError)}`);
+    }
+
     core.info(`Checking for existing issue with precise failure metadata for title: "${issueTitle}"`);
 
     try {
@@ -3174,4 +3218,5 @@ module.exports = {
   FAILURE_TITLE_PATTERN,
   buildFailureMatchCategories,
   FAILURE_CATEGORIES_PATH,
+  FAILURE_MODE_PATH,
 };

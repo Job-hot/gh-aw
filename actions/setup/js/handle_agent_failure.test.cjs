@@ -1026,6 +1026,7 @@ describe("handle_agent_failure", () => {
       delete process.env.GH_AW_AGENT_CONCLUSION;
       delete process.env.GITHUB_HEAD_REF;
       delete process.env.GITHUB_WORKSPACE;
+      delete process.env.GH_AW_AGENTIC_ENGINE_TIMEOUT;
       if (tmpDir && fs.existsSync(tmpDir)) {
         fs.rmSync(tmpDir, { recursive: true, force: true });
       }
@@ -1105,6 +1106,50 @@ describe("handle_agent_failure", () => {
       expect(categoriesCall).toBeDefined();
       const written = JSON.parse(categoriesCall[1]);
       expect(written).toContain("timed_out");
+    });
+
+    it("writes failure_mode.json with detected, filtered, and identified fields", async () => {
+      let { FAILURE_MODE_PATH } = require("./handle_agent_failure.cjs");
+      const writeSpy = vi.spyOn(fs, "writeFileSync").mockImplementation(() => {});
+
+      global.github = {
+        rest: {
+          search: {
+            issuesAndPullRequests: vi.fn(async ({ q }) => {
+              if (q.includes("is:pr")) {
+                return { data: { total_count: 0, items: [] } };
+              }
+              return { data: { total_count: 0, items: [] } };
+            }),
+          },
+          issues: {
+            create: vi.fn(async () => ({
+              data: { number: 103, html_url: "https://github.com/owner/repo/issues/103", node_id: "I_789" },
+            })),
+          },
+          pulls: { get: vi.fn() },
+        },
+        graphql: vi.fn(),
+      };
+
+      let writeCalls;
+      try {
+        await main();
+        writeCalls = writeSpy.mock.calls.slice();
+      } finally {
+        writeSpy.mockRestore();
+      }
+
+      const modeCall = writeCalls.find(([filePath]) => filePath === FAILURE_MODE_PATH);
+      expect(modeCall).toBeDefined();
+      const written = JSON.parse(modeCall[1]);
+      expect(written).toHaveProperty("detected");
+      expect(written).toHaveProperty("filtered");
+      expect(written).toHaveProperty("identified");
+      expect(typeof written.detected).toBe("object");
+      expect(Array.isArray(written.filtered)).toBe(true);
+      expect(written.filtered).toContain("agent_failure");
+      expect(written.identified).toBe("agent_failure");
     });
   });
 

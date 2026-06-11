@@ -1213,4 +1213,21 @@ func TestConclusionJobIncludesUsageArtifactSteps(t *testing.T) {
 	if !strings.Contains(allSteps, ": > /tmp/gh-aw/usage/detection/token_usage.jsonl") {
 		t.Errorf("Expected usage artifact collection to ensure detection token usage file exists.\nGenerated steps:\n%s", allSteps)
 	}
+	if !strings.Contains(allSteps, "/tmp/gh-aw/usage/failure_mode.json") {
+		t.Errorf("Expected usage artifact to include failure_mode.json path.\nGenerated steps:\n%s", allSteps)
+	}
+
+	// Verify that the usage artifact upload steps come AFTER the handle_agent_failure step
+	// so that failure_mode.json written by that step is included in the artifact.
+	handleFailureIdx := strings.Index(allSteps, "Handle agent failure")
+	uploadArtifactIdx := strings.Index(allSteps, "Upload usage artifact")
+	if handleFailureIdx == -1 {
+		t.Errorf("Expected conclusion job to include 'Handle agent failure' step")
+	}
+	if uploadArtifactIdx == -1 {
+		t.Errorf("Expected conclusion job to include 'Upload usage artifact' step")
+	}
+	if handleFailureIdx != -1 && uploadArtifactIdx != -1 && uploadArtifactIdx < handleFailureIdx {
+		t.Errorf("Expected 'Upload usage artifact' step to come AFTER 'Handle agent failure' step, but it came before.\nGenerated steps:\n%s", allSteps)
+	}
 }
