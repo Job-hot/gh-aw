@@ -1,141 +1,159 @@
 {
-  "updated": "2026-06-10T21:50Z",
-  "anomalies": [
-    {
-      "id": "anom-activation-guardrail-cjs-missing",
-      "date": "2026-06-07",
-      "wf": "TQS / PR Code Quality Reviewer / Design Decision Gate / Matt Pocock Skills Reviewer",
-      "run": "27103538546,27103538547,27103538566,27103538567",
-      "kind": "activation-guardrail-cjs-module-not-found",
-      "persistence": 1,
-      "escalation": "NEW-MEDIUM",
-      "detail": "Activation job 'Cannot find module check_daily_effective_workflow_guardrail.cjs' on all 4 PR review workflows of branch copilot/fix-daily-credit-limit-test. Agent correctly SKIPPED but activation fail…",
-      "status": "ACTIVE"
-    },
-    {
-      "id": "anom-sdk-minimatch-crash",
-      "date": "2026-06-06",
-      "wf": "6 copilot workflows",
-      "run": "27069431407,27069682890,27069819378,27069914133,27070138441,27070604747",
-      "kind": "sdk-driver-minimatch-module-not-found",
-      "persistence": 1,
-      "escalation": "DE-ESCALATED",
-      "detail": "ABSENT 2026-06-07: not observed in any of 28 copilot runs. Was the single biggest driver 06-06 (6/16). Tentatively fixed; one more clean window to close.",
-      "status": "RESOLVED-THIS-WINDOW"
-    },
-    {
-      "id": "anom-sdk-toolperm-reescalate",
-      "date": "2026-06-07",
-      "wf": "Daily Safe Output Integrator",
-      "run": "27101776716",
-      "kind": "sdk-driver-tool-permission-lockout",
-      "persistence": 4,
-      "escalation": "PERSISTING-ESCALATE",
-      "detail": "RECUR 06-07 on 1 prod-main schedule (Safe Output Integrator): denies read(*_test.go)/shell(sed), 13 denials, 5-denial abort. Down from 3 wf on 06-06. sdk-driver path now 1/8 fails (minimatch gone). | 06-10: session.idle hard-fails x2 (PR CQR) + tool-perm-lockout (Daily Safe Output Integrator) recurred; 3 of 5 fails this window.",
-      "status": "ACTIVE",
-      "last_seen": "2026-06-10"
-    },
-    {
-      "id": "anom-detection-parse-fail",
-      "date": "2026-06-06",
-      "wf": "Design Decision Gate",
-      "run": 27065879421,
-      "kind": "detection-no-threat-result-parse-fail",
-      "persistence": 1,
-      "escalation": "NEW",
-      "detail": "Agent OK (turns=3) but detection job reddened: ERR_PARSE no THREAT_DETECTION_RESULT despite continue-on-error=true.",
-      "status": "ACTIVE"
-    },
-    {
-      "id": "anom-ambient-back-under-cap",
-      "date": "2026-06-06",
-      "wf": "Daily Ambient Context Optimizer",
-      "run": null,
-      "kind": "effective-token-back-under-cap",
-      "persistence": 4,
-      "escalation": "DE-ESCALATED",
-      "detail": "21.48M eff this window, comfortably UNDER the 25M cap (was 25.37M over-cap 06-05, 25.12M 429-fail 06-04). token-budget-429 quiet. Watch continues but trending safe.",
-      "status": "WATCH"
-    },
-    {
-      "id": "anom-model-config-effort",
-      "date": "2026-06-07",
-      "wf": "Daily Caveman Optimizer",
-      "run": 27104658186,
-      "kind": "model-config-effort-unsupported",
-      "persistence": 3,
-      "escalation": "PERSISTING-ESCALATE",
-      "detail": "RECUR 3rd consecutive day: 400 'This model does not support the effort parameter' (run 27104658186, now retries 1/11) on prod main schedule; all retries exhausted, 0 tokens. Unfixed 3 days — static co…",
-      "status": "ACTIVE"
-    },
-    {
-      "id": "anom-model-config-notfound",
-      "date": "2026-06-07",
-      "wf": "Daily Cache Strategy Analyzer",
-      "run": 27101492605,
-      "kind": "model-config-model-not-found",
-      "persistence": 3,
-      "escalation": "PERSISTING-ESCALATE",
-      "detail": "RECUR 3rd consecutive day: 404 'Model not found gpt-5-codex-alpha-2025-11-07' (run 27101492605) on prod main schedule. Model id ROTATED from adelie-alpha-2026-02-19 but STILL 404 — chasing a moving en…",
-      "status": "ACTIVE"
-    },
-    {
-      "id": "anom-ambient-over-cap-survived",
-      "date": "2026-06-05",
-      "wf": "Daily Ambient Context Optimizer",
-      "run": null,
-      "kind": "effective-token-over-cap-survived",
-      "persistence": 3,
-      "escalation": "WATCH",
-      "detail": "25.37M effective tokens (OVER the 25M cap) yet SUCCEEDED. Top eff-tok of the window. token-budget-429 did not trigger but the workflow sits at the cap edge across multiple windows.",
-      "status": "ACTIVE"
-    },
-    {
-      "id": "anom-pat-not-supported-400-incident",
-      "date": "2026-06-08",
-      "wf": "~15 copilot workflows (prod-main + PR + smoke)",
-      "run": "27162345496 (first), through 27168543679",
-      "kind": "copilot-pat-not-supported-400",
-      "persistence": 1,
-      "escalation": "NEW-CRITICAL-ACTIVE",
-      "detail": "ACTIVE production incident. Onset 2026-06-08T19:40:19Z, still firing 21:37Z. Copilot harness+sdk token-check POSTs PAT to endpoint that rejects PATs -> '400 Personal Access Tokens are not supported fo…",
-      "state": "RESOLVED",
-      "last_seen": "2026-06-09",
-      "note": "RESOLVED 2026-06-09: signature still appears in 4 runs but all succeed on attempt 1 (retry/tolerance fix landed). Escalation cleared."
-    },
-    {
-      "id": "anom-ai-credits-cap-429",
-      "first_seen": "2026-06-09",
-      "last_seen": "2026-06-09",
-      "persistence": 2,
-      "state": "new",
-      "severity": "high",
-      "note": "Daily Ambient Context Optimizer prod-main hit account daily AI-credits cap 429 (1026.78/1000) at turn 57, 3.0M tokens wasted. Watch whether this recurs as heavy aggregators routinely cross the ~1000-credit cap.",
-      "escalation": "RECUR-WATCH",
-      "date": "2026-06-10",
-      "detail": " | 06-10: Ambient 1003/1000 AIC recurred."
-    },
-    {
-      "id": "anom-docker-hub-pull-timeout",
-      "date": "2026-06-10",
-      "wf": "Daily Windows Terminal Integration Builder / Daily Hippo Learn",
-      "run": "27256826368,27261326308",
-      "kind": "docker-hub-registry-pull-timeout",
-      "persistence": 1,
-      "escalation": "NEW-HIGH",
-      "status": "ACTIVE",
-      "detail": "node:lts-alpine pull from registry-1.docker.io timed out (context deadline exceeded / dial tcp 54.166.120.201:443 i/o timeout) on 2 prod-main copilot runs in a ~1.7h window (06:09-07:49Z); all ghcr.io…"
-    },
-    {
-      "id": "anom-degenerate-date-loop",
-      "date": "2026-06-10",
-      "wf": "GitHub Remote MCP Authentication Test",
-      "run": "27258574627",
-      "kind": "degenerate-tool-loop",
-      "persistence": 1,
-      "escalation": "NEW-MEDIUM",
-      "status": "ACTIVE",
-      "detail": "Agent emitted the same `date -u` shell command 130+ times across 136 turns, 3.7M tokens, then 5-min action timeout. Single worst token-waste anomaly this window. Specific to this MCP-auth-test workflo…"
-    }
-  ]
+ "updated": "2026-06-11T22:00Z",
+ "anomalies": [
+  {
+   "id": "anom-activation-guardrail-cjs-missing",
+   "date": "2026-06-07",
+   "wf": "TQS / PR Code Quality Reviewer / Design Decision Gate / Matt Pocock Skills Reviewer",
+   "run": "27103538546,27103538547,27103538566,27103538567",
+   "kind": "activation-guardrail-cjs-module-not-found",
+   "persistence": 1,
+   "escalation": "NEW-MEDIUM",
+   "detail": "Activation job 'Cannot find module check_daily_effective_workflow_guardrail.cjs' on all 4 PR review workflows of branch copilot/fix-daily-credit-limit-test. Agent correctly SKIPPED but activation fail\u2026",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-sdk-minimatch-crash",
+   "date": "2026-06-06",
+   "wf": "6 copilot workflows",
+   "run": "27069431407,27069682890,27069819378,27069914133,27070138441,27070604747",
+   "kind": "sdk-driver-minimatch-module-not-found",
+   "persistence": 1,
+   "escalation": "DE-ESCALATED",
+   "detail": "ABSENT 2026-06-07: not observed in any of 28 copilot runs. Was the single biggest driver 06-06 (6/16). Tentatively fixed; one more clean window to close.",
+   "status": "RESOLVED-THIS-WINDOW"
+  },
+  {
+   "id": "anom-sdk-toolperm-reescalate",
+   "date": "2026-06-07",
+   "wf": "Daily Safe Output Integrator",
+   "run": "27101776716",
+   "kind": "sdk-driver-tool-permission-lockout",
+   "persistence": 4,
+   "escalation": "PERSISTING-ESCALATE",
+   "detail": "RECUR 06-07 on 1 prod-main schedule (Safe Output Integrator): denies read(*_test.go)/shell(sed), 13 denials, 5-denial abort. Down from 3 wf on 06-06. sdk-driver path now 1/8 fails (minimatch gone). | 06-10: session.idle hard-fails x2 (PR CQR) + tool-perm-lockout (Daily Safe Output Integrator) recurred; 3 of 5 fails this window.",
+   "status": "ACTIVE",
+   "last_seen": "2026-06-10"
+  },
+  {
+   "id": "anom-detection-parse-fail",
+   "date": "2026-06-06",
+   "wf": "Design Decision Gate",
+   "run": 27065879421,
+   "kind": "detection-no-threat-result-parse-fail",
+   "persistence": 1,
+   "escalation": "NEW",
+   "detail": "Agent OK (turns=3) but detection job reddened: ERR_PARSE no THREAT_DETECTION_RESULT despite continue-on-error=true.",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-ambient-back-under-cap",
+   "date": "2026-06-06",
+   "wf": "Daily Ambient Context Optimizer",
+   "run": null,
+   "kind": "effective-token-back-under-cap",
+   "persistence": 4,
+   "escalation": "DE-ESCALATED",
+   "detail": "21.48M eff this window, comfortably UNDER the 25M cap (was 25.37M over-cap 06-05, 25.12M 429-fail 06-04). token-budget-429 quiet. Watch continues but trending safe.",
+   "status": "WATCH"
+  },
+  {
+   "id": "anom-model-config-effort",
+   "date": "2026-06-07",
+   "wf": "Daily Caveman Optimizer",
+   "run": 27104658186,
+   "kind": "model-config-effort-unsupported",
+   "persistence": 3,
+   "escalation": "PERSISTING-ESCALATE",
+   "detail": "RECUR 3rd consecutive day: 400 'This model does not support the effort parameter' (run 27104658186, now retries 1/11) on prod main schedule; all retries exhausted, 0 tokens. Unfixed 3 days \u2014 static co\u2026",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-model-config-notfound",
+   "date": "2026-06-07",
+   "wf": "Daily Cache Strategy Analyzer",
+   "run": 27101492605,
+   "kind": "model-config-model-not-found",
+   "persistence": 3,
+   "escalation": "PERSISTING-ESCALATE",
+   "detail": "RECUR 3rd consecutive day: 404 'Model not found gpt-5-codex-alpha-2025-11-07' (run 27101492605) on prod main schedule. Model id ROTATED from adelie-alpha-2026-02-19 but STILL 404 \u2014 chasing a moving en\u2026",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-ambient-over-cap-survived",
+   "date": "2026-06-05",
+   "wf": "Daily Ambient Context Optimizer",
+   "run": null,
+   "kind": "effective-token-over-cap-survived",
+   "persistence": 3,
+   "escalation": "WATCH",
+   "detail": "25.37M effective tokens (OVER the 25M cap) yet SUCCEEDED. Top eff-tok of the window. token-budget-429 did not trigger but the workflow sits at the cap edge across multiple windows.",
+   "status": "ACTIVE"
+  },
+  {
+   "id": "anom-pat-not-supported-400-incident",
+   "date": "2026-06-08",
+   "wf": "~15 copilot workflows (prod-main + PR + smoke)",
+   "run": "27162345496 (first), through 27168543679",
+   "kind": "copilot-pat-not-supported-400",
+   "persistence": 1,
+   "escalation": "NEW-CRITICAL-ACTIVE",
+   "detail": "ACTIVE production incident. Onset 2026-06-08T19:40:19Z, still firing 21:37Z. Copilot harness+sdk token-check POSTs PAT to endpoint that rejects PATs -> '400 Personal Access Tokens are not supported fo\u2026",
+   "state": "RESOLVED",
+   "last_seen": "2026-06-09",
+   "note": "RESOLVED 2026-06-09: signature still appears in 4 runs but all succeed on attempt 1 (retry/tolerance fix landed). Escalation cleared."
+  },
+  {
+   "id": "anom-ai-credits-cap-429",
+   "first_seen": "2026-06-09",
+   "last_seen": "2026-06-09",
+   "persistence": 2,
+   "state": "new",
+   "severity": "high",
+   "note": "Daily Ambient Context Optimizer prod-main hit account daily AI-credits cap 429 (1026.78/1000) at turn 57, 3.0M tokens wasted. Watch whether this recurs as heavy aggregators routinely cross the ~1000-credit cap.",
+   "escalation": "RECUR-WATCH",
+   "date": "2026-06-10",
+   "detail": " | 06-10: Ambient 1003/1000 AIC recurred."
+  },
+  {
+   "id": "anom-docker-hub-pull-timeout",
+   "date": "2026-06-10",
+   "wf": "Daily Windows Terminal Integration Builder / Daily Hippo Learn",
+   "run": "27256826368,27261326308",
+   "kind": "docker-hub-registry-pull-timeout",
+   "persistence": 1,
+   "escalation": "NEW-HIGH",
+   "status": "ACTIVE",
+   "detail": "node:lts-alpine pull from registry-1.docker.io timed out (context deadline exceeded / dial tcp 54.166.120.201:443 i/o timeout) on 2 prod-main copilot runs in a ~1.7h window (06:09-07:49Z); all ghcr.io\u2026"
+  },
+  {
+   "id": "anom-degenerate-date-loop",
+   "date": "2026-06-10",
+   "wf": "GitHub Remote MCP Authentication Test",
+   "run": "27258574627",
+   "kind": "degenerate-tool-loop",
+   "persistence": 1,
+   "escalation": "NEW-MEDIUM",
+   "status": "ACTIVE",
+   "detail": "Agent emitted the same `date -u` shell command 130+ times across 136 turns, 3.7M tokens, then 5-min action timeout. Single worst token-waste anomaly this window. Specific to this MCP-auth-test workflo\u2026"
+  },
+  {
+   "id": "smoke-copilot-aoai-token-blowout",
+   "date": "2026-06-11",
+   "metric": "tokens",
+   "value": 2152350,
+   "persistence_score": 1,
+   "escalation": "watch",
+   "desc": "Smoke Copilot - AOAI (apikey) o4-mini-aw burned 2.15M tokens / 73 turns in a transient-API-error retry loop then FAILED. Largest single failed-run token spend this window. See known-issue aoai-apikey-persistent-transient-api-error."
+  },
+  {
+   "id": "matt-pocock-skills-reviewer-5M-tokens",
+   "date": "2026-06-11",
+   "metric": "tokens",
+   "value": 5039029,
+   "persistence_score": 1,
+   "escalation": "watch",
+   "desc": "Matt Pocock Skills Reviewer SUCCEEDED but consumed 5.04M tokens (66 turns) \u2014 top token consumer this window, ~20% of all tokens in one run. Not a failure but a cost outlier worth tracking for budget."
+  }
+ ]
 }
