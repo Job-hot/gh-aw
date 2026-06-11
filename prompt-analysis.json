@@ -1,1 +1,29 @@
-{"last_run":"2026-06-10","total":1000,"merged":793,"closed":203,"open":4,"rate":79.6}
+{
+  "last_run": "2026-06-11",
+  "total": 1000,
+  "merged": 786,
+  "closed": 206,
+  "open": 8,
+  "rate": 79.2,
+  "categories": {
+    "upgrade": {"total": 33, "merged": 29, "rate": 88},
+    "documentation": {"total": 58, "merged": 49, "rate": 84},
+    "bug_fix": {"total": 270, "merged": 221, "rate": 83},
+    "testing": {"total": 170, "merged": 140, "rate": 83},
+    "refactor": {"total": 56, "merged": 45, "rate": 80},
+    "chore": {"total": 15, "merged": 12, "rate": 80},
+    "other": {"total": 81, "merged": 64, "rate": 80},
+    "feature": {"total": 262, "merged": 206, "rate": 79},
+    "wip": {"total": 55, "merged": 20, "rate": 37}
+  },
+  "word_count_rates": {
+    "<50": 75,
+    "50-99": 77,
+    "100-199": 81,
+    "200-299": 82,
+    "300-499": 75,
+    "500+": 20
+  },
+  "code_block_rate": 81,
+  "no_code_block_rate": 71
+}
