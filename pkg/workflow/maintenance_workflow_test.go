@@ -232,7 +232,7 @@ func TestGenerateMaintenanceWorkflow_WithExpires(t *testing.T) {
 
 func TestScanWorkflowsForExpires_TriggerReason(t *testing.T) {
 	t.Run("no triggers", func(t *testing.T) {
-		hasExpires, minExpires, triggerReason := scanWorkflowsForExpires([]*WorkflowData{
+		hasExpires, minExpires, triggerReasons := scanWorkflowsForExpires([]*WorkflowData{
 			{
 				Name:        "no-safe-outputs",
 				SafeOutputs: nil,
@@ -240,11 +240,11 @@ func TestScanWorkflowsForExpires_TriggerReason(t *testing.T) {
 		})
 		require.False(t, hasExpires)
 		require.Equal(t, 0, minExpires)
-		require.Empty(t, triggerReason)
+		require.Empty(t, triggerReasons)
 	})
 
-	t.Run("captures first trigger reason", func(t *testing.T) {
-		hasExpires, minExpires, triggerReason := scanWorkflowsForExpires([]*WorkflowData{
+	t.Run("captures all trigger reasons", func(t *testing.T) {
+		hasExpires, minExpires, triggerReasons := scanWorkflowsForExpires([]*WorkflowData{
 			{
 				Name: "first-trigger",
 				SafeOutputs: &SafeOutputsConfig{
@@ -264,10 +264,62 @@ func TestScanWorkflowsForExpires_TriggerReason(t *testing.T) {
 		})
 		require.True(t, hasExpires)
 		require.Equal(t, 24, minExpires)
-		require.Contains(t, triggerReason, "first-trigger")
-		require.Contains(t, triggerReason, "safe_outputs.create_issues.expires=72h")
-		require.NotContains(t, triggerReason, "second-trigger")
+		require.Len(t, triggerReasons, 2)
+		require.Contains(t, triggerReasons[0], "first-trigger")
+		require.Contains(t, triggerReasons[0], "safe_outputs.create_issues.expires=72h")
+		require.Contains(t, triggerReasons[1], "second-trigger")
+		require.Contains(t, triggerReasons[1], "safe_outputs.create_discussions.expires=24h")
 	})
+}
+
+func TestGenerateMaintenanceWorkflow_HeaderContent(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	err := GenerateMaintenanceWorkflow(context.Background(), GenerateMaintenanceWorkflowOptions{
+		WorkflowDataList: []*WorkflowData{
+			{
+				Name: "my-workflow",
+				SafeOutputs: &SafeOutputsConfig{
+					CreateIssues: &CreateIssuesConfig{
+						Expires: 72,
+					},
+					CreateDiscussions: &CreateDiscussionsConfig{
+						Expires: 48,
+					},
+				},
+			},
+			{
+				Name: "another-workflow",
+				SafeOutputs: &SafeOutputsConfig{
+					CreatePullRequests: &CreatePullRequestsConfig{
+						Expires: 168,
+					},
+				},
+			},
+		},
+		WorkflowDir: tmpDir,
+		Version:     "dev",
+		ActionMode:  ActionModeDev,
+	})
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(filepath.Join(tmpDir, "agentics-maintenance.yml"))
+	require.NoError(t, err)
+	contentStr := string(content)
+
+	// Header must list the triggering workflows and features.
+	require.Contains(t, contentStr, `"my-workflow"`)
+	require.Contains(t, contentStr, "safe_outputs.create_issues.expires=72h")
+	require.Contains(t, contentStr, "safe_outputs.create_discussions.expires=48h")
+	require.Contains(t, contentStr, `"another-workflow"`)
+	require.Contains(t, contentStr, "safe_outputs.create_pull_requests.expires=168h")
+
+	// Header must include the maintenance docs link.
+	require.Contains(t, contentStr, "ephemerals.md")
+
+	// Header must explain how to disable maintenance.
+	require.Contains(t, contentStr, `"maintenance": false`)
+	require.Contains(t, contentStr, "aw.json")
 }
 
 func TestGenerateMaintenanceWorkflow_CreatesWorkflowDirRecursively(t *testing.T) {

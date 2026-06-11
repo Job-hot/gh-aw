@@ -63,4 +63,9 @@ const (
 
 	// DocsSandboxURL is the documentation URL for sandbox configuration
 	DocsSandboxURL DocURL = "https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/sandbox.md"
+
+	// DocsMaintenanceURL is the documentation URL for agentic maintenance configuration,
+	// including how to configure expiration, disable the maintenance workflow, and
+	// customise the maintenance schedule.
+	DocsMaintenanceURL DocURL = "https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/ephemerals.md"
 )

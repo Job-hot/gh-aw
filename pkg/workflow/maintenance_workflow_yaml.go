@@ -2,9 +2,11 @@ package workflow
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
 )
 
@@ -26,6 +28,10 @@ type buildMaintenanceWorkflowYAMLOptions struct {
 	compileGitHubToken  string
 	createCompilePR     bool
 	copilotOrgBilling   bool // all Copilot workflows use copilot-requests: write (GITHUB_TOKEN); COPILOT_GITHUB_TOKEN is not required
+	// triggerReasons is the ordered list of reasons (workflow name + feature) that caused this
+	// maintenance workflow to be generated. Each entry is a human-readable string such as
+	// `workflow "my-workflow" sets safe_outputs.create_issues.expires=168h`.
+	triggerReasons []string
 }
 
 // buildMaintenanceWorkflowYAML generates the complete YAML content for the
@@ -49,22 +55,46 @@ func buildMaintenanceWorkflowYAML(
 	compileGitHubToken := opts.compileGitHubToken
 	createCompilePR := opts.createCompilePR
 	copilotOrgBilling := opts.copilotOrgBilling
-	maintenanceWorkflowYAMLLog.Printf("Building maintenance workflow YAML: actionMode=%s minExpiresDays=%d cronSchedule=%q defaultBranch=%q disableLabelTrigger=%v createCompilePR=%v copilotOrgBilling=%v", actionMode, minExpiresDays, cronSchedule, defaultBranch, disableLabelTrigger, createCompilePR, copilotOrgBilling)
+	triggerReasons := opts.triggerReasons
+	maintenanceWorkflowYAMLLog.Printf("Building maintenance workflow YAML: actionMode=%s minExpiresDays=%d cronSchedule=%q defaultBranch=%q disableLabelTrigger=%v createCompilePR=%v copilotOrgBilling=%v triggerReasons=%d", actionMode, minExpiresDays, cronSchedule, defaultBranch, disableLabelTrigger, createCompilePR, copilotOrgBilling, len(triggerReasons))
 
 	var yaml strings.Builder
 
-	// Add workflow header with logo and instructions
-	customInstructions := `Alternative regeneration methods:
-  make recompile
+	// Build the custom instructions section for the file header.
+	// The instructions explain: (1) why the file was generated (triggering workflows/features),
+	// (2) how to regenerate it, (3) a link to the maintenance docs, and (4) how to disable it.
+	var customInstructions strings.Builder
 
-Or use the gh-aw CLI directly:
-  ./gh-aw compile --validate --verbose
+	// --- Why was this file generated? ---
+	customInstructions.WriteString("This file was generated because the following workflows and features require\n")
+	customInstructions.WriteString("periodic maintenance (expiration, cleanup, no-op reporting):\n")
+	if len(triggerReasons) > 0 {
+		for _, reason := range triggerReasons {
+			fmt.Fprintf(&customInstructions, "  - %s\n", reason)
+		}
+	} else {
+		customInstructions.WriteString("  - (no specific trigger information available)\n")
+	}
 
-The workflow is generated when any workflow uses the 'expires' field
-in create-discussions, create-issues, or create-pull-request safe-outputs configuration.
-Schedule frequency is automatically determined by the shortest expiration time.`
+	// --- How to regenerate ---
+	customInstructions.WriteString("\n")
+	customInstructions.WriteString("Alternative regeneration methods:\n")
+	customInstructions.WriteString("  make recompile\n")
+	customInstructions.WriteString("\n")
+	customInstructions.WriteString("Or use the gh-aw CLI directly:\n")
+	customInstructions.WriteString("  ./gh-aw compile --validate --verbose\n")
 
-	header := GenerateWorkflowHeader("", "pkg/workflow/maintenance_workflow.go", customInstructions)
+	// --- Docs link ---
+	customInstructions.WriteString("\n")
+	fmt.Fprintf(&customInstructions, "For more information about agentic maintenance:\n  %s\n", constants.DocsMaintenanceURL)
+
+	// --- How to disable ---
+	customInstructions.WriteString("\n")
+	customInstructions.WriteString("To disable agentic maintenance, add the following to .github/workflows/aw.json:\n")
+	customInstructions.WriteString("  { \"maintenance\": false }\n")
+	customInstructions.WriteString("Note: disabling maintenance will prevent expiration and no-op issue cleanup from running.")
+
+	header := GenerateWorkflowHeader("", "pkg/workflow/maintenance_workflow.go", customInstructions.String())
 	yaml.WriteString(header)
 
 	yaml.WriteString(`name: Agentic Maintenance
