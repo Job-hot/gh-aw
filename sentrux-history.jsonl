@@ -1,0 +1,1 @@
+{"date":"2026-06-12","quality_signal":5234,"metrics":{"coupling_score":0.037,"cycle_count":2,"god_file_count":2,"hotspot_count":0,"complex_fn_count":941,"max_depth":8,"total_import_edges":5279,"cross_module_edges":2714},"files":5256,"bottleneck":"complex_fns","rules_violations":0}
