@@ -408,6 +408,21 @@ Named shorthand references to predefined domain sets used in `network.allowed` a
 
 The AI system that powers the agentic workflow - essentially "which AI to use" to execute workflow instructions. GitHub Agentic Workflows supports seven engines: **Copilot** (default), **Claude**, **Codex**, **Gemini**, **Crush** (experimental), **OpenCode** (experimental), and **Pi** (experimental). Set `engine:` in frontmatter to choose; omit it to use Copilot. See [AI Engines Reference](/gh-aw/reference/engines/).
 
+### Engine Auth (`engine.auth`)
+
+A frontmatter configuration block that specifies how an engine authenticates with its backing provider using federated identity instead of a static API key. Supports `type: github-oidc`, which acquires a short-lived GitHub Actions OIDC token at runtime for credential exchange — no long-lived secret stored in the repository. The Copilot engine uses it to authenticate with Azure Foundry OpenAI via Microsoft Entra (requires `permissions: id-token: write`). The Claude engine uses it for Anthropic Workload Identity Federation (WIF), with an optional `provider: anthropic` discriminator and WIF-specific fields such as `federation-rule-id`.
+
+```aw wrap
+engine:
+  id: copilot
+  auth:
+    type: github-oidc
+  env:
+    COPILOT_PROVIDER_BASE_URL: https://RESOURCE.openai.azure.com/openai/v1
+```
+
+See [AI Engines Reference](/gh-aw/reference/engines/#azure-foundry-openai).
+
 ### Engine Permission Mode (`engine.permission-mode`)
 
 A first-class Claude engine setting that controls how Claude Code enforces tool access boundaries. Accepts one of four values: `acceptEdits` (default — Claude honors `--allowed-tools`; the workflow's declared `tools:` and `mcp-servers: allowed:` list is the effective tool boundary), `bypassPermissions` (Claude ignores `--allowed-tools`; the MCP gateway's `allowed:` filter becomes the sole boundary), `auto` (Claude selects the least-privileged mode that fits the workflow's tool configuration; the default when `tools.edit: false`), and `plan` (Claude presents changes for approval before applying them).
