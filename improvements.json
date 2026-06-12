@@ -1,6 +1,20 @@
 {
-  "last_updated": "2026-06-10",
+  "last_updated": "2026-06-12",
   "pending_tasks": [
+    {
+      "file": ".github/workflows/pr-nitpick-reviewer.md",
+      "created": "2026-06-12",
+      "status": "pending",
+      "priority": "high",
+      "title": "Replace theatrical run messages with professional enterprise-appropriate equivalents"
+    },
+    {
+      "file": "docs/src/content/docs/guides/open-telemetry.mdx",
+      "created": "2026-06-12",
+      "status": "pending",
+      "priority": "medium",
+      "title": "Convert shared imports tip from buried paragraph to discoverable callout block"
+    },
     {
       "file": ".github/workflows/smoke-copilot-arm.md",
       "created": "2026-06-10",
@@ -79,6 +93,7 @@
     "2026-06-01": {"professional": 3, "needs_minor_work": 1, "needs_significant_work": 1},
     "2026-06-02": {"professional": 3, "needs_minor_work": 2, "needs_significant_work": 0},
     "2026-06-09": {"professional": 4, "needs_minor_work": 1, "needs_significant_work": 1},
-    "2026-06-10": {"professional": 4, "needs_minor_work": 3, "needs_significant_work": 0}
+    "2026-06-10": {"professional": 4, "needs_minor_work": 3, "needs_significant_work": 0},
+    "2026-06-12": {"professional": 3, "needs_minor_work": 1, "needs_significant_work": 1}
   }
 }
