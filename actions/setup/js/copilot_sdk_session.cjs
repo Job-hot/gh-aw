@@ -334,6 +334,10 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
     const stream = eventsStream;
     // Disconnect the session first so that the session.shutdown event fires
     // and capturedShutdownData is populated before we write to the stream.
+    // The Copilot SDK emits session.shutdown synchronously inside disconnect()
+    // (standard Node.js EventEmitter semantics), so capturedShutdownData is
+    // populated before the await resolves.  If the SDK ever changes to async
+    // emission the write is simply skipped — no data is lost.
     if (session) {
       try {
         await session.disconnect();
@@ -343,6 +347,7 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
     }
     // Write captured session.shutdown data (model metrics) to events.jsonl
     // so that log_parser_bootstrap.cjs can compute AIC from it.
+    // Only the last shutdown event is used; a session emits exactly one.
     if (stream && capturedShutdownData) {
       const shutdownEntry = JSON.stringify({ type: "session.shutdown", timestamp: new Date().toISOString(), data: capturedShutdownData }) + "\n";
       stream.write(shutdownEntry);

@@ -250,6 +250,7 @@ function normalizeCopilotSdkEventsToTrace(sdkEntries) {
 
       case "session.shutdown": {
         // Capture model metrics and current model for AIC computation.
+        // A session emits exactly one shutdown event; last-write-wins is fine.
         const modelMetrics = entry.data?.modelMetrics;
         const currentModel = entry.data?.currentModel;
         if (modelMetrics && typeof modelMetrics === "object" && Object.keys(modelMetrics).length > 0) {
