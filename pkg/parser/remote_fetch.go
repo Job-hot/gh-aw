@@ -108,12 +108,12 @@ func isUnderWorkflowsDirectory(filePath string) bool {
 	normalizedPath := filepath.ToSlash(filePath)
 
 	// Check if the path contains .github/workflows/
-	if !strings.Contains(normalizedPath, ".github/workflows/") {
+	if !strings.Contains(normalizedPath, constants.DotGithubWorkflowsDir+"/") {
 		return false
 	}
 
 	// Extract the part after .github/workflows/
-	parts := strings.Split(normalizedPath, ".github/workflows/")
+	parts := strings.Split(normalizedPath, constants.DotGithubWorkflowsDir+"/")
 	if len(parts) < 2 {
 		return false
 	}
@@ -133,7 +133,7 @@ func isCustomAgentFile(filePath string) bool {
 	normalizedPath := filepath.ToSlash(filePath)
 
 	// Check if the path contains .github/agents/ and ends with .md
-	return strings.Contains(normalizedPath, ".github/agents/") && strings.HasSuffix(strings.ToLower(normalizedPath), ".md")
+	return strings.Contains(normalizedPath, constants.DotGithubAgentsDir+"/") && strings.HasSuffix(strings.ToLower(normalizedPath), ".md")
 }
 
 // isRepositoryImport checks if an import spec is a repository-only import (no file path)
@@ -238,10 +238,10 @@ func computeIncludeResolveAndSecurityBases(filePath, baseDir string) (string, st
 	if strings.HasSuffix(githubFolder, ".github") {
 		repoRoot := filepath.Dir(githubFolder)
 		filePathSlash := filepath.ToSlash(filePath)
-		if strings.HasPrefix(filePathSlash, ".github/") {
+		if strings.HasPrefix(filePathSlash, constants.DotGithubDir) {
 			resolveBase = repoRoot
 		} else if stripped, ok := strings.CutPrefix(filePathSlash, "/"); ok {
-			if !strings.HasPrefix(stripped, ".github/") && !strings.HasPrefix(stripped, ".agents/") {
+			if !strings.HasPrefix(stripped, constants.DotGithubDir) && !strings.HasPrefix(stripped, ".agents/") {
 				return "", "", filePath
 			}
 			normalizedFilePath = filepath.FromSlash(stripped)
@@ -258,7 +258,7 @@ func computeIncludeResolveAndSecurityBases(filePath, baseDir string) (string, st
 
 func resolveAndValidateLocalIncludePath(filePath, resolveBase, securityBase string) (string, error) {
 	if stripped, ok := strings.CutPrefix(filepath.ToSlash(filePath), "/"); ok {
-		if !strings.HasPrefix(stripped, ".github/") && !strings.HasPrefix(stripped, ".agents/") {
+		if !strings.HasPrefix(stripped, constants.DotGithubDir) && !strings.HasPrefix(stripped, ".agents/") {
 			remoteLog.Printf("Security: Path not within .github or .agents: %s", filePath)
 			return "", fmt.Errorf("security: path %s must be within .github or .agents folder", filePath)
 		}

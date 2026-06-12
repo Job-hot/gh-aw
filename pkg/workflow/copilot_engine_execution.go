@@ -39,6 +39,10 @@ var copilotExecLog = logger.New("workflow:copilot_engine_execution")
 
 const customEngineCommandScriptPath = "/tmp/gh-aw/engine-command.sh"
 
+// copilotAWFBinaryPath is the path to the Copilot CLI binary inside the AWF container.
+// AWF installs the Copilot CLI binary at this path before executing the agent step.
+const copilotAWFBinaryPath = "/usr/local/bin/copilot"
+
 // copilotSettingsPath is the shell expression that resolves to the Copilot CLI settings
 // file at runtime. The Copilot CLI resolves its config directory as ~/.copilot, which is
 // /home/runner/.copilot on standard GitHub-hosted runners (HOME=/home/runner) but may
@@ -142,7 +146,7 @@ func (e *CopilotEngine) GetExecutionSteps(workflowData *WorkflowData, logFile st
 	isBYOKMode := engineEnvHasKey(workflowData, constants.CopilotProviderBaseURL)
 	if sandboxEnabled {
 		// Simplified args for sandbox mode (AWF)
-		copilotArgs = []string{"--add-dir", "/tmp/gh-aw/", "--log-level", "all", "--log-dir", logsFolder}
+		copilotArgs = []string{"--add-dir", constants.TmpGhAwDir + "/", "--log-level", "all", "--log-dir", logsFolder}
 
 		// Note: --add-dir "${GITHUB_WORKSPACE}" is appended raw after shellJoinArgs below
 		// to allow shell variable expansion (cannot go through shellEscapeArg).
@@ -151,7 +155,7 @@ func (e *CopilotEngine) GetExecutionSteps(workflowData *WorkflowData, logFile st
 		copilotExecLog.Print("Using firewall mode with simplified arguments")
 	} else {
 		// Original args for non-sandbox mode
-		copilotArgs = []string{"--add-dir", "/tmp/", "--add-dir", "/tmp/gh-aw/", "--add-dir", "/tmp/gh-aw/agent/", "--log-level", "all", "--log-dir", logsFolder}
+		copilotArgs = []string{"--add-dir", "/tmp/", "--add-dir", constants.TmpGhAwDir + "/", "--add-dir", constants.AgentDir + "/", "--log-level", "all", "--log-dir", logsFolder}
 		copilotExecLog.Print("Using standard mode with full arguments")
 	}
 
@@ -262,7 +266,7 @@ func (e *CopilotEngine) GetExecutionSteps(workflowData *WorkflowData, logFile st
 	} else if sandboxEnabled {
 		// AWF - use the installed binary directly
 		// The binary is mounted into the AWF container from /usr/local/bin/copilot
-		commandName = "/usr/local/bin/copilot"
+		commandName = copilotAWFBinaryPath
 	} else {
 		// Non-sandbox mode: use standard copilot command
 		commandName = "copilot"
@@ -574,7 +578,7 @@ touch %s
 	}
 
 	// Always add GH_AW_PROMPT for agentic workflows
-	env["GH_AW_PROMPT"] = "/tmp/gh-aw/aw-prompts/prompt.txt"
+	env["GH_AW_PROMPT"] = constants.AgentPromptFilePath
 
 	// Tag the step as a GitHub AW agentic execution for discoverability by agents
 	env["GITHUB_AW"] = "true"

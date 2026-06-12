@@ -30,6 +30,18 @@ const (
 	ShellUnknown    ShellType = "unknown"
 )
 
+// homebrewPrefixOptHomebrew is the default Homebrew prefix on Apple Silicon Macs.
+const homebrewPrefixOptHomebrew = "/opt/homebrew"
+
+// homebrewPrefixUsrLocal is the default Homebrew prefix on Intel Macs.
+const homebrewPrefixUsrLocal = "/usr/local"
+
+// etcBashCompletionDir is the system-wide bash completion directory on Linux.
+const etcBashCompletionDir = "/etc/bash_completion.d"
+
+// etcBashCompletionGhAw is the system-wide bash completion file path for gh-aw.
+const etcBashCompletionGhAw = etcBashCompletionDir + "/gh-aw"
+
 // DetectShell detects the current shell from environment variables
 func DetectShell() ShellType {
 	shellCompletionLog.Print("Detecting current shell")
@@ -145,7 +157,7 @@ func installBashCompletion(verbose bool, cmd *cobra.Command) error {
 		brewPrefix := os.Getenv("HOMEBREW_PREFIX")
 		if brewPrefix == "" {
 			// Try common locations
-			for _, prefix := range []string{"/opt/homebrew", "/usr/local"} {
+			for _, prefix := range []string{homebrewPrefixOptHomebrew, homebrewPrefixUsrLocal} {
 				if _, err := os.Stat(filepath.Join(prefix, "etc", "bash_completion.d")); err == nil {
 					brewPrefix = prefix
 					break
@@ -159,8 +171,8 @@ func installBashCompletion(verbose bool, cmd *cobra.Command) error {
 		}
 	} else {
 		// Linux
-		if _, err := os.Stat("/etc/bash_completion.d"); err == nil {
-			completionPath = "/etc/bash_completion.d/gh-aw"
+		if _, err := os.Stat(etcBashCompletionDir); err == nil {
+			completionPath = etcBashCompletionGhAw
 		} else {
 			completionPath = filepath.Join(homeDir, ".bash_completion.d", "gh-aw")
 		}
@@ -426,7 +438,7 @@ func uninstallBashCompletion(verbose bool) error {
 	if runtime.GOOS == "darwin" {
 		brewPrefix := os.Getenv("HOMEBREW_PREFIX")
 		if brewPrefix == "" {
-			for _, prefix := range []string{"/opt/homebrew", "/usr/local"} {
+			for _, prefix := range []string{homebrewPrefixOptHomebrew, homebrewPrefixUsrLocal} {
 				if _, err := os.Stat(filepath.Join(prefix, "etc", "bash_completion.d")); err == nil {
 					possiblePaths = append(possiblePaths, filepath.Join(prefix, "etc", "bash_completion.d", "gh-aw"))
 				}
@@ -438,7 +450,7 @@ func uninstallBashCompletion(verbose bool) error {
 
 	// System-wide installations (Linux)
 	if runtime.GOOS == "linux" {
-		possiblePaths = append(possiblePaths, "/etc/bash_completion.d/gh-aw")
+		possiblePaths = append(possiblePaths, etcBashCompletionGhAw)
 	}
 
 	removed := false

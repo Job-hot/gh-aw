@@ -298,7 +298,7 @@ func (e *PiEngine) GetExecutionSteps(workflowData *WorkflowData, logFile string)
 			// further escaping in practice.
 			modelsJSON := buildPiModelsJSON(profile.gatewayPort, profile.coreSecretNames[0], modelID)
 			piModelsJSONSetup = fmt.Sprintf(
-				`mkdir -p /tmp/gh-aw/pi-agent-dir && printf '%%s\n' %s > /tmp/gh-aw/pi-agent-dir/models.json && `,
+				`mkdir -p `+constants.PiAgentDir+` && printf '%%s\n' %s > `+constants.PiAgentDir+`/models.json && `,
 				shellEscapeArg(modelsJSON))
 			piArgs = append(piArgs, "--model", "aw-gateway/"+modelID)
 			piLog.Printf("Pi: using models.json gateway routing for model %q via aw-gateway (port %d)", modelID, profile.gatewayPort)
@@ -321,7 +321,7 @@ func (e *PiEngine) GetExecutionSteps(workflowData *WorkflowData, logFile string)
 	// stdout (JSONL) and stderr are both piped through tee so that PiStreamingLogFile
 	// captures all structured events while agent-stdio.log captures the same output.
 	piCommand := fmt.Sprintf(
-		`cat /tmp/gh-aw/aw-prompts/prompt.txt | %s %s --extension "${RUNNER_TEMP}/gh-aw/actions/pi_provider.cjs" --extension "${RUNNER_TEMP}/gh-aw/actions/pi_steering_extension.cjs" 2>&1 | tee %s`,
+		"cat "+constants.AgentPromptFilePath+" | %s %s --extension \""+constants.GhAwRootDirShell+"/actions/pi_provider.cjs\" --extension \""+constants.GhAwRootDirShell+"/actions/pi_steering_extension.cjs\" 2>&1 | tee %s",
 		commandName, shellJoinArgs(piArgs), PiStreamingLogFile)
 
 	// Prepend models.json generation when the gateway-routing approach is used.
@@ -379,7 +379,7 @@ touch %s
 	// vars; routing is instead handled through models.json (firewall case) or by Pi's
 	// native provider (no-firewall case).
 	env := map[string]string{
-		"GH_AW_PROMPT":        "/tmp/gh-aw/aw-prompts/prompt.txt",
+		"GH_AW_PROMPT":        constants.AgentPromptFilePath,
 		"GITHUB_AW":           "true",
 		"GITHUB_WORKSPACE":    "${{ github.workspace }}",
 		"GITHUB_STEP_SUMMARY": AgentStepSummaryPath,
@@ -404,7 +404,7 @@ touch %s
 
 	// When the models.json gateway approach is used, tell Pi where to find it.
 	if piModelsJSONSetup != "" {
-		env["PI_CODING_AGENT_DIR"] = "/tmp/gh-aw/pi-agent-dir"
+		env["PI_CODING_AGENT_DIR"] = constants.PiAgentDir
 		piLog.Printf("Pi: setting PI_CODING_AGENT_DIR for models.json gateway config")
 	}
 

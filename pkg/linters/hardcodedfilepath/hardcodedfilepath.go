@@ -54,9 +54,9 @@ func (r constRef) String() string {
 // ".github", or "${RUNNER_TEMP}" alone are not flagged.
 var pathPrefixes = []string{
 	"/tmp/",
-	"${RUNNER_TEMP}/",
-	"${{ runner.temp }}/",
-	".github/",
+	pathPrefixRunnerTempShell,
+	pathPrefixRunnerTempGHAExpr,
+	pathPrefixDotGithub,
 	"/opt/",
 	"/usr/",
 	"/var/",
@@ -64,6 +64,15 @@ var pathPrefixes = []string{
 	"/etc/",
 	"/run/",
 }
+
+// Path prefix constants used to define the pathPrefixes list.
+// These are declared as constants so that the var declaration above uses
+// constant references (not string literals), avoiding self-flagging.
+const (
+	pathPrefixRunnerTempShell   = "${RUNNER_TEMP}/"
+	pathPrefixRunnerTempGHAExpr = "${{ runner.temp }}/"
+	pathPrefixDotGithub         = ".github/"
+)
 
 // minPathRuneLen is the minimum character length of an unquoted path value
 // to flag. Paths shorter than this are considered too generic.

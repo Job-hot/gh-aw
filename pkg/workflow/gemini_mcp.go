@@ -13,5 +13,5 @@ func (e *GeminiEngine) RenderMCPConfig(yaml *strings.Builder, tools map[string]a
 	geminiMCPLog.Printf("Rendering MCP config for Gemini: tool_count=%d, mcp_tool_count=%d", len(tools), len(mcpTools))
 
 	// Gemini uses JSON format without Copilot-specific fields and multi-line args
-	return renderDefaultJSONMCPConfig(yaml, tools, mcpTools, workflowData, "${RUNNER_TEMP}/gh-aw/mcp-config/mcp-servers.json")
+	return renderDefaultJSONMCPConfig(yaml, tools, mcpTools, workflowData, MCPConfigServersFilePathShell)
 }

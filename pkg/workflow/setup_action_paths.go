@@ -24,5 +24,25 @@ const GhAwMCPScriptsDir = constants.GhAwRootDirShell + "/mcp-scripts"
 // GhAwBinaryPath is the path to the gh-aw binary on the runner
 const GhAwBinaryPath = constants.GhAwRootDirShell + "/gh-aw"
 
-// SafeJobsDownloadDir is the directory for safe job files on the runner
+// SafeJobsDownloadDir is the directory for safe job files on the runner (shell env var form).
 const SafeJobsDownloadDir = constants.GhAwRootDirShell + "/safe-jobs/"
+
+// SafeJobsDirGHAExpr is the same as SafeJobsDownloadDir but uses the GitHub Actions
+// expression form for use in YAML `with:` fields.
+const SafeJobsDirGHAExpr = constants.GhAwRootDir + "/safe-jobs/"
+
+// MCPConfigServersFilePathShell is the path to the MCP servers configuration file on the
+// runner (shell env var form), for use inside `run:` blocks.
+const MCPConfigServersFilePathShell = constants.GhAwRootDirShell + "/mcp-config/mcp-servers.json"
+
+// MCPConfigServersFilePathGHAExpr is the same as MCPConfigServersFilePathShell but uses the
+// GitHub Actions expression form for use in YAML `with:` and `env:` fields.
+const MCPConfigServersFilePathGHAExpr = constants.GhAwRootDir + "/mcp-config/mcp-servers.json"
+
+// MCPConfigTomlPathGHAExpr is the path to the Codex MCP configuration TOML file on the
+// runner, in GitHub Actions expression form.
+const MCPConfigTomlPathGHAExpr = constants.GhAwRootDir + "/mcp-config/config.toml"
+
+// SafeOutputsUploadArtifactsDirShell is the path to the safe-outputs upload-artifacts
+// staging directory on the runner (shell env var form).
+const SafeOutputsUploadArtifactsDirShell = SafeOutputsDirShell + "/upload-artifacts"

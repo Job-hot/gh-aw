@@ -489,7 +489,7 @@ func generateRepoMemoryArtifactUpload(builder *strings.Builder, data *WorkflowDa
 
 	for _, memory := range data.RepoMemoryConfig.Memories {
 		// Determine the memory directory
-		memoryDir := "/tmp/gh-aw/repo-memory/" + memory.ID
+		memoryDir := constants.RepoMemoryDir + "/" + memory.ID
 
 		// Sanitize memory ID for artifact naming (remove hyphens, lowercase)
 		sanitizedID := SanitizeWorkflowIDForCacheKey(memory.ID)
@@ -548,7 +548,7 @@ func generateRepoMemorySteps(builder *strings.Builder, data *WorkflowData) {
 		}
 
 		// Determine the memory directory
-		memoryDir := "/tmp/gh-aw/repo-memory/" + memory.ID
+		memoryDir := constants.RepoMemoryDir + "/" + memory.ID
 
 		// Step 1: Clone the repo-memory branch
 		if memory.Wiki {
@@ -661,7 +661,7 @@ func (c *Compiler) buildPushRepoMemoryJob(data *WorkflowData, threatDetectionEna
 		step.WriteString("        continue-on-error: true\n")
 		step.WriteString("        with:\n")
 		fmt.Fprintf(&step, "          name: %srepo-memory-%s\n", repoMemoryPrefix, sanitizedID)
-		fmt.Fprintf(&step, "          path: /tmp/gh-aw/repo-memory/%s\n", memory.ID)
+		fmt.Fprintf(&step, "          path: "+constants.RepoMemoryDir+"/%s\n", memory.ID)
 		steps = append(steps, step.String())
 	}
 
@@ -679,7 +679,7 @@ func (c *Compiler) buildPushRepoMemoryJob(data *WorkflowData, threatDetectionEna
 			targetRepo = targetRepo + ".wiki"
 		}
 
-		artifactDir := "/tmp/gh-aw/repo-memory/" + memory.ID
+		artifactDir := constants.RepoMemoryDir + "/" + memory.ID
 
 		// Build file glob filter string
 		fileGlobFilter := ""

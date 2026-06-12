@@ -369,7 +369,7 @@ func loadRemoteExperimentConfigs(repoOverride, experimentName string) map[string
 	}
 
 	for _, candidate := range candidates {
-		apiPath := ".github/workflows/" + candidate + ".md"
+		apiPath := constants.DotGithubWorkflowsDir + "/" + candidate + ".md"
 		args := []string{"api",
 			"repos/{owner}/{repo}/contents/" + url.PathEscape(apiPath),
 			"--jq", ".content",

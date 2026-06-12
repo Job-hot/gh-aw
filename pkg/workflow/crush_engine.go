@@ -147,7 +147,7 @@ func (e *CrushEngine) GetExecutionSteps(workflowData *WorkflowData, logFile stri
 
 	// Prompt from file (positional argument to `crush run`).
 	// Keep this outside shellJoinArgs so command substitution expands at runtime.
-	promptArg := "\"$(cat /tmp/gh-aw/aw-prompts/prompt.txt)\""
+	promptArg := "\"$(cat " + constants.AgentPromptFilePath + ")\""
 
 	// Build command name
 	commandName := "crush"
@@ -203,7 +203,7 @@ func (e *CrushEngine) GetExecutionSteps(workflowData *WorkflowData, logFile stri
 	}
 
 	env := map[string]string{
-		"GH_AW_PROMPT":     "/tmp/gh-aw/aw-prompts/prompt.txt",
+		"GH_AW_PROMPT":     constants.AgentPromptFilePath,
 		"GITHUB_WORKSPACE": "${{ github.workspace }}",
 		"RUNNER_TEMP":      "${{ runner.temp }}",
 		"NO_PROXY":         "localhost,127.0.0.1",

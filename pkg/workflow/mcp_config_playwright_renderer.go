@@ -61,6 +61,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/logger"
 )
 
@@ -137,7 +138,7 @@ func renderPlaywrightMCPConfigWithOptions(yaml *strings.Builder, playwrightConfi
 	// creates a network namespace for renderer processes that cannot reach localhost.
 	// This is required for screenshot workflows that serve docs on localhost.
 	// Note: as of @playwright/mcp v0.0.26+, --no-sandbox is a direct top-level flag.
-	entrypointArgs := []string{"--output-dir", "/tmp/gh-aw/mcp-logs/playwright", "--no-sandbox"}
+	entrypointArgs := []string{"--output-dir", constants.MCPLogsPlaywrightDir, "--no-sandbox"}
 	if len(customArgs) > 0 {
 		entrypointArgs = append(entrypointArgs, customArgs...)
 	}
@@ -147,10 +148,10 @@ func renderPlaywrightMCPConfigWithOptions(yaml *strings.Builder, playwrightConfi
 	// When guard policies follow, mounts is not the last field (add trailing comma)
 	mcpPlaywrightLog.Printf("Adding volume mounts: guard_policies=%d", len(guardPolicies))
 	if len(guardPolicies) > 0 {
-		yaml.WriteString("                \"mounts\": [\"/tmp/gh-aw/mcp-logs:/tmp/gh-aw/mcp-logs:rw\"],\n")
+		yaml.WriteString("                \"mounts\": [\"" + constants.MCPLogsDir + ":" + constants.MCPLogsDir + ":rw\"],\n")
 		renderGuardPoliciesJSON(yaml, guardPolicies, "                ")
 	} else {
-		yaml.WriteString("                \"mounts\": [\"/tmp/gh-aw/mcp-logs:/tmp/gh-aw/mcp-logs:rw\"]\n")
+		yaml.WriteString("                \"mounts\": [\"" + constants.MCPLogsDir + ":" + constants.MCPLogsDir + ":rw\"]\n")
 	}
 
 	// Note: tools field is NOT included here - the converter script adds it back

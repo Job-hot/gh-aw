@@ -359,7 +359,7 @@ func GetWorkflowDir() string {
 	if dir := os.Getenv("GH_AW_WORKFLOWS_DIR"); dir != "" {
 		return filepath.ToSlash(dir)
 	}
-	return ".github/workflows"
+	return DotGithubWorkflowsDir
 }
 
 // MaxSymlinkDepth limits recursive symlink resolution when fetching remote files.

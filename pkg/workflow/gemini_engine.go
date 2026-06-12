@@ -107,7 +107,7 @@ func (e *GeminiEngine) GetInstallationSteps(workflowData *WorkflowData) []GitHub
 // ancestor under /tmp/gh-aw/ and the actions/upload-artifact LCA calculation stays correct.
 func (e *GeminiEngine) GetDeclaredOutputFiles() []string {
 	return []string{
-		"/tmp/gh-aw/gemini-client-error-*.json",
+		constants.GeminiClientErrorGlob,
 	}
 }
 
@@ -193,7 +193,7 @@ func (e *GeminiEngine) GetExecutionSteps(workflowData *WorkflowData, logFile str
 	}
 
 	// Append the prompt arg raw (not through shellJoinArgs) to preserve shell expansion
-	geminiCommand := fmt.Sprintf(`%s %s --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"`, commandName, shellJoinArgs(geminiArgs))
+	geminiCommand := fmt.Sprintf(`%s %s --prompt "$(cat `+constants.AgentPromptFilePath+`)"`, commandName, shellJoinArgs(geminiArgs))
 
 	// Build the full command with AWF wrapping if enabled
 	var command string
@@ -249,7 +249,7 @@ touch %s
 	// Build environment variables
 	env := map[string]string{
 		"GEMINI_API_KEY": "${{ secrets.GEMINI_API_KEY }}",
-		"GH_AW_PROMPT":   "/tmp/gh-aw/aw-prompts/prompt.txt",
+		"GH_AW_PROMPT":   constants.AgentPromptFilePath,
 		// Tag the step as a GitHub AW agentic execution for discoverability by agents
 		"GITHUB_AW":        "true",
 		"GITHUB_WORKSPACE": "${{ github.workspace }}",
