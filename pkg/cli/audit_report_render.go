@@ -298,8 +298,8 @@ func renderConsole(data AuditData, logsPath string) {
 			if s.ErrorCount > 0 {
 				line += fmt.Sprintf(" errors=%d", s.ErrorCount)
 			}
-			if s.MaxDuration != "" {
-				line += " max=" + s.MaxDuration
+			if maxDuration := formatDurationMs(s.MaxDuration); maxDuration != "" {
+				line += " max=" + maxDuration
 			}
 			fmt.Fprintln(os.Stderr, line)
 		}

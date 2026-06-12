@@ -36,8 +36,8 @@ func TestBuildMCPToolUsageSummary(t *testing.T) {
 								TotalOutputSize: 25000,
 								MaxInputSize:    1500,
 								MaxOutputSize:   8000,
-								AvgDuration:     "150ms",
-								MaxDuration:     "200ms",
+								AvgDuration:     150.0,
+								MaxDuration:     200.0,
 								ErrorCount:      0,
 							},
 						},
@@ -48,7 +48,7 @@ func TestBuildMCPToolUsageSummary(t *testing.T) {
 								ToolCallCount:   5,
 								TotalInputSize:  5000,
 								TotalOutputSize: 25000,
-								AvgDuration:     "150ms",
+								AvgDuration:     150.0,
 								ErrorCount:      0,
 							},
 						},
@@ -86,7 +86,7 @@ func TestBuildMCPToolUsageSummary(t *testing.T) {
 								TotalOutputSize: 15000,
 								MaxInputSize:    1200,
 								MaxOutputSize:   6000,
-								AvgDuration:     "100ms",
+								AvgDuration:     100.0,
 							},
 						},
 						Servers: []MCPServerStats{
@@ -96,7 +96,7 @@ func TestBuildMCPToolUsageSummary(t *testing.T) {
 								ToolCallCount:   3,
 								TotalInputSize:  3000,
 								TotalOutputSize: 15000,
-								AvgDuration:     "100ms",
+								AvgDuration:     100.0,
 							},
 						},
 						ToolCalls: []MCPToolCall{
@@ -116,7 +116,7 @@ func TestBuildMCPToolUsageSummary(t *testing.T) {
 								TotalOutputSize: 10000,
 								MaxInputSize:    1500,
 								MaxOutputSize:   8000,
-								AvgDuration:     "150ms",
+								AvgDuration:     150.0,
 							},
 						},
 						Servers: []MCPServerStats{
@@ -126,7 +126,7 @@ func TestBuildMCPToolUsageSummary(t *testing.T) {
 								ToolCallCount:   2,
 								TotalInputSize:  2000,
 								TotalOutputSize: 10000,
-								AvgDuration:     "150ms",
+								AvgDuration:     150.0,
 							},
 						},
 						ToolCalls: []MCPToolCall{
@@ -243,8 +243,8 @@ func TestBuildMCPToolUsageSummaryAggregation(t *testing.T) {
 						TotalOutputSize: 15000,
 						MaxInputSize:    1200,
 						MaxOutputSize:   6000,
-						AvgDuration:     "100ms",
-						MaxDuration:     "150ms",
+						AvgDuration:     100.0,
+						MaxDuration:     150.0,
 						ErrorCount:      0,
 					},
 				},
@@ -255,7 +255,7 @@ func TestBuildMCPToolUsageSummaryAggregation(t *testing.T) {
 						ToolCallCount:   3,
 						TotalInputSize:  3000,
 						TotalOutputSize: 15000,
-						AvgDuration:     "100ms",
+						AvgDuration:     100.0,
 						ErrorCount:      0,
 					},
 				},
@@ -276,8 +276,8 @@ func TestBuildMCPToolUsageSummaryAggregation(t *testing.T) {
 						TotalOutputSize: 10000,
 						MaxInputSize:    1500, // Larger than first run
 						MaxOutputSize:   8000, // Larger than first run
-						AvgDuration:     "150ms",
-						MaxDuration:     "200ms",
+						AvgDuration:     150.0,
+						MaxDuration:     200.0,
 						ErrorCount:      1,
 					},
 				},
@@ -288,7 +288,7 @@ func TestBuildMCPToolUsageSummaryAggregation(t *testing.T) {
 						ToolCallCount:   2,
 						TotalInputSize:  2000,
 						TotalOutputSize: 10000,
-						AvgDuration:     "150ms",
+						AvgDuration:     150.0,
 						ErrorCount:      1,
 					},
 				},
@@ -324,7 +324,7 @@ func TestBuildMCPToolUsageSummaryAggregation(t *testing.T) {
 	assert.Equal(t, 25000, tool.TotalOutputSize, "Should sum output sizes: 15000+10000=25000")
 	assert.Equal(t, 1500, tool.MaxInputSize, "Should use max of max inputs: max(1200, 1500)=1500")
 	assert.Equal(t, 8000, tool.MaxOutputSize, "Should use max of max outputs: max(6000, 8000)=8000")
-	assert.Equal(t, "200ms", tool.MaxDuration, "Should use max of max durations: max(150ms, 200ms)=200ms")
+	assert.InDelta(t, 200.0, tool.MaxDuration, 0.001, "Should use max of max durations: max(150ms, 200ms)=200ms")
 	assert.Equal(t, 1, tool.ErrorCount, "Should sum error counts: 0+1=1")
 
 	// Check that tool calls are all present

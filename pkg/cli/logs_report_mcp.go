@@ -4,9 +4,6 @@ import (
 	"cmp"
 	"slices"
 	"strings"
-	"time"
-
-	"github.com/github/gh-aw/pkg/timeutil"
 )
 
 // buildMCPFailuresSummary aggregates MCP failures across all runs
@@ -98,21 +95,14 @@ func buildMCPToolUsageSummary(processedRuns []ProcessedRun) *MCPToolUsageSummary
 				existing.ErrorCount += summary.ErrorCount
 
 				// Recalculate average duration (weighted)
-				if summary.AvgDuration != "" && existing.CallCount > 0 {
-					existingDur := parseDurationString(existing.AvgDuration)
-					newDur := parseDurationString(summary.AvgDuration)
-					// Weight by call counts using previous count
-					weightedDur := (existingDur*time.Duration(prevCallCount) + newDur*time.Duration(summary.CallCount)) / time.Duration(existing.CallCount)
-					existing.AvgDuration = timeutil.FormatDuration(weightedDur)
+				if summary.AvgDuration > 0 && existing.CallCount > 0 {
+					weightedDur := ((existing.AvgDuration * float64(prevCallCount)) + (summary.AvgDuration * float64(summary.CallCount))) / float64(existing.CallCount)
+					existing.AvgDuration = weightedDur
 				}
 
 				// Update max duration
-				if summary.MaxDuration != "" {
-					maxDur := parseDurationString(summary.MaxDuration)
-					existingMaxDur := parseDurationString(existing.MaxDuration)
-					if maxDur > existingMaxDur {
-						existing.MaxDuration = summary.MaxDuration
-					}
+				if summary.MaxDuration > existing.MaxDuration {
+					existing.MaxDuration = summary.MaxDuration
 				}
 			} else {
 				// Create new summary entry (copy to avoid mutation)
@@ -135,12 +125,9 @@ func buildMCPToolUsageSummary(processedRuns []ProcessedRun) *MCPToolUsageSummary
 				existing.ErrorCount += serverStats.ErrorCount
 
 				// Recalculate average duration (weighted)
-				if serverStats.AvgDuration != "" && existing.RequestCount > 0 {
-					existingDur := parseDurationString(existing.AvgDuration)
-					newDur := parseDurationString(serverStats.AvgDuration)
-					// Weight by request counts using previous count
-					weightedDur := (existingDur*time.Duration(prevRequestCount) + newDur*time.Duration(serverStats.RequestCount)) / time.Duration(existing.RequestCount)
-					existing.AvgDuration = timeutil.FormatDuration(weightedDur)
+				if serverStats.AvgDuration > 0 && existing.RequestCount > 0 {
+					weightedDur := ((existing.AvgDuration * float64(prevRequestCount)) + (serverStats.AvgDuration * float64(serverStats.RequestCount))) / float64(existing.RequestCount)
+					existing.AvgDuration = weightedDur
 				}
 			} else {
 				// Create new server stats entry (copy to avoid mutation)

@@ -504,7 +504,7 @@ func buildMCPServerHealth(mcpToolUsage *MCPToolUsageData, mcpFailures []MCPFailu
 				ErrorCount:   server.ErrorCount,
 				ErrorRate:    errorRate,
 				ErrorRateStr: fmt.Sprintf("%.1f%%", errorRate),
-				AvgLatency:   server.AvgDuration,
+				AvgLatency:   formatDurationMs(server.AvgDuration),
 				Status:       status,
 			})
 		}

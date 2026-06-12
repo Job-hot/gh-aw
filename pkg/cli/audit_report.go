@@ -169,16 +169,16 @@ type MCPToolUsageData struct {
 
 // MCPToolSummary contains aggregated statistics for a single MCP tool
 type MCPToolSummary struct {
-	ServerName      string `json:"server_name" console:"header:Server"`
-	ToolName        string `json:"tool_name" console:"header:Tool"`
-	CallCount       int    `json:"call_count" console:"header:Calls"`
-	TotalInputSize  int    `json:"total_input_size" console:"header:Total Input,format:number"`
-	TotalOutputSize int    `json:"total_output_size" console:"header:Total Output,format:number"`
-	MaxInputSize    int    `json:"max_input_size" console:"header:Max Input,format:number"`
-	MaxOutputSize   int    `json:"max_output_size" console:"header:Max Output,format:number"`
-	AvgDuration     string `json:"avg_duration,omitempty" console:"header:Avg Duration,omitempty"`
-	MaxDuration     string `json:"max_duration,omitempty" console:"header:Max Duration,omitempty"`
-	ErrorCount      int    `json:"error_count,omitempty" console:"header:Errors,omitempty"`
+	ServerName      string  `json:"server_name" console:"header:Server"`
+	ToolName        string  `json:"tool_name" console:"header:Tool"`
+	CallCount       int     `json:"call_count" console:"header:Calls"`
+	TotalInputSize  int     `json:"total_input_size" console:"header:Total Input,format:number"`
+	TotalOutputSize int     `json:"total_output_size" console:"header:Total Output,format:number"`
+	MaxInputSize    int     `json:"max_input_size" console:"header:Max Input,format:number"`
+	MaxOutputSize   int     `json:"max_output_size" console:"header:Max Output,format:number"`
+	AvgDuration     float64 `json:"avg_duration,omitempty" console:"header:Avg Duration,omitempty"` // milliseconds
+	MaxDuration     float64 `json:"max_duration,omitempty" console:"header:Max Duration,omitempty"` // milliseconds
+	ErrorCount      int     `json:"error_count,omitempty" console:"header:Errors,omitempty"`
 }
 
 // MCPToolCall represents a single MCP tool call with full details
@@ -197,13 +197,13 @@ type MCPToolCall struct {
 
 // MCPServerStats contains server-level statistics
 type MCPServerStats struct {
-	ServerName      string `json:"server_name" console:"header:Server"`
-	RequestCount    int    `json:"request_count" console:"header:Requests"`
-	ToolCallCount   int    `json:"tool_call_count" console:"header:Tool Calls"`
-	TotalInputSize  int    `json:"total_input_size" console:"header:Total Input,format:number"`
-	TotalOutputSize int    `json:"total_output_size" console:"header:Total Output,format:number"`
-	AvgDuration     string `json:"avg_duration,omitempty" console:"header:Avg Duration,omitempty"`
-	ErrorCount      int    `json:"error_count,omitempty" console:"header:Errors,omitempty"`
+	ServerName      string  `json:"server_name" console:"header:Server"`
+	RequestCount    int     `json:"request_count" console:"header:Requests"`
+	ToolCallCount   int     `json:"tool_call_count" console:"header:Tool Calls"`
+	TotalInputSize  int     `json:"total_input_size" console:"header:Total Input,format:number"`
+	TotalOutputSize int     `json:"total_output_size" console:"header:Total Output,format:number"`
+	AvgDuration     float64 `json:"avg_duration,omitempty" console:"header:Avg Duration,omitempty"` // milliseconds
+	ErrorCount      int     `json:"error_count,omitempty" console:"header:Errors,omitempty"`
 }
 
 // GuardPolicySummary contains summary statistics for guard policy enforcement.
@@ -600,6 +600,13 @@ func describeFile(filename string) string {
 func parseDurationString(s string) time.Duration {
 	d, _ := time.ParseDuration(s)
 	return d
+}
+
+func formatDurationMs(ms float64) string {
+	if ms <= 0 {
+		return ""
+	}
+	return timeutil.FormatDuration(time.Duration(ms * float64(time.Millisecond)))
 }
 
 // extractPreAgentStepErrors scans workflow step log files for failure content when the

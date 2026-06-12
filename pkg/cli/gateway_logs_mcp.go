@@ -188,7 +188,7 @@ func buildMCPSummaryStats(gatewayMetrics *GatewayMetrics, mcpData *MCPToolUsageD
 
 		if serverMetrics.RequestCount > 0 {
 			avgDur := serverMetrics.TotalDuration / float64(serverMetrics.RequestCount)
-			serverStats.AvgDuration = timeutil.FormatDuration(time.Duration(avgDur * float64(time.Millisecond)))
+			serverStats.AvgDuration = avgDur
 		}
 
 		// Tool-level stats
@@ -205,10 +205,10 @@ func buildMCPSummaryStats(gatewayMetrics *GatewayMetrics, mcpData *MCPToolUsageD
 			}
 
 			if toolMetrics.AvgDuration > 0 {
-				summary.AvgDuration = timeutil.FormatDuration(time.Duration(toolMetrics.AvgDuration * float64(time.Millisecond)))
+				summary.AvgDuration = toolMetrics.AvgDuration
 			}
 			if toolMetrics.MaxDuration > 0 {
-				summary.MaxDuration = timeutil.FormatDuration(time.Duration(toolMetrics.MaxDuration * float64(time.Millisecond)))
+				summary.MaxDuration = toolMetrics.MaxDuration
 			}
 
 			// Calculate max input/output sizes from individual tool calls

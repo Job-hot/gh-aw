@@ -461,8 +461,8 @@ func TestBuildMCPServerHealth(t *testing.T) {
 			name: "with server stats only",
 			mcpUsage: &MCPToolUsageData{
 				Servers: []MCPServerStats{
-					{ServerName: "github", RequestCount: 50, ToolCallCount: 40, ErrorCount: 2, AvgDuration: "120ms"},
-					{ServerName: "filesystem", RequestCount: 20, ToolCallCount: 15, ErrorCount: 0, AvgDuration: "5ms"},
+					{ServerName: "github", RequestCount: 50, ToolCallCount: 40, ErrorCount: 2, AvgDuration: 120.0},
+					{ServerName: "filesystem", RequestCount: 20, ToolCallCount: 15, ErrorCount: 0, AvgDuration: 5.0},
 				},
 			},
 		},
@@ -476,7 +476,7 @@ func TestBuildMCPServerHealth(t *testing.T) {
 			name: "with stats and failures",
 			mcpUsage: &MCPToolUsageData{
 				Servers: []MCPServerStats{
-					{ServerName: "github", RequestCount: 50, ToolCallCount: 40, ErrorCount: 5, AvgDuration: "200ms"},
+					{ServerName: "github", RequestCount: 50, ToolCallCount: 40, ErrorCount: 5, AvgDuration: 200.0},
 				},
 			},
 			mcpFailures: []MCPFailureReport{
@@ -507,7 +507,7 @@ func TestBuildMCPServerHealth(t *testing.T) {
 func TestBuildMCPServerHealthErrorRate(t *testing.T) {
 	mcpUsage := &MCPToolUsageData{
 		Servers: []MCPServerStats{
-			{ServerName: "github", RequestCount: 100, ToolCallCount: 80, ErrorCount: 15, AvgDuration: "200ms"},
+			{ServerName: "github", RequestCount: 100, ToolCallCount: 80, ErrorCount: 15, AvgDuration: 200.0},
 		},
 	}
 
@@ -594,7 +594,7 @@ func TestBuildAuditDataWithExpandedSections(t *testing.T) {
 
 	mcpToolUsage := &MCPToolUsageData{
 		Servers: []MCPServerStats{
-			{ServerName: "github", RequestCount: 30, ToolCallCount: 25, ErrorCount: 1, AvgDuration: "150ms"},
+			{ServerName: "github", RequestCount: 30, ToolCallCount: 25, ErrorCount: 1, AvgDuration: 150.0},
 		},
 		Summary: []MCPToolSummary{
 			{ServerName: "github", ToolName: "search_code", CallCount: 10},

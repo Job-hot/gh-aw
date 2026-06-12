@@ -100,7 +100,7 @@ func mergeMCPToolUsageInfo(toolUsage []ToolUsageInfo, mcpToolUsage *MCPToolUsage
 		toolStats[info.Name] = &cloned
 	}
 
-	addOrUpdateToolUsage := func(name string, callCount, maxInputSize, maxOutputSize int, maxDuration string) {
+	addOrUpdateToolUsage := func(name string, callCount, maxInputSize, maxOutputSize int, maxDurationMs float64) {
 		normalizedName := strings.TrimSpace(name)
 		if normalizedName == "" {
 			return
@@ -114,8 +114,9 @@ func mergeMCPToolUsageInfo(toolUsage []ToolUsageInfo, mcpToolUsage *MCPToolUsage
 			if maxOutputSize > existing.MaxOutputSize {
 				existing.MaxOutputSize = maxOutputSize
 			}
-			if maxDuration != "" {
-				maxDurationValue := parseDurationString(maxDuration)
+			if maxDurationMs > 0 {
+				maxDurationValue := time.Duration(maxDurationMs * float64(time.Millisecond))
+				maxDuration := formatDurationMs(maxDurationMs)
 				if existing.MaxDuration == "" {
 					existing.MaxDuration = maxDuration
 				} else {
@@ -128,6 +129,7 @@ func mergeMCPToolUsageInfo(toolUsage []ToolUsageInfo, mcpToolUsage *MCPToolUsage
 			return
 		}
 
+		maxDuration := formatDurationMs(maxDurationMs)
 		toolStats[displayKey] = &ToolUsageInfo{
 			Name:          displayKey,
 			CallCount:     callCount,
@@ -148,11 +150,15 @@ func mergeMCPToolUsageInfo(toolUsage []ToolUsageInfo, mcpToolUsage *MCPToolUsage
 		}
 	} else {
 		for _, call := range mcpToolUsage.ToolCalls {
+			callDurationMs := 0.0
+			if call.Duration != "" {
+				callDurationMs = float64(parseDurationString(call.Duration)) / float64(time.Millisecond)
+			}
 			switch {
 			case call.ServerName != "" && call.ToolName != "":
-				addOrUpdateToolUsage(call.ServerName+"."+call.ToolName, 1, call.InputSize, call.OutputSize, call.Duration)
+				addOrUpdateToolUsage(call.ServerName+"."+call.ToolName, 1, call.InputSize, call.OutputSize, callDurationMs)
 			case call.ToolName != "":
-				addOrUpdateToolUsage(call.ToolName, 1, call.InputSize, call.OutputSize, call.Duration)
+				addOrUpdateToolUsage(call.ToolName, 1, call.InputSize, call.OutputSize, callDurationMs)
 			}
 		}
 	}
