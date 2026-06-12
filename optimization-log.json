@@ -118,5 +118,15 @@
     "recommendations_count": 4,
     "subagent_candidates": 0,
     "estimated_aic_savings_per_run": 93
+  },
+  {
+    "date": "2026-06-12",
+    "workflow_name": "CLI Consistency Checker",
+    "workflow_file": "cli-consistency-checker",
+    "total_aic_analyzed": 1265.04606,
+    "runs_audited": 1,
+    "recommendations_count": 4,
+    "subagent_candidates": 0,
+    "estimated_aic_savings_per_run": 145
   }
 ]
