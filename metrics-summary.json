@@ -1,8 +1,8 @@
 {
- "updated": "2026-06-11T22:00Z",
- "date": "2026-06-11",
+ "updated": "2026-06-12T21:50Z",
+ "date": "2026-06-12",
  "partial": true,
- "latest_window": "EVENING cluster ~3.5h 18:20-21:51Z (logs MCP timed out 120s; 67/167 dirs fully processed). OVERALL 55/65=84.6%; PROD-MAIN 27/29=93.1% (healthy, only 2 fails both RECURRING config). Main fails: codex Daily Cache Strategy 404 model-not-found gpt-5-codex-alpha (model-param-config RECUR same wf 06-05) + copilot-sdk Daily Safe Output Integrator guard.tool_denials 5/5 (copilot-sdk-driver RECUR, git diff/status/make/sed/read-test denied). PR/branch 28/36=77.8%: NEW gemini-model-ai-credits-pricing-missing (gemini-3.1-flash-tts-preview x2 Smoke Gemini); daily_effective_workflow_exceeded cap tripped ~20:05-20:51Z reddening 3x Matt Pocock + TQS (agent SKIPPED, no waste); Smoke Copilot AOAI o4-mini persistent transient-api-error 2.15M tok wasted; Smoke Copilot gpt-5.4 agent-ok-run-reddened. NEW ENGINES: antigravity 2/2 + pi 2/2 success (pi backed by copilot/gpt-5.4); gemini 0/2. Firewall benign (Smoke probes only).",
+ "latest_window": "2026-06-12 window ~6.5h 15:08-21:41Z (logs MCP timed out 120s on continuation; analyzed 120 locally-downloaded run dirs). 120 runs, ~127M tok, ~20k AIC. OVERALL ~108/120=90.0%; PROD-MAIN 93.2%. Dominant prod-main fail = copilot-sdk-driver tool-permission-lockout AGAIN (4 prod-main: Daily Agent of the Day [denied git checkout -b, 6.18M tok wasted], Breaking Change Checker [read .changeset/.md], Daily Formal Spec Verifier [awk .go], Daily Safe Output Integrator [git status+read .md]). NEW chroot-node-not-available on Daily Issues Report Generator (Copilot CLI requires Node.js, node absent in AWF chroot). PR fails all by-design smoke noise: Smoke Gemini x2 (gemini-pricing RECUR day2, gemini 0/2), Smoke Copilot-AOAI apikey x2 (transient-error loop RECUR), Smoke Copilot x3 (agent OK + valid FAIL-report but safe_outputs job reddened). Documentation Unbloat (claude) agent-failed empty-output but run tolerated. Firewall 241/2092 blocked = 100% smoke-probe by-design. Engines: copilot 74, claude 20, codex 18, pi 3, antigravity 3, gemini 2. PREV 06-11: EVENING cluster ~3.5h 18:20-21:51Z. OVERALL 55/65=84.6%; PROD-MAIN 27/29=93.1% (healthy, only 2 fails both RECURRING config). Main fails: codex Daily Cache Strategy 404 model-not-found gpt-5-codex-alpha (model-param-config RECUR same wf 06-05) + copilot-sdk Daily Safe Output Integrator guard.tool_denials 5/5 (copilot-sdk-driver RECUR, git diff/status/make/sed/read-test denied). PR/branch 28/36=77.8%: NEW gemini-model-ai-credits-pricing-missing (gemini-3.1-flash-tts-preview x2 Smoke Gemini); daily_effective_workflow_exceeded cap tripped ~20:05-20:51Z reddening 3x Matt Pocock + TQS (agent SKIPPED, no waste); Smoke Copilot AOAI o4-mini persistent transient-api-error 2.15M tok wasted; Smoke Copilot gpt-5.4 agent-ok-run-reddened. NEW ENGINES: antigravity 2/2 + pi 2/2 success (pi backed by copilot/gpt-5.4); gemini 0/2. Firewall benign (Smoke probes only).",
  "totals": {
   "r": 67,
   "completed": 65,
@@ -224,6 +224,16 @@
    "$": 14.1,
    "partial": true,
    "note": "evening cluster ~3.5h; prod-main 93.1%; both main fails recurring config; PR noise=smoke probes+daily-cap gate"
+  },
+  {
+   "d": "2026-06-12",
+   "r": 120,
+   "s": 108,
+   "rate": 90.0,
+   "tok": 126744181,
+   "aic": 19991.9,
+   "partial": true,
+   "note": "~6.5h window 15:08-21:41Z; 120 local run dirs. prod-main 93.2%. Dominant prod-main fail=copilot-sdk tool-perm-lockout x4 (RECUR day6). NEW chroot-node-not-available. PR fails=smoke noise (gemini-pricing x2, aoai-loop x2, smoke-copilot safe_outputs x3)."
   }
  ]
 }
