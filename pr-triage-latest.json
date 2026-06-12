@@ -1,6 +1,6 @@
 {
-  "run_date": "2026-06-12T07:57:32.278+00:00",
-  "run_id": "27402626014",
+  "run_date": "2026-06-12T13:29:34.441+00:00",
+  "run_id": "27418656385",
   "fork_prs": 0,
   "agent_prs_found": 6,
   "prs_found": [],
@@ -20,7 +20,7 @@
       "priority": 50,
       "ci": "no_ci",
       "reviewDecision": "",
-      "note": "NEW"
+      "note": "UNCHANGED"
     },
     {
       "number": 38780,
@@ -37,7 +37,7 @@
       "priority": 40,
       "ci": "no_ci",
       "reviewDecision": "",
-      "note": "NEW"
+      "note": "UNCHANGED"
     },
     {
       "number": 38779,
@@ -54,7 +54,7 @@
       "priority": 38,
       "ci": "no_ci",
       "reviewDecision": "",
-      "note": "NEW"
+      "note": "UNCHANGED"
     },
     {
       "number": 38778,
@@ -71,7 +71,7 @@
       "priority": 42,
       "ci": "no_ci",
       "reviewDecision": "",
-      "note": "NEW"
+      "note": "UNCHANGED"
     },
     {
       "number": 38776,
@@ -88,7 +88,7 @@
       "priority": 35,
       "ci": "no_ci",
       "reviewDecision": "",
-      "note": "NEW"
+      "note": "UNCHANGED"
     },
     {
       "number": 38774,
@@ -105,15 +105,15 @@
       "priority": 45,
       "ci": "no_ci",
       "reviewDecision": "",
-      "note": "NEW"
+      "note": "UNCHANGED"
     }
   ],
-  "new_since_last_run": [38781, 38780, 38779, 38778, 38776, 38774],
-  "closed_or_gone_since_last_run": [38755, 38738, 38706],
-  "closed_no_merge": [38755],
-  "merged": [38738, 38706],
+  "new_since_last_run": [],
+  "closed_or_gone_since_last_run": [],
+  "closed_no_merge": [],
+  "merged": [],
   "otel_prs": [],
-  "notes": "6 open copilot-swe-agent PRs, all branch-based (isCrossRepository:false). 6 new since last run. 2 merged (#38738, #38706), 1 closed without merge (#38755). Fork-only policy: 0 fork PRs found, 0 triaged.",
+  "notes": "6 open copilot-swe-agent PRs, all branch-based (isCrossRepository:false). 0 changed since last run (27402626014). Fork-only policy: 0 fork PRs found, 0 triaged.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
