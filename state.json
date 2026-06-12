@@ -2,7 +2,7 @@
   "counts": {
     "summary_detail": {
       "brief": 3,
-      "detailed": 1
+      "detailed": 2
     }
   },
   "runs": [
@@ -32,6 +32,13 @@
       "timestamp": "2026-06-11T06:26:52.123Z",
       "assignments": {
         "summary_detail": "brief"
+      }
+    },
+    {
+      "run_id": "27398553142",
+      "timestamp": "2026-06-12T06:21:46.224Z",
+      "assignments": {
+        "summary_detail": "detailed"
       }
     }
   ]
