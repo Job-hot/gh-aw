@@ -1,170 +1,65 @@
 {
-  "run_date": "2026-06-11T19:20:01.986353+00:00",
-  "run_id": "27371175049",
+  "run_date": "2026-06-12T01:27:00.446+00:00",
+  "run_id": "27388385148",
   "fork_prs": 0,
-  "agent_prs_found": 8,
+  "agent_prs_found": 3,
   "prs_found": [],
   "branch_prs_skipped": [
+    {
+      "number": 38755,
+      "title": "fix: populate AI credits footer for copilot-sdk workflows",
+      "state": "OPEN",
+      "isDraft": true,
+      "isCrossRepository": false,
+      "labels": [],
+      "additions": 356,
+      "deletions": 4,
+      "changedFiles": 8,
+      "category": "bug",
+      "risk": "high",
+      "priority": 58,
+      "ci": "no_ci",
+      "reviewDecision": "",
+      "note": "NEW"
+    },
+    {
+      "number": 38738,
+      "title": "Handle string-form `create_issue.labels` across safe-output validation and schema/tool definitions",
+      "state": "OPEN",
+      "isDraft": false,
+      "isCrossRepository": false,
+      "labels": [],
+      "additions": 31,
+      "deletions": 10,
+      "changedFiles": 6,
+      "category": "bug",
+      "risk": "low",
+      "priority": 45,
+      "ci": "no_ci",
+      "reviewDecision": "CHANGES_REQUESTED",
+      "note": "NEW"
+    },
     {
       "number": 38706,
       "title": "Add AOAI Entra smoke workflow for Copilot",
       "state": "OPEN",
-      "isDraft": false,
+      "isDraft": true,
       "isCrossRepository": false,
-      "labels": [],
-      "additions": 3230,
-      "deletions": 0,
-      "changedFiles": 2,
+      "labels": ["smoke","smoke-claude"],
+      "additions": 3249,
+      "deletions": 3,
+      "changedFiles": 4,
       "category": "feature",
       "risk": "high",
-      "priority": 67,
-      "ci": "failing",
-      "reviewDecision": "",
-      "note": "NEW"
-    },
-    {
-      "number": 38682,
-      "title": "fix(codemod): skip shell comment lines when scanning run blocks for expression hoisting",
-      "state": "OPEN",
-      "isDraft": false,
-      "isCrossRepository": false,
-      "labels": [],
-      "additions": 132,
-      "deletions": 0,
-      "changedFiles": 2,
-      "category": "bug",
-      "risk": "medium",
-      "priority": 60,
-      "ci": "passing",
-      "reviewDecision": "",
-      "note": "NEW"
-    },
-    {
-      "number": 38573,
-      "title": "Fail daily AIC guardrail as workflow error and rename ET guardrail wiring to `daily_ai_credits_*`",
-      "state": "OPEN",
-      "isDraft": true,
-      "isCrossRepository": false,
-      "labels": [],
-      "additions": 204,
-      "deletions": 74,
-      "changedFiles": 19,
-      "category": "bug",
-      "risk": "high",
-      "priority": 60,
-      "ci": "no_ci",
-      "reviewDecision": "CHANGES_REQUESTED",
-      "note": "PREVIOUSLY_SEEN"
-    },
-    {
-      "number": 38684,
-      "title": "Eliminate setup-time `@actions/artifact` install by inlining required artifact client features",
-      "state": "OPEN",
-      "isDraft": false,
-      "isCrossRepository": false,
-      "labels": [
-        "smoke",
-        "smoke-claude",
-        "smoked"
-      ],
-      "additions": 739,
-      "deletions": 1794,
-      "changedFiles": 10,
-      "category": "chore",
-      "risk": "high",
-      "priority": 55,
-      "ci": "no_ci",
-      "reviewDecision": "",
-      "note": "NEW"
-    },
-    {
-      "number": 38642,
-      "title": "Remove legacy `model_multipliers.json` artifacts and file-based multiplier merge path",
-      "state": "OPEN",
-      "isDraft": false,
-      "isCrossRepository": false,
-      "labels": [
-        "smoke",
-        "smoke-claude"
-      ],
-      "additions": 23,
-      "deletions": 1670,
-      "changedFiles": 270,
-      "category": "chore",
-      "risk": "high",
-      "priority": 52,
-      "ci": "no_ci",
-      "reviewDecision": "",
-      "note": "NEW"
-    },
-    {
-      "number": 38611,
-      "title": "rename daily_effective_workflow_* \u2192 daily_ai_credits_*",
-      "state": "OPEN",
-      "isDraft": false,
-      "isCrossRepository": false,
-      "labels": [
-        "smoke",
-        "smoke-claude"
-      ],
-      "additions": 2097,
-      "deletions": 2057,
-      "changedFiles": 268,
-      "category": "refactor",
-      "risk": "high",
-      "priority": 52,
+      "priority": 62,
       "ci": "no_ci",
       "reviewDecision": "",
       "note": "PREVIOUSLY_SEEN"
-    },
-    {
-      "number": 38707,
-      "title": "fix: make daily AIC guardrail exceedance test reliable in CI",
-      "state": "OPEN",
-      "isDraft": true,
-      "isCrossRepository": false,
-      "labels": [],
-      "additions": 8,
-      "deletions": 1,
-      "changedFiles": 1,
-      "category": "bug",
-      "risk": "low",
-      "priority": 40,
-      "ci": "no_ci",
-      "reviewDecision": "",
-      "note": "NEW"
-    },
-    {
-      "number": 38705,
-      "title": "fix: run daily AIC guardrail for label and slash command triggers",
-      "state": "OPEN",
-      "isDraft": true,
-      "isCrossRepository": false,
-      "labels": [],
-      "additions": 60,
-      "deletions": 3,
-      "changedFiles": 2,
-      "category": "bug",
-      "risk": "low",
-      "priority": 40,
-      "ci": "no_ci",
-      "reviewDecision": "",
-      "note": "NEW"
     }
   ],
-  "merged_since_last_run": [
-    38616,
-    38615,
-    38610
-  ],
-  "closed_since_last_run": [],
-  "closed_or_gone_since_last_run": [
-    38616,
-    38615,
-    38610
-  ],
+  "closed_or_gone_since_last_run": [38682, 38573, 38684, 38642, 38611, 38707, 38705],
   "otel_prs": [],
-  "notes": "8 open agent PRs (all copilot-swe-agent, all isCrossRepository:false). 6 new since last run. #38616, #38615, #38610 merged. Fork-only policy: 0 fork PRs found, 0 triaged.",
+  "notes": "3 open agent PRs (all copilot-swe-agent, all isCrossRepository:false). 2 new since last run (#38755, #38738). 7 PRs closed/merged since last run. Fork-only policy: 0 fork PRs found, 0 triaged.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
@@ -173,23 +68,18 @@
   "close_candidates": [],
   "statistics": {
     "by_category": {
-      "feature": 1,
-      "bug": 4,
-      "chore": 2,
-      "refactor": 1
+      "bug": 2,
+      "feature": 1
     },
     "by_risk": {
-      "high": 5,
-      "medium": 1,
-      "low": 2
+      "high": 2,
+      "low": 1
     },
     "by_priority": {
       "high_70_100": 0,
-      "medium_40_69": 8,
+      "medium_40_69": 3,
       "low_0_39": 0
     },
-    "by_action": {
-      "batch_review": 8
-    }
+    "by_action": {}
   }
 }
