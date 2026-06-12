@@ -845,7 +845,7 @@ func TestMainWorkflowSchema_WorkflowCallAndDispatchInputDefsDisallowUnknownKeys(
 		},
 		{
 			name: "safe-outputs.dispatch_repository.<tool>.inputs.<id>",
-			path: []any{"properties", "safe-outputs", "properties", "dispatch_repository", "additionalProperties", "properties", "inputs", "additionalProperties"},
+			path: []any{"$defs", "dispatch_repository_config", "additionalProperties", "properties", "inputs", "additionalProperties"},
 		},
 	}
 
