@@ -223,7 +223,7 @@ function writeStepSummaryWithTokenUsage(coreObj) {
         const copilotSdkAIC = process.env.GH_AW_AIC;
         if (copilotSdkAIC) {
           coreObj.setOutput("aic", copilotSdkAIC);
-          coreObj.info(`AI Credits (copilot-sdk, from prior step): ${copilotSdkAIC}`);
+          process.stderr.write(JSON.stringify({ level: "info", message: `AI Credits (copilot-sdk, from prior step): ${copilotSdkAIC}` }) + "\n");
         }
       }
       if (parsedSummary && typeof parsedSummary.ambientContextTokens === "number" && parsedSummary.ambientContextTokens > 0) {

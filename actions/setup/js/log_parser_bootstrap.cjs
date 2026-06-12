@@ -186,7 +186,7 @@ async function runLogParser(options) {
         if (totalAIC > 0) {
           const roundedAIC = totalAIC.toFixed(3);
           core.exportVariable("GH_AW_AIC", roundedAIC);
-          core.info(`AI Credits (copilot-sdk): ${roundedAIC}`);
+          process.stderr.write(JSON.stringify({ level: "info", message: `AI Credits (copilot-sdk): ${roundedAIC}` }) + "\n");
         }
       }
     }
