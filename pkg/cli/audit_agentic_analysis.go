@@ -116,13 +116,12 @@ func mergeMCPToolUsageInfo(toolUsage []ToolUsageInfo, mcpToolUsage *MCPToolUsage
 			}
 			if maxDurationMs > 0 {
 				maxDurationValue := time.Duration(maxDurationMs * float64(time.Millisecond))
-				maxDuration := formatDurationMs(maxDurationMs)
 				if existing.MaxDuration == "" {
-					existing.MaxDuration = maxDuration
+					existing.MaxDuration = formatDurationMs(maxDurationMs)
 				} else {
 					existingMaxDurationValue := parseDurationString(existing.MaxDuration)
 					if maxDurationValue > existingMaxDurationValue {
-						existing.MaxDuration = maxDuration
+						existing.MaxDuration = formatDurationMs(maxDurationMs)
 					}
 				}
 			}
