@@ -1,35 +1,35 @@
 {
-  "total_runs": 33,
-  "total_findings": 251,
-  "total_tasks": 65,
-  "avg_success_score": 8.74,
-  "last_run": "2026-06-11",
-  "serena_lsp": "23 tools stable R4-33. activate_project --project ~1.3-7s warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'. Grep/search_for_pattern great for cross-linter pattern audits (R33 found 6 syntactic-match linters via one Grep).",
+  "total_runs": 34,
+  "total_findings": 257,
+  "total_tasks": 68,
+  "avg_success_score": 8.75,
+  "last_run": "2026-06-12",
+  "serena_lsp": "23 tools stable R4-34. activate_project --project warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'. Grep + gh-api time-window/title-regex jq = workhorse for tool-change detect, doc-sync, issue reconcile.",
   "open_issues": {
-    "sg32a1_R32_STILL_OPEN": "#38281 execcommandwithoutcontext NIL-GUARD FP (else-branch of `if ctx!=nil{CommandContext}else{Command}`; autofix injects nil ctx -> panic). Site github_cli.go:32 setupGHCommand. NOT landed after 1 day (broke precision_fix_lands). DO NOT REFILE; reverify next run.",
-    "sg32a2_R32_STILL_OPEN": "#38282 execcommandwithoutcontext enforce-readiness: 2 genuine violations mcp_inspect_mcp.go:150,155 connectStdioMCPServer + add internal/nolint + enforce. Blocked on sg32a1. NOT landed after 1 day. DO NOT REFILE; reverify.",
-    "sg33a1_R33": "ctxbackground precision: isContextBackgroundCall (ctxbackground.go:86) matches `ident.Name=='context'` SYNTACTICALLY (no pass.TypesInfo). KILLER ARG: same file detects the ctx PARAM by TYPE IDENTITY (types.Identical at :103, contextType scans imports path 'context' at :118-128) -> call detection is internally inconsistent. Fix = sg31a2 sortslice template (ObjectOf->*types.PkgName->Imported().Path()=='context') / existing astutil.IsFmtErrorf. Single-file+testdata. Created this run, label sergo.",
-    "sg33a2_R33": "Shared helper: propose astutil.IsPkgCall(pass,call,pkgPath,fns...) mirroring IsFmtErrorf; migrate 6 syntactic-match sites: errstringmatch:85(strings.Contains) rawloginlib:62(log.*) fprintlnsprintf:144(fmt.*) regexpcompileinfunction:81(regexp.Must/Compile) osexitinlibrary:59(os.Exit) + ctxbackground:86. 5 are ENFORCED w/ zero current violations (no active FP, latent only: aliased import e.g. `import xlog \"log\"` evades). Created this run, label sergo."
+    "sg32a1_R32_OPEN_2d": "#38281 execcommand NIL-GUARD FP (else-branch `if ctx!=nil{CommandContext}else{Command}`; autofix nil ctx->panic). github_cli.go:32. Complex control-flow=slow. DO NOT REFILE; reverify.",
+    "sg32a2_R32_OPEN_2d": "#38282 execcommand enforce-readiness: mcp_inspect_mcp.go:150,155 + nolint + enforce. Blocked on sg32a1. DO NOT REFILE; reverify.",
+    "sg34a1_R34": "doc-sync: registry 26 (main.go:49-74) vs doc.go:3 'All 24'+24 bullets (missing hardcodedfilepath+timesleepnocontext) vs README+spec_test documentedAnalyzers()=25 (missing timesleepnocontext). Fix all 3 surfaces. new_linter_doc_lag.",
+    "sg34a2_R34": "hardcodedfilepath precision: hasFormatVerb (file :88-93) substring-only, misses %05d/%-10s/%8.2f (flag/width) + verbs %x%t%c%b%o%e%g%p%U -> template paths FP. Contradicts ADR 38742 'skips templates'. Fix=pkg-level regexp. Latent. Single-file.",
+    "sg34a3_R34": "ctxbackground precision (REFILE of phantom R33 sg33a1): isContextBackgroundCall (file :86) `ident.Name=='context'` syntactic; same-file param uses types.Identical+contextType import-scan (:118-128). FP local-named + FN aliased-import. Fix=ObjectOf->*types.PkgName->Imported().Path() (#38029 template). Single-file+testdata."
   },
-  "closed_recent": "R32: sg31a1 #38028 & sg31a2 #38029 LANDED+CLOSED. R31: sg30a1 #37740 & sg30a2 #37741 LANDED+CLOSED. seenmapbool #36406 dismissed/wontfix DO-NOT-REFILE.",
-  "completed_scans": "12 enforced (see enforced_12). PRECISION landed: sg27a1 self-compare, sg29a1 var-alias, sg29a2 nolint-comma, sg30a2 lenstringzero-intermediate, sg31a2 sortslice-type-identity. DOC-SYNC landed: sg30a1 lenstringzero, sg31a1 sortslice. DEFER: largefunc/excessivefuncparams refactor-heavy; ctxbackground ~30 sites. DO-NOT-REFILE: ossetenvlibrary, contextcancelnotdeferred, fileclosenotdeferred, seenmapbool(#36406), sortslice-migration(lint-monster #38012/#38014).",
+  "closed_recent": "R32 sg31a1 #38028 & sg31a2 #38029 LANDED. R31 sg30a1 #37740 & sg30a2 #37741 LANDED. seenmapbool #36406 dismissed.",
+  "do_not_refile": "ossetenvlibrary, contextcancelnotdeferred, fileclosenotdeferred, seenmapbool(#36406), sortslice-migration(#38012/#38014 lint-monster), execcommand sg32a1/a2(open).",
   "patterns": {
-    "syntactic_stdlib_match": "NEW R33 (generalizes sg31a2 sortslice). Many linters detect stdlib calls by `ident.Name=='<pkg>'` with NO pass.TypesInfo package-identity check -> latent FP (shadow/field named after pkg) AND FN (aliased import evades). Grep `\\.Name == \"(context|sort|strings|fmt|os|exec|...)\"` across pkg/linters finds them in ONE call. R33 hits: errstringmatch:85 rawloginlib:62 fprintlnsprintf:144 regexpcompileinfunction:81 osexitinlibrary:59 ctxbackground:86. Correct pattern (landed sg31a2 / astutil.IsFmtErrorf): ObjectOf->*types.PkgName->Imported().Path(). STRONGEST sub-signal: a linter that uses type-identity for ONE thing but syntactic for another (ctxbackground param vs call) = internal inconsistency = high land probability.",
-    "precision_fix_lands": "REVISED R33: single-file SIMPLE precision fixes land ~1day (sg24a1 R25, sg27a1 R28, sg28a1 R29, sg29a1+a2 R30, sg30a1+a2 R31, sg31a1+a2 R32). BUT sg32a1 #38281 (nilguard control-flow FP) + sg32a2 #38282 (enforce-readiness, blocked) STILL OPEN after 1 day -> COMPLEX control-flow/multi-step fixes are SLOWER. Prefer single-file syntactic->type-identity swaps (proven fast) over control-flow-aware fixes.",
-    "new_linter_doc_lag": "WATCH but NO LONGER AUTOMATIC (broke R32: 24th landed fully documented). Still diff main.go count vs doc.go 'All N' vs spec_test documentedAnalyzers() len each run; expect gap=0. R33: still 24, gap 0.",
-    "new_linter_precision_audit": "Each new linter: type-identity vs syntactic name; THEN control-flow precision (nilguards/else/dual-path -> sg32a1). R33 no new linter.",
-    "nilguard_fp": "ctx-propagation linters (execcommandwithoutcontext confirmed; ctxbackground at-risk) FP on intentional `if ctx!=nil{CtxVariant}else{Plain}` / `cmp.Or(ctx, context.Background())` dual-path. Codebase uses this idiom heavily (github_cli.go RunGH/RunGHContext, actionpins.go:355 cmp.Or fallback). Autofix into nil-path panics.",
-    "ci_enforce": "cgo.yml:1122 POSITIVE LINTER_FLAGS, R33=12 flags (unchanged). Append flag for zero-vio linter; convert-to-zero or //nolint first for non-zero.",
-    "cross_bot_dedup": "Other bots file overlapping issues (lint-monster #38012/#38014 sort.Slice migration). gh api search/issues -f q= returns {null} sometimes; use `gh api repos/.../issues?labels=sergo&state=all --jq`. Sergo scoped doc-sync+precision+near-zero-enforce (orthogonal to migration).",
-    "team_closes_fast": "REVISED: SIMPLE sergo issues -> PRs+CLOSED within ~1-2 days; open_issues usually empty. BUT complex/blocked ones linger (sg32a1/a2 open 1+ day). gh api issues?labels=sergo&state=all confirms landings."
+    "phantom_issue_reconcile": "NEW R34: recorded 'created N issues' does NOT guarantee existence — R33 sg33a1/a2 recorded but NEVER posted (safe-output silently failed). ALWAYS reconcile last-run issues at start via BOTH `gh api ...?labels=sergo&state=all` AND title-regex `...?state=all&sort=created&direction=desc --jq select(test(...))`. Phantom finding = fair to refile (sg34a3=refile of sg33a1).",
+    "new_linter_doc_lag": "RECURRED R34 (dormant R32-33). Bot PRs add linters (linter-miner #38704, #38742) updating SOME doc surfaces not all. Check ALL 3: main.go count vs doc.go 'All N'+bullets vs spec_test documentedAnalyzers() len vs README table. R34=26/24/25. PROVEN fast-land (sg30a1/sg31a1).",
+    "new_linter_precision_audit": "Per new linter: (1) call detect type-identity vs syntactic name; (2) ctx/control-flow precision; (3) heuristic completeness vs ADR intent. R34: timesleepnocontext CLEAN (full type-identity, no autofix). hardcodedfilepath hasFormatVerb incomplete vs its own ADR -> sg34a2. STRONGEST land-arg = impl contradicts linter's OWN ADR/doc.",
+    "syntactic_stdlib_match": "Linters detecting stdlib by `ident.Name=='<pkg>'` w/o pass.TypesInfo -> latent FP(shadow)+FN(alias). ctxbackground:86 still syntactic R34. Correct: ObjectOf->*types.PkgName->Imported().Path() (#38029, astutil.IsFmtErrorf). STRONGEST: type-identity for one thing but syntactic for another in SAME file.",
+    "precision_fix_lands": "single-file SIMPLE syntactic->type-identity / heuristic-completeness fixes land ~1day. COMPLEX control-flow SLOW: sg32a1/a2 open 2d+. Prefer single-file swaps.",
+    "ci_enforce": "cgo.yml:1122 POSITIVE LINTER_FLAGS, R34=12 (unchanged). Neither new linter enforced. Append flag for zero-vio; convert/nolint first for non-zero.",
+    "cross_bot_dedup": "lint-monster overlaps: sort.Slice migration #38012/#38014; 'Extract hard-coded paths (120 instances)' #38772/#38774 (USES hardcodedfilepath, orthogonal to sergo's linter-precision focus). gh api search -f q= -> {null} sometimes; use labels= or sort+jq.",
+    "team_closes_fast": "SIMPLE sergo -> PRs CLOSED ~1-2d. COMPLEX/blocked linger (sg32a1/a2 2d). gh api labels=sergo&state=all confirms."
   },
-  "linters_R33": {
-    "total_registered": 24,
-    "documented_in_spec": 24,
-    "doc_gap": "NONE.",
+  "linters_R34": {
+    "total_registered": 26,
+    "doc_gap": "doc.go missing both new; README+spec_test missing timesleepnocontext (sg34a1).",
     "enforced_12": "errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion fmterrorfnoverbs tolowerequalfold",
-    "unenforced_12": "contextcancelnotdeferred ctxbackground(~30 sites, precision sg33a1 pending) errormessage(opt-in) excessivefuncparams execcommandwithoutcontext(sg32a1/a2 open) fileclosenotdeferred largefunc ossetenvlibrary ssljson seenmapbool(dismissed) lenstringzero sortslice(migration-owned)",
-    "next_candidates": "R34: (1) reverify sg33a1 ctxbackground precision + sg33a2 shared helper landed; (2) reverify sg32a1 #38281 + sg32a2 #38282 (long-open execcommand) — if still open after several days, consider report on land-rate or noop; (3) watch for 25th linter (doc_lag expect 0 + precision_audit); (4) if sg33a2 lands as IsPkgCall, no follow-up; if rejected, drop syntactic_stdlib_match for enforced linters (team accepts syntactic for zero-vio). Avoid complex control-flow fixes (slow to land per revised precision_fix_lands)."
+    "new_R34": "hardcodedfilepath(25th #38742 path-literal->const). timesleepnocontext(26th #38704 time.Sleep in ctx-fn, CLEAN).",
+    "next_candidates": "R35: (1) reconcile sg34a1/a2/a3 landed (phantom_issue_reconcile: title-regex+labels); (2) reverify #38281/#38282 (open 2d+; if ~5+d consider report/noop); (3) watch 27th linter; (4) deeper hardcodedfilepath: unquoteStringLit ignores escapes (:97) const-match mismatch (edge); isLogOrPrintCall rejects var-receiver loggers `logger.Infof` (pkg-only) vs its doc example (minor, annotation-only). Avoid complex control-flow."
   },
-  "repo_context": "pkg/: ~904 prod .go, ~1265 test .go. 24 analyzer subpkgs + internal/astutil (IsFmtErrorf package-aware helper, IsLocalObject, RhsExprForIndex, NodeText, Inspector). ~36 context.Background() prod sites/~10 files. bash_policy + tool gotchas live in sergo-tools-list.json."
+  "repo_context": "pkg/: ~910 prod .go, ~1265 test .go. 26 analyzer subpkgs + internal/astutil(IsFmtErrorf,Inspector) + internal/filecheck(IsTestFile) + internal/nolint(BuildLineIndex,HasDirective)."
 }
