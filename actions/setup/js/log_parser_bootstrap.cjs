@@ -4,6 +4,7 @@
 const { generatePlainTextSummary, generateCopilotCliStyleSummary, wrapAgentLogInSection, formatSafeOutputsPreview } = require("./log_parser_shared.cjs");
 const { getErrorMessage } = require("./error_helpers.cjs");
 const { ERR_API, ERR_CONFIG, ERR_VALIDATION } = require("./error_codes.cjs");
+const { computeInferenceAIC } = require("./model_costs.cjs");
 
 /**
  * Bootstrap helper for log parser entry points.
@@ -157,6 +158,36 @@ async function runLogParser(options) {
         safeOutputEntriesCount = countSafeOutputEntries(safeOutputsContent);
       } catch (error) {
         core.warning(`Failed to read safe outputs file: ${getErrorMessage(error)}`);
+      }
+    }
+
+    // For copilot-sdk runs, inference bypasses the AWF API proxy so token-usage.jsonl
+    // contains no pricing-eligible entries. Compute AIC here from the modelMetrics
+    // captured in the session.shutdown SDK event and export it so that the subsequent
+    // parse-mcp-gateway step can propagate it as the job-level `aic` output.
+    if (logEntries && Array.isArray(logEntries)) {
+      const resultEntry = logEntries.find(entry => entry.type === "result");
+      const modelMetrics = resultEntry?.modelMetrics;
+      if (modelMetrics && typeof modelMetrics === "object") {
+        let totalAIC = 0;
+        for (const [modelName, metrics] of Object.entries(modelMetrics)) {
+          const usage = metrics?.usage;
+          if (!usage) continue;
+          totalAIC += computeInferenceAIC({
+            provider: "github-copilot",
+            model: modelName,
+            inputTokens: usage.inputTokens || 0,
+            outputTokens: usage.outputTokens || 0,
+            cacheReadTokens: usage.cacheReadTokens || 0,
+            cacheWriteTokens: usage.cacheWriteTokens || 0,
+            reasoningTokens: usage.reasoningTokens || 0,
+          });
+        }
+        if (totalAIC > 0) {
+          const roundedAIC = totalAIC.toFixed(3);
+          core.exportVariable("GH_AW_AIC", roundedAIC);
+          core.info(`AI Credits (copilot-sdk): ${roundedAIC}`);
+        }
       }
     }
 

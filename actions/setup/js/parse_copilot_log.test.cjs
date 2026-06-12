@@ -122,6 +122,55 @@ describe("parse_copilot_log.cjs", () => {
       expect(resultEntry?.num_turns).toBe(1);
     });
 
+    it("extracts modelMetrics and currentModel from session.shutdown into the result entry", () => {
+      const modelMetrics = {
+        "claude-sonnet-4.6": {
+          usage: { inputTokens: 5000, outputTokens: 300, cacheReadTokens: 10000, cacheWriteTokens: 0 },
+        },
+      };
+      const sdkEventsLog = [
+        '{"type":"user.message","timestamp":"2026-06-05T00:44:01.367Z","data":{}}',
+        '{"type":"assistant.message","timestamp":"2026-06-05T00:44:59.769Z","data":{"content":"Done"}}',
+        JSON.stringify({
+          type: "session.shutdown",
+          timestamp: "2026-06-05T00:45:01.000Z",
+          data: { modelMetrics, currentModel: "claude-sonnet-4.6" },
+        }),
+      ].join("\n");
+
+      const result = parseCopilotLog(sdkEventsLog);
+
+      const initEntry = result.logEntries.find(e => e.type === "system" && e.subtype === "init");
+      expect(initEntry?.model).toBe("claude-sonnet-4.6");
+
+      const resultEntry = result.logEntries.find(e => e.type === "result");
+      expect(resultEntry?.modelMetrics).toEqual(modelMetrics);
+    });
+
+    it("keeps model as copilot-sdk when session.shutdown has no currentModel", () => {
+      const sdkEventsLog = [
+        '{"type":"user.message","timestamp":"2026-06-05T00:44:01.367Z","data":{}}',
+        '{"type":"assistant.message","timestamp":"2026-06-05T00:44:59.769Z","data":{"content":"Done"}}',
+        JSON.stringify({
+          type: "session.shutdown",
+          timestamp: "2026-06-05T00:45:01.000Z",
+          data: {
+            modelMetrics: {
+              "claude-sonnet-4.6": { usage: { inputTokens: 100, outputTokens: 50, cacheReadTokens: 0, cacheWriteTokens: 0 } },
+            },
+          },
+        }),
+      ].join("\n");
+
+      const result = parseCopilotLog(sdkEventsLog);
+
+      const initEntry = result.logEntries.find(e => e.type === "system" && e.subtype === "init");
+      expect(initEntry?.model).toBe("copilot-sdk");
+
+      const resultEntry = result.logEntries.find(e => e.type === "result");
+      expect(resultEntry?.modelMetrics).toBeDefined();
+    });
+
     it("should handle tool calls with details in HTML format", () => {
       const logWithHtmlDetails = JSON.stringify([
         { type: "system", subtype: "init", session_id: "html-test", tools: ["Bash"], model: "gpt-5" },

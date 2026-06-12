@@ -214,6 +214,17 @@ function writeStepSummaryWithTokenUsage(coreObj) {
         coreObj.exportVariable("GH_AW_AIC", roundedAIC);
         coreObj.setOutput("aic", roundedAIC);
         coreObj.info(`AI Credits: ${roundedAIC}`);
+      } else {
+        // For copilot-sdk runs, inference bypasses the AWF proxy so token-usage.jsonl
+        // contains no pricing-eligible entries (model name is absent/unknown). The
+        // preceding log_parser_bootstrap step computes AIC from the session.shutdown
+        // SDK event and exports it via core.exportVariable. Propagate that value here
+        // as the step output so downstream jobs receive it through needs.agent.outputs.aic.
+        const copilotSdkAIC = process.env.GH_AW_AIC;
+        if (copilotSdkAIC) {
+          coreObj.setOutput("aic", copilotSdkAIC);
+          coreObj.info(`AI Credits (copilot-sdk, from prior step): ${copilotSdkAIC}`);
+        }
       }
       if (parsedSummary && typeof parsedSummary.ambientContextTokens === "number" && parsedSummary.ambientContextTokens > 0) {
         const roundedAmbientContext = String(Math.round(parsedSummary.ambientContextTokens));

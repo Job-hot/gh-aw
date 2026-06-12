@@ -138,6 +138,8 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
   let toolDenialCount = 0;
   let catastrophicToolDenialsError = null;
   let catastrophicToolDenialsTriggered = false;
+  /** @type {{ modelMetrics: Record<string, { usage: { inputTokens: number; outputTokens: number; cacheReadTokens?: number; cacheWriteTokens?: number; reasoningTokens?: number } }>; currentModel?: string } | null} */
+  let capturedShutdownData = null;
 
   /**
    * Best-effort write of a driver-level event to events.jsonl and stderr.
@@ -277,6 +279,18 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
           break;
         }
 
+        case "session.shutdown": {
+          // Capture model metrics for AIC computation.
+          // The event fires when the session disconnects, so data is stored in a
+          // variable and written to the stream in the finally block before closing.
+          const modelMetrics = event.data?.modelMetrics;
+          const currentModel = event.data?.currentModel;
+          if (modelMetrics && typeof modelMetrics === "object" && Object.keys(modelMetrics).length > 0) {
+            capturedShutdownData = { modelMetrics, ...(currentModel ? { currentModel } : {}) };
+          }
+          break;
+        }
+
         default:
           // Other event types are not consumed by unified_timeline.cjs; skip them.
           break;
@@ -318,15 +332,24 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
   } finally {
     // Snapshot for null-safe cleanup in this scope.
     const stream = eventsStream;
-    if (stream) {
-      await new Promise(resolve => stream.end(resolve));
-    }
+    // Disconnect the session first so that the session.shutdown event fires
+    // and capturedShutdownData is populated before we write to the stream.
     if (session) {
       try {
         await session.disconnect();
       } catch {
         // best-effort cleanup
       }
+    }
+    // Write captured session.shutdown data (model metrics) to events.jsonl
+    // so that log_parser_bootstrap.cjs can compute AIC from it.
+    if (stream && capturedShutdownData) {
+      const shutdownEntry = JSON.stringify({ type: "session.shutdown", timestamp: new Date().toISOString(), data: capturedShutdownData }) + "\n";
+      stream.write(shutdownEntry);
+      process.stderr.write(shutdownEntry);
+    }
+    if (stream) {
+      await new Promise(resolve => stream.end(resolve));
     }
     if (clientStarted) {
       try {

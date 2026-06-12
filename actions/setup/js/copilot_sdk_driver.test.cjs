@@ -646,6 +646,88 @@ describe("copilot_sdk_driver.cjs", () => {
         }
       }
     });
+
+    it("writes session.shutdown event to events.jsonl when session emits model metrics", async () => {
+      const stop = vi.fn().mockResolvedValue(undefined);
+      const stderrWriteSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+      try {
+        let onEvent = () => {};
+        const disconnect = vi.fn().mockImplementation(async () => {
+          // Emit session.shutdown synchronously during disconnect to simulate SDK behaviour.
+          onEvent({
+            type: "session.shutdown",
+            ephemeral: false,
+            timestamp: new Date().toISOString(),
+            data: {
+              modelMetrics: {
+                "claude-sonnet-4.6": {
+                  usage: { inputTokens: 1000, outputTokens: 200, cacheReadTokens: 500, cacheWriteTokens: 0 },
+                },
+              },
+              currentModel: "claude-sonnet-4.6",
+            },
+          });
+        });
+        const session = {
+          sessionId: "session-shutdown-metrics",
+          on: handler => {
+            onEvent = handler;
+          },
+          sendAndWait: vi.fn().mockImplementation(async () => {
+            onEvent({
+              type: "assistant.message",
+              ephemeral: false,
+              timestamp: new Date().toISOString(),
+              data: { content: "done" },
+            });
+            return { data: { content: "done" } };
+          }),
+          disconnect,
+        };
+        class FakeCopilotClient {
+          start = vi.fn().mockResolvedValue(undefined);
+          createSession = vi.fn().mockResolvedValue(session);
+          stop = stop;
+        }
+
+        const result = await runWithCopilotSDK({
+          sdkUri: "http://127.0.0.1:3002",
+          prompt: "test prompt",
+          logger: () => {},
+          sdkModule: {
+            CopilotClient: FakeCopilotClient,
+            RuntimeConnection: { forUri: vi.fn(() => ({})) },
+            approveAll: () => "allow",
+          },
+        });
+
+        expect(result.exitCode).toBe(0);
+        expect(disconnect).toHaveBeenCalledTimes(1);
+
+        // The session.shutdown entry must be written to stderr (and thus events.jsonl).
+        const stderrLines = stderrWriteSpy.mock.calls
+          .map(([message]) => {
+            if (typeof message !== "string" || !message.endsWith("\n")) return null;
+            try {
+              return JSON.parse(message.trimEnd());
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean);
+
+        const shutdownEntry = stderrLines.find(e => e.type === "session.shutdown");
+        expect(shutdownEntry).toBeDefined();
+        expect(shutdownEntry.data.modelMetrics).toEqual({
+          "claude-sonnet-4.6": {
+            usage: { inputTokens: 1000, outputTokens: 200, cacheReadTokens: 500, cacheWriteTokens: 0 },
+          },
+        });
+        expect(shutdownEntry.data.currentModel).toBe("claude-sonnet-4.6");
+      } finally {
+        stderrWriteSpy.mockRestore();
+      }
+    });
   });
 
   describe("parsePermissionConfigFromServerArgs", () => {

@@ -106,6 +106,10 @@ function normalizeCopilotSdkEventsToTrace(sdkEntries) {
   let assistantMessageCount = 0;
   let firstTimestampMs = null;
   let lastTimestampMs = null;
+  /** @type {Record<string, { usage: { inputTokens: number; outputTokens: number; cacheReadTokens?: number; cacheWriteTokens?: number; reasoningTokens?: number } }> | null} */
+  let capturedModelMetrics = null;
+  /** @type {string | null} */
+  let capturedCurrentModel = null;
 
   const addPendingId = (toolName, toolId) => {
     const existing = pendingIdsByToolName.get(toolName);
@@ -244,6 +248,19 @@ function normalizeCopilotSdkEventsToTrace(sdkEntries) {
         break;
       }
 
+      case "session.shutdown": {
+        // Capture model metrics and current model for AIC computation.
+        const modelMetrics = entry.data?.modelMetrics;
+        const currentModel = entry.data?.currentModel;
+        if (modelMetrics && typeof modelMetrics === "object" && Object.keys(modelMetrics).length > 0) {
+          capturedModelMetrics = modelMetrics;
+        }
+        if (typeof currentModel === "string" && currentModel.trim()) {
+          capturedCurrentModel = currentModel.trim();
+        }
+        break;
+      }
+
       default:
         break;
     }
@@ -256,7 +273,7 @@ function normalizeCopilotSdkEventsToTrace(sdkEntries) {
   normalizedEntries.unshift({
     type: "system",
     subtype: "init",
-    model: "copilot-sdk",
+    model: capturedCurrentModel ?? "copilot-sdk",
     session_id: null,
     tools: Array.from(toolNames),
   });
@@ -267,6 +284,9 @@ function normalizeCopilotSdkEventsToTrace(sdkEntries) {
   };
   if (firstTimestampMs !== null && lastTimestampMs !== null && lastTimestampMs >= firstTimestampMs) {
     resultEntry.duration_ms = lastTimestampMs - firstTimestampMs;
+  }
+  if (capturedModelMetrics !== null) {
+    resultEntry.modelMetrics = capturedModelMetrics;
   }
   normalizedEntries.push(resultEntry);
 

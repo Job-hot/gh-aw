@@ -413,6 +413,79 @@ Some content here.`;
       }
     });
 
+    test("falls back to process.env.GH_AW_AIC for aic step output when token-usage.jsonl has no eligible model (copilot-sdk run)", async () => {
+      const originalEnvAIC = process.env.GH_AW_AIC;
+      const originalExistsSync = fs.existsSync;
+      const originalReadFileSync = fs.readFileSync;
+
+      try {
+        // Simulate a copilot-sdk run: token-usage.jsonl exists but all entries have unknown model → totalAIC = 0.
+        // GH_AW_AIC is set by the preceding log_parser_bootstrap step.
+        process.env.GH_AW_AIC = "42.123";
+
+        const unknownModelEntry = JSON.stringify({
+          model: "",
+          input_tokens: 20000,
+          output_tokens: 0,
+          cache_read_tokens: 0,
+          cache_write_tokens: 0,
+          duration_ms: 500,
+        });
+
+        const mockCore = {
+          info: vi.fn(),
+          debug: vi.fn(),
+          startGroup: vi.fn(),
+          endGroup: vi.fn(),
+          notice: vi.fn(),
+          warning: vi.fn(),
+          error: vi.fn(),
+          setFailed: vi.fn(),
+          exportVariable: vi.fn(),
+          setOutput: vi.fn(),
+          summary: {
+            addRaw: vi.fn().mockReturnThis(),
+            addDetails: vi.fn().mockReturnThis(),
+            write: vi.fn(),
+          },
+        };
+
+        fs.existsSync = vi.fn(filepath => {
+          if (filepath === "/tmp/gh-aw/mcp-logs/gateway.md") return false;
+          if (filepath === "/tmp/gh-aw/mcp-logs/gateway.log") return false;
+          if (filepath === "/tmp/gh-aw/mcp-logs/gateway.jsonl") return false;
+          if (filepath === "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl") return true;
+          return originalExistsSync(filepath);
+        });
+
+        fs.readFileSync = vi.fn((filepath, encoding) => {
+          if (filepath === "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl") {
+            return unknownModelEntry;
+          }
+          return originalReadFileSync(filepath, encoding);
+        });
+
+        global.core = mockCore;
+
+        const { main } = require("./parse_mcp_gateway_log.cjs");
+        await main();
+
+        // The aic step output must be set from the env var fallback.
+        expect(mockCore.setOutput).toHaveBeenCalledWith("aic", "42.123");
+        // GH_AW_AIC must NOT be re-exported (it's already in the env from the prior step).
+        expect(mockCore.exportVariable).not.toHaveBeenCalledWith("GH_AW_AIC", expect.any(String));
+      } finally {
+        fs.existsSync = originalExistsSync;
+        fs.readFileSync = originalReadFileSync;
+        if (originalEnvAIC === undefined) {
+          delete process.env.GH_AW_AIC;
+        } else {
+          process.env.GH_AW_AIC = originalEnvAIC;
+        }
+        delete global.core;
+      }
+    });
+
     test("appends steering from rpc-messages.jsonl after gateway.md", async () => {
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mcp-test-"));
       const gatewayMdPath = path.join(tmpDir, "gateway.md");

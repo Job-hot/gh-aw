@@ -237,6 +237,63 @@ describe("log_parser_bootstrap.cjs", () => {
           (fs.writeFileSync(logFile, "content"), (process.env.GH_AW_AGENT_OUTPUT = logFile), (process.env.GH_AW_SAFE_OUTPUTS = "/non/existent/file.jsonl"));
           const mockParseLog = vi.fn().mockReturnValue({ markdown: "## Result\n", mcpFailures: [], maxTurnsHit: false });
           (runLogParser({ parseLog: mockParseLog, parserName: "TestParser" }), expect(mockCore.warning).not.toHaveBeenCalled(), fs.unlinkSync(logFile), fs.rmdirSync(tmpDir));
+        }),
+        it("exports GH_AW_AIC via exportVariable when result entry has modelMetrics (copilot-sdk run)", () => {
+          const tmpDir = fs.mkdtempSync(path.join(__dirname, "test-"));
+          const logFile = path.join(tmpDir, "test.log");
+          fs.writeFileSync(logFile, "content");
+          process.env.GH_AW_AGENT_OUTPUT = logFile;
+
+          const mockParseLog = vi.fn().mockReturnValue({
+            markdown: "## Result\n",
+            mcpFailures: [],
+            maxTurnsHit: false,
+            logEntries: [
+              { type: "system", subtype: "init", model: "claude-sonnet-4.6" },
+              {
+                type: "result",
+                num_turns: 1,
+                modelMetrics: {
+                  "claude-sonnet-4.6": {
+                    usage: { inputTokens: 10000, outputTokens: 500, cacheReadTokens: 5000, cacheWriteTokens: 0 },
+                  },
+                },
+              },
+            ],
+          });
+
+          runLogParser({ parseLog: mockParseLog, parserName: "Copilot" });
+
+          expect(mockCore.exportVariable).toHaveBeenCalledWith("GH_AW_AIC", expect.any(String));
+          const aicCall = mockCore.exportVariable.mock.calls.find(c => c[0] === "GH_AW_AIC");
+          expect(parseFloat(aicCall[1])).toBeGreaterThan(0);
+
+          fs.unlinkSync(logFile);
+          fs.rmdirSync(tmpDir);
+        }),
+        it("does not export GH_AW_AIC when result entry has no modelMetrics", () => {
+          const tmpDir = fs.mkdtempSync(path.join(__dirname, "test-"));
+          const logFile = path.join(tmpDir, "test.log");
+          fs.writeFileSync(logFile, "content");
+          process.env.GH_AW_AGENT_OUTPUT = logFile;
+
+          const mockParseLog = vi.fn().mockReturnValue({
+            markdown: "## Result\n",
+            mcpFailures: [],
+            maxTurnsHit: false,
+            logEntries: [
+              { type: "system", subtype: "init", model: "claude-sonnet-4.6" },
+              { type: "result", num_turns: 1 },
+            ],
+          });
+
+          runLogParser({ parseLog: mockParseLog, parserName: "Copilot" });
+
+          const aicCall = mockCore.exportVariable.mock.calls.find(c => c[0] === "GH_AW_AIC");
+          expect(aicCall).toBeUndefined();
+
+          fs.unlinkSync(logFile);
+          fs.rmdirSync(tmpDir);
         }));
     }));
 });
