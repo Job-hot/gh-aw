@@ -563,6 +563,6 @@ func difcProxyLogPaths(data *WorkflowData) []string {
 	// collected as part of standard MCP logging).
 	return []string{
 		constants.ProxyLogsDir + "/",
-		"!/tmp/gh-aw/proxy-logs/proxy-tls/",
+		"!" + constants.ProxyLogsTLSDir + "/",
 	}
 }

@@ -661,7 +661,7 @@ func (c *Compiler) buildPushRepoMemoryJob(data *WorkflowData, threatDetectionEna
 		step.WriteString("        continue-on-error: true\n")
 		step.WriteString("        with:\n")
 		fmt.Fprintf(&step, "          name: %srepo-memory-%s\n", repoMemoryPrefix, sanitizedID)
-		fmt.Fprintf(&step, "          path: "+constants.RepoMemoryDir+"/%s\n", memory.ID)
+		fmt.Fprintf(&step, "          path: %s/%s\n", constants.RepoMemoryDir, memory.ID)
 		steps = append(steps, step.String())
 	}
 

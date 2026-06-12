@@ -87,6 +87,9 @@ const DifcProxyTLSCACertPath = "/tmp/gh-aw/difc-proxy-tls/ca.crt"
 // ProxyLogsDir is the directory for proxy logs, without a trailing slash.
 const ProxyLogsDir = "/tmp/gh-aw/proxy-logs"
 
+// ProxyLogsTLSDir is the directory for proxy TLS certificates and keys, without a trailing slash.
+const ProxyLogsTLSDir = "/tmp/gh-aw/proxy-logs/proxy-tls"
+
 // ProxyLogsTLSCACertPath is the path to the proxy TLS CA certificate file.
 const ProxyLogsTLSCACertPath = "/tmp/gh-aw/proxy-logs/proxy-tls/ca.crt"
 
