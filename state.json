@@ -1,0 +1,20 @@
+{
+  "counts": {
+    "caveman": {
+      "no": 1
+    },
+    "subagent_model": {
+      "large": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "27390150237",
+      "timestamp": "2026-06-12T02:16:24.196Z",
+      "assignments": {
+        "caveman": "no",
+        "subagent_model": "large"
+      }
+    }
+  ]
+}
