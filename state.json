@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "caveman_mode": {
+      "yes": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "27393600889",
+      "timestamp": "2026-06-12T04:01:53.717Z",
+      "assignments": {
+        "caveman_mode": "yes"
+      }
+    }
+  ]
+}
