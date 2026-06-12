@@ -1,39 +1,39 @@
-# Shared Alerts — 2026-06-11T14:15Z
+# Shared Alerts — 2026-06-12T06:07Z
 
 ## P0 (Critical) 🔴
-- **Failure Investigator (6h) AI Credits** (#38559, NEW OPEN): Meta-monitor itself hitting 1K AIC limit (over by 25.1). Creates blind spot in failure detection. Fix: raise max-ai-credits to 2000 in aw-failure-investigator. DO NOT RE-FILE #38559.
+- **Failure Cascade Jun 12 midnight** (#38758, NEW OPEN): 12 workflows failed within 60 min. Root cause TBD — possible infra event. DO NOT RE-FILE #38758. Child issues: #38739, #38741, #38743, #38746, #38745, #38747, #38751, #38752, #38754, #38757.
+- **Failure Investigator (6h) blind spot** (#38767, OPEN): No safe outputs — meta-monitor failing. DO NOT RE-FILE.
 
 ## P1 (High) 🚨
-- **AI Credits Cluster June 11 — EXPANDED** (prev #38520 CLOSED; no open tracker): Now 6+ workflows. New members: Package Specification Extractor (1,023.9 AIC — largest single consumer), Failure Investigator (6h) (1,025 AIC). Original 4: Code Simplifier, Ubuntu Analyzer, Workflow Skill Extractor, Matt Pocock. Fix: raise max-ai-credits to 2000 for all analysis-heavy workflows. Individual failures: #38499, #38500, #38501, #38497, #38576, #38559 — DO NOT RE-FILE.
-- **Daily News Node.js chroot** (#38379, Jun 10 OPEN): Node.js unreachable in AWF chroot (Day 3). Assigned @zarenner. DO NOT RE-FILE.
-- **Daily Safe Outputs Git Simulator** (#aw_gitsim10, ongoing): memory/git-simulator branch missing signed-commit seed. DO NOT RE-FILE.
+- **Code Simplifier — 4-day failure streak** (#aw_cs4d, NEW Jun 12): Day 1-3 AIC overrun; Day 4 bash permission loop in Copilot engine (4.2K AIC → engine crash). Last good: Jun 8. Root fix: remove go build from validation OR fix bash allowlist. DO NOT RE-FILE #aw_cs4d.
+- **AI Credits Cluster Day 4 (expanding)**: Matt Pocock (#38757), Test Quality Sentinel (#38741), Code Simplifier (in #aw_cs4d). Fix: raise max-ai-credits to 2000 for analysis-heavy workflows. DO NOT RE-FILE individual issues.
+- **Daily News Node.js chroot** (#38379, Day 4+, @zarenner): DO NOT RE-FILE.
+- **Daily Safe Outputs Git Simulator** (#aw_gitsim10, ongoing): memory/git-simulator branch missing. DO NOT RE-FILE.
 
 ## P2 (Watch) ⚠️
-- **GitHub MCP Structural Analysis** (#38614, Jun 11): Failed today — investigate root cause.
-- **PR Sous Chef** (#38618, Jun 11): Failed today — 1 occurrence, monitor.
-- **Daily MCP Tool Concurrency Analysis** (#38578, Jun 11): Failed today.
-- **Daily Safe Outputs Conformance Checker** (#38540, Jun 11): Failed today.
-- **Smoke test flakiness** (#38605, #38602, #38582, #38581, #38599, #38597): Multiple engines — likely transient/test-env.
-- **jsweep tool denial** (#38505, Jun 11): Guardrail fired, one-off. Monitor.
+- **Agentic Workflows Out of Sync** (#38768, Jun 12): Lock files need recompilation.
+- **Daily Model Inventory Checker** (#38754, Jun 12): Failed.
+- **Smoke test flakiness**: Multiple engines (Copilot, Codex, Pi, Antigravity, Gemini, AOAI) — #38751, #38752, #38745, #38747, #38746 — cascade-suspected, may be transient.
 
-## Resolved (Jun 9→11) ✅
-- #38520 AI Credits Cluster (4-workflow tracker) — CLOSED
-- #38389 Failure cascade — CLOSED
-- Jun 10 bulk individual failures — most CLOSED on credits reset
+## Resolved (Jun 11→12) ✅
+- None resolved this cycle; failure cascade added new issues.
 
 ## Systemic Notes
-- **Health score trend:** 68→83→87→85→83 (AI credits cluster persisting, expanding)
-- **AI credits persistent pattern:** Analysis-heavy workflows ROUTINELY exceed 1K. Cluster grew to 6+. Failure Investigator is now also affected — meta-monitor reliability at risk. Fix: raise to 2K. FOURTH day of same pattern.
-- **Failure Investigator blind spot (NEW):** Meta-monitor failing from AI credits creates a ~6h detection gap each day. Priority fix needed.
-- **Package Specification Extractor:** Largest single-run AIC consumer (1,023.9). Needs budget tuning independent of cluster fix.
-- **Smoke tests:** Multiple engine failures — likely flaky/transient. Monitor for 2+ days before escalating.
+- **Health score trend:** 68→83→87→85→83→75 (↓↓ consecutive drop)
+- **AI credits cluster Day 4**: Root fix (raise 2K AIC) STILL unresolved. Now includes Code Simplifier with NEW failure mode (bash permission loop).
+- **Failure Investigator blind spot**: Now failing with different mode each run (AIC yesterday, no safe outputs today). Critical — meta-monitor unreliable.
+- **Failure cascade pattern**: 12 failures at midnight. Check if related to lockfile drift (#38768 out of sync).
+- **Code Simplifier bash allowlist regression (NEW)**: Copilot engine blocking go binary execution. Possible recent allowlist config change. Affects Day 4 with 4.2K AIC consumption.
 
 ## Do Not Re-File (Active Issues)
-- #38559: Failure Investigator (6h) AI credits
-- #38499: Code Simplifier failed
-- #38500: Ubuntu Actions Image Analyzer failed
-- #38501: Workflow Skill Extractor failed
-- #38497: Matt Pocock Skills Reviewer failed
-- #38576: Package Specification Extractor failed
-- #38379: Daily News chroot (assigned @zarenner)
-- #38505: jsweep tool denial
+- #38758: Failure cascade rollup (Jun 12)
+- #aw_cs4d: Code Simplifier 4-day tracker
+- #38767: Failure Investigator no safe outputs
+- #38783: Code Simplifier failed (Jun 12)
+- #38499: Code Simplifier failed (Jun 11)
+- #38757: Matt Pocock AIC
+- #38741: Test Quality Sentinel AIC
+- #38754: Daily Model Inventory Checker failed
+- #38768: Agentic workflows out of sync
+- #38379: Daily News chroot (@zarenner)
+- #aw_gitsim10: Daily Safe Outputs Git Simulator
