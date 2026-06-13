@@ -20,7 +20,7 @@ engine:
   id: copilot
   bare: true
 
-timeout-minutes: 50  # Increased from 30 to accommodate Supertonic model download (~400MB) and TTS synthesis
+timeout-minutes: 50  # Increased from 30 to accommodate Supertonic model download (~400MB) and TTS synthesis; original value was 45
 experiments:
   prompt_style:
     variants: [detailed, concise]
@@ -565,16 +565,26 @@ Example:
 
 ### Step 2 — Synthesize the audio
 
+Write the summary text to a file first, then pass it to the API to avoid shell quoting issues:
+
 ```bash
 mkdir -p /tmp/gh-aw/agent
+
+# Write the summary text to a file (avoids shell quoting complexity)
+cat > /tmp/gh-aw/agent/summary.txt << 'SUMMARY'
+<YOUR SUMMARY TEXT>
+SUMMARY
+
+# Synthesize to WAV via the Supertonic TTS server
+SUMMARY_TEXT=$(cat /tmp/gh-aw/agent/summary.txt)
 curl -sS -X POST http://127.0.0.1:7788/v1/tts \
   -H 'content-type: application/json' \
-  -d "{\"text\": \"<YOUR SUMMARY TEXT>\", \"voice\": \"F1\", \"lang\": \"en\", \"steps\": 8}" \
+  --data-binary "{\"text\": $(jq -n --arg t "$SUMMARY_TEXT" '$t'), \"voice\": \"F1\", \"lang\": \"en\", \"steps\": 8}" \
   -o /tmp/gh-aw/agent/daily-voice-summary.wav
 echo "Voice summary generated: $(ls -lh /tmp/gh-aw/agent/daily-voice-summary.wav)"
 ```
 
-Replace `<YOUR SUMMARY TEXT>` with the summary you composed in Step 1.
+Replace the `<YOUR SUMMARY TEXT>` placeholder with the summary composed in Step 1.
 
 ### Step 3 — Upload as a run artifact
 

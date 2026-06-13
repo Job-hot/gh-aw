@@ -65,7 +65,7 @@ steps:
 
   - name: Wait for Supertonic server readiness
     run: |
-      # Allow up to 3 minutes (60 × 3s) to accommodate model download on first run
+      # Allow up to 3 minutes (60 iterations × 3s each) to accommodate model download on first run
       URL="http://127.0.0.1:7788/docs"
       STATUS=""
       for i in $(seq 1 60); do
