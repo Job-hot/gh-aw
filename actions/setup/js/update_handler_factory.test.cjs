@@ -806,7 +806,9 @@ describe("update_handler_factory.cjs", () => {
       // The log should mention "body" even though _rawBody starts with underscore
       expect(mockCore.info).toHaveBeenCalledWith(expect.stringContaining('"body"'));
     });
+  });
 
+  describe("handler control flow", () => {
     it("should return staged result when config.staged is true", async () => {
       const mockExecuteUpdate = vi.fn();
 
@@ -887,7 +889,7 @@ describe("update_handler_factory.cjs", () => {
       const mockItemFilter = vi.fn().mockResolvedValue({
         success: false,
         skipped: true,
-        reason: "Required label not present",
+        error: "Required label not present",
       });
 
       const handlerFactory = factoryModule.createUpdateHandlerFactory({
@@ -907,7 +909,7 @@ describe("update_handler_factory.cjs", () => {
       expect(mockItemFilter).toHaveBeenCalled();
       expect(result.success).toBe(false);
       expect(result.skipped).toBe(true);
-      expect(result.reason).toBe("Required label not present");
+      expect(result.error).toBe("Required label not present");
       expect(mockExecuteUpdate).not.toHaveBeenCalled();
     });
 
