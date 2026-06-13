@@ -1,59 +1,64 @@
 # Agent Performance Analyzer — Latest Run
 
-**Timestamp:** 2026-06-12T13:48:27Z
+**Timestamp:** 2026-06-13T13:15:00Z
 **Workflow:** Agent Performance Analyzer — Meta-Orchestrator
-**Run ID:** 27419589668
-**Run URL:** https://github.com/github/gh-aw/actions/runs/27419589668
+**Run ID:** 27467672212
+**Run URL:** https://github.com/github/gh-aw/actions/runs/27467672212
 
 ## Executive Summary
 
-- **Agents analyzed:** 22 active workflow types (~55 active workflows, 50 runs in window)
-- **Quality score:** 62/100 (↓5 from 67)
-- **Effectiveness score:** 58/100 (↓5 from 63)
-- **Ecosystem health:** 75/100 (↓8 from 83)
-- **Total AIC (30d snapshot):** 27,465 across 96 runs
+- **Agents analyzed:** 22 active workflow types (~246 total workflows)
+- **Quality score:** 57/100 (↓5 from 62)
+- **Effectiveness score:** 55/100 (↓3 from 58)
+- **Ecosystem health:** 72/100 (↓3 from 75)
+- **AIC cluster:** 6 agents blocked today (up from 5 yesterday) — root fix STILL pending Day 5+
 
 ## Active P0/P1 Issues (Do Not Re-File)
 
-- **Code Simplifier 4-day streak + runaway** (#38793/#38794, #38809): 244 turns / 4,219 AIC / bash allowlist. DO NOT RE-FILE.
-- **Failure Investigator blind spot** (#38767): No safe outputs. DO NOT RE-FILE.
-- **Daily News chroot** (#38379, @zarenner, Day 4+). DO NOT RE-FILE.
-- **AI credits cluster Day 4**: Matt Pocock (#38757), Test Quality Sentinel (#38741). DO NOT RE-FILE.
-- **Failure cascade** (#38758, Jun 12 midnight, 12 workflows). DO NOT RE-FILE.
-- **Duplicate issue creation** (improvement issue filed this run): #38793 + #38794. DO NOT RE-FILE.
+- **Code Simplifier Day 5** (#39013, OPEN, HTTP 429 rate-limited): Root fix pending. DO NOT RE-FILE.
+- **upload_artifact malformed 400** (#38998, OPEN, P1): Smoke Copilot ~95% failure. DO NOT RE-FILE.
+- **Daily Safe Outputs Git Simulator** (#39024, OPEN, P1, 5-day streak): memory/git-simulator branch missing. DO NOT RE-FILE.
+- **Smoke Trigger/Multi Caller startup_failure** (#38999, OPEN, P2). DO NOT RE-FILE.
+- **Agentic workflows out of sync** (#38993, OPEN). DO NOT RE-FILE.
+- **Failure Investigator pre-fetch blind spot** (#39037, OPEN): empty failed_run_ids. DO NOT RE-FILE.
+- **AIC cluster systemic tracker** (#aw_aic_day5, NEW this run): 6-agent cluster escalation. DO NOT RE-FILE.
 
 ## New Issues Filed This Run
-- **1 improvement issue**: Systemic duplicate issue creation pattern (agents filing identical issues in same run)
+- **1 systemic issue**: AIC Budget Crisis Day 5 — 6-agent cluster escalation (#aw_aic_day5)
 
 ## Agent Rankings
 
 ### Top Performers (Q/E scores)
-1. Daily AIC Usage Audit (Q:85, E:90) — 100% success, 96-run telemetry (#38834)
-2. Agentic Maintenance (Q:85, E:90) — 100% success, 3 runs
-3. Auto-Triage Issues (Q:82, E:88) — 100% success
-4. Avenger / Bot Detection (Q:80, E:85) — 100% (3/3)
-5. PR Sous Chef (Q:80, E:82) — 100% (3/3)
-6. Daily File Diet (Q:80, E:85) — 6-day streak
-7. Daily A/B Testing Advisor (Q:78, E:80) — #38826
-8. Safe Outputs Conformance Checker (Q:75, E:78) — SEC-004/005 filed
-9. Daily AIC Consumption Report (Q:75, E:72) — #38835
-10. Issue Monster (Q:75, E:78) — 100% (3/3)
+1. Agentic Maintenance (Q:82, E:88) — 100% success, 2m18s
+2. Bot Detection (Q:80, E:90) — 100% success, 13s
+3. Auto-Triage Issues (Q:80, E:82) — 100% success, 5m24s
+4. Issue Monster (Q:78, E:85) — 100% success, 30s
+5. PR Sous Chef (Q:78, E:80) — 100% success, 9m59s
+6. PR Triage Agent (Q:78, E:80) — 100% success, 9m14s
+7. Claude Code User Documentation Review (Q:75, E:78) — 100% success, 14m58s
+8. Lint Monster (Q:75, E:78) — Actionable refactoring issues (#39003, #39004)
+9. Daily A/B Testing Advisor (Q:75, E:72) — Active experiments (#39062, #39063)
+10. Duplicate Code Detector (Q:72, E:75) — 3 issues filed (#39026-#39028)
 
 ### Underperformers
-- Code Simplifier (Q:15, E:5) — CRITICAL: 244-turn runaway, 4,219 AIC
-- Daily News (Q:35, E:20) — Node.js chroot Day 4+
-- Failure Investigator (6h) (Q:40, E:30) — Meta-blind spot persists
-- Matt Pocock Skills Reviewer (Q:35, E:25) — AIC cluster Day 4+
-- Test Quality Sentinel (Q:40, E:30) — AIC cluster new member
+- Code Simplifier (Q:10, E:5) — CRITICAL: Day 5 HTTP 429 (#39013)
+- Dev (Q:30, E:20) — No safe outputs (#39046)
+- Test Quality Sentinel (Q:35, E:25) — AIC exceeded (#39059)
+- Matt Pocock Skills Reviewer (Q:35, E:25) — AIC exceeded (#39050)
+- Daily CLI Tools Exploratory Tester (Q:40, E:30) — AIC rate limit (#39031)
+- jsweep (Q:42, E:35) — Tool denial (#39020)
+- Copilot CLI Deep Research (Q:42, E:32) — Tool denial (#39022)
+- Failure Investigator (6h) (Q:42, E:35) — Pre-fetch blind spot (#39037)
+- Avenger (Q:55, E:45) — Failed today (#39073)
 
 ## Pattern Detection
-- **NEW: Duplicate issue creation**: #38793 + #38794 identical, 2s apart. Improvement issue filed.
-- **AI credits cluster EXPANDING**: Now 5+ workflows at/near 1K AIC limit
-- **Agent runaway**: Code Simplifier 244 turns, no max-turns guard
-- **Meta-monitor blind spot**: Failure Investigator unreliable 2+ days
+- **AIC cluster EXPANDING**: 6 agents at/near limit today (up from 5 yesterday). Root fix Day 5+.
+- **Performance regression spike (NEW)**: 3 compile ops 165-269% slower (#38870-#38872)
+- **Code quality momentum**: Lint Monster + Duplicate Detector + Static Analysis all productive
+- **Tool denial cluster**: jsweep + Copilot CLI Deep Research hitting tool denial limits
 
 ## Coordination Notes for Other Orchestrators
-- **WH:** Code Simplifier runaway (#38809) is the AIC budget risk now; single run consumed 84% of daily budget
-- **Campaign:** Duplicate issue creation pattern affects all issue-creating workflows; dedup fix needed
-- **All:** AI credits root fix (raise max-ai-credits to 2000) STILL unimplemented — Day 4. Escalate.
-- **All:** Do NOT re-file issues listed in shared-alerts.md; agents must check before creating trackers
+- **WH:** AIC cluster now 6 agents (escalating); performance regression spike (#38870-#38872) is new today
+- **Campaign:** Code quality momentum good (Lint Monster + Duplicate Detector + Static Analysis)
+- **All:** AIC root fix (raise max-ai-credits to 2000) STILL unimplemented Day 5. ESCALATE NOW.
+- **All:** Do NOT re-file issues listed in shared-alerts.md — check before creating trackers
