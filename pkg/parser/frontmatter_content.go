@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -245,7 +244,6 @@ func ExtractFrontmatterFromBuiltinFile(path string, content []byte) (*Frontmatte
 // Supports H1-H3 headers and proper nesting (matches bash implementation)
 func ExtractMarkdownSection(content, sectionName string) (string, error) {
 	parserLog.Printf("Extracting markdown section: section=%s, content_size=%d bytes", sectionName, len(content))
-	scanner := bufio.NewScanner(strings.NewReader(content))
 	var sectionContent bytes.Buffer
 	inSection := false
 	var sectionLevel int
@@ -253,27 +251,29 @@ func ExtractMarkdownSection(content, sectionName string) (string, error) {
 	// Create regex pattern to match headers at any level (H1-H3) with flexible spacing
 	headerPattern := regexp.MustCompile(`^(#{1,3})[\s\t]+` + regexp.QuoteMeta(sectionName) + `[\s\t]*$`)
 
-	for scanner.Scan() {
-		line := scanner.Text()
+	for line := range strings.Lines(content) {
+		// strings.Lines yields lines with their trailing newline; strip it for matching.
+		lineText := strings.TrimRight(line, "\n")
+		lineText = strings.TrimRight(lineText, "\r")
 
 		// Check if this line matches our target section
-		if matches := headerPattern.FindStringSubmatch(line); matches != nil {
+		if matches := headerPattern.FindStringSubmatch(lineText); matches != nil {
 			inSection = true
 			sectionLevel = len(matches[1]) // Number of # characters
-			sectionContent.WriteString(line + "\n")
+			sectionContent.WriteString(lineText + "\n")
 			continue
 		}
 
 		// If we're in the section, check if we've hit another header at same or higher level
 		if inSection {
-			if levelMatches := levelPattern.FindStringSubmatch(line); levelMatches != nil {
+			if levelMatches := levelPattern.FindStringSubmatch(lineText); levelMatches != nil {
 				currentLevel := len(levelMatches[1])
 				// Stop if we encounter same or higher level header
 				if currentLevel <= sectionLevel {
 					break
 				}
 			}
-			sectionContent.WriteString(line + "\n")
+			sectionContent.WriteString(lineText + "\n")
 		}
 	}
 

@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"path/filepath"
@@ -159,9 +158,8 @@ func ExtractBodyLevelImportPaths(content, baseDir string) []BodyLevelImport {
 	repoRoot := findGitHubRepoRoot(baseDir)
 
 	var results []BodyLevelImport
-	scanner := bufio.NewScanner(strings.NewReader(content))
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
+	for line := range strings.Lines(content) {
+		line = strings.TrimSpace(strings.TrimRight(line, "\n\r"))
 
 		// Match {{#runtime-import}} directives only.
 		m := bodyLevelRuntimeImportRe.FindStringSubmatch(line)
@@ -265,15 +263,16 @@ func processIncludesForField(content, baseDir string, extractFunc func(string) (
 		return nil, content, nil
 	}
 
-	scanner := bufio.NewScanner(strings.NewReader(content))
 	var result bytes.Buffer
 	var results []string
 
-	for scanner.Scan() {
-		line := scanner.Text()
+	for line := range strings.Lines(content) {
+		// strings.Lines yields lines with their trailing newline; strip it for directive matching.
+		lineText := strings.TrimRight(line, "\n")
+		lineText = strings.TrimRight(lineText, "\r")
 
 		// Parse import directive
-		directive := ParseImportDirective(line)
+		directive := ParseImportDirective(lineText)
 		if directive != nil {
 			fieldJSON, shouldSkip, err := extractFieldFromDirectiveForField(directive, baseDir, extractFunc)
 			if err != nil {
@@ -287,7 +286,7 @@ func processIncludesForField(content, baseDir string, extractFunc func(string) (
 			}
 		} else {
 			// Regular line, just pass through
-			result.WriteString(line + "\n")
+			result.WriteString(lineText + "\n")
 		}
 	}
 

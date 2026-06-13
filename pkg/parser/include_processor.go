@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -22,14 +21,16 @@ func processIncludesWithVisited(content, baseDir string, extractTools bool, visi
 		return fastResult, nil
 	}
 
-	scanner := bufio.NewScanner(strings.NewReader(content))
 	var result bytes.Buffer
 
-	for scanner.Scan() {
-		line := scanner.Text()
+	for line := range strings.Lines(content) {
+		// strings.Lines yields lines with their trailing newline; strip it for directive matching.
+		lineText := strings.TrimRight(line, "\n")
+		// Also strip carriage returns for Windows-style line endings.
+		lineText = strings.TrimRight(lineText, "\r")
 
 		// Parse import directive
-		directive := ParseImportDirective(line)
+		directive := ParseImportDirective(lineText)
 		if directive != nil {
 			includedContent, shouldSkip, err := processIncludeDirectiveWithVisited(directive, baseDir, extractTools, visited)
 			if err != nil {
@@ -46,7 +47,7 @@ func processIncludesWithVisited(content, baseDir string, extractTools bool, visi
 		} else {
 			// Regular line, just pass through (unless extracting tools)
 			if !extractTools {
-				result.WriteString(line + "\n")
+				result.WriteString(lineText + "\n")
 			}
 		}
 	}

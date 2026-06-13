@@ -61,44 +61,42 @@ var (
 	allowedRunScriptExpressionRegex = regexp.MustCompile(`^\$\{\{\s*(env\.[^}]+|vars\.[^}]+|runner\.[^}]+|github\.(repository|run_id|workspace)|steps\.parse-guard-vars\.outputs\.(approval_labels|blocked_users|trusted_users)|job\.services\[[^]]+\]\.ports\[[^]]+\])\s*\}\}$`)
 )
 
-// hasAnyExpressionInRunContent performs a fast line-by-line text scan to determine
-// whether any GitHub Actions expression (${{ ... }}) appears inside a YAML run: block.
-// Used by the compiler regression guardrail to detect expressions that should have
-// been rewritten to env variables.
-func hasAnyExpressionInRunContent(yamlContent string) bool {
-	return hasExpressionInRunContent(yamlContent, InlineExpressionPattern)
-}
-
-func hasExpressionInRunContent(yamlContent string, expressionRegex *regexp.Regexp) bool {
-	// Fast-path: no matching expressions anywhere → definitely no violation.
-	if !expressionRegex.MatchString(yamlContent) {
+// hasNonAllowedExpressionInRunContent performs a fast line-by-line text scan to determine
+// whether any GitHub Actions expression that is NOT in allowedRunScriptExpressionRegex
+// appears inside a YAML run: block.
+//
+// This is used as the pre-scan guard in Path B of validateTemplateInjection (schema
+// validation disabled) to avoid an unnecessary yaml.Unmarshal call for correctly compiled
+// workflows. Correctly compiled workflows only ever emit allowed expressions (env.*, vars.*,
+// runner.*, github.repository, etc.) in run: scripts; non-allowed expressions indicate a
+// compiler regression or a template injection risk and require full YAML re-parsing.
+func hasNonAllowedExpressionInRunContent(yamlContent string) bool {
+	// Fast-path: no inline expression anywhere → definitely no non-allowed expression.
+	if !InlineExpressionPattern.MatchString(yamlContent) {
 		return false
 	}
 
-	// Matching expressions exist somewhere; scan for any that appear inside a run: block
-	// without doing a full YAML parse.
-	// Use SplitSeq to iterate over lines lazily, avoiding the up-front allocation of the
-	// full []string slice that strings.Split would create for large YAML content.
+	// Expressions exist somewhere; scan line-by-line to find run: block content that
+	// contains non-allowed expressions, without doing a full YAML parse.
+	// Use SplitSeq to iterate lazily, avoiding the up-front []string allocation that
+	// strings.Split would create for large YAML content.
 	inRunBlock := false
 	runBlockIndent := 0
 
 	for line := range strings.SplitSeq(yamlContent, "\n") {
-		// Compute indentation first; skip blank and all-whitespace lines in one step.
 		trimmed := strings.TrimLeft(line, " \t")
 		if trimmed == "" {
-			// Blank / all-whitespace lines are allowed inside block scalars.
 			continue
 		}
 		indent := len(line) - len(trimmed)
 
 		if inRunBlock {
-			// A non-blank line at the same or lesser indentation ends the block.
 			if indent <= runBlockIndent {
 				inRunBlock = false
 				// Fall through: check whether this line starts a new run: block.
 			} else {
-				// Inside run block content — check for matching expressions.
-				if expressionRegex.MatchString(line) {
+				// Inside run block content — check for non-allowed expressions.
+				if lineHasNonAllowedExpression(line) {
 					return true
 				}
 				continue
@@ -117,7 +115,6 @@ func hasExpressionInRunContent(yamlContent string, expressionRegex *regexp.Regex
 		rest := strings.TrimSpace(keyPart[4:]) // text after "run:"
 
 		if rest == "" {
-			// Empty run: value is unusual; treat conservatively as if block content follows.
 			inRunBlock = true
 			runBlockIndent = indent
 		} else if rest[0] == '|' || rest[0] == '>' {
@@ -126,12 +123,24 @@ func hasExpressionInRunContent(yamlContent string, expressionRegex *regexp.Regex
 			runBlockIndent = indent
 		} else {
 			// Inline run value, e.g. run: echo "hello ${{ github.event.foo }}".
-			if expressionRegex.MatchString(rest) {
+			if lineHasNonAllowedExpression(rest) {
 				return true
 			}
 		}
 	}
 
+	return false
+}
+
+// lineHasNonAllowedExpression returns true when the given line contains at least one
+// ${{ ... }} expression that does not match allowedRunScriptExpressionRegex.
+func lineHasNonAllowedExpression(line string) bool {
+	exprs := InlineExpressionPattern.FindAllString(line, -1)
+	for _, expr := range exprs {
+		if !allowedRunScriptExpressionRegex.MatchString(expr) {
+			return true
+		}
+	}
 	return false
 }
 
