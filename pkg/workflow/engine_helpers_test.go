@@ -373,6 +373,27 @@ func TestGetNpmBinPathSetup_NoGorootDoesNotBreakChain(t *testing.T) {
 	}
 }
 
+func TestAWFToolCacheMountArgExpansion_DoesNotInjectLiteralQuotes(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Skipping shell-based test on non-Linux platform")
+	}
+
+	shellCmd := `GH_AW_TOOL_CACHE_MOUNT="/home/runner/work/_tool:/home/runner/work/_tool:ro"; set -- ${GH_AW_TOOL_CACHE_MOUNT:+--mount $GH_AW_TOOL_CACHE_MOUNT}; printf '%s\n' "$1" "$2"`
+	cmd := exec.Command("bash", "-c", shellCmd)
+	output, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("Failed to execute shell command: %v", err)
+	}
+
+	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("Expected 2 args, got %d (%q)", len(lines), output)
+	}
+
+	assert.Equal(t, "--mount", lines[0])
+	assert.Equal(t, "/home/runner/work/_tool:/home/runner/work/_tool:ro", lines[1])
+}
+
 func TestYamlStringValue(t *testing.T) {
 	tests := []struct {
 		name     string

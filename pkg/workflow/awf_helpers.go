@@ -264,7 +264,7 @@ fi`,
 		awfToolCacheMountVarName,
 		awfToolCacheMountVarName,
 	)
-	toolCacheMountRef := fmt.Sprintf("${%s:+--mount \"$%s\"}", awfToolCacheMountVarName, awfToolCacheMountVarName)
+	toolCacheMountRef := fmt.Sprintf("${%s:+--mount $%s}", awfToolCacheMountVarName, awfToolCacheMountVarName)
 
 	// Build the expandable args string for args that need shell variable expansion.
 	// These MUST be appended as raw (unescaped) strings because single-quoting would
