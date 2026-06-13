@@ -252,9 +252,8 @@ func ExtractMarkdownSection(content, sectionName string) (string, error) {
 	headerPattern := regexp.MustCompile(`^(#{1,3})[\s\t]+` + regexp.QuoteMeta(sectionName) + `[\s\t]*$`)
 
 	for line := range strings.Lines(content) {
-		// strings.Lines yields lines with their trailing newline; strip it for matching.
-		lineText := strings.TrimRight(line, "\n")
-		lineText = strings.TrimRight(lineText, "\r")
+		// strings.Lines yields lines with their trailing newline; strip it (and any CR) for matching.
+		lineText := strings.TrimRight(line, "\n\r")
 
 		// Check if this line matches our target section
 		if matches := headerPattern.FindStringSubmatch(lineText); matches != nil {

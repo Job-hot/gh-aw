@@ -24,10 +24,8 @@ func processIncludesWithVisited(content, baseDir string, extractTools bool, visi
 	var result bytes.Buffer
 
 	for line := range strings.Lines(content) {
-		// strings.Lines yields lines with their trailing newline; strip it for directive matching.
-		lineText := strings.TrimRight(line, "\n")
-		// Also strip carriage returns for Windows-style line endings.
-		lineText = strings.TrimRight(lineText, "\r")
+		// strings.Lines yields lines with their trailing newline; strip it (and any CR) for directive matching.
+		lineText := strings.TrimRight(line, "\n\r")
 
 		// Parse import directive
 		directive := ParseImportDirective(lineText)
