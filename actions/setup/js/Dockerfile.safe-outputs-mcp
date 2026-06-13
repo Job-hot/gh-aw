@@ -1,0 +1,28 @@
+# syntax=docker/dockerfile:1.7
+
+ARG NODE_IMAGE=node:lts-alpine
+FROM ${NODE_IMAGE}
+
+ARG NODE_IMAGE
+ARG NODE_IMAGE_DIGEST=""
+ARG NODE_IMAGE_UPDATED_AT=""
+ARG SAFE_OUTPUTS_SOURCE_HASH=""
+
+RUN apk add --no-cache git
+
+WORKDIR /app
+
+COPY actions/setup/js/package.json actions/setup/js/package-lock.json ./
+RUN npm ci && npm cache clean --force
+
+COPY actions/setup/js/*.cjs ./
+COPY actions/setup/js/*.json ./
+
+LABEL org.opencontainers.image.source="https://github.com/github/gh-aw" \
+      org.opencontainers.image.description="safe-outputs MCP server runtime with Node LTS Alpine and git" \
+      org.opencontainers.image.base.name="${NODE_IMAGE}" \
+      org.opencontainers.image.base.digest="${NODE_IMAGE_DIGEST}" \
+      io.github.gh-aw.safe-outputs.node.updated-at="${NODE_IMAGE_UPDATED_AT}" \
+      io.github.gh-aw.safe-outputs.source-hash="${SAFE_OUTPUTS_SOURCE_HASH}"
+
+ENTRYPOINT ["node", "/app/safe-outputs-mcp-server.cjs"]
