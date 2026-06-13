@@ -1,25 +1,30 @@
 {
-  "last_updated": "2026-06-11",
-  "entries": [
-    {
-      "date": "2026-06-08",
-      "merged": 794,
-      "closed": 199
+  "summary": {
+    "total_snapshots": 19,
+    "date_range": {
+      "from": "2026-05-15",
+      "to": "2026-06-13"
     },
-    {
-      "date": "2026-06-09",
-      "merged": 787,
-      "closed": 203
-    },
+    "avg_success_pct": 80
+  },
+  "recent": [
     {
       "date": "2026-06-10",
       "merged": 793,
-      "closed": 203
+      "closed": 203,
+      "success_pct": 80
     },
     {
-      "date": "2026-06-11",
+      "date": "2026-06-12",
       "merged": 786,
-      "closed": 206
+      "closed": 206,
+      "success_pct": 79
+    },
+    {
+      "date": "2026-06-13",
+      "merged": 792,
+      "closed": 204,
+      "success_pct": 80
     }
   ]
 }
