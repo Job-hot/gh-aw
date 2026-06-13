@@ -154,26 +154,39 @@ func NewTools(toolsMap map[string]any) *Tools {
 	}
 
 	// Extract custom MCP tools (anything not in the known list)
-	knownTools := map[string]bool{
-		"github":            true,
-		"bash":              true,
-		"web-fetch":         true,
-		"web-search":        true,
-		"edit":              true,
-		"playwright":        true,
-		"agentic-workflows": true,
-		"cache-memory":      true,
-		"comment-memory":    true,
-		"repo-memory":       true,
-		"safety-prompt":     true,
-		"timeout":           true,
-		"startup-timeout":   true,
-		"cli-proxy":         true,
+	knownTools := map[string]struct{}{
+		"github": struct{}{},
+
+		"bash": struct{}{},
+
+		"web-fetch": struct{}{},
+
+		"web-search": struct{}{},
+
+		"edit": struct{}{},
+
+		"playwright": struct{}{},
+
+		"agentic-workflows": struct{}{},
+
+		"cache-memory": struct{}{},
+
+		"comment-memory": struct{}{},
+
+		"repo-memory": struct{}{},
+
+		"safety-prompt": struct{}{},
+
+		"timeout": struct{}{},
+
+		"startup-timeout": struct{}{},
+
+		"cli-proxy": struct{}{},
 	}
 
 	customCount := 0
 	for name, config := range toolsMap {
-		if !knownTools[name] {
+		if _, ok := knownTools[name]; !ok {
 			tools.Custom[name] = parseMCPServerConfig(config)
 			customCount++
 		}
@@ -698,24 +711,36 @@ func parseMCPServerConfig(val any) MCPServerConfig {
 	}
 
 	// Store any unknown fields in CustomFields
-	knownFields := map[string]bool{
-		"command":        true,
-		"args":           true,
-		"env":            true,
-		"mode":           true,
-		"type":           true,
-		"version":        true,
-		"toolsets":       true,
-		"url":            true,
-		"headers":        true,
-		"container":      true,
-		"entrypoint":     true,
-		"entrypointArgs": true,
-		"mounts":         true,
+	knownFields := map[string]struct{}{
+		"command": struct{}{},
+
+		"args": struct{}{},
+
+		"env": struct{}{},
+
+		"mode": struct{}{},
+
+		"type": struct{}{},
+
+		"version": struct{}{},
+
+		"toolsets": struct{}{},
+
+		"url": struct{}{},
+
+		"headers": struct{}{},
+
+		"container": struct{}{},
+
+		"entrypoint": struct{}{},
+
+		"entrypointArgs": struct{}{},
+
+		"mounts": struct{}{},
 	}
 
 	for key, value := range configMap {
-		if !knownFields[key] {
+		if _, ok := knownFields[key]; !ok {
 			config.CustomFields[key] = value
 		}
 	}

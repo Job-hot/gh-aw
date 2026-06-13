@@ -175,11 +175,11 @@ func synthesizeOneOfTypeConflictMessage(lines []string) string {
 	}
 
 	// Deduplicate expected types (e.g., multiple "object" branches in oneOf)
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	var uniqueWantTypes []string
 	for _, t := range wantTypes {
-		if !seen[t] {
-			seen[t] = true
+		if _, ok := seen[t]; !ok {
+			seen[t] = struct{}{}
 			uniqueWantTypes = append(uniqueWantTypes, t)
 		}
 	}
@@ -412,11 +412,11 @@ func uniqueClosestScopeSuggestions(unknownProps []string, scopes []string) []str
 		}
 		allSuggestions = append(allSuggestions, FindClosestMatches(prop, scopes, maxClosestMatches)...)
 	}
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	var unique []string
 	for _, s := range allSuggestions {
-		if !seen[s] {
-			seen[s] = true
+		if _, ok := seen[s]; !ok {
+			seen[s] = struct{}{}
 			unique = append(unique, s)
 		}
 	}

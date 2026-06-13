@@ -590,28 +590,47 @@ func getMCPConfig(toolConfig map[string]any, toolName string) (*parser.RegistryM
 	}
 
 	// Validate known properties - fail if unknown properties are found
-	knownProperties := map[string]bool{
-		"type":           true,
-		"mode":           true, // Added for MCPServerConfig struct
-		"command":        true,
-		"container":      true,
-		"version":        true,
-		"args":           true,
-		"entrypoint":     true,
-		"entrypointArgs": true,
-		"mounts":         true,
-		"env":            true,
-		"proxy-args":     true,
-		"url":            true,
-		"headers":        true,
-		"auth":           true,
-		"registry":       true,
-		"allowed":        true,
-		"toolsets":       true, // Added for MCPServerConfig struct
+	knownProperties := map[string]struct{}{
+		"type": struct{}{},
+
+		"mode": struct{}{},
+
+		// Added for MCPServerConfig struct
+		"command": struct{}{},
+
+		"container": struct{}{},
+
+		"version": struct{}{},
+
+		"args": struct{}{},
+
+		"entrypoint": struct{}{},
+
+		"entrypointArgs": struct{}{},
+
+		"mounts": struct{}{},
+
+		"env": struct{}{},
+
+		"proxy-args": struct{}{},
+
+		"url": struct{}{},
+
+		"headers": struct{}{},
+
+		"auth": struct{}{},
+
+		"registry": struct{}{},
+
+		"allowed": struct{}{},
+
+		"toolsets": struct{}{},
+
+		// Added for MCPServerConfig struct
 	}
 
 	for key := range toolConfig {
-		if !knownProperties[key] {
+		if _, ok := knownProperties[key]; !ok {
 			mcpCustomLog.Printf("Unknown property '%s' in MCP config for tool '%s'", key, toolName)
 			// Build list of valid properties
 			validProps := []string{}

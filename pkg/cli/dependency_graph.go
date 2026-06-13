@@ -281,13 +281,12 @@ func (g *DependencyGraph) GetAffectedWorkflows(modifiedPath string) []string {
 
 // findAffectedTopLevelWorkflows finds all top-level workflows that depend on the given file
 func (g *DependencyGraph) findAffectedTopLevelWorkflows(filePath string) []string {
-	visited := make(map[string]bool)
+	visited := make(map[string]struct{})
 	var topLevelWorkflows []string
 
 	// BFS to find all workflows that import this file
 	queue := []string{filePath}
-	visited[filePath] = true
-
+	visited[filePath] = struct{}{}
 	for len(queue) > 0 {
 		current := queue[0]
 		queue = queue[1:]
@@ -295,11 +294,10 @@ func (g *DependencyGraph) findAffectedTopLevelWorkflows(filePath string) []strin
 		// Get all workflows that import this file
 		importers := g.reverseImports[current]
 		for _, importer := range importers {
-			if visited[importer] {
+			if _, ok := visited[importer]; ok {
 				continue
 			}
-			visited[importer] = true
-
+			visited[importer] = struct{}{}
 			node := g.nodes[importer]
 			if node != nil && node.IsTopLevel {
 				// Found a top-level workflow that depends on the modified file

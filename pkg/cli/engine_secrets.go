@@ -44,7 +44,7 @@ type EngineSecretConfig struct {
 	// Verbose enables verbose output
 	Verbose bool
 	// ExistingSecrets is a map of secret names that already exist in the repository
-	ExistingSecrets map[string]bool
+	ExistingSecrets map[string]struct{}
 	// IncludeSystemSecrets includes system-level secrets like GH_AW_GITHUB_TOKEN
 	IncludeSystemSecrets bool
 	// IncludeOptional includes optional secrets in the requirements list
@@ -156,17 +156,24 @@ func secretRequirementsFromAuthDefinition(auth *workflow.AuthDefinition, engineN
 
 // getMissingRequiredSecrets filters requirements to return only missing required secrets.
 // It skips optional secrets and checks both primary and alternative secret names.
-func getMissingRequiredSecrets(requirements []SecretRequirement, existingSecrets map[string]bool) []SecretRequirement {
+func getMissingRequiredSecrets(requirements []SecretRequirement, existingSecrets map[string]struct{},
+
+) []SecretRequirement {
 	var missing []SecretRequirement
 	for _, req := range requirements {
 		// Skip optional secrets - we only care about required ones
 		if req.Optional {
 			continue
 		}
+		_, ok := existingSecrets[req.Name]
+		exists := ok
+		if !exists {
+			exists = sliceutil.Any(req.AlternativeEnvVars, func(alt string) bool {
+				_, ok := existingSecrets[alt]
+				return ok
+			})
+		}
 
-		exists := existingSecrets[req.Name] || sliceutil.Any(req.AlternativeEnvVars, func(alt string) bool {
-			return existingSecrets[alt]
-		})
 		if !exists {
 			missing = append(missing, req)
 		}
@@ -215,14 +222,14 @@ func ensureSecretAvailable(req SecretRequirement, config EngineSecretConfig) err
 	engineSecretsLog.Printf("Ensuring secret available: %s", req.Name)
 
 	// Check if secret already exists in the repository
-	if config.ExistingSecrets[req.Name] {
+	if _, ok := config.ExistingSecrets[req.Name]; ok {
 		fmt.Fprintln(os.Stderr, console.FormatSuccessMessage(fmt.Sprintf("Using existing %s secret in repository", req.Name)))
 		return nil
 	}
 
 	// Check alternative secret names in repository
 	for _, alt := range req.AlternativeEnvVars {
-		if config.ExistingSecrets[alt] {
+		if _, ok := config.ExistingSecrets[alt]; ok {
 			fmt.Fprintln(os.Stderr, console.FormatSuccessMessage(fmt.Sprintf("Using existing %s secret in repository (alternative for %s)", alt, req.Name)))
 			return nil
 		}
@@ -441,7 +448,7 @@ func promptForGenericAPIKeyUnified(req SecretRequirement, config EngineSecretCon
 // checkOptionalSecret checks if an optional secret is available (without prompting)
 func checkOptionalSecret(req SecretRequirement, config EngineSecretConfig) error {
 	// Check repository
-	if config.ExistingSecrets[req.Name] {
+	if _, ok := config.ExistingSecrets[req.Name]; ok {
 		if config.Verbose {
 			fmt.Fprintln(os.Stderr, console.FormatInfoMessage(fmt.Sprintf("Optional secret %s exists in repository", req.Name)))
 		}
@@ -500,10 +507,12 @@ func stringContainsSecretName(output, secretName string) bool {
 }
 
 // getExistingSecretsInRepo checks which secrets exist in the repository
-func getExistingSecretsInRepo(repoSlug string) (map[string]bool, error) {
+func getExistingSecretsInRepo(repoSlug string) (map[string]struct{},
+
+	error) {
 	engineSecretsLog.Printf("Checking existing secrets for repo: %s", repoSlug)
 
-	existingSecrets := make(map[string]bool)
+	existingSecrets := make(map[string]struct{})
 
 	// List secrets from repository
 	output, err := workflow.RunGHCombined("Checking secrets...", "secret", "list", "--repo", repoSlug)
@@ -518,7 +527,7 @@ func getExistingSecretsInRepo(repoSlug string) (map[string]bool, error) {
 	outputStr := string(output)
 	for _, name := range secretNames {
 		if stringContainsSecretName(outputStr, name) {
-			existingSecrets[name] = true
+			existingSecrets[name] = struct{}{}
 		}
 	}
 
@@ -528,7 +537,9 @@ func getExistingSecretsInRepo(repoSlug string) (map[string]bool, error) {
 // GetEngineSecretNameAndValue returns the secret name and value for an engine.
 // It checks if the secret exists in the repository and retrieves the value from environment if needed.
 // Returns: secretName, secretValue (empty if exists in repo or not in env), existsInRepo, error
-func GetEngineSecretNameAndValue(engine string, existingSecrets map[string]bool) (string, string, bool, error) {
+func GetEngineSecretNameAndValue(engine string, existingSecrets map[string]struct{},
+
+) (string, string, bool, error) {
 	engineSecretsLog.Printf("Getting secret name and value for engine: %s", engine)
 
 	opt := constants.GetEngineOption(engine)
@@ -539,14 +550,14 @@ func GetEngineSecretNameAndValue(engine string, existingSecrets map[string]bool)
 	secretName := opt.SecretName
 
 	// Check if secret already exists in repository
-	if existingSecrets[secretName] {
+	if _, ok := existingSecrets[secretName]; ok {
 		engineSecretsLog.Printf("Secret %s already exists in repository", secretName)
 		return secretName, "", true, nil
 	}
 
 	// Check alternative secret names in repository
 	for _, alt := range opt.AlternativeSecrets {
-		if existingSecrets[alt] {
+		if _, ok := existingSecrets[alt]; ok {
 			engineSecretsLog.Printf("Alternative secret %s exists in repository", alt)
 			return secretName, "", true, nil
 		}
@@ -575,14 +586,18 @@ func GetEngineSecretNameAndValue(engine string, existingSecrets map[string]bool)
 }
 
 // displayMissingSecrets shows information about missing secrets with setup instructions
-func displayMissingSecrets(requirements []SecretRequirement, repoSlug string, existingSecrets map[string]bool) {
+func displayMissingSecrets(requirements []SecretRequirement, repoSlug string, existingSecrets map[string]struct{}) {
 	var requiredMissing, optionalMissing []SecretRequirement
 
 	for _, req := range requirements {
-		// Check if secret exists
-		exists := existingSecrets[req.Name] || sliceutil.Any(req.AlternativeEnvVars, func(alt string) bool {
-			return existingSecrets[alt]
-		})
+		_, ok := existingSecrets[req.Name]
+		exists := ok
+		if !exists {
+			exists = sliceutil.Any(req.AlternativeEnvVars, func(alt string) bool {
+				_, ok := existingSecrets[alt]
+				return ok
+			})
+		}
 
 		if !exists {
 			if req.Optional {
@@ -625,7 +640,9 @@ func displayMissingSecrets(requirements []SecretRequirement, repoSlug string, ex
 }
 
 // displaySecretsSummaryTable displays a summary table of all required secrets with their status
-func displaySecretsSummaryTable(requirements []SecretRequirement, existingSecrets map[string]bool) {
+func displaySecretsSummaryTable(requirements []SecretRequirement, existingSecrets map[string]struct{},
+
+) {
 	// Filter to only required secrets (not optional)
 	var requiredOnly []SecretRequirement
 	for _, req := range requirements {
@@ -653,13 +670,13 @@ func displaySecretsSummaryTable(requirements []SecretRequirement, existingSecret
 
 	// Display each required secret with status
 	for _, req := range requiredOnly {
-		// Check if secret exists
-		exists := existingSecrets[req.Name]
+		_, // Check if secret exists
+			exists := existingSecrets[req.Name]
 		var altUsed string
 		if !exists {
 			// Check alternatives
 			for _, alt := range req.AlternativeEnvVars {
-				if existingSecrets[alt] {
+				if _, ok := existingSecrets[alt]; ok {
 					exists = true
 					altUsed = alt
 					break

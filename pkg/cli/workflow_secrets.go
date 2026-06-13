@@ -18,14 +18,14 @@ func getSecretsRequirementsForWorkflows(workflowFiles []string) []SecretRequirem
 	workflowSecretsLog.Printf("Collecting secrets from %d workflow files", len(workflowFiles))
 
 	var allRequirements []SecretRequirement
-	seenSecrets := make(map[string]bool)
+	seenSecrets := make(map[string]struct{})
 
 	// Map getRequiredSecretsForWorkflow over all workflows and union results
 	for _, workflowFile := range workflowFiles {
 		secrets := getSecretRequirementsForWorkflow(workflowFile)
 		for _, req := range secrets {
-			if !seenSecrets[req.Name] {
-				seenSecrets[req.Name] = true
+			if _, ok := seenSecrets[req.Name]; !ok {
+				seenSecrets[req.Name] = struct{}{}
 				allRequirements = append(allRequirements, req)
 			}
 		}
@@ -33,10 +33,10 @@ func getSecretsRequirementsForWorkflows(workflowFiles []string) []SecretRequirem
 
 	// Always add system secrets (deduplicated)
 	for _, sys := range constants.SystemSecrets {
-		if seenSecrets[sys.Name] {
+		if _, ok := seenSecrets[sys.Name]; ok {
 			continue
 		}
-		seenSecrets[sys.Name] = true
+		seenSecrets[sys.Name] = struct{}{}
 		allRequirements = append(allRequirements, SecretRequirement{
 			Name:           sys.Name,
 			WhenNeeded:     sys.WhenNeeded,

@@ -114,7 +114,7 @@ func (c *Compiler) commentOutProcessedFieldsInOnSection(yamlStr string, frontmat
 	frontmatterLog.Print("Processing 'on' section to comment out processed fields")
 
 	// Check frontmatter for native label filter markers
-	nativeLabelFilterSections := make(map[string]bool)
+	nativeLabelFilterSections := make(map[string]struct{})
 	if onValue, exists := frontmatter["on"]; exists {
 		if onMap, ok := onValue.(map[string]any); ok {
 			for _, sectionKey := range []string{"issues", "pull_request", "discussion", "issue_comment"} {
@@ -122,7 +122,7 @@ func (c *Compiler) commentOutProcessedFieldsInOnSection(yamlStr string, frontmat
 					if sectionMap, ok := sectionValue.(map[string]any); ok {
 						if marker, hasMarker := sectionMap["__gh_aw_native_label_filter__"]; hasMarker {
 							if useNative, ok := marker.(bool); ok && useNative {
-								nativeLabelFilterSections[sectionKey] = true
+								nativeLabelFilterSections[sectionKey] = struct{}{}
 								frontmatterLog.Printf("Section %s uses native label filtering", sectionKey)
 							}
 						}
@@ -672,7 +672,7 @@ func (c *Compiler) commentOutProcessedFieldsInOnSection(yamlStr string, frontmat
 			commentReason = " # Lock-for-agent processed as issue locking in activation job"
 		} else if (inPullRequest || inIssues || inDiscussion || inIssueComment) && strings.HasPrefix(trimmedLine, "names:") {
 			// Only comment out names if NOT using native label filtering for this section
-			if !nativeLabelFilterSections[currentSection] {
+			if _, ok := nativeLabelFilterSections[currentSection]; !ok {
 				shouldComment = true
 				commentReason = " # Label filtering applied via job conditions"
 			}
@@ -680,7 +680,7 @@ func (c *Compiler) commentOutProcessedFieldsInOnSection(yamlStr string, frontmat
 			// Check if we're in a names array (after "names:" line)
 			// Look back to see if the previous uncommented line was "names:"
 			// Only do this if NOT using native label filtering for this section
-			if !nativeLabelFilterSections[currentSection] {
+			if _, ok := nativeLabelFilterSections[currentSection]; !ok {
 				if len(result) > 0 {
 					for i := range slices.Backward(result) {
 						prevLine := result[i]

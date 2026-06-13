@@ -104,15 +104,18 @@ func (w *JSONWorkflow) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	knownKeys := map[string]bool{
-		"id": true, "name": true, "description": true,
-		"instructions": true, "prompt": true, "engine": true,
-		"on": true, "triggers": true, "tools": true, "permissions": true, "tags": true,
+	knownKeys := map[string]struct{}{
+		"id": struct{}{}, "name": struct{}{}, "description": struct{}{},
+
+		"instructions": struct{}{}, "prompt": struct{}{}, "engine": struct{}{},
+
+		"on": struct{}{}, "triggers": struct{}{}, "tools": struct{}{}, "permissions": struct{}{}, "tags": struct{}{},
+
 		// Metadata fields returned by APIs that should be ignored during import.
-		"created_at": true, "created_by": true, "disabled": true, "disabled_state": true, "updated_at": true,
+		"created_at": struct{}{}, "created_by": struct{}{}, "disabled": struct{}{}, "disabled_state": struct{}{}, "updated_at": struct{}{},
 	}
 	for k, v := range raw {
-		if !knownKeys[k] {
+		if _, ok := knownKeys[k]; !ok {
 			if w.Extra == nil {
 				w.Extra = make(map[string]any)
 			}
@@ -546,7 +549,7 @@ func convertToolsToConfig(tools []string) (map[string]any, []string) {
 	}
 
 	var warnings []string
-	toolsets := map[string]bool{}
+	toolsets := map[string]struct{}{}
 	config := map[string]any{}
 	needsBash := false
 
@@ -563,7 +566,7 @@ func convertToolsToConfig(tools []string) (map[string]any, []string) {
 			config["web-search"] = nil
 		default:
 			if ts := jsonToolToToolset[bare]; ts != "" {
-				toolsets[ts] = true
+				toolsets[ts] = struct{}{}
 			} else {
 				warnings = append(warnings, fmt.Sprintf("tool %q has no known gh-aw mapping and was skipped", id))
 			}

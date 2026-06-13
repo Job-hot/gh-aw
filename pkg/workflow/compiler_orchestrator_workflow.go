@@ -268,19 +268,29 @@ func extractRawObservabilityMap(rawFrontmatter map[string]any) map[string]any {
 }
 
 func mergeRawOTLPEndpoints(mainObs map[string]any, importedObs map[string]any) (mergedEndpoints []any, mainCount int, importAdded int) {
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	for _, ep := range extractRawOTLPEndpointMaps(mainObs) {
-		if url, _ := ep["url"].(string); url != "" && !seen[url] {
-			seen[url] = true
-			mergedEndpoints = append(mergedEndpoints, ep)
+		{
+			url, _ := ep["url"].(string)
+			if url != "" {
+				if _, ok := seen[url]; !ok {
+					seen[url] = struct{}{}
+					mergedEndpoints = append(mergedEndpoints, ep)
+				}
+			}
 		}
 	}
 	mainCount = len(mergedEndpoints)
 	for _, ep := range extractRawOTLPEndpointMaps(importedObs) {
-		if url, _ := ep["url"].(string); url != "" && !seen[url] {
-			seen[url] = true
-			mergedEndpoints = append(mergedEndpoints, ep)
-			importAdded++
+		{
+			url, _ := ep["url"].(string)
+			if url != "" {
+				if _, ok := seen[url]; !ok {
+					seen[url] = struct{}{}
+					mergedEndpoints = append(mergedEndpoints, ep)
+					importAdded++
+				}
+			}
 		}
 	}
 	return mergedEndpoints, mainCount, importAdded

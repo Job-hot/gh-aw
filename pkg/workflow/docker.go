@@ -17,7 +17,7 @@ var dockerLog = logger.New("workflow:docker")
 // deterministic and supply-chain-safe image pulls.
 func collectDockerImages(tools map[string]any, workflowData *WorkflowData, actionMode ActionMode) []string {
 	var images []string
-	imageSet := make(map[string]bool) // Use a set to avoid duplicates
+	imageSet := make(map[string]struct{}) // Use a set to avoid duplicates
 
 	// Check for GitHub tool (uses Docker image)
 	if githubTool, hasGitHub := tools["github"]; hasGitHub {
@@ -26,9 +26,9 @@ func collectDockerImages(tools map[string]any, workflowData *WorkflowData, actio
 		if githubType == "local" {
 			githubDockerImageVersion := getGitHubDockerImageVersion(githubTool)
 			image := "ghcr.io/github/github-mcp-server:" + githubDockerImageVersion
-			if !imageSet[image] {
+			if _, ok := imageSet[image]; !ok {
 				images = append(images, image)
-				imageSet[image] = true
+				imageSet[image] = struct{}{}
 			}
 		}
 	}
@@ -38,9 +38,9 @@ func collectDockerImages(tools map[string]any, workflowData *WorkflowData, actio
 	if _, hasPlaywright := tools["playwright"]; hasPlaywright {
 		if !isPlaywrightCLIMode(tools) {
 			image := "mcr.microsoft.com/playwright/mcp"
-			if !imageSet[image] {
+			if _, ok := imageSet[image]; !ok {
 				images = append(images, image)
-				imageSet[image] = true
+				imageSet[image] = struct{}{}
 			}
 		}
 	}
@@ -52,9 +52,9 @@ func collectDockerImages(tools map[string]any, workflowData *WorkflowData, actio
 		if !actionMode.IsDev() {
 			// Release/script mode: Use alpine:latest (needs to be pulled)
 			image := constants.DefaultAlpineImage
-			if !imageSet[image] {
+			if _, ok := imageSet[image]; !ok {
 				images = append(images, image)
-				imageSet[image] = true
+				imageSet[image] = struct{}{}
 				dockerLog.Printf("Added agentic-workflows MCP server container: %s", image)
 			}
 		}
@@ -70,17 +70,17 @@ func collectDockerImages(tools map[string]any, workflowData *WorkflowData, actio
 
 		// Add squid (proxy) container
 		squidImage := constants.DefaultFirewallRegistry + "/squid:" + awfImageTag
-		if !imageSet[squidImage] {
+		if _, ok := imageSet[squidImage]; !ok {
 			images = append(images, squidImage)
-			imageSet[squidImage] = true
+			imageSet[squidImage] = struct{}{}
 			dockerLog.Printf("Added AWF squid (proxy) container: %s", squidImage)
 		}
 
 		// Add default agent container
 		agentImage := constants.DefaultFirewallRegistry + "/agent:" + awfImageTag
-		if !imageSet[agentImage] {
+		if _, ok := imageSet[agentImage]; !ok {
 			images = append(images, agentImage)
-			imageSet[agentImage] = true
+			imageSet[agentImage] = struct{}{}
 			dockerLog.Printf("Added AWF agent container: %s", agentImage)
 		}
 
@@ -89,9 +89,9 @@ func collectDockerImages(tools map[string]any, workflowData *WorkflowData, actio
 		// Each engine uses its own dedicated port for communication
 		if workflowData != nil && workflowData.AI != "" {
 			apiProxyImage := constants.DefaultFirewallRegistry + "/api-proxy:" + awfImageTag
-			if !imageSet[apiProxyImage] {
+			if _, ok := imageSet[apiProxyImage]; !ok {
 				images = append(images, apiProxyImage)
-				imageSet[apiProxyImage] = true
+				imageSet[apiProxyImage] = struct{}{}
 				dockerLog.Printf("Added AWF api-proxy sidecar container: %s", apiProxyImage)
 			}
 		}
@@ -100,9 +100,9 @@ func collectDockerImages(tools map[string]any, workflowData *WorkflowData, actio
 		// Without this, --skip-pull causes AWF to fail because the cli-proxy image was never pulled.
 		if isCliProxyNeeded(workflowData) {
 			cliProxyImage := constants.DefaultFirewallRegistry + "/cli-proxy:" + awfImageTag
-			if !imageSet[cliProxyImage] {
+			if _, ok := imageSet[cliProxyImage]; !ok {
 				images = append(images, cliProxyImage)
-				imageSet[cliProxyImage] = true
+				imageSet[cliProxyImage] = struct{}{}
 				dockerLog.Printf("Added AWF cli-proxy sidecar container: %s", cliProxyImage)
 			}
 		}
@@ -124,9 +124,9 @@ func collectDockerImages(tools map[string]any, workflowData *WorkflowData, actio
 					// Use default version if not specified (consistent with mcp_servers.go)
 					image += ":" + string(constants.DefaultMCPGatewayVersion)
 				}
-				if !imageSet[image] {
+				if _, ok := imageSet[image]; !ok {
 					images = append(images, image)
-					imageSet[image] = true
+					imageSet[image] = struct{}{}
 					dockerLog.Printf("Added sandbox.mcp container: %s", image)
 				}
 			}
@@ -144,19 +144,20 @@ func collectDockerImages(tools map[string]any, workflowData *WorkflowData, actio
 					// Check for direct container field
 					if mcpConf.Container != "" {
 						image := mcpConf.Container
-						if !imageSet[image] {
+						if _, ok := imageSet[image]; !ok {
 							images = append(images, image)
-							imageSet[image] = true
+							imageSet[image] = struct{}{}
 						}
 					} else if mcpConf.Command == "docker" && len(mcpConf.Args) > 0 {
 						// Extract container image from docker args
 						// Args format: ["run", "--rm", "-i", ... , "container-image"]
 						// The container image is the last arg
 						image := mcpConf.Args[len(mcpConf.Args)-1]
-						// Skip if it's a docker flag (starts with -)
-						if !strings.HasPrefix(image, "-") && !imageSet[image] {
-							images = append(images, image)
-							imageSet[image] = true
+						if !strings.HasPrefix(image, "-") {
+							if _, ok := imageSet[image]; !ok {
+								images = append(images, image)
+								imageSet[image] = struct{}{}
+							}
 						}
 					}
 				}
@@ -213,15 +214,15 @@ func applyContainerPins(images []string, workflowData *WorkflowData) ([]string, 
 // mergeDockerImages appends any images from newImages that are not already present
 // in existing, preserving order for stability.
 func mergeDockerImages(existing, newImages []string) []string {
-	seen := make(map[string]bool, len(existing))
+	seen := make(map[string]struct{}, len(existing))
 	for _, img := range existing {
-		seen[img] = true
+		seen[img] = struct{}{}
 	}
 	result := existing
 	for _, img := range newImages {
-		if !seen[img] {
+		if _, ok := seen[img]; !ok {
 			result = append(result, img)
-			seen[img] = true
+			seen[img] = struct{}{}
 		}
 	}
 	return result
@@ -230,15 +231,17 @@ func mergeDockerImages(existing, newImages []string) []string {
 // mergeDockerImagePins appends any pin entries from newPins that are not already present
 // in existing (keyed by Image), preserving order for stability.
 func mergeDockerImagePins(existing, newPins []GHAWManifestContainer) []GHAWManifestContainer {
-	seen := make(map[string]bool, len(existing))
+	seen := make(map[string]struct{}, len(existing))
 	for _, p := range existing {
-		seen[p.Image] = true
+		seen[p.Image] = struct{}{}
 	}
 	result := existing
 	for _, p := range newPins {
-		if p.Image != "" && !seen[p.Image] {
-			result = append(result, p)
-			seen[p.Image] = true
+		if p.Image != "" {
+			if _, ok := seen[p.Image]; !ok {
+				result = append(result, p)
+				seen[p.Image] = struct{}{}
+			}
 		}
 	}
 	return result

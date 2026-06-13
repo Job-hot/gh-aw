@@ -155,31 +155,65 @@ func getRawMCPConfig(toolConfig map[string]any) (map[string]any, error) {
 	mcpFields := []string{"type", "url", "command", "container", "env", "headers"}
 
 	// List of all known tool config fields (not just MCP)
-	knownToolFields := map[string]bool{
-		"type":            true,
-		"url":             true,
-		"command":         true,
-		"container":       true,
-		"env":             true,
-		"headers":         true,
-		"auth":            true, // upstream OIDC authentication (HTTP servers only)
-		"version":         true,
-		"args":            true,
-		"entrypoint":      true,
-		"entrypointArgs":  true,
-		"mounts":          true,
-		"proxy-args":      true,
-		"registry":        true,
-		"allowed":         true,
-		"mode":            true, // for github tool: prompt/runtime mode (cli) or legacy MCP transport (local/remote)
-		"github-token":    true, // for github tool
-		"read-only":       true, // for github tool
-		"toolsets":        true, // for github tool
-		"integrity-proxy": true, // for github tool
-		"id":              true, // for cache-memory (array notation)
-		"key":             true, // for cache-memory
-		"description":     true, // for cache-memory
-		"retention-days":  true, // for cache-memory
+	knownToolFields := map[string]struct{}{
+		"type": struct{}{},
+
+		"url": struct{}{},
+
+		"command": struct{}{},
+
+		"container": struct{}{},
+
+		"env": struct{}{},
+
+		"headers": struct{}{},
+
+		"auth": struct{}{},
+
+		// upstream OIDC authentication (HTTP servers only)
+		"version": struct{}{},
+
+		"args": struct{}{},
+
+		"entrypoint": struct{}{},
+
+		"entrypointArgs": struct{}{},
+
+		"mounts": struct{}{},
+
+		"proxy-args": struct{}{},
+
+		"registry": struct{}{},
+
+		"allowed": struct{}{},
+
+		"mode": struct{}{},
+
+		// for github tool: prompt/runtime mode (cli) or legacy MCP transport (local/remote)
+		"github-token": struct{}{},
+
+		// for github tool
+		"read-only": struct{}{},
+
+		// for github tool
+		"toolsets": struct{}{},
+
+		// for github tool
+		"integrity-proxy": struct{}{},
+
+		// for github tool
+		"id": struct{}{},
+
+		// for cache-memory (array notation)
+		"key": struct{}{},
+
+		// for cache-memory
+		"description": struct{}{},
+
+		// for cache-memory
+		"retention-days": struct{}{},
+
+		// for cache-memory
 	}
 
 	// Check new format: direct fields in tool config
@@ -191,7 +225,7 @@ func getRawMCPConfig(toolConfig map[string]any) (map[string]any, error) {
 
 	// Check for unknown fields that might be typos or deprecated (like "network")
 	for field := range toolConfig {
-		if !knownToolFields[field] {
+		if _, ok := knownToolFields[field]; !ok {
 			// Build list of valid fields for the error message
 			validFields := []string{}
 			for k := range knownToolFields {

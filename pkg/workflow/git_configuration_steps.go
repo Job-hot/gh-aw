@@ -79,7 +79,7 @@ func getGitIdentityEnvVars() map[string]string {
 //
 // The step always uses continue-on-error to remain resilient when no .git directory
 // exists (e.g. checkout: false) or when git is not installed.
-func (c *Compiler) generateCredentialsCleanerStep(envVars map[string]bool) []string {
+func (c *Compiler) generateCredentialsCleanerStep(envVars map[string]struct{}) []string {
 	lines := []string{
 		"      - name: Clean credentials\n",
 		"        continue-on-error: true\n",
@@ -89,7 +89,7 @@ func (c *Compiler) generateCredentialsCleanerStep(envVars map[string]bool) []str
 		lines = append(lines, "        env:\n")
 		// Emit env vars in a stable, deterministic order (knownCredentialLeakingActions order)
 		for _, known := range knownCredentialLeakingActions {
-			if envVars[known.envVar] {
+			if _, ok := envVars[known.envVar]; ok {
 				lines = append(lines, fmt.Sprintf("          %s: \"true\"\n", known.envVar))
 			}
 		}

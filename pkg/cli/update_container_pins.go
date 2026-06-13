@@ -180,7 +180,7 @@ func collectImagesFromLockFiles(workflowDir string) ([]string, error) {
 		return nil, err
 	}
 
-	imageSet := make(map[string]bool)
+	imageSet := make(map[string]struct{})
 
 	for _, entry := range entries {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".lock.yml") {
@@ -200,7 +200,7 @@ func collectImagesFromLockFiles(workflowDir string) ([]string, error) {
 			}
 			for img := range strings.FieldsSeq(matches[1]) {
 				if img != "" {
-					imageSet[img] = true
+					imageSet[img] = struct{}{}
 				}
 			}
 		}

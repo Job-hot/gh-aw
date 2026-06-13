@@ -17,7 +17,9 @@ import (
 var includeLog = logger.New("parser:include_processor")
 
 // processIncludesWithVisited processes import directives with cycle detection
-func processIncludesWithVisited(content, baseDir string, extractTools bool, visited map[string]bool) (string, error) {
+func processIncludesWithVisited(content, baseDir string, extractTools bool, visited map[string]struct{},
+
+) (string, error) {
 	if fastResult, fastPath := fastPathForNoIncludes(content, extractTools); fastPath {
 		return fastResult, nil
 	}
@@ -80,7 +82,8 @@ func processIncludeDirectiveWithVisited(
 	directive *ImportDirectiveMatch,
 	baseDir string,
 	extractTools bool,
-	visited map[string]bool,
+	visited map[string]struct{},
+
 ) (string, bool, error) {
 	emitIncludeDirectiveDeprecationWarning(directive)
 	resolution, shouldSkip, err := resolveDirectiveWithVisited(directive, baseDir, extractTools, visited)
@@ -89,8 +92,7 @@ func processIncludeDirectiveWithVisited(
 	}
 
 	includeLog.Printf("Processing include file: %s", resolution.fullPath)
-	visited[resolution.fullPath] = true
-
+	visited[resolution.fullPath] = struct{}{}
 	includedContent, err := processIncludedFileWithVisited(resolution.fullPath, resolution.sectionName, extractTools, visited)
 	if err != nil {
 		return "", false, fmt.Errorf("failed to process included file '%s': %w", resolution.fullPath, err)
@@ -127,7 +129,8 @@ func resolveDirectiveWithVisited(
 	directive *ImportDirectiveMatch,
 	baseDir string,
 	extractTools bool,
-	visited map[string]bool,
+	visited map[string]struct{},
+
 ) (includeDirectiveResolution, bool, error) {
 	filePath, sectionName := splitIncludePathAndSection(directive.Path)
 	fullPath, err := ResolveIncludePath(filePath, baseDir, nil)
@@ -142,7 +145,7 @@ func resolveDirectiveWithVisited(
 		return includeDirectiveResolution{}, false, fmt.Errorf("failed to resolve required include '%s': %w", filePath, err)
 	}
 
-	if visited[fullPath] {
+	if _, ok := visited[fullPath]; ok {
 		includeLog.Printf("Skipping already included file: %s", fullPath)
 		if !extractTools {
 			fmt.Fprintln(os.Stderr, console.FormatInfoMessage(fmt.Sprintf("Already included: %s, skipping", filePath)))
@@ -167,7 +170,9 @@ func splitIncludePathAndSection(includePath string) (string, string) {
 
 // processIncludedFile processes a single included file, optionally extracting a section
 // processIncludedFileWithVisited processes a single included file with cycle detection for nested includes
-func processIncludedFileWithVisited(filePath, sectionName string, extractTools bool, visited map[string]bool) (string, error) {
+func processIncludedFileWithVisited(filePath, sectionName string, extractTools bool, visited map[string]struct{},
+
+) (string, error) {
 	includeLog.Printf("Reading included file: %s (extractTools=%t, section=%s)", filePath, extractTools, sectionName)
 	content, err := readFileFunc(filePath)
 	if err != nil {
@@ -247,30 +252,48 @@ func applyRelaxedIncludedFrontmatterValidation(filePath string, frontmatter map[
 }
 
 func collectUnexpectedIncludedFrontmatterFields(frontmatter map[string]any) []string {
-	validFields := map[string]bool{
-		"tools":          true,
-		"engine":         true,
-		"env":            true,
-		"network":        true,
-		"mcp-servers":    true,
-		"imports":        true,
-		"name":           true,
-		"description":    true,
-		"steps":          true,
-		"jobs":           true,
-		"safe-outputs":   true,
-		"mcp-scripts":    true,
-		"services":       true,
-		"runtimes":       true,
-		"permissions":    true,
-		"secret-masking": true,
-		"inputs":         true,
-		"import-schema":  true,
-		"features":       true,
+	validFields := map[string]struct{}{
+		"tools": struct{}{},
+
+		"engine": struct{}{},
+
+		"env": struct{}{},
+
+		"network": struct{}{},
+
+		"mcp-servers": struct{}{},
+
+		"imports": struct{}{},
+
+		"name": struct{}{},
+
+		"description": struct{}{},
+
+		"steps": struct{}{},
+
+		"jobs": struct{}{},
+
+		"safe-outputs": struct{}{},
+
+		"mcp-scripts": struct{}{},
+
+		"services": struct{}{},
+
+		"runtimes": struct{}{},
+
+		"permissions": struct{}{},
+
+		"secret-masking": struct{}{},
+
+		"inputs": struct{}{},
+
+		"import-schema": struct{}{},
+
+		"features": struct{}{},
 	}
 	var unexpectedFields []string
 	for key := range frontmatter {
-		if !validFields[key] {
+		if _, ok := validFields[key]; !ok {
 			unexpectedFields = append(unexpectedFields, key)
 		}
 	}
@@ -316,7 +339,9 @@ func extractToolsFromIncludedResult(result *FrontmatterResult, validationErr err
 	return "{}", nil
 }
 
-func extractIncludedMarkdownContent(filePath, sectionName string, content []byte, visited map[string]bool, extractTools bool) (string, error) {
+func extractIncludedMarkdownContent(filePath, sectionName string, content []byte, visited map[string]struct{},
+
+	extractTools bool) (string, error) {
 	markdownContent, err := ExtractMarkdownContent(string(content))
 	if err != nil {
 		return "", fmt.Errorf("failed to extract markdown from %s: %w", filePath, err)

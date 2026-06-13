@@ -437,19 +437,19 @@ func needsPullRequestsPermission(mergedEvents map[string]map[string]bool) bool {
 
 func buildCommandsHeaderMetadata(slashRoutesByCommand map[string][]slashCommandRoute, labelRoutesByCommand map[string][]slashCommandRoute) commandsHeaderMetadata {
 	commands := make([]string, 0, len(slashRoutesByCommand))
-	workflowSet := make(map[string]bool)
+	workflowSet := make(map[string]struct{})
 	for command, routes := range slashRoutesByCommand {
 		commands = append(commands, command)
 		for _, route := range routes {
 			if route.Workflow != "" {
-				workflowSet[route.Workflow] = true
+				workflowSet[route.Workflow] = struct{}{}
 			}
 		}
 	}
 	for _, routes := range labelRoutesByCommand {
 		for _, route := range routes {
 			if route.Workflow != "" {
-				workflowSet[route.Workflow] = true
+				workflowSet[route.Workflow] = struct{}{}
 			}
 		}
 	}
@@ -530,9 +530,9 @@ func writeCentralSlashEventsYAML(b *strings.Builder, mergedEvents map[string]map
 }
 
 func uniqueSorted(values []string) []string {
-	seen := make(map[string]bool, len(values))
+	seen := make(map[string]struct{}, len(values))
 	for _, v := range values {
-		seen[v] = true
+		seen[v] = struct{}{}
 	}
 	result := make([]string, 0, len(seen))
 	for v := range seen {

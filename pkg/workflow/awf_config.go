@@ -438,12 +438,14 @@ func BuildAWFConfigJSON(config AWFCommandConfig) (string, error) {
 // non-duplicate entries; this keeps the allow-list deterministic.
 func splitDomainList(domains string) []string {
 	var result []string
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	for d := range strings.SplitSeq(domains, ",") {
 		d = strings.TrimSpace(d)
-		if d != "" && !seen[d] {
-			seen[d] = true
-			result = append(result, d)
+		if d != "" {
+			if _, ok := seen[d]; !ok {
+				seen[d] = struct{}{}
+				result = append(result, d)
+			}
 		}
 	}
 	return result

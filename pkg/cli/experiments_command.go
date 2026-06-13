@@ -494,7 +494,7 @@ func fetchLocalExperiments() ([]ExperimentInfo, error) {
 		return nil, fmt.Errorf("failed to list experiment branches: %w", err)
 	}
 
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	var experiments []ExperimentInfo
 
 	for line := range strings.SplitSeq(strings.TrimSpace(string(output)), "\n") {
@@ -502,11 +502,11 @@ func fetchLocalExperiments() ([]ExperimentInfo, error) {
 			continue
 		}
 		workflowID := extractExperimentName(line)
-		if workflowID == "" || seen[workflowID] {
+		_, seenOk := seen[workflowID]
+		if workflowID == "" || seenOk {
 			continue
 		}
-		seen[workflowID] = true
-
+		seen[workflowID] = struct{}{}
 		branchName := experimentsBranchPrefix + workflowID
 		// Prefer remote ref; fall back to local.
 		ref := "origin/" + branchName

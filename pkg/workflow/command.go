@@ -176,11 +176,11 @@ func buildEventAwareCommandCondition(commandNames []string, commandEvents []stri
 
 	// Define which events should be checked for command
 	var commentEventTerms []ConditionNode
-	actualEventNames := make(map[string]bool) // Use map to deduplicate
+	actualEventNames := make(map[string]struct{}) // Use map to deduplicate
 	for _, eventName := range eventNames {
 		actualName := GetActualGitHubEventName(eventName)
-		if !actualEventNames[actualName] {
-			actualEventNames[actualName] = true
+		if _, ok := actualEventNames[actualName]; !ok {
+			actualEventNames[actualName] = struct{}{}
 			commentEventTerms = append(commentEventTerms, BuildEventTypeEquals(actualName))
 		}
 	}

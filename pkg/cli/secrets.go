@@ -65,29 +65,33 @@ func checkSecretExists(secretName string) (bool, error) {
 func extractSecretsFromConfig(config parser.RegistryMCPServerConfig) []SecretInfo {
 	secretsLog.Printf("Extracting secrets from MCP config: command=%s", config.Command)
 	var secrets []SecretInfo
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 
 	// Extract from HTTP headers
 	for key, value := range config.Headers {
 		secretName := workflow.ExtractSecretName(value)
-		if secretName != "" && !seen[secretName] {
-			secrets = append(secrets, SecretInfo{
-				Name:   secretName,
-				EnvKey: key,
-			})
-			seen[secretName] = true
+		if secretName != "" {
+			if _, ok := seen[secretName]; !ok {
+				secrets = append(secrets, SecretInfo{
+					Name:   secretName,
+					EnvKey: key,
+				})
+				seen[secretName] = struct{}{}
+			}
 		}
 	}
 
 	// Extract from environment variables
 	for key, value := range config.Env {
 		secretName := workflow.ExtractSecretName(value)
-		if secretName != "" && !seen[secretName] {
-			secrets = append(secrets, SecretInfo{
-				Name:   secretName,
-				EnvKey: key,
-			})
-			seen[secretName] = true
+		if secretName != "" {
+			if _, ok := seen[secretName]; !ok {
+				secrets = append(secrets, SecretInfo{
+					Name:   secretName,
+					EnvKey: key,
+				})
+				seen[secretName] = struct{}{}
+			}
 		}
 	}
 

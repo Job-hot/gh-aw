@@ -589,10 +589,14 @@ func (c *Compiler) extractPreActivationCustomFields(jobs map[string]any) ([]stri
 		}
 
 		// Validate that only steps and outputs fields are present
-		allowedFields := map[string]bool{
-			"steps":     true,
-			"outputs":   true,
-			"pre-steps": true, // handled by generic built-in pre-steps insertion in compiler_jobs.go
+		allowedFields := map[string]struct{}{
+			"steps": struct{}{},
+
+			"outputs": struct{}{},
+
+			"pre-steps": struct{}{},
+
+			// handled by generic built-in pre-steps insertion in compiler_jobs.go
 		}
 
 		for field := range configMap {
@@ -602,7 +606,7 @@ func (c *Compiler) extractPreActivationCustomFields(jobs map[string]any) ([]stri
 					jobName,
 				)
 			}
-			if !allowedFields[field] {
+			if _, ok := allowedFields[field]; !ok {
 				return nil, nil, fmt.Errorf("jobs.%s: unsupported field '%s' - only 'steps', 'outputs', and 'pre-steps' are allowed", jobName, field)
 			}
 		}

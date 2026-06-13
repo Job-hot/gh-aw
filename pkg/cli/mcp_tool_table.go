@@ -35,7 +35,7 @@ func renderMCPToolTable(info *parser.MCPServerInfo, opts MCPToolTableOptions) st
 	}
 
 	// Create a map for quick lookup of allowed tools from workflow configuration
-	allowedMap := make(map[string]bool)
+	allowedMap := make(map[string]struct{})
 
 	// Check for wildcard "*" which means all tools are allowed
 	hasWildcard := false
@@ -43,7 +43,7 @@ func renderMCPToolTable(info *parser.MCPServerInfo, opts MCPToolTableOptions) st
 		if allowed == "*" {
 			hasWildcard = true
 		}
-		allowedMap[allowed] = true
+		allowedMap[allowed] = struct{}{}
 	}
 
 	mcpToolTableLog.Printf("Tool permissions: has_wildcard=%v, allowed_count=%d", hasWildcard, len(allowedMap))
@@ -69,7 +69,7 @@ func renderMCPToolTable(info *parser.MCPServerInfo, opts MCPToolTableOptions) st
 		if len(info.Config.Allowed) == 0 || hasWildcard {
 			// If no allowed list is specified or "*" wildcard is present, assume all tools are allowed
 			status = "✅"
-		} else if allowedMap[tool.Name] {
+		} else if _, ok := allowedMap[tool.Name]; ok {
 			status = "✅"
 		}
 
@@ -88,7 +88,8 @@ func renderMCPToolTable(info *parser.MCPServerInfo, opts MCPToolTableOptions) st
 	if opts.ShowSummary {
 		allowedCount := 0
 		for _, tool := range info.Tools {
-			if len(info.Config.Allowed) == 0 || hasWildcard || allowedMap[tool.Name] {
+			_, allowedOk := allowedMap[tool.Name]
+			if len(info.Config.Allowed) == 0 || hasWildcard || allowedOk {
 				allowedCount++
 			}
 		}

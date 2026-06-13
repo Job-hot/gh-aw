@@ -168,17 +168,20 @@ func (e *CopilotEngine) computeCopilotToolArguments(tools map[string]any, safeOu
 	// Built-in tool names that should be skipped when processing MCP servers
 	// Note: GitHub is NOT included here because it needs MCP configuration in CLI mode
 	// Note: web-fetch is NOT included here because it needs explicit --allow-tool argument
-	builtInTools := map[string]bool{
-		"bash":       true,
-		"edit":       true,
-		"web-search": true,
-		"playwright": true,
+	builtInTools := map[string]struct{}{
+		"bash": struct{}{},
+
+		"edit": struct{}{},
+
+		"web-search": struct{}{},
+
+		"playwright": struct{}{},
 	}
 
 	// Handle MCP server tools
 	for toolName, toolConfig := range tools {
 		// Skip built-in tools we've already handled
-		if builtInTools[toolName] {
+		if _, ok := builtInTools[toolName]; ok {
 			continue
 		}
 

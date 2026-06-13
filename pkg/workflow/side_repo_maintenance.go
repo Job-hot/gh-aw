@@ -121,12 +121,12 @@ func generateAllSideRepoMaintenanceWorkflows(
 
 	// Track which side-repo maintenance files we (re-)generate so we can identify
 	// and remove stale files from previous runs when target repos are renamed or removed.
-	generatedFiles := make(map[string]bool)
+	generatedFiles := make(map[string]struct{})
 
 	for _, target := range targets {
 		slug := stringutil.SanitizeForFilename(target.Repository)
 		filename := "agentics-maintenance-" + slug + ".yml"
-		generatedFiles[filename] = true
+		generatedFiles[filename] = struct{}{}
 		outPath := filepath.Join(workflowDir, filename)
 
 		maintenanceLog.Printf("Generating side-repo maintenance workflow: %s → %s", target.Repository, filename)
@@ -159,7 +159,7 @@ func generateAllSideRepoMaintenanceWorkflows(
 		if !strings.HasPrefix(name, "agentics-maintenance-") || !strings.HasSuffix(name, ".yml") {
 			continue
 		}
-		if generatedFiles[name] {
+		if _, ok := generatedFiles[name]; ok {
 			continue
 		}
 		stalePath := filepath.Join(workflowDir, name)

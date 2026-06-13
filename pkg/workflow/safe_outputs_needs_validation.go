@@ -28,12 +28,12 @@ func validateSafeOutputsNeedsField(data *WorkflowData, fieldName string, needs [
 		return nil
 	}
 
-	customJobs := make(map[string]bool, len(data.Jobs))
+	customJobs := make(map[string]struct{}, len(data.Jobs))
 	for jobName := range data.Jobs {
 		if isReservedSafeOutputsNeedsTarget(jobName) {
 			continue
 		}
-		customJobs[jobName] = true
+		customJobs[jobName] = struct{}{}
 	}
 	safeOutputsNeedsValidationLog.Printf("Found %d custom job(s) available as needs targets", len(customJobs))
 
@@ -47,7 +47,7 @@ func validateSafeOutputsNeedsField(data *WorkflowData, fieldName string, needs [
 				fieldName,
 			)
 		}
-		if !customJobs[need] {
+		if _, ok := customJobs[need]; !ok {
 			safeOutputsNeedsValidationLog.Printf("Validation failed: %q is not a known custom job", need)
 			return fmt.Errorf(
 				"safe-outputs.%s: unknown job %q. Expected one of the workflow's custom jobs. Example: safe-outputs.%s: [secrets_fetcher]",

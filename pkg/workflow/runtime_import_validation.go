@@ -41,7 +41,7 @@ func extractRuntimeImportPaths(markdownContent string) []string {
 	}
 
 	var paths []string
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 
 	matches := runtimeImportMacroRe.FindAllStringSubmatch(markdownContent, -1)
 
@@ -71,9 +71,9 @@ func extractRuntimeImportPaths(markdownContent string) []string {
 			}
 
 			// Add to list if not already seen
-			if !seen[importPath] {
+			if _, ok := seen[importPath]; !ok {
 				paths = append(paths, importPath)
-				seen[importPath] = true
+				seen[importPath] = struct{}{}
 			}
 		}
 	}

@@ -138,15 +138,15 @@ func fetchGitHubWorkflows(repoOverride string, verbose bool) (map[string]*GitHub
 
 	// Count user workflows (those with .md files)
 	mdFiles, _ := getMarkdownWorkflowFiles("")
-	mdWorkflowNames := make(map[string]bool)
+	mdWorkflowNames := make(map[string]struct{})
 	for _, file := range mdFiles {
 		name := extractWorkflowNameFromPath(file)
-		mdWorkflowNames[name] = true
+		mdWorkflowNames[name] = struct{}{}
 	}
 
 	var userWorkflowCount int
 	for name := range workflowMap {
-		if mdWorkflowNames[name] {
+		if _, ok := mdWorkflowNames[name]; ok {
 			userWorkflowCount++
 		}
 	}

@@ -44,7 +44,7 @@ func (c *AddInteractiveConfig) selectAIEngineAndKey() error {
 		// Priority 1: Check existing repository secrets using EngineOptions
 		// This takes precedence over workflow preference since users should use what's already available
 		for _, opt := range constants.EngineOptions {
-			if c.existingSecrets[opt.SecretName] {
+			if _, ok := c.existingSecrets[opt.SecretName]; ok {
 				defaultEngine = opt.Value
 				addInteractiveLog.Printf("Found existing secret %s, recommending engine: %s", opt.SecretName, opt.Value)
 				break
@@ -92,8 +92,12 @@ func (c *AddInteractiveConfig) selectAIEngineAndKey() error {
 		// Add markers for secret availability and workflow specification.
 		// opt may be nil for catalog engines not yet represented in EngineOptions;
 		// in that case we conservatively show '[no secret]'.
-		if opt != nil && c.existingSecrets[opt.SecretName] {
-			label += " [secret exists]"
+		if opt != nil {
+			if _, ok := c.existingSecrets[opt.SecretName]; ok {
+				label += " [secret exists]"
+			} else {
+				label += " [no secret]"
+			}
 		} else {
 			label += " [no secret]"
 		}
@@ -197,7 +201,7 @@ func (c *AddInteractiveConfig) configureEngineAPISecret(engine string) error {
 	// This prevents duplicate secret uploads in createWorkflowPRAndConfigureSecret later
 	opt := constants.GetEngineOption(engine)
 	if opt != nil {
-		c.existingSecrets[opt.SecretName] = true
+		c.existingSecrets[opt.SecretName] = struct{}{}
 		addInteractiveLog.Printf("Updated existingSecrets to include %s after upload", opt.SecretName)
 	}
 

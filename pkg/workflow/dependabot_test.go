@@ -264,7 +264,7 @@ func TestGenerateDependabotConfig(t *testing.T) {
 	tempDir := testutil.TempDir(t, "test-*")
 	dependabotPath := filepath.Join(tempDir, "dependabot.yml")
 
-	ecosystems := map[string]bool{"npm": true}
+	ecosystems := map[string]struct{}{"npm": struct{}{}}
 
 	// Test creating new dependabot.yml
 	err := compiler.generateDependabotConfig(dependabotPath, ecosystems, false)
@@ -327,7 +327,7 @@ func TestGenerateDependabotConfig_PreserveExisting(t *testing.T) {
 	existingData, _ := yaml.Marshal(&existingConfig)
 	os.WriteFile(dependabotPath, existingData, 0644)
 
-	ecosystems := map[string]bool{"npm": true}
+	ecosystems := map[string]struct{}{"npm": struct{}{}}
 
 	// Try to generate without force - should preserve
 	err := compiler.generateDependabotConfig(dependabotPath, ecosystems, false)
@@ -977,10 +977,10 @@ func TestGenerateDependabotConfig_MultipleEcosystems(t *testing.T) {
 	tempDir := testutil.TempDir(t, "test-*")
 	dependabotPath := filepath.Join(tempDir, "dependabot.yml")
 
-	ecosystems := map[string]bool{
-		"npm":   true,
-		"pip":   true,
-		"gomod": true,
+	ecosystems := map[string]struct{}{
+		"npm":   struct{}{},
+		"pip":   struct{}{},
+		"gomod": struct{}{},
 	}
 
 	// Test creating new dependabot.yml with multiple ecosystems

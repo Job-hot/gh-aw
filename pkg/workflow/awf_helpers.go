@@ -759,12 +759,12 @@ func WrapCommandInShell(command string) string {
 //   - engine.env var names whose values contain ${{ secrets.* }}
 //   - agent.env var names whose values contain ${{ secrets.* }}
 func ComputeAWFExcludeEnvVarNames(workflowData *WorkflowData, coreSecretVarNames []string) []string {
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	var names []string
 
 	addUnique := func(name string) {
-		if !seen[name] {
-			seen[name] = true
+		if _, ok := seen[name]; !ok {
+			seen[name] = struct{}{}
 			names = append(names, name)
 		}
 	}

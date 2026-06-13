@@ -128,9 +128,9 @@ func filterExpressionsForActivation(mappings []*ExpressionMapping, customJobs ma
 		return mappings
 	}
 
-	beforeActivationSet := make(map[string]bool, len(beforeActivationJobs))
+	beforeActivationSet := make(map[string]struct{}, len(beforeActivationJobs))
 	for _, j := range beforeActivationJobs {
-		beforeActivationSet[j] = true
+		beforeActivationSet[j] = struct{}{}
 	}
 
 	filtered := make([]*ExpressionMapping, 0, len(mappings))
@@ -147,10 +147,15 @@ func filterExpressionsForActivation(mappings []*ExpressionMapping, customJobs ma
 			filtered = append(filtered, m)
 			continue
 		}
-		// If it's a custom job NOT in beforeActivationJobs, drop it
-		if _, isCustomJob := customJobs[jobName]; isCustomJob && !beforeActivationSet[jobName] {
-			knownNeedsLog.Printf("Filtered post-activation expression from activation substitution step: %s", m.Content)
-			continue
+		{
+			// If it's a custom job NOT in beforeActivationJobs, drop it
+			_, isCustomJob := customJobs[jobName]
+			if isCustomJob {
+				if _, ok := beforeActivationSet[jobName]; !ok {
+					knownNeedsLog.Printf("Filtered post-activation expression from activation substitution step: %s", m.Content)
+					continue
+				}
+			}
 		}
 		filtered = append(filtered, m)
 	}

@@ -530,13 +530,13 @@ func TestAggregateDomainStats(t *testing.T) {
 		}
 
 		// Verify specific domains
-		if !agg.allAllowedDomains["example.com"] {
+		if _, ok := agg.allAllowedDomains["example.com"]; !ok {
 			t.Error("Expected example.com in allowed domains")
 		}
-		if !agg.allAllowedDomains["api.github.com"] {
+		if _, ok := agg.allAllowedDomains["api.github.com"]; !ok {
 			t.Error("Expected api.github.com in allowed domains")
 		}
-		if !agg.allBlockedDomains["blocked.com"] {
+		if _, ok := agg.allBlockedDomains["blocked.com"]; !ok {
 			t.Error("Expected blocked.com in blocked domains")
 		}
 	})
@@ -597,14 +597,17 @@ func TestAggregateDomainStats(t *testing.T) {
 // TestConvertDomainsToSortedSlices tests the domain conversion helper
 func TestConvertDomainsToSortedSlices(t *testing.T) {
 	t.Run("converts and sorts domains", func(t *testing.T) {
-		allowedMap := map[string]bool{
-			"z.com": true,
-			"a.com": true,
-			"m.com": true,
+		allowedMap := map[string]struct{}{
+			"z.com": struct{}{},
+
+			"a.com": struct{}{},
+
+			"m.com": struct{}{},
 		}
-		deniedMap := map[string]bool{
-			"y.com": true,
-			"b.com": true,
+		deniedMap := map[string]struct{}{
+			"y.com": struct{}{},
+
+			"b.com": struct{}{},
 		}
 
 		allowed, denied := convertDomainsToSortedSlices(allowedMap, deniedMap)
@@ -632,9 +635,8 @@ func TestConvertDomainsToSortedSlices(t *testing.T) {
 	})
 
 	t.Run("handles empty maps", func(t *testing.T) {
-		allowedMap := map[string]bool{}
-		deniedMap := map[string]bool{}
-
+		allowedMap := map[string]struct{}{}
+		deniedMap := map[string]struct{}{}
 		allowed, denied := convertDomainsToSortedSlices(allowedMap, deniedMap)
 
 		if len(allowed) != 0 {

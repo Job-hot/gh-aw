@@ -413,22 +413,26 @@ func deeperFetchDepth(a, b *int) *int {
 // mergeSparsePatterns parses and unions sparse-checkout patterns.
 // Patterns can be newline-separated.
 func mergeSparsePatterns(existing []string, newPatterns string) []string {
-	seen := make(map[string]bool, len(existing))
+	seen := make(map[string]struct{}, len(existing))
 	result := make([]string, 0, len(existing))
 
 	for _, p := range existing {
 		p = strings.TrimSpace(p)
-		if p != "" && !seen[p] {
-			seen[p] = true
-			result = append(result, p)
+		if p != "" {
+			if _, ok := seen[p]; !ok {
+				seen[p] = struct{}{}
+				result = append(result, p)
+			}
 		}
 	}
 
 	for p := range strings.SplitSeq(newPatterns, "\n") {
 		p = strings.TrimSpace(p)
-		if p != "" && !seen[p] {
-			seen[p] = true
-			result = append(result, p)
+		if p != "" {
+			if _, ok := seen[p]; !ok {
+				seen[p] = struct{}{}
+				result = append(result, p)
+			}
 		}
 	}
 
@@ -437,20 +441,24 @@ func mergeSparsePatterns(existing []string, newPatterns string) []string {
 
 // mergeFetchRefs unions two sets of fetch ref patterns preserving insertion order.
 func mergeFetchRefs(existing []string, newRefs []string) []string {
-	seen := make(map[string]bool, len(existing))
+	seen := make(map[string]struct{}, len(existing))
 	result := make([]string, 0)
 	for _, r := range existing {
 		r = strings.TrimSpace(r)
-		if r != "" && !seen[r] {
-			seen[r] = true
-			result = append(result, r)
+		if r != "" {
+			if _, ok := seen[r]; !ok {
+				seen[r] = struct{}{}
+				result = append(result, r)
+			}
 		}
 	}
 	for _, r := range newRefs {
 		r = strings.TrimSpace(r)
-		if r != "" && !seen[r] {
-			seen[r] = true
-			result = append(result, r)
+		if r != "" {
+			if _, ok := seen[r]; !ok {
+				seen[r] = struct{}{}
+				result = append(result, r)
+			}
 		}
 	}
 	return result
