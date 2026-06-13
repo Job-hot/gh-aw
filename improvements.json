@@ -1,48 +1,6 @@
 {
-  "last_updated": "2026-06-12",
+  "last_updated": "2026-06-13",
   "pending_tasks": [
-    {
-      "file": ".github/workflows/pr-nitpick-reviewer.md",
-      "created": "2026-06-12",
-      "status": "pending",
-      "priority": "high",
-      "title": "Replace theatrical run messages with professional enterprise-appropriate equivalents"
-    },
-    {
-      "file": "docs/src/content/docs/guides/open-telemetry.mdx",
-      "created": "2026-06-12",
-      "status": "pending",
-      "priority": "medium",
-      "title": "Convert shared imports tip from buried paragraph to discoverable callout block"
-    },
-    {
-      "file": ".github/workflows/smoke-copilot-arm.md",
-      "created": "2026-06-10",
-      "status": "pending",
-      "priority": "high",
-      "title": "Replace theatrical newspaper run-failure message with actionable guidance"
-    },
-    {
-      "file": "pkg/cli/lint_command.go",
-      "created": "2026-06-10",
-      "status": "pending",
-      "priority": "medium",
-      "title": "Clarify --shellcheck/--pyflakes flag descriptions and explain zizmor/poutine references"
-    },
-    {
-      "file": ".github/workflows/scout.md",
-      "created": "2026-06-09",
-      "status": "pending",
-      "priority": "high",
-      "title": "Replace adventure-themed run messages with professional, actionable equivalents"
-    },
-    {
-      "file": "docs/src/content/docs/blog/2026-01-13-meet-the-workflows-metrics-analytics.md",
-      "created": "2026-06-09",
-      "status": "pending",
-      "priority": "medium",
-      "title": "Fix broken github.github.com Quick Start URLs"
-    },
     {
       "file": ".github/workflows/smoke-codex.md",
       "created": "2026-06-01",
@@ -84,16 +42,58 @@
       "status": "pending",
       "priority": "medium",
       "title": "Replace Broken Doc Path with Actionable URL in Permissions Validation Error"
+    },
+    {
+      "file": ".github/workflows/test-quality-sentinel.md",
+      "created": "2026-06-13",
+      "status": "pending",
+      "priority": "high",
+      "title": "Fix run-success emoji (\ud83e\uddea\u2192\u2705) for consistent status signaling"
+    },
+    {
+      "file": "docs/src/content/docs/specs/ai-credits-specification.md",
+      "created": "2026-06-13",
+      "status": "pending",
+      "priority": "high",
+      "title": "Expand Appendix A to show \u00a73.5 cache_read deduction step-by-step"
     }
   ],
   "completed_tasks": [],
   "quality_trends": {
-    "2026-05-24": {"professional": 2, "needs_minor_work": 2, "needs_significant_work": 1},
-    "2026-05-27": {"professional": 3, "needs_minor_work": 2, "needs_significant_work": 0},
-    "2026-06-01": {"professional": 3, "needs_minor_work": 1, "needs_significant_work": 1},
-    "2026-06-02": {"professional": 3, "needs_minor_work": 2, "needs_significant_work": 0},
-    "2026-06-09": {"professional": 4, "needs_minor_work": 1, "needs_significant_work": 1},
-    "2026-06-10": {"professional": 4, "needs_minor_work": 3, "needs_significant_work": 0},
-    "2026-06-12": {"professional": 3, "needs_minor_work": 1, "needs_significant_work": 1}
+    "2026-05-24": {
+      "professional": 2,
+      "needs_minor_work": 2,
+      "needs_significant_work": 1
+    },
+    "2026-05-27": {
+      "professional": 3,
+      "needs_minor_work": 2,
+      "needs_significant_work": 0
+    },
+    "2026-06-01": {
+      "professional": 3,
+      "needs_minor_work": 1,
+      "needs_significant_work": 1
+    },
+    "2026-06-02": {
+      "professional": 3,
+      "needs_minor_work": 2,
+      "needs_significant_work": 0
+    },
+    "2026-06-09": {
+      "professional": 4,
+      "needs_minor_work": 1,
+      "needs_significant_work": 1
+    },
+    "2026-06-10": {
+      "professional": 4,
+      "needs_minor_work": 3,
+      "needs_significant_work": 0
+    },
+    "2026-06-12": {
+      "professional": 3,
+      "needs_minor_work": 1,
+      "needs_significant_work": 1
+    }
   }
 }
