@@ -1,31 +1,26 @@
 # PR Triage Memory
-Last: 2026-06-12T18:55:38Z | Run: 27436346713 | Fork PRs: 0
+Last: 2026-06-13T01:24:51Z | Run: 27452332230 | Fork PRs: 0
 
-## PR Triage Summary - 2026-06-12 (Run 27436346713)
+## PR Triage Summary - 2026-06-13 (Run 27452332230)
 
 ### Status
 **No fork PRs to triage**
 
 ### Details
-- **Run ID**: 27436346713
-- **Open Agent PRs Found**: 7 (all branch-based, skipped)
+- **Run ID**: 27452332230
+- **Open Agent PRs Found**: 4 (all branch-based, skipped)
 - **Fork PRs Found**: 0
 - **PRs Triaged**: 0
-- **New Since Last Run**: #38888, #38882, #38856, #38854, #38810, #38785
-- **Merged Since Last Run**: #38780, #38779, #38778, #38776
-- **Closed (no merge) Since Last Run**: #38774
+- **New Since Last Run**: #38911, #38945, #38946, #38965
+- **Merged Since Last Run**: #38785, #38888, #38854, #38781, #38882, #38856
+- **Closed (no merge) Since Last Run**: #38810
 
 ### Branch PRs Skipped (fork-only policy)
 Per workflow instructions (fork PRs only — `isCrossRepository: false` = skip):
-- #38856 - Add AIC usage cache to guardrail (NOT draft, new, +7867/-156, 258 files, feature, high-risk, CI passing) ⭐
-- #38785 - [jsweep] Clean validate_context_variables.cjs (NOT draft, new, +115/-49, 2 files, bug, low-risk, CI passing, expires Jun 14) ⭐
-- #38882 - fix(set_issue_field): fix invalid GraphQL query (DRAFT, new, +112/-61, 2 files, bug, medium-risk)
-- #38854 - ctxbackground: resolve Background() calls by type identity (NOT draft, new, +50/-4, 6 files, bug, low-risk)
-- #38781 - Refactor engine log parsing to canonical Copilot event format (NOT draft — was draft, now ready!, +525/-305, 15 files, refactor, high-risk)
-- #38810 - [actions] Update GitHub Actions versions (NOT draft, new, +7/-7, 1 file, chore, low-risk, expires Jun 13 🚨)
-- #38888 - [linter-miner] feat: add httpnoctx linter (DRAFT, new, +208/-0, 4 files, feature, medium-risk, expires Jun 19)
+- #38911 - [ARC/DinD] Emit chroot.binariesSourcePath and chroot.identity (NOT draft, +7221/-6, 261 files, feature, high-risk, CI passing, CHANGES_REQUESTED ⚠️)
+- #38946 - Migrate cobra command examples from Long: prose to Example: field (NOT draft, +189/-218, 42 files, refactor, medium-risk, CI passing)
+- #38945 - Add GitHubMCPMode string enum (NOT draft, +265/-276, 29 files, refactor, high-risk, no CI)
+- #38965 - Allow runs-on-slim to use runner label arrays (DRAFT, +157/-18, 15 files, feature, medium-risk, no CI)
 
-### Expiring Soon
-- #38810 expires Jun 13 🚨 (tomorrow!)
-- #38785 expires Jun 14
-- #38888 expires Jun 19
+### All Agents Observed
+- app/copilot-swe-agent (4 PRs)
