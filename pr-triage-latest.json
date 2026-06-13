@@ -1,71 +1,77 @@
 {
-  "run_date": "2026-06-13T07:35:04Z",
-  "run_id": "27460462990",
+  "run_date": "2026-06-13T12:52:49Z",
+  "run_id": "27467268452",
+  "previous_run_id": "27460462990",
+  "previous_run_date": "2026-06-13T07:35:04Z",
   "fork_prs": 0,
-  "agent_prs_found": 3,
-  "prs_found": [],
+  "agent_prs_found": 5,
+  "prs_triaged": 0,
   "branch_prs_skipped": [
+    {
+      "number": 39069,
+      "title": "feat: add \"Optimize token consumption\" section to agent failure issues when a guardrail triggers",
+      "draft": true,
+      "category": "feature",
+      "risk": "low",
+      "ci": "no_checks",
+      "created": "2026-06-13",
+      "labels": [],
+      "note": "NEW/DRAFT since last run"
+    },
+    {
+      "number": 39064,
+      "title": "Reduce Copilot template-injection noise by moving max-ai-credits expression to step env",
+      "draft": false,
+      "category": "chore",
+      "risk": "medium",
+      "ci": "no_checks",
+      "created": "2026-06-13",
+      "labels": [],
+      "note": "NEW since last run"
+    },
+    {
+      "number": 39056,
+      "title": "[actions] Update GitHub Actions versions - 2026-06-13",
+      "draft": false,
+      "category": "chore",
+      "risk": "medium",
+      "ci": "failing",
+      "created": "2026-06-13",
+      "labels": [],
+      "note": "NEW since last run; 2 CI failures (activation)"
+    },
+    {
+      "number": 39054,
+      "title": "httpnoctx: convert 3 context-free HTTP calls to NewRequestWithContext+Do and enforce in CI",
+      "draft": false,
+      "category": "bug",
+      "risk": "medium",
+      "ci": "passing",
+      "created": "2026-06-13",
+      "labels": [],
+      "note": "NEW since last run; CI passing"
+    },
     {
       "number": 38911,
       "title": "[ARC/DinD] Emit chroot.binariesSourcePath and chroot.identity in AWF stdin-config",
-      "state": "OPEN",
-      "isDraft": false,
-      "isCrossRepository": false,
-      "labels": ["smoke", "smoke-claude"],
-      "additions": null,
-      "deletions": null,
-      "changedFiles": null,
+      "draft": false,
       "category": "feature",
       "risk": "high",
-      "priority": 62,
-      "ci": "unknown",
-      "reviewDecision": null,
-      "agent": "Copilot",
-      "note": "UNCHANGED from last run"
-    },
-    {
-      "number": 38965,
-      "title": "Allow runs-on-slim to use runner label arrays",
-      "state": "OPEN",
-      "isDraft": false,
-      "isCrossRepository": false,
-      "labels": [],
-      "additions": null,
-      "deletions": null,
-      "changedFiles": null,
-      "category": "feature",
-      "risk": "medium",
-      "priority": 34,
-      "ci": "unknown",
-      "reviewDecision": null,
-      "agent": "Copilot",
-      "note": "WAS DRAFT - now ready for review"
-    },
-    {
-      "number": 39008,
-      "title": "fix: correct malformed CreateArtifact Twirp request and make upload_artifact failures non-fatal",
-      "state": "OPEN",
-      "isDraft": false,
-      "isCrossRepository": false,
-      "labels": [],
-      "additions": 120,
-      "deletions": 20,
-      "changedFiles": 4,
-      "category": "bug",
-      "risk": "medium",
-      "priority": 55,
-      "ci": "unknown",
-      "reviewDecision": null,
-      "agent": "Copilot",
-      "note": "NEW since last run"
+      "ci": "passing",
+      "created": "2026-06-12",
+      "labels": ["smoke","smoke-claude"],
+      "note": "UNCHANGED from last run; CI passing; 1 day old"
     }
   ],
-  "new_since_last_run": [39008],
-  "no_longer_draft": [38965],
-  "merged_since_last_run": [38945, 38946],
+  "merged_since_last_run": [
+    {"number": 38965, "title": "Allow runs-on-slim to use runner label arrays", "merged_at": "2026-06-13T11:15:35Z"},
+    {"number": 39008, "title": "fix: correct malformed CreateArtifact Twirp request and make upload_artifact failures non-fatal", "merged_at": "2026-06-13T11:19:24Z"}
+  ],
+  "new_since_last_run": [39069, 39064, 39056, 39054],
+  "unchanged": [38911],
   "closed_no_merge": [],
   "otel_prs": [],
-  "notes": "3 open agent PRs, all branch-based (isCrossRepository:false). 1 new since run 27452332230 (#39008). 2 merged (#38945, #38946). #38965 promoted from draft. Fork-only policy: 0 fork PRs found, 0 triaged.",
+  "notes": "5 open agent PRs, all branch-based (isCrossRepository:false). 4 new since run 27460462990 (#39069 draft, #39064, #39056, #39054). 2 merged (#38965, #39008). Fork-only policy: 0 fork PRs found, 0 triaged.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
@@ -73,25 +79,9 @@
   "batches": {},
   "close_candidates": [],
   "statistics": {
-    "by_category": {
-      "feature": 2,
-      "bug": 1
-    },
-    "by_risk": {
-      "high": 1,
-      "medium": 2,
-      "low": 0
-    },
-    "by_priority": {
-      "high_70_100": 0,
-      "medium_40_69": 2,
-      "low_0_39": 1
-    },
-    "by_action": {
-      "fast_track": 0,
-      "auto_merge": 0,
-      "batch_review": 0,
-      "defer": 0
-    }
+    "by_category": {"feature": 2, "chore": 2, "bug": 1},
+    "by_risk": {"high": 1, "medium": 3, "low": 1},
+    "by_priority": {"high_70_100": 0, "medium_40_69": 0, "low_0_39": 0},
+    "by_action": {}
   }
 }
