@@ -18,7 +18,7 @@ on:
         required: false
         type: string
 
-timeout-minutes: 30
+timeout-minutes: 15
 
 permissions:
   contents: read
