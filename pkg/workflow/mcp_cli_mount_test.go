@@ -226,4 +226,5 @@ func TestBuildMCPCLIPromptSection_PromptFileUsesNonHeadingLabels(t *testing.T) {
 	assert.NotRegexp(t, `(?m)^\s*(>\s*)?##\s+`, prompt, "prompt must not contain H2 Markdown headings")
 	assert.NotRegexp(t, `(?m)^\s*(>\s*)?###\s+`, prompt, "prompt must not contain H3 Markdown headings")
 	assert.Contains(t, prompt, "Use `<server> --help` for tool names, parameters, and examples before calling any command.")
+	assert.Contains(t, prompt, "If a listed CLI wrapper is unavailable, continue using the corresponding MCP tool directly.")
 }
