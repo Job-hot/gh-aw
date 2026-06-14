@@ -1,117 +1,94 @@
 ### 📊 Performance Summary
 
-**Date**: 2026-06-13  
-**Analysis Status**: ⚠️ 2 regression(s) detected
+**Date**: 2026-06-14  
+**Analysis Status**: ℹ️ Establishing baseline — not enough historical data for regression detection (need ≥2 prior runs)
 
 ### 🎯 Key Metrics
 
-- **Total Benchmarks**: 8
-- **Stable**: 0
-- **Warnings**: 0
-- **Regressions**: 2
-- **Improvements**: 6
+- **Total Benchmarks**: 9
+- **Historical Data Points**: 1 (need ≥2 for trend detection)
+- **Status**: All benchmarks at baseline
 
 <details>
-<summary>📈 Detailed Benchmark Results</summary>
+<summary>📈 Detailed Benchmark Results (vs. yesterday)</summary>
 
-#### ✨ CompileComplexWorkflow
+#### ℹ️ CompileComplexWorkflow
 
-- **Current**: 2.98ms
-- **Historical Average**: 9.64ms
-- **Change**: -69.1%
-- **Memory**: 1,538,696 B/op
-- **Allocations**: 10,830 allocs/op
-- **Status**: ✅ IMPROVEMENT: -69.1% faster
+- **Current**: 3.08ms (▲3.6% vs yesterday)
+- **Yesterday**: 2.98ms
+- **Memory**: 1,510,266 B/op
+- **Allocations**: 10,841 allocs/op
 
-#### ✨ CompileMCPWorkflow
+#### ℹ️ CompileMCPWorkflow
 
-- **Current**: 354.71µs
-- **Historical Average**: 7.05ms
-- **Change**: -95.0%
+- **Current**: 331.31µs (▼6.6% vs yesterday)
+- **Yesterday**: 354.71µs
 - **Memory**: 135,634 B/op
 - **Allocations**: 2,363 allocs/op
-- **Status**: ✅ IMPROVEMENT: -95.0% faster
 
-#### ✨ CompileMemoryUsage
+#### ℹ️ CompileMemoryUsage
 
-- **Current**: 2.68ms
-- **Historical Average**: 8.92ms
-- **Change**: -70.0%
-- **Memory**: 1,278,538 B/op
-- **Allocations**: 8,895 allocs/op
-- **Status**: ✅ IMPROVEMENT: -70.0% faster
+- **Current**: 2.96ms (▲10.4% vs yesterday)
+- **Yesterday**: 2.68ms
+- **Memory**: 1,257,850 B/op
+- **Allocations**: 8,923 allocs/op
 
-#### ⚠️ CompileSimpleWorkflow
+#### ℹ️ CompileSimpleWorkflow
 
-- **Current**: 13.60ms
-- **Historical Average**: 8.32ms
-- **Change**: +63.5%
-- **Memory**: 6,486,221 B/op
-- **Allocations**: 70,512 allocs/op
-- **Status**: ⚠️ REGRESSION: 63.5% slower
+- **Current**: 9.19ms (▼32.5% vs yesterday)
+- **Yesterday**: 13.60ms
+- **Memory**: 6,394,925 B/op
+- **Allocations**: 71,700 allocs/op
 
-#### ✨ ExtractWorkflowNameFromFile
+#### ℹ️ ExtractWorkflowNameFromFile
 
-- **Current**: 7.30µs
-- **Historical Average**: 15.08µs
-- **Change**: -51.6%
+- **Current**: 7.26µs (▼0.7% vs yesterday)
+- **Yesterday**: 7.30µs
 - **Memory**: 262 B/op
 - **Allocations**: 7 allocs/op
-- **Status**: ✅ IMPROVEMENT: -51.6% faster
 
-#### ✨ ParseWorkflow
+#### ℹ️ FindIncludesInContent
 
-- **Current**: 290.35µs
-- **Historical Average**: 1.53ms
-- **Change**: -81.0%
-- **Memory**: 102,240 B/op
+- **Current**: 163ns
+- **Memory**: 64 B/op
+- **Allocations**: 1 allocs/op
+
+#### ℹ️ ParseWorkflow
+
+- **Current**: 264.93µs (▼8.8% vs yesterday)
+- **Yesterday**: 290.35µs
+- **Memory**: 102,224 B/op
 - **Allocations**: 1,801 allocs/op
-- **Status**: ✅ IMPROVEMENT: -81.0% faster
 
-#### ✨ Validation
+#### ℹ️ Validation
 
-- **Current**: 39.30µs
-- **Historical Average**: 2.00ms
-- **Change**: -98.0%
-- **Memory**: 1,768 B/op
-- **Allocations**: 42 allocs/op
-- **Status**: ✅ IMPROVEMENT: -98.0% faster
+- **Current**: 56.87µs (▲44.7% vs yesterday)
+- **Yesterday**: 39.30µs
+- **Memory**: 2,834 B/op
+- **Allocations**: 56 allocs/op
 
-#### ⚠️ YAMLGeneration
+#### ℹ️ YAMLGeneration
 
-- **Current**: 8.90ms
-- **Historical Average**: 5.57ms
-- **Change**: +60.0%
-- **Memory**: 6,231,824 B/op
-- **Allocations**: 69,029 allocs/op
-- **Status**: ⚠️ REGRESSION: 60.0% slower
+- **Current**: 9.68ms (▲8.7% vs yesterday)
+- **Yesterday**: 8.90ms
+- **Memory**: 6,284,570 B/op
+- **Allocations**: 70,201 allocs/op
 
 </details>
 
 <details>
-<summary>📉 Historical Comparisons</summary>
+<summary>📉 Notable Single-Day Changes (≥10%, informational only)</summary>
 
-### Trend Analysis
+- ⬆️ **Validation**: +44.7% (was 39.30µs, now 56.87µs)
+- ⬇️ **CompileSimpleWorkflow**: -32.5% (was 13.60ms, now 9.19ms)
+- ⬆️ **CompileMemoryUsage**: +10.4% (was 2.68ms, now 2.96ms)
 
-#### ⚠️ Regressions
-
-- **CompileSimpleWorkflow**: +63.5% slower (was 8.32ms, now 13.60ms)
-- **YAMLGeneration**: +60.0% slower (was 5.57ms, now 8.90ms)
-
-#### ✨ Improvements
-
-- **CompileComplexWorkflow**: -69.1% faster (was 9.64ms, now 2.98ms)
-- **CompileMCPWorkflow**: -95.0% faster (was 7.05ms, now 354.71µs)
-- **CompileMemoryUsage**: -70.0% faster (was 8.92ms, now 2.68ms)
-- **ParseWorkflow**: -81.0% faster (was 1.53ms, now 290.35µs)
-- **Validation**: -98.0% faster (was 2.00ms, now 39.30µs)
-- **ExtractWorkflowNameFromFile**: -51.6% faster (was 15.08µs, now 7.30µs)
+> ℹ️ These are single-day observations, not confirmed regressions. Trend analysis requires ≥2 historical data points.
 
 </details>
 
 ### 💡 Recommendations
 
-1. Review recent changes to the compilation pipeline
-2. Run `make bench-memory` to generate memory profiles
-3. Use `go tool pprof` to identify performance hotspots
-4. Compare with previous benchmark results using `benchstat`
+1. Benchmarks are accumulating baseline data — no action needed today
+2. Continue monitoring; regression detection will activate from the next run onwards
+3. All benchmarks are within acceptable targets (Simple: <100ms ✓, Complex: <500ms ✓, MCP: <1s ✓)
