@@ -1,26 +1,41 @@
 {
-  "run_date": "2026-06-13T18:43:46Z",
-  "run_id": "27475627987",
-  "previous_run_id": "27467268452",
-  "previous_run_date": "2026-06-13T12:52:49Z",
+  "run_date": "2026-06-14T01:27:30Z",
+  "run_id": "27484659333",
+  "previous_run_id": "27475627987",
+  "previous_run_date": "2026-06-13T18:43:46Z",
   "fork_prs": 0,
   "agent_prs_found": 6,
   "prs_triaged": 0,
   "branch_prs_skipped": [
     {
-      "number": 39133,
-      "title": "[linter-miner] linter: add timeafterleak — flag time.After in for+select cases",
-      "author": "app/github-actions",
-      "draft": false,
+      "number": 39164,
+      "title": "feat: supertonic TTS shared workflow + daily-news voice artifact",
+      "author": "app/copilot-swe-agent",
+      "draft": true,
       "category": "feature",
-      "risk": "medium",
+      "risk": "low",
       "ci": "no_checks",
       "created": "2026-06-13",
-      "labels": ["automation","cookie","go-linters"],
-      "additions": 296,
-      "deletions": 0,
-      "changedFiles": 5,
-      "note": "NEW since last run; adds new go/analysis linter"
+      "labels": [],
+      "additions": 295,
+      "deletions": 13,
+      "changedFiles": 3,
+      "note": "NEW since last run; DRAFT; small (+295/-13, 3 files); TTS shared workflow"
+    },
+    {
+      "number": 39156,
+      "title": "Stop Codex harness retries on active-goal router failures",
+      "author": "app/copilot-swe-agent",
+      "draft": false,
+      "category": "bug",
+      "risk": "medium",
+      "ci": "all_passing",
+      "created": "2026-06-13",
+      "labels": [],
+      "additions": 43,
+      "deletions": 2,
+      "changedFiles": 4,
+      "note": "NEW since last run; CI ALL GREEN; CHANGES_REQUESTED (pattern fragility + mock drift); small focused fix"
     },
     {
       "number": 39130,
@@ -31,26 +46,11 @@
       "risk": "high",
       "ci": "no_checks",
       "created": "2026-06-13",
-      "labels": [],
-      "additions": 5950,
-      "deletions": 5,
-      "changedFiles": 259,
-      "note": "NEW since last run; very large (259 files)"
-    },
-    {
-      "number": 39118,
-      "title": "Increase default max-patch-size from 1 MB to 4 MB and improve patch-size-exceeded error messages",
-      "author": "app/copilot-swe-agent",
-      "draft": false,
-      "category": "chore",
-      "risk": "medium",
-      "ci": "no_checks",
-      "created": "2026-06-13",
-      "labels": [],
-      "additions": 351,
-      "deletions": 280,
-      "changedFiles": 80,
-      "note": "NEW since last run"
+      "labels": ["smoke", "smoke-claude"],
+      "additions": 5942,
+      "deletions": 0,
+      "changedFiles": 260,
+      "note": "UNCHANGED from last run; very large (260 files); labeled smoke/smoke-claude"
     },
     {
       "number": 39100,
@@ -61,11 +61,11 @@
       "risk": "high",
       "ci": "no_checks",
       "created": "2026-06-13",
-      "labels": ["smoke","smoke-claude"],
+      "labels": ["smoke", "smoke-claude"],
       "additions": 5643,
       "deletions": 12497,
       "changedFiles": 268,
-      "note": "NEW since last run; architectural change, labeled smoke"
+      "note": "UNCHANGED from last run; architectural change; labeled smoke/smoke-claude"
     },
     {
       "number": 39089,
@@ -80,7 +80,7 @@
       "additions": 511,
       "deletions": 490,
       "changedFiles": 258,
-      "note": "NEW since last run; DRAFT"
+      "note": "UNCHANGED from last run; DRAFT"
     },
     {
       "number": 38911,
@@ -91,24 +91,22 @@
       "risk": "high",
       "ci": "no_checks",
       "created": "2026-06-12",
-      "labels": ["smoke","smoke-claude"],
+      "labels": ["smoke", "smoke-claude"],
       "additions": 7221,
       "deletions": 6,
       "changedFiles": 261,
-      "note": "UNCHANGED from last run; labeled smoke/smoke-claude; 1 day old"
+      "note": "UNCHANGED from last run; labeled smoke/smoke-claude; 2 days old"
     }
   ],
   "merged_since_last_run": [
-    {"number": 39069, "title": "feat: add 'Optimize token consumption' section to agent failure issues when a guardrail triggers", "merged_at": "2026-06-13T13:58:18Z"},
-    {"number": 39064, "title": "Reduce Copilot template-injection noise by moving max-ai-credits expression to step env", "merged_at": "2026-06-13T13:39:13Z"},
-    {"number": 39056, "title": "[actions] Update GitHub Actions versions - 2026-06-13", "merged_at": "2026-06-13T13:15:54Z"},
-    {"number": 39054, "title": "httpnoctx: convert 3 context-free HTTP calls to NewRequestWithContext+Do and enforce in CI", "merged_at": "2026-06-13T13:12:16Z"}
+    {"number": 39133, "title": "[linter-miner] linter: add timeafterleak — flag time.After in for+select cases", "closed_or_merged": true},
+    {"number": 39118, "title": "Increase default max-patch-size from 1 MB to 4 MB and improve patch-size-exceeded error messages", "closed_or_merged": true}
   ],
-  "new_since_last_run": [39133, 39130, 39118, 39100, 39089],
-  "unchanged": [38911],
+  "new_since_last_run": [39164, 39156],
+  "unchanged": [39130, 39100, 39089, 38911],
   "closed_no_merge": [],
   "otel_prs": [],
-  "notes": "6 open agent PRs, all branch-based (isCrossRepository:false). 5 new since run 27467268452. 4 merged (#39069, #39064, #39056, #39054). Fork-only policy: 0 fork PRs found, 0 triaged. Notable: #39130 has 259 files changed; #39100 and #38911 are large architectural changes labeled smoke.",
+  "notes": "6 open agent PRs (all copilot-swe-agent), all branch-based (isCrossRepository:false). 2 new since run 27475627987 (#39164 DRAFT TTS feature, #39156 bug fix with CI passing). 2 closed/merged (#39133, #39118). Fork-only policy: 0 fork PRs found, 0 triaged. Notable: #39156 has all CI green and CHANGES_REQUESTED review — ready to address feedback. #39130, #39100, #38911 remain large architectural smoke-labeled PRs.",
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
@@ -116,9 +114,10 @@
   "batches": {},
   "close_candidates": [],
   "statistics": {
-    "by_category": {"feature": 3, "chore": 1, "bug": 2},
-    "by_risk": {"high": 3, "medium": 3, "low": 0},
-    "by_priority": {"high_70_100": 0, "medium_40_69": 0, "low_0_39": 0},
-    "by_action": {}
+    "by_category": {"feature": 3, "bug": 3},
+    "by_risk": {"high": 3, "medium": 2, "low": 1},
+    "by_author": {"app/copilot-swe-agent": 6},
+    "by_draft": {"draft": 2, "open": 4},
+    "ci_status": {"all_passing": 1, "no_checks": 5}
   }
 }
