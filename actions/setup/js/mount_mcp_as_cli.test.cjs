@@ -1,7 +1,7 @@
 // @ts-check
 import { describe, expect, it } from "vitest";
 
-import { parseMCPResponseBody } from "./mount_mcp_as_cli.cjs";
+import { formatMountedServersPromptList, parseMCPResponseBody } from "./mount_mcp_as_cli.cjs";
 
 describe("mount_mcp_as_cli.cjs", () => {
   it("parses JSON object responses unchanged", () => {
@@ -37,5 +37,10 @@ describe("mount_mcp_as_cli.cjs", () => {
         ],
       },
     });
+  });
+
+  it("formats mounted servers for prompt rendering", () => {
+    expect(formatMountedServersPromptList(["safeoutputs", "playwright"])).toBe("- `safeoutputs` — run `safeoutputs --help` to see available tools\n- `playwright` — run `playwright --help` to see available tools");
+    expect(formatMountedServersPromptList([])).toBe("");
   });
 });

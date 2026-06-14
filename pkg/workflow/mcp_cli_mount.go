@@ -297,28 +297,22 @@ func GetMCPCLIPathSetup(data *WorkflowData) string {
 	return `export PATH="${RUNNER_TEMP}/gh-aw/mcp-cli/bin:$PATH"`
 }
 
-// buildMCPCLIPromptSection returns a PromptSection describing the CLI tools available
-// to the agent, or nil if there are no servers to mount.
-// The prompt is loaded from actions/setup/md/mcp_cli_tools_prompt.md at runtime,
-// with the __GH_AW_MCP_CLI_SERVERS_LIST__ placeholder substituted by the substitution step.
+// buildMCPCLIPromptSection returns a PromptSection describing CLI wrappers available
+// to the agent, or nil if no servers are configured for mounting.
+// The prompt content is loaded from actions/setup/md/mcp_cli_tools_prompt.md at runtime.
+// The server list comes from the mount step output so only successfully mounted wrappers
+// are advertised to the model.
 func buildMCPCLIPromptSection(data *WorkflowData) *PromptSection {
 	servers := getMCPCLIServerNames(data)
 	if len(servers) == 0 {
 		return nil
 	}
 
-	// Build the human-readable list of servers with example usage
-	var listLines []string
-	for _, name := range servers {
-		listLines = append(listLines, fmt.Sprintf("- `%s` — run `%s --help` to see available tools", name, name))
-	}
-	serversList := strings.Join(listLines, "\n")
-
 	return &PromptSection{
 		Content: mcpCLIToolsPromptFile,
 		IsFile:  true,
 		EnvVars: map[string]string{
-			"GH_AW_MCP_CLI_SERVERS_LIST": serversList,
+			"GH_AW_MCP_CLI_SERVERS_LIST": "${{ steps.mount-mcp-clis.outputs.mounted-servers-list }}",
 		},
 	}
 }

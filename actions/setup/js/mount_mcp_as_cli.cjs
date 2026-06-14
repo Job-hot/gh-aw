@@ -312,6 +312,16 @@ exec node "${safeBridge}" \\
 }
 
 /**
+ * Format mounted server names into prompt-ready bullet lines.
+ *
+ * @param {string[]} mountedServers - Successfully mounted server names
+ * @returns {string}
+ */
+function formatMountedServersPromptList(mountedServers) {
+  return mountedServers.map(name => `- \`${name}\` — run \`${name} --help\` to see available tools`).join("\n");
+}
+
+/**
  * Mount MCP servers as CLI tools by reading the manifest and generating wrapper scripts.
  *
  * @returns {Promise<void>}
@@ -445,6 +455,7 @@ async function main() {
   }
   core.info(`CLI bin directory added to PATH: ${CLI_BIN_DIR}`);
   core.setOutput("mounted-servers", mountedServers.join(","));
+  core.setOutput("mounted-servers-list", formatMountedServersPromptList(mountedServers));
 }
 
-module.exports = { main, fetchMCPTools, generateCLIWrapperScript, isValidServerName, shellEscapeDoubleQuoted, parseMCPResponseBody };
+module.exports = { main, fetchMCPTools, generateCLIWrapperScript, isValidServerName, shellEscapeDoubleQuoted, parseMCPResponseBody, formatMountedServersPromptList };
