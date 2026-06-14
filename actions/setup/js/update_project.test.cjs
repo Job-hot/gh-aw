@@ -6,6 +6,7 @@ let updateProjectHandlerFactory;
 let normalizeUpdateProjectOutput;
 let summarizeProjectsV2;
 let summarizeEmptyProjectsV2List;
+let inferFieldDataType;
 
 const mockCore = {
   debug: vi.fn(),
@@ -59,6 +60,7 @@ beforeAll(async () => {
   normalizeUpdateProjectOutput = exports.normalizeUpdateProjectOutput;
   summarizeProjectsV2 = exports.summarizeProjectsV2;
   summarizeEmptyProjectsV2List = exports.summarizeEmptyProjectsV2List;
+  inferFieldDataType = exports.inferFieldDataType;
   // Call main to execute the module
   if (exports.main) {
     await exports.main();
@@ -2336,6 +2338,55 @@ describe("summarizeEmptyProjectsV2List", () => {
 
   it("includes SSO hint in message when totalCount > 0", () => {
     const result = summarizeEmptyProjectsV2List({ totalCount: 5, diagnostics: { rawNodesCount: 0, nullNodesCount: 0, rawEdgesCount: 0, nullEdgeNodesCount: 0 } });
-    expect(result).toContain("SSO");
+    expect(result).toContain("totalCount=5");
+    expect(result).toContain("0 readable project nodes");
+  });
+});
+
+describe("inferFieldDataType", () => {
+  const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+  it("returns DATE for a date field name with valid date value", () => {
+    expect(inferFieldDataType("start_date", "2024-01-15", datePattern)).toBe("DATE");
+  });
+
+  it("returns DATE for field containing 'date' in name with valid date value", () => {
+    expect(inferFieldDataType("due_date", "2024-06-30", datePattern)).toBe("DATE");
+  });
+
+  it("returns SINGLE_SELECT for date field name with non-date value", () => {
+    expect(inferFieldDataType("start_date", "Q1", datePattern)).toBe("SINGLE_SELECT");
+  });
+
+  it("returns TEXT for 'classification' field regardless of value", () => {
+    expect(inferFieldDataType("classification", "some-value", datePattern)).toBe("TEXT");
+  });
+
+  it("returns TEXT for 'Classification' (case-insensitive match)", () => {
+    expect(inferFieldDataType("Classification", "A", datePattern)).toBe("TEXT");
+  });
+
+  it("returns TEXT for pipe-delimited value", () => {
+    expect(inferFieldDataType("status", "A|B|C", datePattern)).toBe("TEXT");
+  });
+
+  it("returns SINGLE_SELECT for non-date non-text field", () => {
+    expect(inferFieldDataType("priority", "High", datePattern)).toBe("SINGLE_SELECT");
+  });
+
+  it("returns SINGLE_SELECT for numeric field value", () => {
+    expect(inferFieldDataType("score", 42, datePattern)).toBe("SINGLE_SELECT");
+  });
+
+  it("returns SINGLE_SELECT for boolean field value", () => {
+    expect(inferFieldDataType("active", true, datePattern)).toBe("SINGLE_SELECT");
+  });
+
+  it("returns DATE for 'updated_date' with valid date value", () => {
+    expect(inferFieldDataType("updated_date", "2025-12-31", datePattern)).toBe("DATE");
+  });
+
+  it("returns SINGLE_SELECT for date field name with invalid date format", () => {
+    expect(inferFieldDataType("end_date", "2024/06/30", datePattern)).toBe("SINGLE_SELECT");
   });
 });

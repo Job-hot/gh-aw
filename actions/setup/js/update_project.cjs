@@ -403,6 +403,11 @@ async function findExistingItemByContentId(github, projectId, contentId) {
       { projectId, after: endCursor }
     );
 
+    if (!result?.node?.items) {
+      core.warning(`Project ${projectId} not found or inaccessible; stopping item search.`);
+      break;
+    }
+
     const found = result.node.items.nodes.find(item => item.content?.id === contentId);
     if (found) return found;
 
@@ -411,6 +416,27 @@ async function findExistingItemByContentId(github, projectId, contentId) {
   }
 
   return null;
+}
+
+/**
+ * Infer the expected GraphQL data type for a project field based on its name and value.
+ * @param {string} fieldName - Field name from YAML
+ * @param {unknown} fieldValue - Field value from YAML
+ * @param {RegExp} datePattern - Pattern to validate date values (YYYY-MM-DD)
+ * @returns {"DATE" | "TEXT" | "SINGLE_SELECT"}
+ */
+function inferFieldDataType(fieldName, fieldValue, datePattern) {
+  const isDateField = fieldName.toLowerCase().includes("date");
+  // "classification" is always treated as a free-text field rather than single-select;
+  // pipe-delimited values ("A|B|C") also signal a free-text field storing multi-option strings.
+  const isTextField = fieldName.toLowerCase() === "classification" || (typeof fieldValue === "string" && fieldValue.includes("|"));
+  if (isDateField && typeof fieldValue === "string" && datePattern.test(fieldValue)) {
+    return "DATE";
+  }
+  if (isTextField) {
+    return "TEXT";
+  }
+  return "SINGLE_SELECT";
 }
 
 /**
@@ -436,16 +462,9 @@ async function applyFieldUpdates(github, projectId, itemId, fields) {
       continue;
     }
 
-    const isDateField = fieldName.toLowerCase().includes("_date") || fieldName.toLowerCase().includes("date");
-    const isTextField = fieldName.toLowerCase() === "classification" || (typeof fieldValue === "string" && fieldValue.includes("|"));
-    let expectedDataType;
-    if (isDateField && typeof fieldValue === "string" && datePattern.test(fieldValue)) {
-      expectedDataType = "DATE";
-    } else if (isTextField) {
-      expectedDataType = "TEXT";
-    } else {
-      expectedDataType = "SINGLE_SELECT";
-    }
+    const expectedDataType = inferFieldDataType(fieldName, fieldValue, datePattern);
+    const isDateField = expectedDataType === "DATE" || fieldName.toLowerCase().includes("date");
+    const isTextField = expectedDataType === "TEXT";
 
     if (checkFieldTypeMismatch(fieldName, field, expectedDataType)) {
       continue;
@@ -547,6 +566,11 @@ async function applyFieldUpdates(github, projectId, itemId, fields) {
       }
     }
 
+    if (!field) {
+      core.warning(`Field "${fieldName}" could not be created or resolved; skipping.`);
+      continue;
+    }
+
     let valueToSet;
     if (field.dataType === "DATE") {
       valueToSet = { date: String(fieldValue) };
@@ -570,7 +594,7 @@ async function applyFieldUpdates(github, projectId, itemId, fields) {
       }
       valueToSet = { iterationId: iteration.id };
     } else if (field.options) {
-      const option = field.options.find(o => o.name === fieldValue);
+      const option = field.options.find(o => o.name.toLowerCase() === String(fieldValue).toLowerCase());
       if (!option) {
         const availableOptions = field.options.map(o => o.name).join(", ");
         core.warning(`Option "${fieldValue}" not found in field "${fieldName}". Available options: ${availableOptions}. To add this option, please update the field manually in the GitHub Projects UI.`);
@@ -1139,6 +1163,9 @@ async function updateProject(output, temporaryIdMap = new Map(), githubClient = 
             }`;
       const contentResult = await github.graphql(contentQuery, { owner: contentOwner, repo: targetRepo, number: contentNumber });
       const contentData = contentType === "Issue" ? contentResult.repository.issue : contentResult.repository.pullRequest;
+      if (!contentData) {
+        throw new Error(`${ERR_VALIDATION}: ${contentType} #${contentNumber} not found in ${contentOwner}/${targetRepo}.`);
+      }
       const contentId = contentData.id;
       const existingItem = await findExistingItemByContentId(github, projectId, contentId);
 
@@ -1451,4 +1478,4 @@ async function main(config = {}, githubClient = null) {
   };
 }
 
-module.exports = { updateProject, parseProjectInput, main, normalizeUpdateProjectOutput, summarizeProjectsV2, summarizeEmptyProjectsV2List };
+module.exports = { updateProject, parseProjectInput, main, normalizeUpdateProjectOutput, summarizeProjectsV2, summarizeEmptyProjectsV2List, inferFieldDataType };
