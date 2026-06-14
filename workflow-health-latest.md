@@ -1,49 +1,47 @@
-# Workflow Health — 2026-06-13T05:55Z
+# Workflow Health — 2026-06-14T06:05Z
 
-Score: 76/100 (↑1 from 75)
-Workflows: 246 | Lock files: 246/246 (100% ✅) | Run: §27458353841
+Score: 73/100 (↓3 from 76)
+Workflows: 246 | Lock files: 246/246 (100% ✅) | Run: §27490175602
 
 ## KEY FINDINGS
 
-### Status (June 13)
-- **Compilation:** 246/246 workflows have lock files (100% ✅) — 1 new workflow added
-- **Code Simplifier (P1, Day 5):** #38793 — HTTP 429 rate-limited (316.9 AIC), Day 5 streak Jun 9–13. Root fix still not applied.
-- **Daily Safe Outputs Git Simulator (P1, Day 5):** New issue filed (#aw_gitsim13) — memory/git-simulator branch missing, 5-day streak.
-- **upload_artifact malformed 400 (P1):** #38998 — Smoke Copilot at ~95% failure, still unresolved.
+### Status (June 14)
+- **Compilation:** 246/246 workflows have lock files (100% ✅)
+- **Code Simplifier (P1, Day 6):** #39179 (Avenger-filed) — HTTP 429 rate-limited, AIC crisis. Root fix (max-ai-credits:2000, max-turns:30) STILL PENDING Day 6.
+- **Daily Safe Outputs Git Simulator (P1, Day 6):** #39024 — memory/git-simulator branch missing. Issue Monster queued Copilot fix.
+- **Daily Model Inventory Checker (P1, Day 5+):** #39170 — copilot-sdk-driver session.idle timeout 60000ms.
+- **upload_artifact malformed 400 (P1):** #38998 — Smoke Copilot partially dark.
 
-### Resolved Since Jun 12 ✅
-- #38758 (Failure cascade Jun 12) — CLOSED
-- #38767 (Failure Investigator blind spot) — CLOSED
-- #38379 (Daily News Node.js chroot, @zarenner) — CLOSED
-- #38809 (Code Simplifier runaway fix) — CLOSED
+### Resolved Since Jun 13 ✅
+- None confirmed resolved today.
 
 ### Critical Issues (P1) 🚨
-- **Code Simplifier** (#38793, P1, Day 5): HTTP 429 rate-limited, 316.9 AIC. Root fix pending. DO NOT RE-FILE.
-- **upload_artifact malformed** (#38998, P1): Smoke Copilot 95% failure. DO NOT RE-FILE.
-- **Daily Safe Outputs Git Simulator** (#aw_gitsim13, P1, NEW Jun 13): memory/git-simulator branch missing. 5-day streak. Filed this run.
+- **Code Simplifier** (#39179, P1, Day 6): HTTP 429 rate-limited. DO NOT RE-FILE. Root fix in #39077 STILL PENDING.
+- **upload_artifact malformed** (#38998, P1): Smoke Copilot partial failure. DO NOT RE-FILE.
+- **Daily Safe Outputs Git Simulator** (#39024, P1, Day 6): memory/git-simulator branch missing. DO NOT RE-FILE.
+- **Daily Model Inventory Checker** (#39170, P1, Day 5+): session.idle timeout. DO NOT RE-FILE.
 
 ### Warnings (P2) ⚠️
-- **#38794** (P2): Duplicate of #38793 — recommend closing.
-- **#38999** (P2): Smoke Trigger & Smoke Multi Caller 100% startup_failure.
-- **#38993** (P2): Agentic workflows out of sync (recompilation needed).
-- **#39022** (P2, Jun 13): Copilot CLI Deep Research exceeded tool denial limit.
+- **Smoke Trigger & Multi Caller** (#38999): 100% startup_failure.
+- **AIC Budget Crisis** (#39077): Day 6 — 6-agent cluster blocked.
+- **Failure Investigator blind spot** (#39037): Empty failed_run_ids.
 
 ### Systemic Patterns
-- **Code Simplifier Day 5 (rate-limit cascade):** Jun 12 runaway consumed 84% daily AIC budget → provider rate-limited Jun 13. Fix: max-turns:30, bash allowlist, max-ai-credits:1500.
-- **upload_artifact 400 (2+ days):** Smoke Copilot ecosystem dark. `safe_outputs` job needs non-fatal upload_artifact handling.
-- **Git Simulator memory branch (5 days):** Temp ID `#aw_gitsim10` never resolved in prior runs — fresh issue filed.
-- **Duplicate issue creation:** #38793/#38794 pattern — prior runs still creating duplicates.
+- AIC cluster now Day 6 — Code Simplifier runaway → 429 → 6-agent cascade. Root fix (guardrails) is the unlock. ESCALATE.
+- Two 6-day streaks (Code Simplifier, Git Simulator) — backlog accumulating.
+- upload_artifact P1 (2+ days) blocker.
 
 ### Actions Taken This Run
-- 1 comment added to #38793 (Day 5 status update, rate-limited)
-- 1 comment added to #29109 (health dashboard Jun 13)
-- 1 issue created: #aw_gitsim13 (Git Simulator P1 tracker)
+- 1 comment added to #39179 (Code Simplifier Day 6)
+- 1 comment added to #39024 (Git Simulator Day 6)
+- 1 comment added to #29109 (health dashboard Jun 14)
 
 ## Do Not Re-File
-- #38793: Code Simplifier 5-day streak tracker (P1)
-- #38794: Code Simplifier duplicate (close this one)
+- #39179: Code Simplifier Day 6 (Avenger-filed, P1)
+- #39024: Daily Safe Outputs Git Simulator Day 6 (P1)
+- #39170: Daily Model Inventory Checker 5-day tracker (P1)
 - #38998: upload_artifact malformed 400 (P1)
 - #38999: Smoke Trigger startup_failure (P2)
 - #38993: Agentic workflows out of sync
-- #39022: Copilot CLI Deep Research exceeded tool denial
-- #aw_gitsim13: Daily Safe Outputs Git Simulator 5-day tracker (NEW)
+- #39077: AIC Budget Crisis Day 6 (P2, escalating)
+- #39037: Failure Investigator pre-fetch blind spot
