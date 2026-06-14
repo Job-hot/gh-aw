@@ -1,1 +1,1 @@
-{"date": "2026-05-27", "period_days": 30, "overall": {"total_runs": 95, "total_tokens": 99986945, "total_cost": 0, "total_action_minutes": 932}, "top_workflows": [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}]}
+{"date":"2026-05-27","period_days":30,"overall":{"total_runs":95,"total_tokens":99986945,"total_cost":0,"total_action_minutes":932},"top_workflows":[{},{},{},{},{},{},{},{},{},{}]}
