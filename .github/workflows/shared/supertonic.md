@@ -22,7 +22,8 @@
 # - Recommended timeout-minutes: ≥ 20 to allow model download and server startup
 #
 # Note: The Supertonic model (~400MB) is downloaded from Hugging Face on the first
-# run and cached in ~/.cache/supertonic3/. Subsequent runs are significantly faster.
+# run and cached in ~/.cache/supertonic3/. The model cache is stored in
+# actions/cache keyed by OS and package version, so subsequent runs are fast.
 
 tools:
   bash:
@@ -42,6 +43,7 @@ network:
 
 steps:
   - name: Install Supertonic with server support
+    id: install-supertonic
     run: |
       set -e
       mkdir -p /tmp/gh-aw/agent
@@ -50,7 +52,16 @@ steps:
       fi
       echo "/tmp/gh-aw/agent/venv/bin" >> "$GITHUB_PATH"
       /tmp/gh-aw/agent/venv/bin/pip install --quiet 'supertonic[serve]'
-      /tmp/gh-aw/agent/venv/bin/python3 -c "import supertonic; print(f'Supertonic {supertonic.__version__} installed with server support')"
+      SUPERTONIC_VERSION=$(/tmp/gh-aw/agent/venv/bin/python3 -c "import supertonic; print(supertonic.__version__)")
+      echo "version=$SUPERTONIC_VERSION" >> "$GITHUB_OUTPUT"
+      echo "Supertonic $SUPERTONIC_VERSION installed with server support"
+
+  - name: Restore Supertonic model cache
+    uses: actions/cache/restore@v5.0.5
+    with:
+      key: supertonic3-model-${{ runner.os }}-${{ steps.install-supertonic.outputs.version }}
+      restore-keys: supertonic3-model-${{ runner.os }}-
+      path: ~/.cache/supertonic3
 
   - name: Start Supertonic HTTP server
     run: |
@@ -80,6 +91,12 @@ steps:
         cat /tmp/gh-aw/agent/supertonic.log || true
         exit 1
       fi
+
+  - name: Save Supertonic model cache
+    uses: actions/cache/save@v5.0.5
+    with:
+      key: supertonic3-model-${{ runner.os }}-${{ steps.install-supertonic.outputs.version }}
+      path: ~/.cache/supertonic3
 ---
 
 ## Supertonic TTS HTTP Server Ready
