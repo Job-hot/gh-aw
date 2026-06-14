@@ -36,6 +36,13 @@ const { buildCopilotSDKPermissionHandler, getEnvPositiveIntOrDefault, parseMaxTo
 // Override via the COPILOT_SDK_SEND_TIMEOUT_MS environment variable.
 const SDK_SEND_TIMEOUT_MS_DEFAULT = 10 * 60 * 1000;
 
+// Default idle-hang watchdog timeout: 5 minutes.
+// If the SDK session produces no tool-call or token activity for this long while
+// sendAndWait is pending, the watchdog aborts the session and emits a
+// guard.idle_hang event classified as GH_AW_AGENTIC_ENGINE_IDLE_HANG.
+// Override via the COPILOT_SDK_IDLE_TIMEOUT_MS environment variable.
+const SDK_IDLE_TIMEOUT_MS_DEFAULT = 5 * 60 * 1000;
+
 /**
  * Extract the prompt text from a resolved args array.
  * Looks for the first occurrence of "-p <value>" or "--prompt <value>".
@@ -138,6 +145,15 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
   let toolDenialCount = 0;
   let catastrophicToolDenialsError = null;
   let catastrophicToolDenialsTriggered = false;
+
+  // Idle-hang watchdog state.
+  // lastActivityTime is reset on every relevant SDK event while sendAndWait is pending.
+  let lastActivityTime = Date.now();
+  let idleHangTriggered = false;
+  let idleHangError = null;
+  /** @type {ReturnType<typeof setInterval> | null} */
+  let idleWatchdogTimer = null;
+  const idleTimeoutMs = getEnvPositiveIntOrDefault("COPILOT_SDK_IDLE_TIMEOUT_MS", SDK_IDLE_TIMEOUT_MS_DEFAULT);
 
   /**
    * Best-effort write of a driver-level event to events.jsonl and stderr.
@@ -243,6 +259,8 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
           break;
 
         case "tool.execution_start": {
+          // Reset idle watchdog — tool activity observed.
+          lastActivityTime = Date.now();
           const toolName = event.data?.toolName ?? "unknown";
           const mcpServerName = event.data?.mcpServerName ?? "";
           const toolCallId = event.data?.toolCallId;
@@ -254,6 +272,8 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
         }
 
         case "tool.execution_complete": {
+          // Reset idle watchdog — tool activity observed.
+          lastActivityTime = Date.now();
           const toolCallId = event.data?.toolCallId;
           // Resolve toolName/mcpServerName from the matching start event when available.
           const pending = toolCallId ? pendingToolCalls.get(toolCallId) : undefined;
@@ -268,6 +288,8 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
         }
 
         case "assistant.message": {
+          // Reset idle watchdog — token output observed.
+          lastActivityTime = Date.now();
           const content = event.data?.content ?? "";
           if (content) {
             hasOutput = true;
@@ -285,7 +307,37 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
 
     log("sending prompt...");
     const sendTimeoutMs = getEnvPositiveIntOrDefault("COPILOT_SDK_SEND_TIMEOUT_MS", SDK_SEND_TIMEOUT_MS_DEFAULT);
+
+    // Start the idle-hang watchdog just before sendAndWait so the timer begins
+    // from the moment we begin waiting for the first response.
+    lastActivityTime = Date.now();
+    // Poll at 1/6 of the idle timeout (minimum 5 s, maximum 30 s) so the watchdog
+    // fires within one check interval of the threshold.
+    const idleCheckMs = Math.min(Math.max(Math.ceil(idleTimeoutMs / 6), 5000), 30000);
+    idleWatchdogTimer = setInterval(() => {
+      if (idleHangTriggered) return;
+      const idleDurationMs = Date.now() - lastActivityTime;
+      if (idleDurationMs < idleTimeoutMs) return;
+
+      idleHangTriggered = true;
+      idleHangError = new Error(`SDK idle-hang watchdog: no tool-call or token activity for ${Math.round(idleDurationMs / 1000)}s ` + `(threshold: ${Math.round(idleTimeoutMs / 1000)}s) — aborting session (GH_AW_AGENTIC_ENGINE_IDLE_HANG)`);
+      writeDriverEvent("guard.idle_hang", {
+        idleDurationMs,
+        idleTimeoutMs,
+      });
+      log(idleHangError.message);
+      if (session) {
+        void session.disconnect().catch(() => {
+          // best-effort abort
+        });
+      }
+    }, idleCheckMs);
+
     const result = await session.sendAndWait({ prompt }, sendTimeoutMs);
+
+    if (idleHangError) {
+      throw idleHangError;
+    }
 
     if (catastrophicToolDenialsError) {
       throw catastrophicToolDenialsError;
@@ -307,7 +359,7 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
     return { exitCode: 0, output, hasOutput, durationMs };
   } catch (err) {
     const durationMs = Date.now() - startTime;
-    const failure = catastrophicToolDenialsError ?? (err instanceof Error ? err : new Error(String(err)));
+    const failure = idleHangError ?? catastrophicToolDenialsError ?? (err instanceof Error ? err : new Error(String(err)));
     log(`error: ${failure.message}`);
     return {
       exitCode: 1,
@@ -316,6 +368,11 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
       durationMs,
     };
   } finally {
+    // Clear the idle-hang watchdog before releasing resources.
+    if (idleWatchdogTimer !== null) {
+      clearInterval(idleWatchdogTimer);
+      idleWatchdogTimer = null;
+    }
     // Snapshot for null-safe cleanup in this scope.
     const stream = eventsStream;
     if (stream) {
@@ -338,4 +395,4 @@ async function runWithCopilotSDK({ sdkUri, prompt, logger, attempt = 0, model, c
   }
 }
 
-module.exports = { SDK_SEND_TIMEOUT_MS_DEFAULT, extractPromptFromArgs, runWithCopilotSDK };
+module.exports = { SDK_SEND_TIMEOUT_MS_DEFAULT, SDK_IDLE_TIMEOUT_MS_DEFAULT, extractPromptFromArgs, runWithCopilotSDK };

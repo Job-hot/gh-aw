@@ -19,7 +19,7 @@ engine:
   id: copilot
   copilot-sdk: true
 strict: true
-timeout-minutes: 25
+timeout-minutes: 10
 
 imports:
   - uses: shared/daily-issue-base.md

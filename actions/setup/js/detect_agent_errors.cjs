@@ -16,6 +16,9 @@
  *   - model_not_supported_error: The configured model is invalid or unsupported
  *     for the selected engine/account (for example unknown model name, model not
  *     found, or model unavailable for the plan).
+ *   - agentic_engine_idle_hang: The Copilot SDK driver's idle-hang watchdog
+ *     fired because no tool-call or token activity was observed for the
+ *     configured idle timeout (guard.idle_hang event emitted by the driver).
  *
  * This replaces the individual bash scripts (detect_inference_access_error.sh,
  * detect_mcp_policy_error.sh) with a single JavaScript step.
@@ -55,10 +58,17 @@ const AGENTIC_ENGINE_TIMEOUT_PATTERN = /signal=SIG(?:TERM|KILL|INT)/;
 const MODEL_NOT_SUPPORTED_PATTERN =
   /(?:The requested model is not supported|invalid model(?:\s+name)?\s+['"`]?[a-z0-9._:/@-]+['"`]?(?=(?:\s*$|\s*[\n\r.,;:!?)]))|unknown model\s+['"`]?[a-z0-9._:/@-]+['"`]?(?=(?:\s*$|\s*[\n\r.,;:!?)]))|model(?:\s+name)?\s+['"`]?[a-z0-9._:/@-]+['"`]?\s+(?:is\s+)?(?:not found|does not exist|not supported|not available|unavailable))/i;
 
+// Pattern: Copilot SDK driver idle-hang watchdog fired.
+// The SDK driver emits a guard.idle_hang JSONL event to stderr when no tool-call
+// or token activity has been observed for COPILOT_SDK_IDLE_TIMEOUT_MS milliseconds
+// while sendAndWait is pending.  The presence of this string in the agent log means
+// the session was aborted due to an idle hang (GH_AW_AGENTIC_ENGINE_IDLE_HANG).
+const AGENTIC_ENGINE_IDLE_HANG_PATTERN = /guard\.idle_hang/;
+
 /**
  * Detect known error patterns in a log string and return detection results.
  * @param {string} logContent - Contents of the agent stdio log
- * @returns {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean }}
+ * @returns {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean, agenticEngineIdleHang: boolean }}
  */
 function detectErrors(logContent) {
   return {
@@ -66,12 +76,13 @@ function detectErrors(logContent) {
     mcpPolicyError: MCP_POLICY_BLOCKED_PATTERN.test(logContent),
     agenticEngineTimeout: AGENTIC_ENGINE_TIMEOUT_PATTERN.test(logContent),
     modelNotSupportedError: MODEL_NOT_SUPPORTED_PATTERN.test(logContent),
+    agenticEngineIdleHang: AGENTIC_ENGINE_IDLE_HANG_PATTERN.test(logContent),
   };
 }
 
 /**
  * Write GitHub Actions outputs to $GITHUB_OUTPUT.
- * @param {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean }} results
+ * @param {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean, agenticEngineIdleHang: boolean }} results
  */
 function writeOutputs(results) {
   const outputFile = process.env.GITHUB_OUTPUT;
@@ -85,6 +96,7 @@ function writeOutputs(results) {
     `mcp_policy_error=${results.mcpPolicyError}`,
     `agentic_engine_timeout=${results.agenticEngineTimeout}`,
     `model_not_supported_error=${results.modelNotSupportedError}`,
+    `agentic_engine_idle_hang=${results.agenticEngineIdleHang}`,
   ];
   fs.appendFileSync(outputFile, lines.join("\n") + "\n");
 }
@@ -112,6 +124,9 @@ function main() {
   if (results.modelNotSupportedError) {
     process.stderr.write("[detect-agent-errors] Detected model configuration error: configured model is invalid or unavailable for this engine/account\n");
   }
+  if (results.agenticEngineIdleHang) {
+    process.stderr.write("[detect-agent-errors] Detected idle hang: Copilot SDK driver watchdog fired (guard.idle_hang) — session stalled mid-task with no activity\n");
+  }
 
   writeOutputs(results);
 }
@@ -120,4 +135,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { detectErrors, INFERENCE_ACCESS_ERROR_PATTERN, MCP_POLICY_BLOCKED_PATTERN, AGENTIC_ENGINE_TIMEOUT_PATTERN, MODEL_NOT_SUPPORTED_PATTERN };
+module.exports = { detectErrors, INFERENCE_ACCESS_ERROR_PATTERN, MCP_POLICY_BLOCKED_PATTERN, AGENTIC_ENGINE_TIMEOUT_PATTERN, MODEL_NOT_SUPPORTED_PATTERN, AGENTIC_ENGINE_IDLE_HANG_PATTERN };

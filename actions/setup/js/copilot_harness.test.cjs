@@ -734,6 +734,7 @@ describe("copilot_harness.cjs", () => {
           inferenceAccessError: true,
           mcpPolicyError: true,
           agenticEngineTimeout: true,
+          agenticEngineIdleHang: false,
           modelNotSupportedError: true,
         });
         expect(INFERENCE_ACCESS_ERROR_PATTERN.test(output)).toBe(true);
@@ -749,6 +750,7 @@ describe("copilot_harness.cjs", () => {
           inferenceAccessError: true,
           mcpPolicyError: false,
           agenticEngineTimeout: true,
+          agenticEngineIdleHang: false,
           modelNotSupportedError: false,
         });
 

@@ -281,6 +281,9 @@ func (c *Compiler) buildMainJob(data *WorkflowData, activationJobCreated bool) (
 
 			outputs["model_not_supported_error"] = fmt.Sprintf("${{ %s.model_not_supported_error || 'false' }}", stepRef)
 			compilerMainJobLog.Printf("Added model_not_supported_error output (engine=%s, step=%s)", engine.GetID(), constants.DetectAgentErrorsStepID)
+
+			outputs["agentic_engine_idle_hang"] = fmt.Sprintf("${{ %s.agentic_engine_idle_hang || 'false' }}", stepRef)
+			compilerMainJobLog.Printf("Added agentic_engine_idle_hang output (engine=%s, step=%s)", engine.GetID(), constants.DetectAgentErrorsStepID)
 		}
 	}
 

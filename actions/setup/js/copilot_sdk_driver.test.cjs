@@ -3,6 +3,7 @@ import { createRequire } from "module";
 
 const require = createRequire(import.meta.url);
 const { runWithCopilotSDK, parsePermissionConfigFromServerArgs } = require("./copilot_sdk_driver.cjs");
+const { SDK_IDLE_TIMEOUT_MS_DEFAULT } = require("./copilot_sdk_session.cjs");
 
 describe("copilot_sdk_driver.cjs", () => {
   describe("runWithCopilotSDK", () => {
@@ -645,6 +646,162 @@ describe("copilot_sdk_driver.cjs", () => {
           process.env.GH_AW_MAX_TOOL_DENIALS = oldMaxToolDenials;
         }
       }
+    });
+
+    it("fires idle hang watchdog when sendAndWait produces no activity for idleTimeoutMs", async () => {
+      vi.useFakeTimers();
+      const stderrWriteSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+      let rejectSendAndWait;
+      const disconnect = vi.fn().mockImplementation(async () => {
+        if (rejectSendAndWait) {
+          rejectSendAndWait(new Error("SDK session disconnected by watchdog"));
+        }
+      });
+      const stop = vi.fn().mockResolvedValue(undefined);
+      const session = {
+        sessionId: "session-idle-hang",
+        on: () => {},
+        sendAndWait: vi.fn().mockImplementation(
+          () =>
+            new Promise((_, reject) => {
+              rejectSendAndWait = reject;
+            })
+        ),
+        disconnect,
+      };
+      class FakeCopilotClient {
+        start = vi.fn().mockResolvedValue(undefined);
+        createSession = vi.fn().mockResolvedValue(session);
+        stop = stop;
+      }
+
+      // Use a timeout larger than the 5000 ms minimum poll interval so the
+      // watchdog fires on the first interval tick (idleCheckMs = 5000 ms).
+      const oldIdleTimeout = process.env.COPILOT_SDK_IDLE_TIMEOUT_MS;
+      process.env.COPILOT_SDK_IDLE_TIMEOUT_MS = "100";
+      try {
+        const resultPromise = runWithCopilotSDK({
+          sdkUri: "http://127.0.0.1:3002",
+          prompt: "test prompt",
+          logger: () => {},
+          sdkModule: {
+            CopilotClient: FakeCopilotClient,
+            RuntimeConnection: { forUri: vi.fn(() => ({})) },
+            approveAll: () => "allow",
+          },
+        });
+
+        // The minimum poll interval is 5000 ms regardless of idleTimeoutMs.
+        // Advance past it so the watchdog fires on its first tick.
+        await vi.advanceTimersByTimeAsync(6000);
+
+        const result = await resultPromise;
+        expect(result.exitCode).toBe(1);
+        expect(result.output).toContain("idle-hang watchdog");
+        expect(result.output).toContain("GH_AW_AGENTIC_ENGINE_IDLE_HANG");
+        expect(disconnect).toHaveBeenCalled();
+
+        const parsedEvents = stderrWriteSpy.mock.calls
+          .map(([message]) => {
+            if (typeof message !== "string" || !message.endsWith("\n")) return null;
+            try {
+              return JSON.parse(message.trimEnd());
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean);
+        const idleHangEvent = parsedEvents.find(event => event.type === "guard.idle_hang");
+        expect(idleHangEvent).toMatchObject({
+          type: "guard.idle_hang",
+          data: {
+            idleDurationMs: expect.any(Number),
+            idleTimeoutMs: 100,
+          },
+        });
+      } finally {
+        vi.useRealTimers();
+        stderrWriteSpy.mockRestore();
+        if (oldIdleTimeout === undefined) {
+          delete process.env.COPILOT_SDK_IDLE_TIMEOUT_MS;
+        } else {
+          process.env.COPILOT_SDK_IDLE_TIMEOUT_MS = oldIdleTimeout;
+        }
+      }
+    }, 20_000);
+
+    it("does not fire idle hang watchdog when sendAndWait completes normally before idle timeout", async () => {
+      const stderrWriteSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+
+      let onEvent = () => {};
+      const disconnect = vi.fn().mockResolvedValue(undefined);
+      const stop = vi.fn().mockResolvedValue(undefined);
+      const session = {
+        sessionId: "session-idle-reset",
+        on: handler => {
+          onEvent = handler;
+        },
+        sendAndWait: vi.fn().mockImplementation(async () => {
+          // Emit a tool.execution_complete event to exercise the activity reset path.
+          onEvent({
+            type: "tool.execution_complete",
+            ephemeral: false,
+            timestamp: new Date().toISOString(),
+            data: { toolName: "report_intent", success: true },
+          });
+          // Complete the session normally — no timer advance means the watchdog
+          // interval (minimum 5000 ms) never fires before sendAndWait resolves.
+          return { data: { content: "done" } };
+        }),
+        disconnect,
+      };
+      class FakeCopilotClient {
+        start = vi.fn().mockResolvedValue(undefined);
+        createSession = vi.fn().mockResolvedValue(session);
+        stop = stop;
+      }
+
+      const oldIdleTimeout = process.env.COPILOT_SDK_IDLE_TIMEOUT_MS;
+      process.env.COPILOT_SDK_IDLE_TIMEOUT_MS = "100"; // 100 ms threshold
+      try {
+        const result = await runWithCopilotSDK({
+          sdkUri: "http://127.0.0.1:3002",
+          prompt: "test prompt",
+          logger: () => {},
+          sdkModule: {
+            CopilotClient: FakeCopilotClient,
+            RuntimeConnection: { forUri: vi.fn(() => ({})) },
+            approveAll: () => "allow",
+          },
+        });
+
+        // Session completed normally — watchdog should NOT have fired.
+        expect(result.exitCode).toBe(0);
+        const parsedEvents = stderrWriteSpy.mock.calls
+          .map(([message]) => {
+            if (typeof message !== "string" || !message.endsWith("\n")) return null;
+            try {
+              return JSON.parse(message.trimEnd());
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean);
+        const idleHangEvent = parsedEvents.find(event => event.type === "guard.idle_hang");
+        expect(idleHangEvent).toBeUndefined();
+      } finally {
+        stderrWriteSpy.mockRestore();
+        if (oldIdleTimeout === undefined) {
+          delete process.env.COPILOT_SDK_IDLE_TIMEOUT_MS;
+        } else {
+          process.env.COPILOT_SDK_IDLE_TIMEOUT_MS = oldIdleTimeout;
+        }
+      }
+    });
+
+    it("exports SDK_IDLE_TIMEOUT_MS_DEFAULT as 5 minutes", () => {
+      expect(SDK_IDLE_TIMEOUT_MS_DEFAULT).toBe(5 * 60 * 1000);
     });
   });
 

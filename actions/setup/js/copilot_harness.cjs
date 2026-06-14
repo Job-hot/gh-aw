@@ -111,6 +111,8 @@ const AUTHENTICATION_FAILED_PATTERN = /Authentication failed(?:\s*\(Request ID:[
 const INFERENCE_ACCESS_ERROR_PATTERN = /Access denied by policy settings|invalid access to inference/;
 // Pattern: Agentic engine process killed by signal (timeout)
 const AGENTIC_ENGINE_TIMEOUT_PATTERN = /signal=SIG(?:TERM|KILL|INT)/;
+// Pattern: Copilot SDK driver idle-hang watchdog fired (guard.idle_hang JSONL event in output)
+const AGENTIC_ENGINE_IDLE_HANG_PATTERN = /guard\.idle_hang/;
 
 // Pattern to detect null-type tool_call error that poisons conversation history.
 // Matches the Copilot API 400 error:
@@ -340,7 +342,7 @@ function buildCopilotProxyAuthFailureDiagnostic(output, env = process.env) {
 /**
  * Detect known Copilot error patterns for workflow outputs.
  * @param {string} output
- * @returns {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean }}
+ * @returns {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean, agenticEngineIdleHang: boolean }}
  */
 function detectCopilotErrors(output) {
   return {
@@ -348,12 +350,13 @@ function detectCopilotErrors(output) {
     mcpPolicyError: isMCPPolicyError(output),
     agenticEngineTimeout: AGENTIC_ENGINE_TIMEOUT_PATTERN.test(output),
     modelNotSupportedError: isModelNotSupportedError(output),
+    agenticEngineIdleHang: AGENTIC_ENGINE_IDLE_HANG_PATTERN.test(output),
   };
 }
 
 /**
  * Write Copilot detection outputs to $GITHUB_OUTPUT.
- * @param {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean }} results
+ * @param {{ inferenceAccessError: boolean, mcpPolicyError: boolean, agenticEngineTimeout: boolean, modelNotSupportedError: boolean, agenticEngineIdleHang: boolean }} results
  */
 function writeCopilotOutputs(results) {
   const outputFile = process.env.GITHUB_OUTPUT;
@@ -367,6 +370,7 @@ function writeCopilotOutputs(results) {
     `mcp_policy_error=${results.mcpPolicyError}`,
     `agentic_engine_timeout=${results.agenticEngineTimeout}`,
     `model_not_supported_error=${results.modelNotSupportedError}`,
+    `agentic_engine_idle_hang=${results.agenticEngineIdleHang}`,
   ];
   fs.appendFileSync(outputFile, lines.join("\n") + "\n");
 }
@@ -628,6 +632,7 @@ async function main() {
     mcpPolicyError: false,
     agenticEngineTimeout: false,
     modelNotSupportedError: false,
+    agenticEngineIdleHang: false,
   };
   /** @type {Awaited<ReturnType<typeof startCopilotSDKServer>>} */
   let copilotSDKServer = null;
@@ -685,6 +690,7 @@ async function main() {
         detectedCopilotErrors.mcpPolicyError ||= attemptDetections.mcpPolicyError;
         detectedCopilotErrors.agenticEngineTimeout ||= attemptDetections.agenticEngineTimeout;
         detectedCopilotErrors.modelNotSupportedError ||= attemptDetections.modelNotSupportedError;
+        detectedCopilotErrors.agenticEngineIdleHang ||= attemptDetections.agenticEngineIdleHang;
 
         // Success — record exit code and stop retrying
         if (result.exitCode === 0) {

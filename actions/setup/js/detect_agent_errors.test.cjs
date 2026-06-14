@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-const { detectErrors, INFERENCE_ACCESS_ERROR_PATTERN, MCP_POLICY_BLOCKED_PATTERN, AGENTIC_ENGINE_TIMEOUT_PATTERN, MODEL_NOT_SUPPORTED_PATTERN } = require("./detect_agent_errors.cjs");
+const { detectErrors, INFERENCE_ACCESS_ERROR_PATTERN, MCP_POLICY_BLOCKED_PATTERN, AGENTIC_ENGINE_TIMEOUT_PATTERN, MODEL_NOT_SUPPORTED_PATTERN, AGENTIC_ENGINE_IDLE_HANG_PATTERN } = require("./detect_agent_errors.cjs");
 
 describe("detect_agent_errors.cjs", () => {
   describe("INFERENCE_ACCESS_ERROR_PATTERN", () => {
@@ -126,6 +126,25 @@ describe("detect_agent_errors.cjs", () => {
     });
   });
 
+  describe("AGENTIC_ENGINE_IDLE_HANG_PATTERN", () => {
+    it("matches guard.idle_hang JSONL event from Copilot SDK driver", () => {
+      const log = '{"type":"guard.idle_hang","timestamp":"2026-06-14T16:06:00.000Z","data":{"idleDurationMs":300100,"idleTimeoutMs":300000}}';
+      expect(AGENTIC_ENGINE_IDLE_HANG_PATTERN.test(log)).toBe(true);
+    });
+
+    it("matches when embedded in larger log output", () => {
+      const log = "Some agent output\n[sdk-driver] 2026-06-14T16:06:00.000Z guard.idle_hang watchdog fired\nMore output";
+      expect(AGENTIC_ENGINE_IDLE_HANG_PATTERN.test(log)).toBe(true);
+    });
+
+    it("does not match unrelated errors", () => {
+      expect(AGENTIC_ENGINE_IDLE_HANG_PATTERN.test("CAPIError: 400 Bad Request")).toBe(false);
+      expect(AGENTIC_ENGINE_IDLE_HANG_PATTERN.test("guard.tool_denials_exceeded")).toBe(false);
+      expect(AGENTIC_ENGINE_IDLE_HANG_PATTERN.test("signal=SIGTERM")).toBe(false);
+      expect(AGENTIC_ENGINE_IDLE_HANG_PATTERN.test("")).toBe(false);
+    });
+  });
+
   describe("detectErrors", () => {
     it("returns all false for empty log", () => {
       const result = detectErrors("");
@@ -133,6 +152,7 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(false);
       expect(result.agenticEngineTimeout).toBe(false);
       expect(result.modelNotSupportedError).toBe(false);
+      expect(result.agenticEngineIdleHang).toBe(false);
     });
 
     it("detects inference access error only", () => {
@@ -141,6 +161,7 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(false);
       expect(result.agenticEngineTimeout).toBe(false);
       expect(result.modelNotSupportedError).toBe(false);
+      expect(result.agenticEngineIdleHang).toBe(false);
     });
 
     it("detects MCP policy error only", () => {
@@ -149,6 +170,7 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(true);
       expect(result.agenticEngineTimeout).toBe(false);
       expect(result.modelNotSupportedError).toBe(false);
+      expect(result.agenticEngineIdleHang).toBe(false);
     });
 
     it("detects engine timeout only", () => {
@@ -157,6 +179,7 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(false);
       expect(result.agenticEngineTimeout).toBe(true);
       expect(result.modelNotSupportedError).toBe(false);
+      expect(result.agenticEngineIdleHang).toBe(false);
     });
 
     it("detects model not supported error only", () => {
@@ -165,6 +188,7 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(false);
       expect(result.agenticEngineTimeout).toBe(false);
       expect(result.modelNotSupportedError).toBe(true);
+      expect(result.agenticEngineIdleHang).toBe(false);
     });
 
     it("detects invalid model name errors", () => {
@@ -173,6 +197,17 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(false);
       expect(result.agenticEngineTimeout).toBe(false);
       expect(result.modelNotSupportedError).toBe(true);
+      expect(result.agenticEngineIdleHang).toBe(false);
+    });
+
+    it("detects idle hang only", () => {
+      const log = '{"type":"guard.idle_hang","timestamp":"2026-06-14T16:06:00.000Z","data":{"idleDurationMs":300100,"idleTimeoutMs":300000}}';
+      const result = detectErrors(log);
+      expect(result.inferenceAccessError).toBe(false);
+      expect(result.mcpPolicyError).toBe(false);
+      expect(result.agenticEngineTimeout).toBe(false);
+      expect(result.modelNotSupportedError).toBe(false);
+      expect(result.agenticEngineIdleHang).toBe(true);
     });
 
     it("detects both errors in the same log", () => {
@@ -182,6 +217,7 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(true);
       expect(result.agenticEngineTimeout).toBe(false);
       expect(result.modelNotSupportedError).toBe(false);
+      expect(result.agenticEngineIdleHang).toBe(false);
     });
 
     it("detects timeout alongside other errors", () => {
@@ -191,6 +227,7 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(false);
       expect(result.agenticEngineTimeout).toBe(true);
       expect(result.modelNotSupportedError).toBe(false);
+      expect(result.agenticEngineIdleHang).toBe(false);
     });
 
     it("returns false for unrelated log content", () => {
@@ -199,6 +236,7 @@ describe("detect_agent_errors.cjs", () => {
       expect(result.mcpPolicyError).toBe(false);
       expect(result.agenticEngineTimeout).toBe(false);
       expect(result.modelNotSupportedError).toBe(false);
+      expect(result.agenticEngineIdleHang).toBe(false);
     });
   });
 });

@@ -2472,6 +2472,7 @@ async function main() {
     const inferenceAccessError = process.env.GH_AW_INFERENCE_ACCESS_ERROR === "true";
     const mcpPolicyError = process.env.GH_AW_MCP_POLICY_ERROR === "true";
     const agenticEngineTimeout = process.env.GH_AW_AGENTIC_ENGINE_TIMEOUT === "true";
+    const agenticEngineIdleHang = process.env.GH_AW_AGENTIC_ENGINE_IDLE_HANG === "true";
     const modelNotSupportedError = process.env.GH_AW_MODEL_NOT_SUPPORTED_ERROR === "true";
     const unknownModelAICreditsFromOutput = process.env.GH_AW_UNKNOWN_MODEL_AI_CREDITS === "true";
     const unknownModelAICreditsFromAudit = parseUnknownModelAICreditsFromAuditLog();
@@ -2541,6 +2542,7 @@ async function main() {
     core.info(`Inference access error: ${inferenceAccessError}`);
     core.info(`MCP policy error: ${mcpPolicyError}`);
     core.info(`Agentic engine timeout: ${agenticEngineTimeout}`);
+    core.info(`Agentic engine idle hang: ${agenticEngineIdleHang}`);
     core.info(`Model not supported error: ${modelNotSupportedError}`);
     core.info(`Unknown model AI credits error: ${unknownModelAICredits}`);
     core.info(`Unknown model AI credits sources (audit/output): ${unknownModelAICreditsFromAudit}/${unknownModelAICreditsFromOutput}`);
@@ -2557,7 +2559,9 @@ async function main() {
     // A step-level timeout (timeout-minutes on the engine execution step) is detected by
     // the detect-copilot-errors step which checks for SIGTERM/SIGKILL/SIGINT signals
     // in the engine output and sets the agentic_engine_timeout output.
-    const isTimedOut = agentConclusion === "timed_out" || agenticEngineTimeout;
+    // An SDK idle hang (guard.idle_hang event) means the session stalled mid-task with no
+    // activity; this is classified as a timeout so the failure report uses the timeout template.
+    const isTimedOut = agentConclusion === "timed_out" || agenticEngineTimeout || agenticEngineIdleHang;
 
     // Check if there are assignment errors (regardless of agent job status)
     const hasAssignmentErrors = parseInt(assignmentErrorCount, 10) > 0;
