@@ -463,7 +463,7 @@ async function applyFieldUpdates(github, projectId, itemId, fields) {
     }
 
     const expectedDataType = inferFieldDataType(fieldName, fieldValue, datePattern);
-    const isDateField = expectedDataType === "DATE" || fieldName.toLowerCase().includes("date");
+    const isDateField = fieldName.toLowerCase().includes("date");
     const isTextField = expectedDataType === "TEXT";
 
     if (checkFieldTypeMismatch(fieldName, field, expectedDataType)) {
