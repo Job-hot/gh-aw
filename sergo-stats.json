@@ -1,37 +1,38 @@
 {
-  "total_runs": 35,
-  "total_findings": 263,
-  "total_tasks": 70,
-  "avg_success_score": 8.76,
-  "last_run": "2026-06-13",
-  "serena_lsp": "23 tools stable R4-35. activate_project --project warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'. SHALLOW CLONE: cannot date linter adds via git history; detect via registry-count delta + doc-lag. Grep + gh-api labels=/title-regex jq = workhorse.",
+  "total_runs": 36,
+  "total_findings": 269,
+  "total_tasks": 72,
+  "avg_success_score": 8.77,
+  "last_run": "2026-06-14",
+  "serena_lsp": "23 tools stable R4-36. activate_project --project warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'. SHALLOW CLONE: cannot date linter adds via git history; detect via registry-count delta (main.go) + doc-lag. Grep + gh-api labels=/title-regex jq = workhorse.",
   "open_issues": {
-    "sg32a1_R32_OPEN_3d": "#38281 execcommand NIL-GUARD FP (else-branch ctx!=nil). github_cli.go:32. Complex control-flow=slow. DO NOT REFILE; reverify R36.",
-    "sg32a2_R32_OPEN_3d": "#38282 execcommand enforce-readiness mcp_inspect_mcp.go:150,155 + nolint + enforce. Blocked on sg32a1. DO NOT REFILE; reverify R36.",
-    "sg34a1_R34_OPEN_1d": "#38787 doc-sync hardcodedfilepath+timesleepnocontext (now ALSO httpnoctx undocumented but #38787 not refiled). new_linter_doc_lag.",
-    "sg34a2_R34_OPEN_1d": "#38788 hardcodedfilepath hasFormatVerb FP (misses %05d/width/flag + 9 verb letters). Single-file regexp fix.",
-    "sg34a3_R34_OPEN_1d": "#38789 ctxbackground syntactic `ident.Name=='context'` FP/FN. Fix=ObjectOf->*types.PkgName->Imported().Path().",
-    "sg35a1_R35": "httpnoctx enforce-readiness: 3 prod *http.Client.Get sites omit ctx (deps_outdated.go:169, remote_fetch.go:613, mcp_inspect_mcp_scripts_server.go:54). Convert NewRequestWithContext+Do then add -httpnoctx to cgo.yml:1122. Moderate (ctx threading).",
-    "sg35a2_R35": "httpnoctx precision latent FN: isHTTPClientReceiver(:96) requires *types.Pointer -> value/embedded http.Client escape. Fix=unwrap-optional-pointer then Named net/http.Client. Single-file+testdata. Latent (prod all &http.Client)."
+    "sg32a1_R32_OPEN_4d": "#38281 execcommand NIL-GUARD FP (else-branch ctx!=nil). github_cli.go:32. Complex control-flow=slow. DO NOT REFILE; reverify R37, if 6+d report/noop.",
+    "sg32a2_R32_OPEN_4d": "#38282 execcommand enforce-readiness mcp_inspect_mcp.go + nolint + enforce. Blocked on sg32a1. DO NOT REFILE; reverify R37.",
+    "sg34a1_R34_OPEN_2d": "#38787 doc-sync hardcodedfilepath+timesleepnocontext+httpnoctx. NOTE doc-lag now ALSO covers timeafterleak (spec_test) but #38787 covers doc-sync intent -> do not dup. new_linter_doc_lag.",
+    "sg34a2_R34_OPEN_2d": "#38788 hardcodedfilepath hasFormatVerb FP (misses %05d/width/flag + 9 verb letters). Single-file regexp fix.",
+    "sg34a3_R34_OPEN_2d": "#38789 ctxbackground syntactic `ident.Name=='context'` FP/FN. Fix=ObjectOf->*types.PkgName->Imported().Path().",
+    "sg36a1_R36": "timeafterleak enforce-readiness: 3 REAL prod loop+multicase-select timer leaks (docker_images.go:199, add_interactive_workflow.go:41, mcp_inspect_mcp_scripts_server.go:78). Convert NewTimer+Stop then add -timeafterleak to cgo.yml:1122. Small-moderate.",
+    "sg36a2_R36": "timeafterleak precision latent FN: isInsideLoopSelectComm(:92-97) requires time.After IMMEDIATE parent be receive UnaryExpr -> stored timer:=time.After(d);<-timer in loop escapes. Add alias-tracking. Single-file+testdata. Latent (all 3 prod use direct <-time.After)."
   },
-  "closed_recent": "R32 sg31a1 #38028 & sg31a2 #38029 LANDED. R31 sg30a1 #37740 & sg30a2 #37741 LANDED. seenmapbool #36406 dismissed.",
-  "do_not_refile": "ossetenvlibrary, contextcancelnotdeferred, fileclosenotdeferred, seenmapbool(#36406), sortslice-migration(#38012/#38014), execcommand sg32a1/a2(#38281/#38282 open), hardcodedfilepath-precision(#38788), ctxbackground-precision(#38789), doc-sync(#38787 covers all undocumented incl httpnoctx).",
+  "closed_recent": "R36: sg35a1 #39016 (httpnoctx 3-site convert+enforce) & sg35a2 #39017 (httpnoctx value/embedded FN) LANDED 06-13. httpnoctx NOW CI-enforced (cgo.yml:1122, 13 flags). R32 sg31a1 #38028 & sg31a2 #38029 LANDED. seenmapbool #36406 dismissed.",
+  "do_not_refile": "ossetenvlibrary, contextcancelnotdeferred, fileclosenotdeferred, seenmapbool(#36406), sortslice-migration(#38012/#38014), execcommand sg32a1/a2(#38281/#38282 open), hardcodedfilepath-precision(#38788), ctxbackground-precision(#38789), doc-sync(#38787 covers all undocumented incl httpnoctx+timeafterleak), httpnoctx-enforce(#39016 landed), httpnoctx-FN(#39017 landed).",
   "patterns": {
-    "phantom_issue_reconcile": "Recorded 'created' != exists (R33 sg33a1/a2 never posted). ALWAYS reconcile last-run via `gh api ...?labels=sergo&state=all`. R34+R35 safe-outputs CONFIRMED posted (all open). Phantom finding = fair to refile.",
-    "new_linter_doc_lag": "RECURRED R34+R35. linter-miner bot PRs add linters updating SOME doc surfaces not all. Check ALL: main.go count vs doc.go 'All N'+bullets vs spec_test documentedAnalyzers() len vs README. R35=27/24/25. Fast-land WHEN unfiled; #38787 still pending so DO NOT dup.",
-    "new_linter_precision_audit": "Per new linter: (1) call-detect type-identity vs syntactic; (2) ctx/control-flow precision; (3) heuristic completeness vs Doc/ADR intent. R35 httpnoctx CLEAN on FPs (full type-identity) but latent FN (pointer-only receiver gate, value/embedded escape) -> sg35a2. ALSO run linter over prod for enforce-readiness (real TP sites) -> sg35a1. STRONGEST land-arg = impl narrower/contradicts linter's OWN Doc.",
-    "enforce_readiness_run_linter_on_prod": "NEW R35: for each new/unenforced linter, GREP prod for the exact pattern it catches -> real TP sites = enforce-readiness issue (proven land: tolowerequalfold 13 sites #37250, strconvparse 6, manualmutexunlock 16). httpnoctx=3 *http.Client.Get sites. List sites + convert-recipe + append CI flag.",
-    "syntactic_stdlib_match": "Linters detecting stdlib by `ident.Name=='<pkg>'` w/o TypesInfo -> latent FP(shadow)+FN(alias). Correct: ObjectOf->*types.PkgName->Imported().Path() (#38029, astutil.IsFmtErrorf). httpnoctx does this RIGHT (model impl). ctxbackground:86 still syntactic (#38789).",
-    "precision_fix_lands": "single-file SIMPLE syntactic->type-identity / heuristic-completeness land ~1d. COMPLEX control-flow/ctx-threading SLOW: sg32a1/a2 open 3d+. sg35a1 (ctx threading 3 fns) likely moderate; sg35a2 (single-file) fast.",
-    "ci_enforce": "cgo.yml:1122 POSITIVE LINTER_FLAGS, R35=12 (unchanged): errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion fmterrorfnoverbs tolowerequalfold. httpnoctx not enforced. Append flag for zero-vio; convert first for non-zero.",
-    "team_closes_fast": "SIMPLE sergo PRs CLOSED ~1-2d. COMPLEX/blocked linger (sg32a1/a2 3d). gh api labels=sergo&state=all confirms."
+    "phantom_issue_reconcile": "Recorded 'created' != exists (R33 sg33a1/a2 never posted). ALWAYS reconcile last-run via `gh api ...?labels=sergo&state=all`. R34-R36 safe-outputs CONFIRMED posted. Phantom finding = fair to refile.",
+    "new_linter_doc_lag": "RECURRED R34-R36. linter-miner bot PRs add linters updating SOME doc surfaces not all. Check ALL: main.go count vs doc.go 'All N'+bullets vs spec_test documentedAnalyzers() len vs README. R36=28/25/25 AND surfaces miss DIFFERENT sets (doc.go misses hcfp+httpnoctx+timesleepnoctx; spec_test misses httpnoctx+timeafterleak+timesleepnoctx). #38787 pending so DO NOT dup.",
+    "new_linter_precision_audit": "Per new linter: (1) call-detect type-identity vs syntactic; (2) ctx/control-flow precision; (3) heuristic completeness vs Doc/ADR intent. R36 timeafterleak CLEAN on FPs (type-identity time pkg + correct single-case/Body/FuncLit skips) but latent FN (immediate-parent-receive gate -> stored-channel escape) -> sg36a2. ALSO run over prod for enforce-readiness -> sg36a1. STRONGEST land-arg = real prod TP sites OR impl narrower than linter's OWN Doc.",
+    "enforce_readiness_run_linter_on_prod": "PROVEN R35-R36: for each new/unenforced linter, GREP prod for the exact pattern -> real TP sites = enforce-readiness issue (lands: tolowerequalfold 13 #37250, strconvparse 6, httpnoctx 3 #39016 LANDED, timeafterleak 3 sg36a1). List sites + convert-recipe + append CI flag (cgo.yml:1122). Distinguish flagged vs not (FuncLit boundary, no-loop, single-case) to avoid over-claiming.",
+    "syntactic_stdlib_match": "Linters detecting stdlib by `ident.Name=='<pkg>'` w/o TypesInfo -> latent FP(shadow)+FN(alias). Correct: ObjectOf->*types.PkgName->Imported().Path() (#38029, httpnoctx, timeafterleak do this RIGHT). ctxbackground:86 still syntactic (#38789).",
+    "alias_intermediate_var_FN": "RECURRING land: linters gating on IMMEDIATE-parent AST shape miss intermediate-variable forms. lenstringzero n:=len(s) #37741, tolowerequalfold local-var #37492, timeafterleak timer:=time.After(d) sg36a2. Fix=follow var via object identity to use site, reuse existing structural checks.",
+    "precision_fix_lands": "single-file SIMPLE syntactic->type-identity / heuristic-completeness / alias-tracking land ~1d. COMPLEX control-flow/ctx-threading SLOW: sg32a1/a2 open 4d+. sg36a1 (3 mechanical conversions) like httpnoctx (landed 1d); sg36a2 (single-file alias) fast.",
+    "ci_enforce": "cgo.yml:1122 POSITIVE LINTER_FLAGS, R36=13 (added -httpnoctx): errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion fmterrorfnoverbs tolowerequalfold httpnoctx. timeafterleak NOT enforced (sg36a1). Append flag for zero-vio; convert first for non-zero.",
+    "team_closes_fast": "SIMPLE sergo PRs CLOSED ~1-2d (httpnoctx pair landed <1d). COMPLEX/blocked linger (sg32a1/a2 4d). gh api labels=sergo&state=all confirms."
   },
-  "linters_R35": {
-    "total_registered": 27,
-    "newest": "httpnoctx(27th, net/http context-free calls). R34: hardcodedfilepath(25th #38742), timesleepnocontext(26th #38704).",
-    "doc_gap": "doc.go missing hardcodedfilepath+httpnoctx+timesleepnocontext (24 bullets); spec_test documentedAnalyzers()=25 + README missing httpnoctx+timesleepnocontext. Covered by #38787 (do not dup).",
-    "enforced_12": "errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion fmterrorfnoverbs tolowerequalfold",
-    "next_candidates": "R36: (1) reconcile sg35a1/a2 posted+landed + sg34a1/2/3 landed (title-regex+labels=sergo); (2) reverify #38281/#38282 (open 3d+; if ~6+d report/noop); (3) watch 28th linter (registry-count delta on main.go); (4) deeper hardcodedfilepath edges (unquoteStringLit escapes :97; isLogOrPrintCall var-receiver loggers) IF #38788 lands; (5) httpnoctx: package-level shortcuts (http.Get) have zero prod sites confirmed; embedded-receiver fix in sg35a2 may need resolved selector recv type. Avoid complex control-flow."
+  "linters_R36": {
+    "total_registered": 28,
+    "newest": "timeafterleak(28th, #39133, time.After in loop+select timer leak). R35: httpnoctx(27th). R34: hardcodedfilepath(25th #38742), timesleepnocontext(26th #38704).",
+    "doc_gap": "doc.go 'All 25'+25 bullets missing hardcodedfilepath+httpnoctx+timesleepnocontext; spec_test documentedAnalyzers()=25 missing httpnoctx+timeafterleak+timesleepnocontext (DIFFERENT set); README 98 lines. Covered by #38787 (do not dup).",
+    "enforced_13": "errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion fmterrorfnoverbs tolowerequalfold httpnoctx",
+    "next_candidates": "R37: (1) reconcile sg36a1/a2 posted+landed (title-regex timeafterleak + labels=sergo); (2) reverify #38281/#38282 (open 4d->likely 5-6d; if 6+d report/noop); (3) reverify #38787/8/9 (doc-sync, hardcodedfilepath, ctxbackground); (4) watch 29th linter (registry-count delta main.go); (5) timeafterleak deeper: Reset/Stop-pattern detection completeness, or single-case-with-default edge; (6) timesleepnocontext (26th) precision audit NOT yet done - candidate. Avoid complex control-flow."
   },
-  "repo_context": "pkg/: ~913 prod .go (400 workflow, 319 cli, 43 parser), ~1265 test. 27 analyzer subpkgs + internal/astutil(IsFmtErrorf,Inspector) + internal/filecheck(IsTestFile) + internal/nolint(BuildLineIndex,HasDirective). Largest: compiler_types.go 59KB, forecast.go 52KB."
+  "repo_context": "pkg/: 915 prod .go (~400 workflow, ~319 cli, ~43 parser). 28 analyzer subpkgs + internal/astutil(IsFmtErrorf,Inspector) + internal/filecheck(IsTestFile) + internal/nolint(BuildLineIndex,HasDirective). Largest: compiler_types.go 59KB, forecast.go 52KB."
 }
