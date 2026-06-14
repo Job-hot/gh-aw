@@ -20,7 +20,7 @@ engine:
   id: copilot
   bare: true
 
-timeout-minutes: 50  # Increased from 30 to accommodate Supertonic model download (~400MB) and TTS synthesis; original value was 45
+timeout-minutes: 30  # Reduced from 45 since pre-fetching data is faster
 experiments:
   prompt_style:
     variants: [detailed, concise]
@@ -319,7 +319,6 @@ imports:
       title-prefix: "[daily-news] "
       expires: 3d
   - shared/trends.md
-  - shared/supertonic.md
   - shared/otlp.md
 ---
 
@@ -551,67 +550,5 @@ Create a new GitHub discussion with a title containing today's date (e.g., "Dail
 
 Only a new discussion should be created, do not close or update any existing discussions.
 {{/if}}
-
-## 🔊 Voice Summary
-
-After creating the discussion, generate a short spoken summary of the day's news using the Supertonic TTS server (already running at `http://127.0.0.1:7788`).
-
-### Step 1 — Write the summary script
-
-Compose a concise spoken summary (2–4 sentences) covering the headline metrics and most notable event of the day. Keep it natural and conversational — this is text-to-speech, not markdown.
-
-Example:
-> "Good morning! Today in the gh-aw repository, 12 pull requests were merged and 8 new issues were opened. The highlight was the release of version 0.47.0, which ships improved MCP Gateway support. Have a productive day!"
-
-### Step 2 — Synthesize the audio
-
-Write the summary text to a file first, then pass it to the API to avoid shell quoting issues:
-
-```bash
-mkdir -p /tmp/gh-aw/agent
-
-# Write the summary text to a file (avoids shell quoting complexity)
-cat > /tmp/gh-aw/agent/summary.txt << 'SUMMARY'
-<YOUR SUMMARY TEXT>
-SUMMARY
-
-# Synthesize to WAV via the Supertonic TTS server
-SUMMARY_TEXT=$(cat /tmp/gh-aw/agent/summary.txt)
-curl -sS -X POST http://127.0.0.1:7788/v1/tts \
-  -H 'content-type: application/json' \
-  --data-binary "{\"text\": $(jq -n --arg t "$SUMMARY_TEXT" '$t'), \"voice\": \"F1\", \"lang\": \"en\", \"steps\": 8}" \
-  -o /tmp/gh-aw/agent/daily-voice-summary.wav
-echo "Voice summary generated: $(ls -lh /tmp/gh-aw/agent/daily-voice-summary.wav)"
-```
-
-Replace the `<YOUR SUMMARY TEXT>` placeholder with the summary composed in Step 1.
-
-### Step 3 — Upload as a run artifact
-
-Stage the file and call the `upload_artifact` safe-output tool:
-
-```bash
-mkdir -p "$RUNNER_TEMP/gh-aw/safeoutputs/upload-artifacts"
-cp /tmp/gh-aw/agent/daily-voice-summary.wav \
-  "$RUNNER_TEMP/gh-aw/safeoutputs/upload-artifacts/daily-voice-summary.wav"
-```
-
-Call the safe-output tool:
-```json
-{ "type": "upload_artifact", "path": "daily-voice-summary.wav" }
-```
-
-### Step 4 — Add the artifact link to the discussion
-
-Update the discussion you created with a final section:
-
-```markdown
-### 🔊 Voice Summary
-
-A spoken version of today's digest is available as a run artifact:
-[🎧 Download daily-voice-summary.wav](<ARTIFACT_URL_FROM_UPLOAD>)
-```
-
-Replace `<ARTIFACT_URL_FROM_UPLOAD>` with the `slot_N_artifact_url` returned by the `upload_artifact` tool.
 
 {{#runtime-import shared/noop-reminder.md}}
