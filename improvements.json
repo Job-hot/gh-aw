@@ -1,6 +1,13 @@
 {
-  "last_updated": "2026-06-13",
+  "last_updated": "2026-06-14",
   "pending_tasks": [
+    {
+      "file": "docs/src/content/docs/reference/playwright.md",
+      "created": "2026-06-14",
+      "status": "pending",
+      "priority": "high",
+      "title": "Fix version format in visual regression example: v1.52.0 → 0.1.13 (npm semver, not Docker image version)"
+    },
     {
       "file": ".github/workflows/smoke-codex.md",
       "created": "2026-06-01",
@@ -48,14 +55,14 @@
       "created": "2026-06-13",
       "status": "pending",
       "priority": "high",
-      "title": "Fix run-success emoji (\ud83e\uddea\u2192\u2705) for consistent status signaling"
+      "title": "Fix run-success emoji (🧪→✅) for consistent status signaling"
     },
     {
       "file": "docs/src/content/docs/specs/ai-credits-specification.md",
       "created": "2026-06-13",
       "status": "pending",
       "priority": "high",
-      "title": "Expand Appendix A to show \u00a73.5 cache_read deduction step-by-step"
+      "title": "Expand Appendix A to show §3.5 cache_read deduction step-by-step"
     }
   ],
   "completed_tasks": [],
@@ -94,6 +101,11 @@
       "professional": 3,
       "needs_minor_work": 1,
       "needs_significant_work": 1
+    },
+    "2026-06-14": {
+      "professional": 3,
+      "needs_minor_work": 2,
+      "needs_significant_work": 0
     }
   }
 }

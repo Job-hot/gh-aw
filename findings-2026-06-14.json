@@ -1,0 +1,37 @@
+{
+  "date": "2026-06-14",
+  "files_analyzed": {
+    "documentation": [
+      "docs/src/content/docs/blog/2026-01-13-meet-the-workflows-interactive-chatops.md",
+      "docs/src/content/docs/reference/playwright.md"
+    ],
+    "cli": [],
+    "messages": [
+      ".github/workflows/pdf-summary.md",
+      ".github/workflows/pr-sous-chef.md"
+    ],
+    "validation": [
+      "pkg/workflow/mcp_http_url_validation_test.go"
+    ]
+  },
+  "overall_quality": "professional-with-accuracy-gap",
+  "quality_highlights": [
+    "pr-sous-chef.md: clean professional messages (🍳/✅/⚠️) with {status} variable; no theatrical language",
+    "playwright.md: exemplary structure — CLI recommended front-and-center, MCP deprecated with migration guidance, comprehensive real-world examples",
+    "mcp_http_url_validation_test.go: clean table-driven integration tests with descriptive test names"
+  ],
+  "single_file_improvements": [
+    {
+      "file": "docs/src/content/docs/reference/playwright.md",
+      "line": 154,
+      "priority": "high",
+      "issue": "Visual regression example uses version: \"v1.52.0\" for mode: cli, but config table documents CLI mode as pinning @playwright/cli npm package (default: 0.1.13). The v1.52.0 format is a Playwright browser Docker image version (MCP mode), not an npm package version. Change to \"0.1.13\" to align with the documented format."
+    },
+    {
+      "file": ".github/workflows/pdf-summary.md",
+      "priority": "medium",
+      "issue": "run-failure message is theatrical and non-actionable ('The document remains unsummarized...'). Recurring pending task since 2026-06-01. Replace with actionable message directing users to run logs.",
+      "status": "recurring-pending-since-2026-06-01"
+    }
+  ]
+}
