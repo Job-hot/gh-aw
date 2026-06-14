@@ -1,52 +1,31 @@
 {
-  "run_date": "2026-06-14T07:53:25Z",
-  "run_id": "27492425887",
-  "previous_run_id": "27484659333",
-  "previous_run_date": "2026-06-14T01:27:30Z",
+  "run_date": "2026-06-14T12:56:16Z",
+  "run_id": "27499486098",
+  "previous_run_id": "27492425887",
+  "previous_run_date": "2026-06-14T07:53:25Z",
   "fork_prs": 0,
   "agent_prs_found": 7,
   "prs_triaged": 0,
   "branch_prs_skipped": [
     {
-      "number": 39195,
-      "title": "[docs] Update dictation skill instructions",
-      "author": "app/github-actions",
-      "draft": false,
-      "category": "docs",
-      "risk": "low",
-      "ci": "unknown",
-      "created": "2026-06-14",
-      "labels": [],
-      "note": "NEW since last run; docs update"
-    },
-    {
       "number": 39188,
       "title": "Eliminate looped `time.After` timer leaks and enforce `timeafterleak` in CI",
-      "author": "app/copilot-swe-agent",
+      "author": "Copilot",
       "draft": true,
       "category": "chore",
       "risk": "medium",
       "ci": "unknown",
       "created": "2026-06-14",
       "labels": [],
-      "note": "NEW since last run; DRAFT; timeafterleak CI enforcement"
-    },
-    {
-      "number": 39183,
-      "title": "[jsweep] Clean update_project.cjs",
-      "author": "app/github-actions",
-      "draft": true,
-      "category": "chore",
-      "risk": "low",
-      "ci": "unknown",
-      "created": "2026-06-14",
-      "labels": [],
-      "note": "NEW since last run; DRAFT; jsweep cleanup"
+      "additions": 255,
+      "deletions": 53,
+      "changedFiles": 5,
+      "note": "DRAFT; timer leak fixes + CI enforcement"
     },
     {
       "number": 39164,
       "title": "feat: supertonic TTS shared workflow + daily-news voice artifact",
-      "author": "app/copilot-swe-agent",
+      "author": "Copilot",
       "draft": true,
       "category": "feature",
       "risk": "low",
@@ -56,12 +35,12 @@
       "additions": 295,
       "deletions": 13,
       "changedFiles": 3,
-      "note": "UNCHANGED from last run; DRAFT; TTS shared workflow"
+      "note": "DRAFT; TTS shared workflow"
     },
     {
       "number": 39156,
       "title": "Stop Codex harness retries on active-goal router failures",
-      "author": "app/copilot-swe-agent",
+      "author": "Copilot",
       "draft": false,
       "category": "bug",
       "risk": "medium",
@@ -71,12 +50,12 @@
       "additions": 43,
       "deletions": 2,
       "changedFiles": 4,
-      "note": "UNCHANGED from last run; CI ALL GREEN; CHANGES_REQUESTED"
+      "note": "UNCHANGED from prior runs; CI ALL GREEN; CHANGES_REQUESTED"
     },
     {
       "number": 39130,
       "title": "Fix AIC usage cache always empty in activation job",
-      "author": "app/copilot-swe-agent",
+      "author": "Copilot",
       "draft": false,
       "category": "bug",
       "risk": "high",
@@ -91,7 +70,7 @@
     {
       "number": 39100,
       "title": "Run safe-outputs MCP in the gh-aw node container",
-      "author": "app/copilot-swe-agent",
+      "author": "Copilot",
       "draft": false,
       "category": "feature",
       "risk": "high",
@@ -106,7 +85,7 @@
     {
       "number": 39089,
       "title": "Fix AWF tool-cache mount quoting that broke Copilot startup in Daily Issues Report",
-      "author": "app/copilot-swe-agent",
+      "author": "Copilot",
       "draft": true,
       "category": "bug",
       "risk": "medium",
@@ -116,12 +95,12 @@
       "additions": 511,
       "deletions": 490,
       "changedFiles": 258,
-      "note": "UNCHANGED; DRAFT"
+      "note": "UNCHANGED; DRAFT; large diff (258 files)"
     },
     {
       "number": 38911,
       "title": "[ARC/DinD] Emit chroot.binariesSourcePath and chroot.identity in AWF stdin-config",
-      "author": "app/copilot-swe-agent",
+      "author": "Copilot",
       "draft": false,
       "category": "feature",
       "risk": "high",
@@ -134,22 +113,23 @@
       "note": "UNCHANGED; 2 days old; labeled smoke/smoke-claude"
     }
   ],
-  "new_since_last_run": [39195, 39188, 39183],
-  "unchanged": [39164, 39156, 39130, 39100, 39089, 38911],
+  "new_since_last_run": [],
+  "unchanged": [39188, 39164, 39156, 39130, 39100, 39089, 38911],
   "closed_no_merge": [],
   "otel_prs": [],
+  "non_copilot_new_prs": [39219, 39214, 39211, 39207],
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
   "fast_track_needed": [],
   "batches": {},
   "close_candidates": [],
-  "notes": "9 open agent PRs (7 copilot-swe-agent, 2 github-actions), all branch-based (isCrossRepository:false). 3 new since run 27484659333 (#39195 docs, #39188 DRAFT timeafterleak, #39183 DRAFT jsweep). 0 merged/closed since last run. Fork-only policy: 0 fork PRs found, 0 triaged.",
+  "notes": "7 open Copilot PRs, all branch-based (isCrossRepository:false). 4 new github-actions PRs (#39219, #39214, #39211, #39207) since last run — not Copilot-authored. 0 Copilot PRs closed/merged since last run. Fork-only policy: 0 fork PRs found, 0 triaged.",
   "statistics": {
-    "by_category": {"feature": 3, "bug": 3, "docs": 1, "chore": 2},
-    "by_risk": {"high": 3, "medium": 3, "low": 3},
-    "by_author": {"app/copilot-swe-agent": 7, "app/github-actions": 2},
-    "by_draft": {"draft": 4, "open": 5},
-    "ci_status": {"all_passing": 1, "no_checks": 7, "unknown": 1}
+    "by_category": {"feature": 3, "bug": 3, "chore": 1},
+    "by_risk": {"high": 3, "medium": 3, "low": 1},
+    "by_author": {"Copilot": 7},
+    "by_draft": {"draft": 3, "open": 4},
+    "ci_status": {"all_passing": 1, "no_checks": 5, "unknown": 1}
   }
 }
