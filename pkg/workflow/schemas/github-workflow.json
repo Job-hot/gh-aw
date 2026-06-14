@@ -10,8 +10,12 @@
     },
     "branch": {
       "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#onpushpull_requestbranchestags",
-      "$ref": "#/definitions/globs",
-      "description": "When using the push and pull_request events, you can configure a workflow to run on specific branches or tags. If you only define only tags or only branches, the workflow won't run for events affecting the undefined Git ref.\nThe branches, branches-ignore, tags, and tags-ignore keywords accept glob patterns that use the * and ** wildcard characters to match more than one branch or tag name. For more information, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet.\nThe patterns defined in branches and tags are evaluated against the Git ref's name. For example, defining the pattern mona/octocat in branches will match the refs/heads/mona/octocat Git ref. The pattern releases/** will match the refs/heads/releases/10 Git ref.\nYou can use two types of filters to prevent a workflow from running on pushes and pull requests to tags and branches:\n- branches or branches-ignore - You cannot use both the branches and branches-ignore filters for the same event in a workflow. Use the branches filter when you need to filter branches for positive matches and exclude branches. Use the branches-ignore filter when you only need to exclude branch names.\n- tags or tags-ignore - You cannot use both the tags and tags-ignore filters for the same event in a workflow. Use the tags filter when you need to filter tags for positive matches and exclude tags. Use the tags-ignore filter when you only need to exclude tag names.\nYou can exclude tags and branches using the ! character. The order that you define patterns matters.\n- A matching negative pattern (prefixed with !) after a positive match will exclude the Git ref.\n- A matching positive pattern after a negative match will include the Git ref again."
+      "description": "When using the push and pull_request events, you can configure a workflow to run on specific branches or tags. If you only define only tags or only branches, the workflow won't run for events affecting the undefined Git ref.\nThe branches, branches-ignore, tags, and tags-ignore keywords accept glob patterns that use the * and ** wildcard characters to match more than one branch or tag name. For more information, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet.\nThe patterns defined in branches and tags are evaluated against the Git ref's name. For example, defining the pattern mona/octocat in branches will match the refs/heads/mona/octocat Git ref. The pattern releases/** will match the refs/heads/releases/10 Git ref.\nYou can use two types of filters to prevent a workflow from running on pushes and pull requests to tags and branches:\n- branches or branches-ignore - You cannot use both the branches and branches-ignore filters for the same event in a workflow. Use the branches filter when you need to filter branches for positive matches and exclude branches. Use the branches-ignore filter when you only need to exclude branch names.\n- tags or tags-ignore - You cannot use both the tags and tags-ignore filters for the same event in a workflow. Use the tags filter when you need to filter tags for positive matches and exclude tags. Use the tags-ignore filter when you only need to exclude tag names.\nYou can exclude tags and branches using the ! character. The order that you define patterns matters.\n- A matching negative pattern (prefixed with !) after a positive match will exclude the Git ref.\n- A matching positive pattern after a negative match will include the Git ref again.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/globs"
+        }
+      ]
     },
     "concurrency": {
       "type": "object",
@@ -35,7 +39,7 @@
         },
         "queue": {
           "$comment": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#example-queueing-multiple-pending-runs",
-          "description": "Controls how pending jobs or workflow runs are queued within a concurrency group. With the default `single`, at most one run can be pending — additional pending runs cancel the previous one. With `max`, up to 100 runs can be pending and are processed in FIFO order. The combination of `queue: max` and `cancel-in-progress: true` is not allowed.",
+          "description": "Controls how pending jobs or workflow runs are queued within a concurrency group. With the default `single`, at most one run can be pending \u2014 additional pending runs cancel the previous one. With `max`, up to 100 runs can be pending and are processed in FIFO order. The combination of `queue: max` and `cancel-in-progress: true` is not allowed.",
           "type": "string",
           "enum": ["single", "max"],
           "default": "single"
@@ -92,8 +96,12 @@
         },
         "env": {
           "$comment": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idcontainerenv",
-          "$ref": "#/definitions/env",
-          "description": "Sets a map of environment variables in the container."
+          "description": "Sets a map of environment variables in the container.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/env"
+            }
+          ]
         },
         "ports": {
           "$comment": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idcontainerports",
@@ -152,8 +160,12 @@
         },
         "env": {
           "$comment": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idservicesservice_idenv",
-          "$ref": "#/definitions/env",
-          "description": "Sets a map of environment variables in the service container."
+          "description": "Sets a map of environment variables in the service container.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/env"
+            }
+          ]
         },
         "ports": {
           "$comment": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idservicesservice_idports",
@@ -438,8 +450,12 @@
     },
     "path": {
       "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#onpushpull_requestpaths",
-      "$ref": "#/definitions/globs",
-      "description": "When using the push and pull_request events, you can configure a workflow to run when at least one file does not match paths-ignore or at least one modified file matches the configured paths. Path filters are not evaluated for pushes to tags.\nThe paths-ignore and paths keywords accept glob patterns that use the * and ** wildcard characters to match more than one path name. For more information, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet.\nYou can exclude paths using two types of filters. You cannot use both of these filters for the same event in a workflow.\n- paths-ignore - Use the paths-ignore filter when you only need to exclude path names.\n- paths - Use the paths filter when you need to filter paths for positive matches and exclude paths."
+      "description": "When using the push and pull_request events, you can configure a workflow to run when at least one file does not match paths-ignore or at least one modified file matches the configured paths. Path filters are not evaluated for pushes to tags.\nThe paths-ignore and paths keywords accept glob patterns that use the * and ** wildcard characters to match more than one path name. For more information, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet.\nYou can exclude paths using two types of filters. You cannot use both of these filters for the same event in a workflow.\n- paths-ignore - Use the paths-ignore filter when you only need to exclude path names.\n- paths - Use the paths filter when you need to filter paths for positive matches and exclude paths.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/globs"
+        }
+      ]
     },
     "shell": {
       "$comment": "https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell",
@@ -532,7 +548,6 @@
         },
         "with": {
           "$comment": "https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswith",
-          "$ref": "#/definitions/env",
           "description": "A map of the input parameters defined by the action. Each input parameter is a key/value pair. Input parameters are set as environment variables. The variable is prefixed with INPUT_ and converted to upper case.",
           "properties": {
             "args": {
@@ -543,12 +558,21 @@
               "$comment": "https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepswithentrypoint",
               "type": "string"
             }
-          }
+          },
+          "allOf": [
+            {
+              "$ref": "#/definitions/env"
+            }
+          ]
         },
         "env": {
           "$comment": "https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepsenv",
-          "$ref": "#/definitions/env",
-          "description": "Sets environment variables for steps to use in the virtual environment. You can also set environment variables for the entire workflow or a job."
+          "description": "Sets environment variables for steps to use in the virtual environment. You can also set environment variables for the entire workflow or a job.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/env"
+            }
+          ]
         },
         "continue-on-error": {
           "$comment": "https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error",
@@ -687,8 +711,12 @@
         },
         "with": {
           "$comment": "https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idwith",
-          "$ref": "#/definitions/env",
-          "description": "A map of inputs that are passed to the called workflow. Any inputs that you pass must match the input specifications defined in the called workflow. Unlike 'jobs.<job_id>.steps[*].with', the inputs you pass with 'jobs.<job_id>.with' are not be available as environment variables in the called workflow. Instead, you can reference the inputs by using the inputs context."
+          "description": "A map of inputs that are passed to the called workflow. Any inputs that you pass must match the input specifications defined in the called workflow. Unlike 'jobs.<job_id>.steps[*].with', the inputs you pass with 'jobs.<job_id>.with' are not be available as environment variables in the called workflow. Instead, you can reference the inputs by using the inputs context.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/env"
+            }
+          ]
         },
         "secrets": {
           "$comment": "https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idsecrets",
@@ -839,13 +867,21 @@
         },
         "env": {
           "$comment": "https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#jobsjob_idenv",
-          "$ref": "#/definitions/env",
-          "description": "A map of environment variables that are available to all steps in the job."
+          "description": "A map of environment variables that are available to all steps in the job.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/env"
+            }
+          ]
         },
         "defaults": {
           "$comment": "https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_iddefaults",
-          "$ref": "#/definitions/defaults",
-          "description": "A map of default settings that will apply to all steps in the job."
+          "description": "A map of default settings that will apply to all steps in the job.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/defaults"
+            }
+          ]
         },
         "if": {
           "$comment": "https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#jobsjob_idif",
@@ -1976,13 +2012,21 @@
     },
     "env": {
       "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#env",
-      "$ref": "#/definitions/env",
-      "description": "A map of environment variables that are available to all jobs and steps in the workflow."
+      "description": "A map of environment variables that are available to all jobs and steps in the workflow.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/env"
+        }
+      ]
     },
     "defaults": {
       "$comment": "https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#defaults",
-      "$ref": "#/definitions/defaults",
-      "description": "A map of default settings that will apply to all jobs in the workflow."
+      "description": "A map of default settings that will apply to all jobs in the workflow.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/defaults"
+        }
+      ]
     },
     "concurrency": {
       "$comment": "https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#concurrency",
