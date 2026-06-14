@@ -1,9 +1,9 @@
 {
   "summary": {
-    "total_snapshots": 19,
+    "total_snapshots": 20,
     "date_range": {
       "from": "2026-05-15",
-      "to": "2026-06-13"
+      "to": "2026-06-14"
     },
     "avg_success_pct": 80
   },
@@ -25,6 +25,21 @@
       "merged": 792,
       "closed": 204,
       "success_pct": 80
+    },
+    {
+      "date": "2026-06-14",
+      "merged": 791,
+      "closed": 202,
+      "open": 7,
+      "merge_rate": 79.1,
+      "top_categories": {
+        "docs": 87.0,
+        "test": 85.9,
+        "chore": 83.1,
+        "feature": 77.0,
+        "bug_fix": 76.9
+      },
+      "key_insight": "update/remove verbs yield 92%+ rates; WIP tags drop to 34%"
     }
   ]
 }
