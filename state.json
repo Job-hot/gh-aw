@@ -1,7 +1,7 @@
 {
   "counts": {
     "output_format": {
-      "executive_summary": 13,
+      "executive_summary": 14,
       "full_detail": 16
     }
   },
@@ -207,6 +207,13 @@
       "timestamp": "2026-06-14T18:51:00.920Z",
       "assignments": {
         "output_format": "full_detail"
+      }
+    },
+    {
+      "run_id": "27571434610",
+      "timestamp": "2026-06-15T19:39:41.669Z",
+      "assignments": {
+        "output_format": "executive_summary"
       }
     }
   ]
