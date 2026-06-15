@@ -218,11 +218,21 @@ To build and test repository custom linters:
 - @wtgodbe: #32834 _(direct issue)_, #26057 _(direct issue)_, #25130 _(direct issue)_, #24921 _(direct issue)_
 - @yaananth: #24125 _(direct issue)_
 - @Yoyokrazy: #36548 _(direct issue)_, #36547 _(direct issue)_
-- @yskopets: #38924 _(direct issue)_, #38901 _(direct issue)_, #37705 _(direct issue)_, #36678 _(direct issue)_, #34772 _(direct issue)_, #34256 _(direct issue)_, #34250 _(direct issue)_, #34166 _(direct issue)_, #34134 _(direct issue)_, #32022 _(direct issue)_, #31831 _(direct issue)_, #31086 _(direct issue)_, #31073 _(direct issue)_, #30872 _(direct issue)_, #30705 _(direct issue)_, #27935 _(direct issue)_, #27898 _(direct issue)_, #27881 _(direct issue)_, #27773 _(direct issue)_, #27757 _(direct issue)_, #26922 _(direct issue)_, #26569 _(direct issue)_, #26468 _(direct issue)_, #26358 _(direct issue)_, #26346 _(direct issue)_, #26345 _(direct issue)_, #26280 _(direct issue)_, #26279 _(direct issue)_, #26120 _(direct issue)_, #26101 _(direct issue)_, #26085 _(direct issue)_, #26080 _(direct issue)_, #26067 _(direct issue)_, #25959 _(direct issue)_, #25946 _(direct issue)_, #25833 _(direct issue)_, #25363 _(direct issue)_, #25362 _(direct issue)_, #25125 _(direct issue)_, #24897 _(direct issue)_, #24573 _(direct issue)_, #23914 _(direct issue)_
+- @yskopets: #38924 _(direct issue)_, #38901 _(direct issue)_, #37705 _(direct issue)_, #36678 _(direct issue)_, #34772 _(direct issue)_, #34256 _(direct issue)_, #34250 _(direct issue)_, #34166 _(direct issue)_, #34134 _(direct issue)_, #32022 _(direct issue)_, #31831 _(direct issue)_, #31086 _(direct issue)_, #31073 _(direct issue)_, #30872 _(direct issue)_, #30705 _(direct issue)_, #27935 _(direct issue)_, #27898 _(direct issue)_, #27881 _(direct issue)_, #27773 _(direct issue)_, #27757 _(direct issue)_, #26922 _(direct issue)_, #26569 _(direct issue)_, #26468 _(direct issue)_, #26358 _(direct issue)_, #26346 _(direct issue)_, #26345 _(direct issue)_, #26280 _(direct issue)_, #26279 _(direct issue)_, #26120 _(direct issue)_, #26101 _(direct issue)_, #26085 _(direct issue)_, #26080 _(direct issue)_, #26067 _(direct issue)_, #25959 _(direct issue)_, #25946 _(direct issue)_, #25833 _(direct issue)_, #25363 _(direct issue)_, #25362 _(direct issue)_, #25125 _(direct issue)_, #24897 _(direct issue)_, #24573 _(direct issue)_, #23914 _(direct issue)_, #38905 _(direct issue)_, #38897 _(direct issue)_
 - @zarenner: #35577 _(direct issue)_, #35576 _(direct issue)_, #35575 _(direct issue)_
 - @zkoppert: #27741 _(direct issue)_
 
 </details>
+
+### ⚠️ Attribution Candidates Need Review
+
+The following community issues were closed during this period but could not be automatically linked to a specific merged PR. Please verify whether they should be credited:
+
+- **@app/github-actions** for [Issue #36674](https://github.com/github/gh-aw/issues/36674) "[deep-report] Quick-start docs: add Claude subscription-token-not-supported callout and define \"frontmatter\"" — closed 2026-06-03, no confirmed PR linkage found
+- **@brase** for [Issue #36651](https://github.com/github/gh-aw/issues/36651) "cross-repo create-pull-request can succeed and then fail with allowed-repos ERR_VALIDATION" — closed 2026-06-03, no confirmed PR linkage found
+- **@pelikhan** for [Issue #35783](https://github.com/github/gh-aw/issues/35783) "Automatic cleanup of branches" — closed 2026-06-03, no confirmed PR linkage found
+- **@arthurfvives** for [Issue #32974](https://github.com/github/gh-aw/issues/32974) "Dry-Run Mode with imports (APM)" — closed 2026-05-22, no confirmed PR linkage found
+- **@jobayer-4** for [Issue #32608](https://github.com/github/gh-aw/issues/32608) "Poor README" — closed 2026-05-16, no confirmed PR linkage found
 
 ## Share Feedback
 
