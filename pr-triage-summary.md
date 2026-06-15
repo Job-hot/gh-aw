@@ -1,30 +1,38 @@
 # PR Triage Memory
-Last: 2026-06-13T18:43:46Z | Run: 27475627987 | Fork PRs: 0
+Last: 2026-06-15T01:29:52Z | Run: 27518690601 | Fork PRs: 0
 
-## PR Triage Summary - 2026-06-13T18:43Z (Run 27475627987)
+## PR Triage Summary - 2026-06-15T01:29Z (Run 27518690601)
 
 ### Status
-**No fork PRs to triage** (fork-only policy; all 6 open agent PRs are branch-based)
+**No fork PRs to triage** (fork-only policy; all 8 open agent PRs are branch-based)
 
 ### Details
-- **Run ID**: 27475627987
-- **Open Agent PRs Found**: 6 (all branch-based, skipped per fork-only policy)
+- **Run ID**: 27518690601
+- **Open Agent PRs Found**: 8 (all branch-based, skipped per fork-only policy)
 - **Fork PRs Found**: 0
 - **PRs Triaged**: 0
-- **New Since Last Run**: #39133, #39130, #39118, #39100, #39089
-- **Merged Since Last Run**: #39069, #39064, #39056, #39054
-- **Unchanged**: #38911
+- **New Since Last Run**: #39282, #39300, #39299
+- **Closed Since Last Run**: #39243
+- **Unchanged**: #39266, #39164, #39156, #39100, #38911
 
-### Branch PRs Skipped (fork-only policy)
-- #39133 [app/github-actions] `[linter-miner]` add timeafterleak linter (+296/-0, 5 files, labels: automation/cookie/go-linters)
-- #39130 [app/copilot-swe-agent] Fix AIC usage cache always empty (+5950/-5, 259 files, **HIGH RISK**, no labels)
-- #39118 [app/copilot-swe-agent] Increase default max-patch-size 1MB→4MB (+351/-280, 80 files, no labels)
-- #39100 [app/copilot-swe-agent] Run safe-outputs MCP in gh-aw node container (+5643/-12497, 268 files, **HIGH RISK**, labels: smoke/smoke-claude)
-- #39089 [app/copilot-swe-agent] Fix AWF tool-cache mount quoting (DRAFT, +511/-490, 258 files)
-- #38911 [app/copilot-swe-agent] [ARC/DinD] Emit chroot.binariesSourcePath (+7221/-6, 261 files, **HIGH RISK**, labels: smoke/smoke-claude)
+### Branch PRs Skipped (fork-only policy, scores informational)
+| # | Title | Cat | Risk | Score | Action | CI | Review |
+|---|---|---|---|---|---|---|---|
+| #39100 | Run safe-outputs MCP in gh-aw node container | feature | high | 72 | fast_track | pending | bot-approved |
+| #39282 | Add Copilot SDK idle-hang watchdog | feature | high | 66 | fast_track | ✅ | commented |
+| #38911 | [ARC/DinD] chroot.binariesSourcePath + identity | feature | high | 65 | batch_review | ✅ 19/19 | CHANGES_REQUESTED |
+| #39266 | Branch-aware cache-miss semantics | bug | high | 61 | batch_review | pending | dismissed |
+| #39156 | Stop Codex retries on router failures | bug | medium | 56 | batch_review | pending | CHANGES_REQUESTED |
+| #39300 | Wildcard validation: PR tools (DRAFT) | bug | low | 46 | batch_review | pending | none |
+| #39299 | Wildcard validation: review comment (DRAFT) | bug | low | 46 | batch_review | pending | none |
+| #39164 | supertonic TTS standalone dispatcher (DRAFT) | feature | low | 28 | defer | pending | none |
 
-### Notable Observations
-- #39130 is unusually large (259 files, +5950 lines) for a cache bug fix — may warrant human review of scope
-- #39100 is a large architectural change (-12497 lines) with smoke labels
-- #38911 has been open since 2026-06-12 and is unchanged (1+ day old)
-- 3 of 6 PRs are high-risk by size; none have CI checks visible via API
+### Batches
+- batch-wildcard-validation: #39299, #39300
+- batch-changes-requested: #38911, #39156
+- batch-bulk-workflow: #39282, #39266
+
+### Notable
+- #39100 removes 12,551 lines; human review recommended
+- #39282 fixes 24.5-min silent hang; CI passing; fast-track candidate
+- #38911 CI all green (19/19) but CHANGES_REQUESTED; 3d stale
