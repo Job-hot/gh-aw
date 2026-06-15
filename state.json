@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "prefetch_strategy": {
+      "lazy": 1
+    }
+  },
+  "runs": [
+    {
+      "run_id": "27523096815",
+      "timestamp": "2026-06-15T03:59:42.285Z",
+      "assignments": {
+        "prefetch_strategy": "lazy"
+      }
+    }
+  ]
+}
