@@ -26,6 +26,7 @@ import (
 	"github.com/github/gh-aw/pkg/linters/fileclosenotdeferred"
 	"github.com/github/gh-aw/pkg/linters/fmterrorfnoverbs"
 	"github.com/github/gh-aw/pkg/linters/fprintlnsprintf"
+	"github.com/github/gh-aw/pkg/linters/fprintstderrinlibrary"
 	"github.com/github/gh-aw/pkg/linters/hardcodedfilepath"
 	"github.com/github/gh-aw/pkg/linters/httpnoctx"
 	"github.com/github/gh-aw/pkg/linters/jsonmarshalignoredeerror"
@@ -52,8 +53,9 @@ func main() {
 		contextcancelnotdeferred.Analyzer,
 		ctxbackground.Analyzer,
 		errormessage.Analyzer,
-		fprintlnsprintf.Analyzer,
 		errstringmatch.Analyzer,
+		fprintlnsprintf.Analyzer,
+		fprintstderrinlibrary.Analyzer,
 		errorfwrapv.Analyzer,
 		execcommandwithoutcontext.Analyzer,
 		excessivefuncparams.Analyzer,
