@@ -1,6 +1,28 @@
 # Copilot CLI Research Notes (Last 6 runs)
 
-### 2026-06-10 (Run 27254548925) — This Run
+### 2026-06-15 (Run 27525865107) — This Run
+- **246 total workflows** (up from 245 on 06-10 — +1 net)
+- 133 Copilot (54%), 47 Claude, 10 Codex
+- **⚠️ REGRESSIONS vs last run:**
+  - `engine.agent`: 34 → 21 (-13 workflows removed agent references!)
+  - `max-ai-credits`: 14 → 6 (-8 workflows lost budget guard)
+  - `sandbox`: 20 → 15 (-5 workflows lost sandbox)
+- **max-continuations: 7** (up from 6 — slight growth)
+- **copilot-sdk: 63** (stable — 47% of all copilot workflows)
+- **copilot-sdk-driver: 3** (stable)
+- **strict: true: 79** (stable at 59%)
+- **network: 67** (50% — 66/133 still have NO network config)
+- **min-integrity: 22/133** (17% — 83% missing)
+- **max-ai-credits: 6/133** (5% — 95% missing)
+- **max-tool-denials: 0/63 SDK** (0% — NEW PERSISTENT GAP for SDK workflows)
+- **engine.args**: 0 (PERSISTENT GAP, 18th consecutive run)
+- **engine.api-target**: 0 (PERSISTENT GAP, 18th consecutive run)
+- **engine.harness**: 0 (never used)
+- **engine.token-weights**: 0 (never used)
+- **Unused agent files**: grumpy-reviewer, interactive-agent-designer, w3c-specification-writer, create-safe-output-type, custom-engine-implementation (5 files — unchanged from previous runs)
+- Discussion created: "Copilot CLI Deep Research - 2026-06-15"
+
+### 2026-06-10 (Run 27254548925)
 - **245 total workflows** (down from 340 on 06-08 — repo cleanup/consolidation removed ~95 workflows)
 - 132 Copilot (54%), 64 Claude, 16 Codex
 - **engine.agent: 34 workflows** (up from 13! — +161% growth — major improvement)
@@ -14,13 +36,8 @@
 - **network open: 65/132** (49% still no restrictions)
 - **strict: true: 79/132** (60% — 53 workflows still missing)
 - **BYOK: 2** (stable)
-- **engine.args**: 0 (PERSISTENT GAP, 17th+ consecutive run)
+- **engine.args**: 0 (PERSISTENT GAP, 17th consecutive run)
 - **engine.api-target**: 0 (PERSISTENT GAP, 17th consecutive run)
-- **engine.harness**: 0 (never used)
-- **engine.version** (Copilot pin): 0 (persistent gap)
-- **MCP session/tool timeout**: 0 (never used)
-- **engine.token-weights**: 0 (never used)
-- **Unused agent files**: grumpy-reviewer, interactive-agent-designer, w3c-specification-writer, create-safe-output-type, custom-engine-implementation (5 files — unchanged)
 - Discussion created: "Copilot CLI Deep Research - 2026-06-10"
 
 ### 2026-06-08 (Run 27117423076)
@@ -33,8 +50,7 @@
 - **sandbox AWF**: 22 workflows
 - **network open**: 65 of 130 Copilot workflows (50%)
 - **strict: true**: 77/130 (59%)
-- **engine.args**: 0 (PERSISTENT GAP, 16th+ consecutive run)
-- **engine.api-target**: 0 (PERSISTENT GAP, 16th consecutive run)
+- **engine.args**: 0 (PERSISTENT GAP, 16th consecutive run)
 - Discussion created: "Copilot CLI Deep Research - 2026-06-08"
 
 ### 2026-05-31 (Run 26703913319)
@@ -51,41 +67,32 @@
 - **engine.args**: 0 (PERSISTENT GAP, 15th consecutive run)
 - Discussion created: "Copilot CLI Deep Research - 2026-05-27"
 
-### 2026-05-26 (Run 26433217435)
-- 236 total workflows; 126 Copilot (53%), 63 Claude, 16 Codex
-- **engine.agent**: 26 workflows (grew from 10)
-- **engine.args**: 0 (PERSISTENT GAP, 14th consecutive run)
-- Discussion created: "Copilot CLI Deep Research - 2026-05-26"
-
-### 2026-05-25 (Run 26384338048)
-- 235 total workflows; 97 Copilot (41%)
-- **engine.args**: 0 (PERSISTENT GAP, 13th+ consecutive run)
-- Discussion created: "Copilot CLI Deep Research - 2026-05-25"
-
 ### 2026-05-21 (Run 26206481620)
 - 233 total MD workflows; 100 Copilot (43%)
-- **engine.args**: 0 (PERSISTENT GAP, 12th consecutive run)
+- **engine.args**: 0 (PERSISTENT GAP, 12th+ consecutive run)
 - Discussion created: "Copilot CLI Deep Research - 2026-05-21"
 
 ---
 
 ## Key Persistent Gaps (Tracked Across All Runs)
 
-1. **engine.args** — 17+ consecutive runs with ZERO usage (custom CLI arguments)
-2. **engine.api-target** — 17 consecutive runs with ZERO usage (custom API endpoints)
+1. **engine.args** — 18+ consecutive runs with ZERO usage (custom CLI arguments)
+2. **engine.api-target** — 18 consecutive runs with ZERO usage (custom API endpoints)
 3. **engine.harness** — Never used (custom harness scripts)
 4. **engine.version** (Copilot pin) — Zero explicit Copilot CLI version pins
-5. **max-continuations** — Only 6/132 workflows (4.5%) use autopilot mode
+5. **max-continuations** — Only 7/133 workflows (5%) use autopilot mode
 6. **MCP session/tool timeout** — Never configured
 7. **engine.token-weights** — Never used
+8. **max-tool-denials** — 0/63 SDK workflows (NEW: should pair with copilot-sdk: true)
 
 ## Trends
 
-- `engine.agent` adoption: 10 → 13 → 26 → 34 (clear growth trajectory)
-- `copilot-sdk-driver`: 0 → 3 → 5 (growing custom driver usage)
-- `max-ai-credits`: 5 → 5 → 5 → 14 (spike this run — good improvement)
-- `web-fetch`: 12 → 25 (doubled in 2 days)
-- `max-continuations` adoption: 5 → 12 → 5 → 6 (fluctuating, not consistently growing)
-- Total workflows: 233 → 236 → 340 → 245 (explosion then cleanup)
-- Copilot share: 43% → 53% → 39% → 54% (varies with total count)
-- Persistent gaps remain unchanged across 17+ runs — truly non-discovered or purposely unused
+- `engine.agent` adoption: 25 → 25 → 13 → 34 → 21 (very volatile — not sustainably growing)
+- `copilot-sdk`: 0 → 63 (exploded in June 2026)
+- `copilot-sdk-driver`: 0 → 3 → 3 (stable small usage)
+- `max-ai-credits`: 0 → 5 → 14 → 6 (inconsistent — recent regression)
+- `web-fetch`: 21 → 12 → 25 → 10 (volatile)
+- `max-continuations` adoption: 5 → 5 → 6 → 6 → 7 (very slow growth)
+- Total workflows: 233 → 236 → 340 → 245 → 246 (stabilized)
+- Copilot share: 43% → 53% → 39% → 54% → 54% (stabilized at 54%)
+- Persistent gaps remain unchanged across 18+ runs — truly non-discovered or purposely unused

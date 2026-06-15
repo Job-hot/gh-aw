@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-06-10T05:08:49Z",
-  "workflow_run_id": "27254548925",
-  "total_workflows": 245,
-  "copilot_workflows": 132,
+  "timestamp": "2026-06-15T05:26:29Z",
+  "workflow_run_id": "27525865107",
+  "total_workflows": 246,
+  "copilot_workflows": 133,
   "copilot_pct": 54,
-  "claude_workflows": 64,
-  "codex_workflows": 16,
-  "analysis_date": "2026-06-10"
+  "claude_workflows": 47,
+  "codex_workflows": 10,
+  "analysis_date": "2026-06-15"
 }
