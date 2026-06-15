@@ -1,30 +1,75 @@
 {
-  "run_date": "2026-06-15T14:26:24Z",
-  "run_id": "27553076178",
-  "previous_run_id": "27533633559",
-  "previous_run_date": "2026-06-15T08:27:54Z",
+  "run_date": "2026-06-15T19:31:36Z",
+  "run_id": "27570973333",
+  "previous_run_id": "27553076178",
+  "previous_run_date": "2026-06-15T14:26:24Z",
   "fork_prs": 0,
-  "agent_prs_found": 3,
+  "agent_prs_found": 4,
   "prs_triaged": 0,
   "branch_prs_skipped": [
     {
-      "number": 39300,
-      "title": "Generalize early wildcard-target validation for safe-outputs MCP tools",
-      "draft": false,
+      "number": 39439,
+      "title": "[WIP] Fix failing GitHub Actions job 'agent'",
+      "draft": true,
       "category": "bug",
       "risk": "low",
-      "score": 55,
-      "action": "batch_review",
-      "batch": "batch-wildcard-validation",
-      "ci": "partial_failure",
-      "review": "commented",
-      "review_detail": "copilot-pull-request-reviewer commented; 9 comments",
+      "score": 25,
+      "action": "defer",
+      "batch": null,
+      "ci": "pending",
+      "review": "none",
+      "review_detail": "draft PR, 0 changes",
       "created": "2026-06-15",
       "labels": [],
-      "additions": 218,
-      "deletions": 12,
-      "changedFiles": 5,
-      "note": "UPDATED since last run: graduated from DRAFT; expanded 83->218 additions; agent CI check failing; awaiting human review"
+      "additions": 0,
+      "deletions": 0,
+      "changedFiles": 0,
+      "note": "NEW: Draft PR with 0 changes; agent working on CI agent job failure fix"
+    },
+    {
+      "number": 39386,
+      "title": "Account for actions/cache branch scoping in cache-miss misconfiguration detection",
+      "draft": false,
+      "category": "bug",
+      "risk": "medium",
+      "score": 61,
+      "action": "fast_track",
+      "batch": null,
+      "ci": "approved",
+      "review": "bot_approved",
+      "review_detail": "github-actions APPROVED; copilot-pull-request-reviewer COMMENTED; 13 comments",
+      "created": "2026-06-15",
+      "labels": [],
+      "additions": 132,
+      "deletions": 36,
+      "changedFiles": 6,
+      "note": "NEW: Fresh fix for cache_memory_miss false positives; github-actions approved; fast_track priority"
+    },
+    {
+      "number": 39300,
+      "title": "Generalize early wildcard-target validation across safe-outputs MCP tools",
+      "draft": false,
+      "category": "bug",
+      "risk": "medium",
+      "score": 61,
+      "action": "batch_review",
+      "batch": null,
+      "ci": "partial_passing",
+      "review": "bot_commented",
+      "review_detail": "copilot-pull-request-reviewer COMMENTED; 27 comments",
+      "created": "2026-06-15",
+      "labels": [
+        "smoke",
+        "pr-type:bug",
+        "pr-risk:medium",
+        "pr-priority:medium",
+        "pr-action:batch_review",
+        "pr-agent:copilot-swe-agent"
+      ],
+      "additions": 491,
+      "deletions": 646,
+      "changedFiles": 8,
+      "note": "UNCHANGED: CI 1 passing, mergeable_state unstable; awaiting full CI run"
     },
     {
       "number": 39100,
@@ -32,62 +77,82 @@
       "draft": false,
       "category": "feature",
       "risk": "high",
-      "score": 72,
+      "score": 83,
       "action": "fast_track",
       "batch": null,
       "ci": "all_passing",
       "review": "human_commented",
-      "review_detail": "alinasisi human commented; copilot-pull-request-reviewer commented; 26 CI passing, 10 skipped",
+      "review_detail": "alinasisi human commented; github-actions APPROVED; copilot-pull-request-reviewer COMMENTED; 27 passing, 10 skipped",
       "created": "2026-06-13",
-      "labels": ["smoke", "smoke-claude"],
+      "labels": [
+        "smoke",
+        "smoke-claude",
+        "pr-type:feature",
+        "pr-risk:high",
+        "pr-priority:high",
+        "pr-action:fast_track",
+        "pr-agent:copilot-swe-agent"
+      ],
       "additions": 6968,
       "deletions": 12551,
       "changedFiles": 272,
-      "note": "CI now ALL PASSING (26 success, 10 skipped); human reviewer (alinasisi) engaged; large arch change; fast_track priority"
-    },
+      "note": "UNCHANGED: CI all green (27 passing, 10 skipped); human reviewer engaged; highest priority PR"
+    }
+  ],
+  "new_since_last_run": [
+    39439,
+    39386
+  ],
+  "closed_since_last_run": [
     {
       "number": 38911,
       "title": "[ARC/DinD] Emit chroot.binariesSourcePath and chroot.identity in AWF stdin-config",
-      "draft": false,
-      "category": "feature",
-      "risk": "high",
-      "score": 65,
-      "action": "batch_review",
-      "batch": null,
-      "ci": "all_passing",
-      "review": "changes_requested",
-      "review_detail": "CHANGES_REQUESTED by bot; CI 19/19 passing + 10 skipped; 3+ days old",
-      "created": "2026-06-12",
-      "labels": ["smoke", "smoke-claude"],
-      "additions": 6742,
-      "deletions": 6,
-      "changedFiles": 261,
-      "note": "UNCHANGED; CI all green (19/19 + 10 skipped); CHANGES_REQUESTED; oldest open PR at 3+ days; needs author response to review"
+      "outcome": "MERGED",
+      "at": "2026-06-15T14:38:45Z"
     }
   ],
-  "new_since_last_run": [],
-  "closed_since_last_run": [
-    {"number": 39282, "title": "Add Copilot SDK idle-hang watchdog and classify GH_AW_AGENTIC_ENGINE_IDLE_HANG", "outcome": "CLOSED"},
-    {"number": 39266, "title": "Encode branch-aware cache-miss semantics for daily AIC fallback", "outcome": "MERGED"},
-    {"number": 39164, "title": "feat: supertonic TTS standalone dispatcher", "outcome": "CLOSED"},
-    {"number": 39156, "title": "Stop Codex harness retries on active-goal router failures", "outcome": "MERGED"}
+  "unchanged": [
+    39300,
+    39100
   ],
-  "unchanged": [39100, 38911],
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
-  "fast_track_needed": [39100],
-  "batches": {
-    "batch-wildcard-validation": [39300]
-  },
+  "fast_track_needed": [
+    39100,
+    39386
+  ],
+  "batches": {},
   "close_candidates": [],
-  "notes": "3 open Copilot PRs, all branch-based (isCrossRepository=false). 4 PRs resolved since last run: #39282 closed, #39266 merged, #39164 closed, #39156 merged. PR #39300 graduated from DRAFT and expanded scope (83->218 additions). Fork-only policy: 0 fork PRs found, 0 formally triaged. #39100 CI now fully passing; #38911 still waiting on author to address CHANGES_REQUESTED.",
+  "notes": "4 open Copilot PRs (app/copilot-swe-agent), all branch-based (isCrossRepository=false). 1 PR resolved since last run: #38911 merged. 2 new PRs: #39439 (draft CI fix) and #39386 (cache-miss bug fix). #39100 still highest priority at 83/100 with CI all green.",
   "statistics": {
-    "by_category": {"feature": 2, "bug": 1},
-    "by_risk": {"high": 2, "low": 1},
-    "by_action": {"fast_track": 1, "batch_review": 2},
-    "by_draft": {"draft": 0, "open": 3},
-    "ci_status": {"all_passing": 2, "partial_failure": 1},
-    "resolved_this_run": {"merged": 2, "closed": 2}
+    "by_category": {
+      "feature": 1,
+      "bug": 3
+    },
+    "by_risk": {
+      "high": 1,
+      "medium": 2,
+      "low": 1
+    },
+    "by_action": {
+      "fast_track": 2,
+      "batch_review": 1,
+      "defer": 1
+    },
+    "by_draft": {
+      "draft": 1,
+      "open": 3
+    },
+    "ci_status": {
+      "all_passing": 1,
+      "partial_passing": 1,
+      "pending": 1,
+      "approved": 1
+    },
+    "resolved_this_run": {
+      "merged": 1,
+      "closed": 0
+    }
   }
 }
