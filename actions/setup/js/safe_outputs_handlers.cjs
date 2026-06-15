@@ -156,6 +156,8 @@ function createHandlers(server, appendSafeOutput, config = {}) {
   const TOKEN_THRESHOLD = 16000;
   const addCommentConfig = config.add_comment || config["add-comment"] || {};
   const wildcardAddCommentTargetRequiresItemNumber = addCommentConfig.target === "*";
+  const reviewCommentConfig = config.create_pull_request_review_comment || config["create-pull-request-review-comment"] || {};
+  const wildcardReviewCommentTargetRequiresPRNumber = reviewCommentConfig.target === "*";
 
   /**
    * Detect and offload large string fields to files.
@@ -1615,6 +1617,13 @@ function createHandlers(server, appendSafeOutput, config = {}) {
    * to provide immediate feedback to the LLM before recording to NDJSON.
    */
   const createPullRequestReviewCommentHandler = args => {
+    if (wildcardReviewCommentTargetRequiresPRNumber) {
+      const prNumber = args && args.pull_request_number;
+      const hasPRNumber = prNumber !== undefined && prNumber !== null && String(prNumber).trim() !== "";
+      if (!hasPRNumber) {
+        return buildIntentErrorResponse("create_pull_request_review_comment requires pull_request_number when safe-outputs.create-pull-request-review-comment.target is '*'. Provide pull_request_number and retry.");
+      }
+    }
     const result = defaultHandler("create_pull_request_review_comment")(args);
     // Increment only after the default handler returns successfully; if it throws
     // (e.g. due to large-content rejection or an append write error) the counter

@@ -2058,6 +2058,52 @@ describe("safe_outputs_handlers", () => {
       // Counter was NOT incremented, so empty-body submit should still be rejected
       expect(() => handlers.submitPullRequestReviewHandler({ event: "COMMENT" })).toThrow(expect.objectContaining({ code: -32602, message: expect.stringContaining("review body is empty") }));
     });
+
+    it("should require explicit pull_request_number when target is '*'", () => {
+      const wildcardHandlers = createHandlers(mockServer, mockAppendSafeOutput, {
+        create_pull_request_review_comment: {
+          target: "*",
+        },
+      });
+
+      const result = wildcardHandlers.createPullRequestReviewCommentHandler({ path: "src/foo.js", line: 5, body: "Consider renaming." });
+
+      expect(result.isError).toBe(true);
+      const responseData = JSON.parse(result.content[0].text);
+      expect(responseData.result).toBe("error");
+      expect(responseData.error).toContain("pull_request_number");
+      expect(mockAppendSafeOutput).not.toHaveBeenCalled();
+    });
+
+    it("should accept a comment when target is '*' and pull_request_number is provided", () => {
+      const wildcardHandlers = createHandlers(mockServer, mockAppendSafeOutput, {
+        create_pull_request_review_comment: {
+          target: "*",
+        },
+      });
+
+      const result = wildcardHandlers.createPullRequestReviewCommentHandler({ pull_request_number: 42, path: "src/foo.js", line: 5, body: "Consider renaming." });
+
+      expect(result.isError).toBeUndefined();
+      const responseData = JSON.parse(result.content[0].text);
+      expect(responseData.result).toBe("success");
+      expect(mockAppendSafeOutput).toHaveBeenCalledWith(expect.objectContaining({ type: "create_pull_request_review_comment", pull_request_number: 42 }));
+    });
+
+    it("should not require pull_request_number when target is not '*'", () => {
+      const triggeringHandlers = createHandlers(mockServer, mockAppendSafeOutput, {
+        create_pull_request_review_comment: {
+          target: "triggering",
+        },
+      });
+
+      const result = triggeringHandlers.createPullRequestReviewCommentHandler({ path: "src/foo.js", line: 5, body: "Consider renaming." });
+
+      expect(result.isError).toBeUndefined();
+      const responseData = JSON.parse(result.content[0].text);
+      expect(responseData.result).toBe("success");
+      expect(mockAppendSafeOutput).toHaveBeenCalled();
+    });
   });
 
   describe("updatePullRequestHandler", () => {
