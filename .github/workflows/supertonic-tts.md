@@ -99,6 +99,10 @@ safe-outputs:
             TEXT=$(jq -r '.items[] | select(.type == "supertonic_tts") | .text' "$GH_AW_AGENT_OUTPUT" | head -1)
             ISSUE_NUMBER=$(jq -r '.items[] | select(.type == "supertonic_tts") | .issue_number // empty' "$GH_AW_AGENT_OUTPUT" | head -1)
             PR_NUMBER=$(jq -r '.items[] | select(.type == "supertonic_tts") | .pr_number // empty' "$GH_AW_AGENT_OUTPUT" | head -1)
+            if [ -z "$TEXT" ]; then
+              echo "Error: no text found in supertonic_tts agent output item"
+              exit 1
+            fi
             echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
             echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
             curl -sS -X POST http://127.0.0.1:7788/v1/tts \
@@ -120,8 +124,8 @@ safe-outputs:
             retention-days: 30
         - name: Post comment with artifact link
           run: |
-            ITEM_NUMBER="${ISSUE_NUMBER:-$PR_NUMBER}"
-            if [ -z "$ITEM_NUMBER" ]; then
+            TARGET_NUMBER="${ISSUE_NUMBER:-$PR_NUMBER}"
+            if [ -z "$TARGET_NUMBER" ]; then
               echo "No target item number found in agent output, skipping comment"
               exit 0
             fi
@@ -129,7 +133,7 @@ safe-outputs:
             jq -n --arg url "$ARTIFACT_URL" \
               '{"body": ("🔊 **Voice summary ready**\n\n[🎧 Download tts-output.wav](" + $url + ")")}' \
               > /tmp/gh-aw/tts/comment.json
-            gh api "repos/$REPO/issues/$ITEM_NUMBER/comments" --input /tmp/gh-aw/tts/comment.json
+            gh api "repos/$REPO/issues/$TARGET_NUMBER/comments" --input /tmp/gh-aw/tts/comment.json
           env:
             GH_TOKEN: ${{ github.token }}
             ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
