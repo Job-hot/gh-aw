@@ -102,7 +102,7 @@ Resolve AI Credits in this order:
 When computing total AI Credits for the report:
 - Sum `total_aic` across all entries in `aic-by-workflow.json` for the repository-wide total AIC
 - For per-workflow AIC, look up the workflow by name in `aic-by-workflow.json`
-- If a workflow has no entry in `aic-by-workflow.json`, treat its AIC as unknown (not zero) and note it in Data Quality
+- If a workflow has no entry in `aic-by-workflow.json`, treat its AIC as unknown (not zero) and add a note in the Data Quality section of the report listing which workflows had no AIC data available.
 
 If a run's `aic` field is missing or null, treat it as `0` and count it as missing-cost data in the report.
 

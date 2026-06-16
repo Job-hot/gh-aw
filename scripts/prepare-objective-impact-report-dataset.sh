@@ -81,7 +81,12 @@ else
     if [ "$aic_snapshot_count" -gt 0 ]; then
       {
         for f in "${snapshot_files[@]}"; do
-          git show "origin/memory/token-audit:$f" 2>/dev/null || echo 'null'
+          if content=$(git show "origin/memory/token-audit:$f" 2>/dev/null); then
+            echo "$content"
+          else
+            echo "⚠ Failed to retrieve snapshot: $f" >&2
+            echo 'null'
+          fi
         done
       } | jq -s \
           --arg window_start "$window_start" \
@@ -111,7 +116,7 @@ else
   else
     printf '{"source":"none","window_start":"%s","snapshot_count":0,"total_aic":0,"workflows":[]}\n' \
       "$window_start" > "$DATA_DIR/aic-by-workflow.json"
-    echo "⚠ Could not fetch memory/token-audit branch; AIC by workflow data unavailable"
+    echo "⚠ Could not fetch memory/token-audit branch (does the branch exist? are credentials configured?); AIC by workflow data unavailable"
   fi
 fi
 
