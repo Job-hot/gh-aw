@@ -77,7 +77,7 @@ Outcome Value = Outcome Indicator × Objective Value
 Impact Efficiency = Σ Outcome Value / AI Credits
 ```
 
-Treat AI Credits as total model-credit cost consumed by the workflow runs that produced the analyzed outcomes.
+Treat AI Credits as total model-credit cost aggregated per workflow across the full analysis window, not just the subset of runs that produced the analyzed outcomes.
 Start with `/tmp/gh-aw/agent/objective-impact-report/aic-by-workflow.json` as the primary AIC source, and `/tmp/gh-aw/agent/objective-impact-report/workflow-logs.json` and `/tmp/gh-aw/agent/objective-impact-report/dataset-manifest.json` as additional context for run details and source provenance.
 When available, use deterministic precomputed run data that already includes each run's `aic` field.
 Prefer existing gh-aw outputs that already surface `aic`, such as pre-downloaded `gh aw logs --json` data or audit/log artifacts derived from the same run summaries.
