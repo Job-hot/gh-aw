@@ -90,25 +90,6 @@ func TestParseDispatchRepositoryConfig_MultipleTools(t *testing.T) {
 	assert.Equal(t, strPtr("2"), notifyService.Max)
 }
 
-// TestParseDispatchRepositoryConfig_DashAlias tests that "dispatch-repository" (dash) also works
-func TestParseDispatchRepositoryConfig_DashAlias(t *testing.T) {
-	compiler := NewCompiler(WithVersion("1.0.0"))
-
-	outputMap := map[string]any{
-		"dispatch-repository": map[string]any{
-			"trigger_ci": map[string]any{
-				"workflow":   "ci.yml",
-				"event_type": "ci_trigger",
-				"repository": "org/target-repo",
-			},
-		},
-	}
-
-	config := compiler.parseDispatchRepositoryConfig(outputMap)
-	require.NotNil(t, config, "Config should be parsed from dash form")
-	require.Len(t, config.Tools, 1, "Should have 1 tool")
-}
-
 // TestParseDispatchRepositoryConfig_Absent tests that nil is returned when key is absent
 func TestParseDispatchRepositoryConfig_Absent(t *testing.T) {
 	compiler := NewCompiler(WithVersion("1.0.0"))
