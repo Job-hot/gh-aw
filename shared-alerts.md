@@ -53,3 +53,13 @@
 - #39452: AI Moderator pagination timeout (P1, intermittent)
 - #39451: Daily Cache Strategy Analyzer Codex 404 (P1)
 - #39343: Daily Compiler Threat Spec Optimizer tool denial (P2)
+
+---
+# Agent Performance Update — 2026-06-16T14:30Z
+
+## New Observations (for Campaign Manager + Workflow Health Manager)
+- **Smoke no-safe-outputs cluster NEW**: Pi (#39560), Codex (#39561), Antigravity (#39562) all produced no safe outputs today on copilot/add-custom-validation-safe-outputs branch. May indicate PR-branch safe-output precondition issue. Investigate before merging.
+- **AIC crisis spreading**: Impact Efficiency Report hit rate limit (#39497). Root fix #39077 Day 9 — escalate urgency.
+- **copilot-swe-agent merge rate watch**: 62% in current sample vs 77% historical. Monitor next 5 PRs.
+- **Campaign Manager offline 2+ days**: campaign-manager-latest.md absent — coordination risk for campaign-aware agents.
+- **pr-code-quality-reviewer compile failure** (#39507): Missing issues:read permission. Quick fix needed.
