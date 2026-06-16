@@ -1,1 +1,211 @@
-{"updated":"2026-06-15","workflows":{"Linter Miner":{"last":"2026-06-06","last_concl":"failure","eff_tok":0,"class":"copilot-sdk-driver-minimatch","note":"MODULE_NOT_FOUND minimatch, all 4 retries, 0 turns (run 27069431407)"},"Daily Secrets Analysis Agent":{"last":"2026-06-10","last_concl":"failure","eff_tok":0,"class":"difc-cli-proxy-liveness","note":"RECUR day4: awf-cli-proxy 18443 connection refused, agent never invoked turns=0 (27297209601)"},"PR Code Quality Reviewer":{"last":"2026-06-10","last_concl":"failure","eff_tok":0,"class":"session.idle-870s-timeout","note":"2/3 runs hard-failed via copilot-sdk session.idle 870s timeout (hasOutput=true, review done then session never idle); runs 27296662875,27297195086"},"Daily Testify Uber Super Expert":{"last":"2026-06-06","last_concl":"failure","eff_tok":0,"class":"copilot-sdk-driver-minimatch","note":"MODULE_NOT_FOUND minimatch (run 27070138441)"},"PR Triage Agent":{"last":"2026-06-06","last_concl":"failure","eff_tok":0,"class":"copilot-sdk-driver-minimatch","note":"MODULE_NOT_FOUND minimatch (run 27070604747); observability flagged as overkill_for_agentic"},"Daily SPDD Spec Planner":{"last":"2026-06-06","last_concl":"failure","eff_tok":43605,"class":"copilot-sdk-driver-tool-permission-lockout","note":"permissionDeniedCount=10; sdk-driver denied shell/read on cache-memory (run 27067363723)"},"GEO Optimizer Daily Audit":{"last":"2026-06-06","last_concl":"failure","eff_tok":354408,"class":"copilot-sdk-driver-tool-permission-lockout","note":"tool-permission lockout, turns=1 (run 27067987828)"},"Daily Caveman Optimizer":{"last":"2026-06-07","last_concl":"failure","eff_tok":0,"class":"model-config-effort-unsupported","note":"RECUR day 3: 400 'This model does not support the effort parameter' (run 27104658186, retries 1/11). Unfixed; drop effort param from frontmatter."},"Daily Cache Strategy Analyzer":{"last":"2026-06-15","last_concl":"failure","eff_tok":0,"class":"codex","note":"gh-aw-binary-not-found-for-mcp exit1 06-15 (new sig); 100% fail","last_seen":"2026-06-11","last_status":"failure","reliability":"recurring model-not-found (codex gpt-5-codex-alpha 404); failed 06-05 & 06-11","engine":"codex"},"Daily Safe Output Integrator":{"last":"2026-06-15","last_concl":"failure","class":"copilot","note":"sdk tool-perm-lockout day9, 14 perm-denied/20min 06-15","last_seen":"2026-06-14","last_status":"failure","reliability":"copilot-sdk tool-perm-lockout d=11, 19m30s (RECUR day8)","engine":"copilot-sdk"},"Design Decision Gate":{"last":"2026-06-06","last_concl":"failure","eff_tok":1575960,"class":"detection-no-threat-result-parse-fail","note":"agent succeeded (turns=3); detection job reddened with ERR_PARSE no THREAT_DETECTION_RESULT (run 27065879421)"},"PR Sous Chef":{"last":"2026-06-14","last_concl":"success","last_seen":"2026-06-14","last_status":"success","reliability":"RECOVERED 10/10 success (was 6x fail 06-13); fix branch copilot/aw-fix-pr-sous-chef-fail landed","engine":"copilot/gpt-5-mini"},"Test Quality Sentinel":{"last":"2026-06-06","last_concl":"failure","eff_tok":0,"class":"copilot-agent-redden-empty-output","note":"empty agent_output {\"items\":[]}, turns=0, no stdio artifact; same oidc branch as a minimatch failure (run 27069819373)","runs":1,"fail":1,"last_seen":"2026-06-09","last_note":"2026-06-09 copilot 15min action-timeout (valid work wasted)"},"Daily Ambient Context Optimizer":{"last":"2026-06-14","last_concl":"success","last_seen":"2026-06-14","reliability":"CLEAN under-cap 3.38M tok success (no 429 this window)","engine":"copilot"},"Matt Pocock Skills Reviewer":{"last":"2026-06-06","last_concl":"success","eff_tok":22827383,"aic":773,"note":"top completed eff-tok + top AIC this window (copilot), success","last_seen":"2026-06-11","last_status":"mixed","reliability":"1 success (5.04M tok outlier) + 3 reddened by daily-cap gate (agent skipped)","cost_note":"5.04M token top consumer"},"Contribution Check":{"last":"2026-06-06","last_concl":"success","eff_tok":22230609,"note":"RECOVERED/stable; 2 runs success this window, AIC 754+488"},"Daily Safe Output Tool Optimizer":{"last":"2026-06-06","last_concl":"in_progress","eff_tok":29897664,"note":"still running at audit time; highest eff-tok seen (claude)"},"_2026-06-08_changes":{"note":"06-08 PARTIAL ~3.3h window. DOMINANT NEW: copilot-pat-not-supported-400 ACTIVE incident from 19:40Z (~15 runs, prod-main+PR+smoke) -> fleet 88%->58%. Ambient/Contribution Check/Daily Project Perf all RED via PAT-400 (not their usual classes; token-429 ABSENT). PR Code Quality Reviewer: 1 sdk session.idle-870s-timeout-after-valid-output + 3 PAT-400. Daily Safe Output Integrator RECUR tool-perm-lockout. cli-proxy DIFC liveness-probe NEW x2 (PR Description Updater/Issue Monster). Caveman effort-400 NOT seen as failure. Cache Strategy codex RECUR day4. Top cost: Failure Investigator $3.21, Code Metrics $2.12, Safe Output Tool Optimizer $2.09."},"_2026-06-10_changes":"EVENING window: 5 copilot hard-fails all known-recurring (session.idle x2 PR CQR, tool-perm-lockout Daily Safe Output Integrator, 429 Ambient, DIFC Daily Secrets). claude 11/11 + codex 1/1 clean. test-quality-sentinel turn-drift 4->34 again. Design Decision Gate 3/3 clean (claude).","Smoke Gemini":{"last_seen":"2026-06-11","last_status":"failure","reliability":"0/2 — gemini model pricing missing (gemini-3.1-flash-tts-preview)","engine":"gemini"},"Smoke Antigravity":{"last_seen":"2026-06-11","last_status":"success","reliability":"NEW engine 2/2 success","engine":"antigravity"},"Smoke Pi":{"last_seen":"2026-06-11","last_status":"success","reliability":"NEW engine 2/2 success (copilot/gpt-5.4 backend)","engine":"pi"},"Avenger":{"last":"2026-06-14","last_concl":"failure","last_seen":"2026-06-14","last_status":"failure","class":"avenger-err-config-no-structured-logs","reliability":"0/3 (day2). 2 agents did real work+created PRs then run reddened; fix branch not yet effective","engine":"claude/opus-4-8"},"Daily Formal Spec Verifier":{"last":"2026-06-14","last_concl":"failure","last_seen":"2026-06-14","class":"copilot-sdk-driver-tool-permission-lockout","reliability":"tool-perm-lockout d=11 (read forecast-spec.md), 24m30s wasted","engine":"copilot-sdk"},"Documentation Unbloat":{"last":"2026-06-15","last_concl":"failure","last_seen":"2026-06-14","class":"claude","reliability":"empty-output/digest-mismatch reddens 2 days running","engine":"claude","note":"cache-memory-git-integrity git-exit2 day3 06-15"},"Repository Tree Map Generator":{"last":"2026-06-15","last_concl":"failure","class":"copilot","note":"copilot-harness-action-timeout 5min (tok=579624 partial) 06-15"},"Daily Security Observability Report":{"last":"2026-06-15","last_concl":"failure","class":"copilot","note":"0-tok agent-artifact-missing 06-15 (new)"}}}
+{
+  "updated": "2026-06-16",
+  "workflows": {
+    "Linter Miner": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "copilot-sdk-driver-minimatch",
+      "note": "MODULE_NOT_FOUND minimatch, all 4 retries, 0 turns (run 27069431407)"
+    },
+    "Daily Secrets Analysis Agent": {
+      "last": "2026-06-10",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "difc-cli-proxy-liveness",
+      "note": "RECUR day4: awf-cli-proxy 18443 connection refused, agent never invoked turns=0 (27297209601)"
+    },
+    "PR Code Quality Reviewer": {
+      "last": "2026-06-10",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "session.idle-870s-timeout",
+      "note": "2/3 runs hard-failed via copilot-sdk session.idle 870s timeout (hasOutput=true, review done then session never idle); runs 27296662875,27297195086"
+    },
+    "Daily Testify Uber Super Expert": {
+      "last": "2026-06-16",
+      "last_concl": "failure",
+      "class": "copilot-sdk-driver-tool-permission-lockout",
+      "note": "NEW signature 06-16 (run 27641213363): same 5-denial lockout ~26min 0-tok (prev was minimatch 06-06)",
+      "engine": "copilot-sdk"
+    },
+    "PR Triage Agent": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "copilot-sdk-driver-minimatch",
+      "note": "MODULE_NOT_FOUND minimatch (run 27070604747); observability flagged as overkill_for_agentic"
+    },
+    "Daily SPDD Spec Planner": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 43605,
+      "class": "copilot-sdk-driver-tool-permission-lockout",
+      "note": "permissionDeniedCount=10; sdk-driver denied shell/read on cache-memory (run 27067363723)"
+    },
+    "GEO Optimizer Daily Audit": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 354408,
+      "class": "copilot-sdk-driver-tool-permission-lockout",
+      "note": "tool-permission lockout, turns=1 (run 27067987828)"
+    },
+    "Daily Caveman Optimizer": {
+      "last": "2026-06-07",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "model-config-effort-unsupported",
+      "note": "RECUR day 3: 400 'This model does not support the effort parameter' (run 27104658186, retries 1/11). Unfixed; drop effort param from frontmatter."
+    },
+    "Daily Cache Strategy Analyzer": {
+      "last": "2026-06-15",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "codex",
+      "note": "gh-aw-binary-not-found-for-mcp exit1 06-15 (new sig); 100% fail",
+      "last_seen": "2026-06-11",
+      "last_status": "failure",
+      "reliability": "recurring model-not-found (codex gpt-5-codex-alpha 404); failed 06-05 & 06-11",
+      "engine": "codex"
+    },
+    "Daily Safe Output Integrator": {
+      "last": "2026-06-16",
+      "last_concl": "failure",
+      "class": "copilot-sdk-driver-tool-permission-lockout",
+      "note": "RECUR day10 (run 27643760095): 5-denial lockout (read /pkg/*, shell go version/git status) ~24min 0-tok",
+      "engine": "copilot-sdk",
+      "reliability": "chronic prod-main tool-perm-lockout, longest-running unresolved class"
+    },
+    "Design Decision Gate": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 1575960,
+      "class": "detection-no-threat-result-parse-fail",
+      "note": "agent succeeded (turns=3); detection job reddened with ERR_PARSE no THREAT_DETECTION_RESULT (run 27065879421)"
+    },
+    "PR Sous Chef": {
+      "last": "2026-06-14",
+      "last_concl": "success",
+      "last_seen": "2026-06-14",
+      "last_status": "success",
+      "reliability": "RECOVERED 10/10 success (was 6x fail 06-13); fix branch copilot/aw-fix-pr-sous-chef-fail landed",
+      "engine": "copilot/gpt-5-mini"
+    },
+    "Test Quality Sentinel": {
+      "last": "2026-06-06",
+      "last_concl": "failure",
+      "eff_tok": 0,
+      "class": "copilot-agent-redden-empty-output",
+      "note": "empty agent_output {\"items\":[]}, turns=0, no stdio artifact; same oidc branch as a minimatch failure (run 27069819373)",
+      "runs": 1,
+      "fail": 1,
+      "last_seen": "2026-06-09",
+      "last_note": "2026-06-09 copilot 15min action-timeout (valid work wasted)"
+    },
+    "Daily Ambient Context Optimizer": {
+      "last": "2026-06-16",
+      "last_concl": "success",
+      "eff_tok": 5905929,
+      "note": "top token consumer 5.91M tok, success, under-cap (no 429)",
+      "engine": "copilot"
+    },
+    "Matt Pocock Skills Reviewer": {
+      "last": "2026-06-06",
+      "last_concl": "success",
+      "eff_tok": 22827383,
+      "aic": 773,
+      "note": "top completed eff-tok + top AIC this window (copilot), success",
+      "last_seen": "2026-06-11",
+      "last_status": "mixed",
+      "reliability": "1 success (5.04M tok outlier) + 3 reddened by daily-cap gate (agent skipped)",
+      "cost_note": "5.04M token top consumer"
+    },
+    "Contribution Check": {
+      "last": "2026-06-06",
+      "last_concl": "success",
+      "eff_tok": 22230609,
+      "note": "RECOVERED/stable; 2 runs success this window, AIC 754+488"
+    },
+    "Daily Safe Output Tool Optimizer": {
+      "last": "2026-06-06",
+      "last_concl": "in_progress",
+      "eff_tok": 29897664,
+      "note": "still running at audit time; highest eff-tok seen (claude)"
+    },
+    "_2026-06-08_changes": {
+      "note": "06-08 PARTIAL ~3.3h window. DOMINANT NEW: copilot-pat-not-supported-400 ACTIVE incident from 19:40Z (~15 runs, prod-main+PR+smoke) -> fleet 88%->58%. Ambient/Contribution Check/Daily Project Perf all RED via PAT-400 (not their usual classes; token-429 ABSENT). PR Code Quality Reviewer: 1 sdk session.idle-870s-timeout-after-valid-output + 3 PAT-400. Daily Safe Output Integrator RECUR tool-perm-lockout. cli-proxy DIFC liveness-probe NEW x2 (PR Description Updater/Issue Monster). Caveman effort-400 NOT seen as failure. Cache Strategy codex RECUR day4. Top cost: Failure Investigator $3.21, Code Metrics $2.12, Safe Output Tool Optimizer $2.09."
+    },
+    "_2026-06-10_changes": "EVENING window: 5 copilot hard-fails all known-recurring (session.idle x2 PR CQR, tool-perm-lockout Daily Safe Output Integrator, 429 Ambient, DIFC Daily Secrets). claude 11/11 + codex 1/1 clean. test-quality-sentinel turn-drift 4->34 again. Design Decision Gate 3/3 clean (claude).",
+    "Smoke Gemini": {
+      "last_seen": "2026-06-11",
+      "last_status": "failure",
+      "reliability": "0/2 — gemini model pricing missing (gemini-3.1-flash-tts-preview)",
+      "engine": "gemini"
+    },
+    "Smoke Antigravity": {
+      "last_seen": "2026-06-11",
+      "last_status": "success",
+      "reliability": "NEW engine 2/2 success",
+      "engine": "antigravity"
+    },
+    "Smoke Pi": {
+      "last_seen": "2026-06-11",
+      "last_status": "success",
+      "reliability": "NEW engine 2/2 success (copilot/gpt-5.4 backend)",
+      "engine": "pi"
+    },
+    "Avenger": {
+      "last": "2026-06-14",
+      "last_concl": "failure",
+      "last_seen": "2026-06-14",
+      "last_status": "failure",
+      "class": "avenger-err-config-no-structured-logs",
+      "reliability": "0/3 (day2). 2 agents did real work+created PRs then run reddened; fix branch not yet effective",
+      "engine": "claude/opus-4-8"
+    },
+    "Daily Formal Spec Verifier": {
+      "last": "2026-06-14",
+      "last_concl": "failure",
+      "last_seen": "2026-06-14",
+      "class": "copilot-sdk-driver-tool-permission-lockout",
+      "reliability": "tool-perm-lockout d=11 (read forecast-spec.md), 24m30s wasted",
+      "engine": "copilot-sdk"
+    },
+    "Documentation Unbloat": {
+      "last": "2026-06-15",
+      "last_concl": "failure",
+      "last_seen": "2026-06-14",
+      "class": "claude",
+      "reliability": "empty-output/digest-mismatch reddens 2 days running",
+      "engine": "claude",
+      "note": "cache-memory-git-integrity git-exit2 day3 06-15"
+    },
+    "Repository Tree Map Generator": {
+      "last": "2026-06-15",
+      "last_concl": "failure",
+      "class": "copilot",
+      "note": "copilot-harness-action-timeout 5min (tok=579624 partial) 06-15"
+    },
+    "Daily Security Observability Report": {
+      "last": "2026-06-15",
+      "last_concl": "failure",
+      "class": "copilot",
+      "note": "0-tok agent-artifact-missing 06-15 (new)"
+    },
+    "Daily Code Metrics and Trend Tracking Agent": {
+      "last": "2026-06-16",
+      "last_concl": "failure",
+      "eff_tok": 4272992,
+      "class": "upload_assets-reddens-successful-run",
+      "note": "agent SUCCESS 53turns/4.27M tok but upload_assets job failed -> run red (run 27643027159). False-red.",
+      "engine": "claude"
+    },
+    "Daily Project Performance Summary Generator (Using MCP Scripts)": {
+      "last": "2026-06-16",
+      "last_concl": "failure",
+      "class": "upload_assets-reddens-successful-run",
+      "note": "agent SUCCESS but upload_assets job failed -> run red (run 27649783375). False-red.",
+      "engine": "copilot"
+    }
+  }
+}
