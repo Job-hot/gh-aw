@@ -117,7 +117,7 @@ else
   else
     printf '{"source":"none","window_start":"%s","snapshot_count":0,"total_aic":0,"workflows":[]}\n' \
       "$window_start" > "$DATA_DIR/aic-by-workflow.json"
-    echo "⚠ Could not fetch memory/token-audit branch (does the branch exist? are credentials configured?); AIC by workflow data unavailable"
+    echo "⚠ Could not fetch memory/token-audit branch (does the branch exist? are credentials configured?); AIC by workflow data unavailable" >&2
   fi
 fi
 
