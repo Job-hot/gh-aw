@@ -1,31 +1,12 @@
 {
-  "run_date": "2026-06-15T19:31:36Z",
-  "run_id": "27570973333",
-  "previous_run_id": "27553076178",
-  "previous_run_date": "2026-06-15T14:26:24Z",
+  "run_date": "2026-06-16T01:30:24Z",
+  "run_id": "27587846283",
+  "previous_run_id": "27570973333",
+  "previous_run_date": "2026-06-15T19:31:36Z",
   "fork_prs": 0,
-  "agent_prs_found": 4,
+  "agent_prs_found": 3,
   "prs_triaged": 0,
   "branch_prs_skipped": [
-    {
-      "number": 39439,
-      "title": "[WIP] Fix failing GitHub Actions job 'agent'",
-      "draft": true,
-      "category": "bug",
-      "risk": "low",
-      "score": 25,
-      "action": "defer",
-      "batch": null,
-      "ci": "pending",
-      "review": "none",
-      "review_detail": "draft PR, 0 changes",
-      "created": "2026-06-15",
-      "labels": [],
-      "additions": 0,
-      "deletions": 0,
-      "changedFiles": 0,
-      "note": "NEW: Draft PR with 0 changes; agent working on CI agent job failure fix"
-    },
     {
       "number": 39386,
       "title": "Account for actions/cache branch scoping in cache-miss misconfiguration detection",
@@ -35,15 +16,15 @@
       "score": 61,
       "action": "fast_track",
       "batch": null,
-      "ci": "approved",
+      "ci": "no_checks",
       "review": "bot_approved",
-      "review_detail": "github-actions APPROVED; copilot-pull-request-reviewer COMMENTED; 13 comments",
+      "review_detail": "github-actions APPROVED; copilot-pull-request-reviewer COMMENTED",
       "created": "2026-06-15",
-      "labels": [],
+      "labels": ["pr-priority:medium","pr-type:bug","pr-risk:medium","pr-action:fast_track","pr-agent:copilot-swe-agent"],
       "additions": 132,
       "deletions": 36,
       "changedFiles": 6,
-      "note": "NEW: Fresh fix for cache_memory_miss false positives; github-actions approved; fast_track priority"
+      "note": "UNCHANGED: Non-fork branch PR; bot-approved; awaiting human review"
     },
     {
       "number": 39300,
@@ -56,20 +37,13 @@
       "batch": null,
       "ci": "partial_passing",
       "review": "bot_commented",
-      "review_detail": "copilot-pull-request-reviewer COMMENTED; 27 comments",
+      "review_detail": "copilot-pull-request-reviewer COMMENTED",
       "created": "2026-06-15",
-      "labels": [
-        "smoke",
-        "pr-type:bug",
-        "pr-risk:medium",
-        "pr-priority:medium",
-        "pr-action:batch_review",
-        "pr-agent:copilot-swe-agent"
-      ],
+      "labels": ["smoke","pr-priority:medium","pr-type:bug","pr-action:batch_review","pr-risk:medium","test-label","pr-agent:copilot-swe-agent"],
       "additions": 491,
       "deletions": 646,
       "changedFiles": 8,
-      "note": "UNCHANGED: CI 1 passing, mergeable_state unstable; awaiting full CI run"
+      "note": "UNCHANGED: Non-fork branch PR; 1 passing CI check; awaiting full CI run"
     },
     {
       "number": 39100,
@@ -82,77 +56,38 @@
       "batch": null,
       "ci": "all_passing",
       "review": "human_commented",
-      "review_detail": "alinasisi human commented; github-actions APPROVED; copilot-pull-request-reviewer COMMENTED; 27 passing, 10 skipped",
+      "review_detail": "alinasisi human commented; github-actions APPROVED; 20 passing, 10 skipped",
       "created": "2026-06-13",
-      "labels": [
-        "smoke",
-        "smoke-claude",
-        "pr-type:feature",
-        "pr-risk:high",
-        "pr-priority:high",
-        "pr-action:fast_track",
-        "pr-agent:copilot-swe-agent"
-      ],
+      "labels": ["smoke","smoke-claude","pr-type:feature","pr-risk:high","pr-priority:high","pr-action:fast_track","pr-agent:copilot-swe-agent"],
       "additions": 6968,
       "deletions": 12551,
       "changedFiles": 272,
-      "note": "UNCHANGED: CI all green (27 passing, 10 skipped); human reviewer engaged; highest priority PR"
+      "note": "UNCHANGED: Non-fork branch PR; CI all green (20 passing, 10 skipped); highest priority PR; 1130 issue comments"
     }
   ],
-  "new_since_last_run": [
-    39439,
-    39386
-  ],
+  "new_since_last_run": [],
   "closed_since_last_run": [
     {
-      "number": 38911,
-      "title": "[ARC/DinD] Emit chroot.binariesSourcePath and chroot.identity in AWF stdin-config",
+      "number": 39439,
+      "title": "[WIP] Fix failing GitHub Actions job 'agent'",
       "outcome": "MERGED",
-      "at": "2026-06-15T14:38:45Z"
+      "at": "2026-06-16"
     }
   ],
-  "unchanged": [
-    39300,
-    39100
-  ],
+  "unchanged": [39386, 39300, 39100],
   "fork_only_policy": true,
   "total_prs_triaged": 0,
   "auto_merge_candidates": [],
-  "fast_track_needed": [
-    39100,
-    39386
-  ],
+  "fast_track_needed": [39100, 39386],
   "batches": {},
   "close_candidates": [],
-  "notes": "4 open Copilot PRs (app/copilot-swe-agent), all branch-based (isCrossRepository=false). 1 PR resolved since last run: #38911 merged. 2 new PRs: #39439 (draft CI fix) and #39386 (cache-miss bug fix). #39100 still highest priority at 83/100 with CI all green.",
+  "notes": "3 open Copilot PRs (app/github-copilot), all branch-based (isCrossRepository=false). 1 PR resolved since last run: #39439 merged. No new PRs. All 3 remaining are unchanged from prior run. #39100 still highest priority at 83/100 with CI all green (20 passing, 10 skipped). #39386 now has labels applied from prior run.",
   "statistics": {
-    "by_category": {
-      "feature": 1,
-      "bug": 3
-    },
-    "by_risk": {
-      "high": 1,
-      "medium": 2,
-      "low": 1
-    },
-    "by_action": {
-      "fast_track": 2,
-      "batch_review": 1,
-      "defer": 1
-    },
-    "by_draft": {
-      "draft": 1,
-      "open": 3
-    },
-    "ci_status": {
-      "all_passing": 1,
-      "partial_passing": 1,
-      "pending": 1,
-      "approved": 1
-    },
-    "resolved_this_run": {
-      "merged": 1,
-      "closed": 0
-    }
+    "by_category": {"feature": 1, "bug": 2},
+    "by_risk": {"high": 1, "medium": 2},
+    "by_action": {"fast_track": 2, "batch_review": 1},
+    "by_draft": {"draft": 0, "open": 3},
+    "ci_status": {"all_passing": 1, "partial_passing": 1, "no_checks": 1},
+    "resolved_this_run": {"merged": 1, "closed": 0}
   }
 }
