@@ -345,44 +345,41 @@ describe("validate_lockdown_requirements", () => {
     });
   });
 
-  describe("error message formatting", () => {
-    it("should include newlines in lockdown error message for readability", () => {
+  describe("error messages", () => {
+    it("should include token guidance in lockdown error message", () => {
       process.env.GITHUB_MCP_LOCKDOWN_EXPLICIT = "true";
 
       expect(() => {
         validateLockdownRequirements(mockCore);
-      }).toThrow();
+      }).toThrow("no custom GitHub token is configured");
 
       const errorMsg = mockCore.setFailed.mock.calls[0][0];
-      expect(errorMsg).toContain("\n");
       expect(errorMsg).toContain("GH_AW_GITHUB_TOKEN (recommended)");
       expect(errorMsg).toContain("GH_AW_GITHUB_MCP_SERVER_TOKEN (alternative)");
     });
 
-    it("should include newlines in strict mode error message for readability", () => {
+    it("should include compile guidance in strict mode error message", () => {
       process.env.GITHUB_REPOSITORY_VISIBILITY = "public";
       process.env.GH_AW_COMPILED_STRICT = "false";
 
       expect(() => {
         validateLockdownRequirements(mockCore);
-      }).toThrow();
+      }).toThrow("not compiled with strict mode");
 
       const errorMsg = mockCore.setFailed.mock.calls[0][0];
-      expect(errorMsg).toContain("\n");
       expect(errorMsg).toContain("gh aw compile --strict");
     });
 
-    it("should include newlines in pull_request_target error message for readability", () => {
+    it("should include pwn request warning in pull_request_target error message", () => {
       process.env.GITHUB_REPOSITORY_VISIBILITY = "public";
       process.env.GH_AW_COMPILED_STRICT = "true";
       process.env.GITHUB_EVENT_NAME = "pull_request_target";
 
       expect(() => {
         validateLockdownRequirements(mockCore);
-      }).toThrow();
+      }).toThrow("pwn request");
 
       const errorMsg = mockCore.setFailed.mock.calls[0][0];
-      expect(errorMsg).toContain("\n");
       expect(errorMsg).toContain("pwn request");
     });
   });
