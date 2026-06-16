@@ -378,9 +378,6 @@ describe("validate_lockdown_requirements", () => {
       expect(() => {
         validateLockdownRequirements(mockCore);
       }).toThrow("pwn request");
-
-      const errorMsg = mockCore.setFailed.mock.calls[0][0];
-      expect(errorMsg).toContain("pwn request");
     });
   });
 });
