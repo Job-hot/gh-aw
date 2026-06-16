@@ -1,1 +1,51 @@
-{"summary": {"total_snapshots": 21, "date_range": {"from": "2026-05-15", "to": "2026-06-15"}, "avg_success_pct": 80}, "recent": [{"date": "2026-06-10", "merged": 793, "closed": 203, "rate": 80}, {"date": "2026-06-12", "merged": 786, "closed": 206, "rate": 79}, {"date": "2026-06-13", "merged": 792, "closed": 204, "rate": 80}, {"date": "2026-06-14", "merged": 791, "closed": 202, "rate": 79.1, "insight": "update/remove verbs yield 92%+ rates; WIP tags drop to 34%"}, {"date": "2026-06-15", "merged": 792, "closed": 205, "rate": 79.4, "insight": "optimize/handle/move verbs yield 100% rates; update/replace/remove 91-93%; fix d"}]}
+{
+  "summary": {
+    "total_snapshots": 22,
+    "date_range": {
+      "from": "2026-05-15",
+      "to": "2026-06-16"
+    },
+    "avg_success_pct": 80
+  },
+  "recent": [
+    {
+      "date": "2026-06-10",
+      "merged": 793,
+      "closed": 203,
+      "rate": 80
+    },
+    {
+      "date": "2026-06-12",
+      "merged": 786,
+      "closed": 206,
+      "rate": 79
+    },
+    {
+      "date": "2026-06-13",
+      "merged": 792,
+      "closed": 204,
+      "rate": 80
+    },
+    {
+      "date": "2026-06-14",
+      "merged": 791,
+      "closed": 202,
+      "rate": 79.1,
+      "insight": "update/remove verbs yield 92%+ rates; WIP tags drop to 34%"
+    },
+    {
+      "date": "2026-06-15",
+      "merged": 792,
+      "closed": 205,
+      "rate": 79.4,
+      "insight": "optimize/handle/move verbs yield 100% rates; update/replace/remove 91-93%; fix d"
+    },
+    {
+      "date": "2026-06-16",
+      "merged": 797,
+      "closed": 196,
+      "rate": 80,
+      "insight": "Doc prompts lead at 86%; WIP PRs close at 8x rate; concise bodies (<200 words) outperform verbose; today 92% daily rate"
+    }
+  ]
+}
