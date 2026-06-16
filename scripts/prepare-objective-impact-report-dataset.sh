@@ -93,6 +93,7 @@ else
           --arg generated_at "$generated_at" \
           --argjson snapshot_count "$aic_snapshot_count" '
         [.[].workflows[]? | {workflow_name, total_aic: (.total_aic // 0), run_count: (.run_count // 0)}]
+        | sort_by(.workflow_name)
         | group_by(.workflow_name)
         | map({
             workflow_name: .[0].workflow_name,
