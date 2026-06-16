@@ -1,5 +1,7 @@
 // @ts-check
 
+const { renderLockdownTokenErrorMessage, renderPublicStrictModeErrorMessage, renderPullRequestTargetErrorMessage } = require("./validate_lockdown_requirements_templates.cjs");
+
 /**
  * Validates that lockdown mode requirements are met at runtime.
  *
@@ -22,8 +24,6 @@
  * @param {any} core - GitHub Actions core library
  * @returns {void}
  */
-const { renderLockdownTokenErrorMessage, renderPublicStrictModeErrorMessage, renderPullRequestTargetErrorMessage } = require("./validate_lockdown_requirements_templates.cjs");
-
 function validateLockdownRequirements(core) {
   /**
    * @param {string} message
