@@ -1,146 +1,224 @@
 {
-  "run_date": "2026-06-16T14:08:00Z",
-  "run_id": "27623380878",
-  "previous_run_id": "27604014549",
-  "previous_run_date": "2026-06-16T08:19:35Z",
+  "run_date": "2026-06-16T19:24:49Z",
+  "run_id": "27642308894",
+  "previous_run_id": "27623380878",
+  "previous_run_date": "2026-06-16T14:08:00Z",
   "fork_prs": 0,
-  "agent_prs_found": 15,
-  "copilot_swe_agent_prs": 5,
-  "github_actions_prs": 10,
+  "agent_prs_found": 16,
+  "copilot_swe_agent_prs": 16,
+  "github_actions_prs": 0,
   "prs_triaged": 0,
-  "branch_prs_skipped": [
+  "graphql_api_status": "HTTP 502 resource labeling failed - CI/label data unavailable",
+  "branch_prs_tracked": [
     {
-      "number": 39100,
-      "title": "Run safe-outputs MCP in the gh-aw node container",
+      "number": 39655,
+      "title": "fix: sanitize HTML error pages in getErrorMessage to avoid noisy safe_outputs logs",
+      "draft": true,
+      "category": "bug",
+      "status": "DRAFT",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39654,
+      "title": "[WIP] Support array and object runner specs for runs-on-slim and safe-outputs",
+      "draft": true,
+      "category": "feature",
+      "status": "DRAFT",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39653,
+      "title": "[WIP] Fix network.allowed domains propagation to threat-detection job",
+      "draft": true,
+      "category": "bug",
+      "status": "DRAFT",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39652,
+      "title": "fix: restore interaction permissions for workflow_call workflows with reaction/status-comment",
+      "draft": true,
+      "category": "bug",
+      "status": "DRAFT",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39651,
+      "title": "Ensure inline sub-agents always trigger interpolation step generation",
+      "draft": true,
+      "category": "feature",
+      "status": "DRAFT",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39650,
+      "title": "Sync MCP server toolset/permissions mapping to v1.3.0",
+      "draft": true,
+      "category": "feature",
+      "status": "DRAFT",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39644,
+      "title": "Include safe-outputs gh-aw-node image in default container predownload and manifest",
+      "draft": true,
+      "category": "feature",
+      "status": "DRAFT",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39643,
+      "title": "schema: add normalize-closing-keywords to create-issue, add-comment, create-pull-request branches",
+      "draft": true,
+      "category": "feature",
+      "status": "DRAFT",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39640,
+      "title": "schema: add required-category to create-discussion branch",
+      "draft": true,
+      "category": "feature",
+      "status": "DRAFT",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39639,
+      "title": "fix: remove dispatch-repository dash alias from parser",
+      "draft": false,
+      "category": "bug",
+      "status": "OPEN",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39638,
+      "title": "docs: clarify Claude quick-start auth + initialization path",
+      "draft": false,
+      "category": "docs",
+      "status": "OPEN",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39637,
+      "title": "Consolidate near-duplicate WorkflowListItem and WorkflowStatus structs in pkg/cli",
+      "draft": false,
+      "category": "refactor",
+      "status": "OPEN",
+      "created": "2026-06-16"
+    },
+    {
+      "number": 39636,
+      "title": "Add configurable OTLP resource attributes to workflow observability",
       "draft": false,
       "category": "feature",
-      "risk": "high",
-      "score": 83,
-      "action": "fast_track",
-      "batch": null,
-      "ci": "all_passing",
-      "review": "human_commented",
-      "review_detail": "alinasisi human commented; github-actions APPROVED; 27 passing, 10 skipped",
-      "created": "2026-06-13",
-      "labels": ["smoke","smoke-claude","pr-type:feature","pr-risk:high","pr-priority:high","pr-action:fast_track","pr-agent:copilot-swe-agent"],
-      "additions": 6968,
-      "deletions": 12551,
-      "changedFiles": 272,
-      "author": "app/copilot-swe-agent",
-      "note": "UNCHANGED: Non-fork branch PR; CI all green (27 passing, 10 skipped); highest priority PR; 75 comments"
+      "status": "OPEN",
+      "created": "2026-06-16",
+      "otel": true,
+      "labels_applied": [
+        "otel"
+      ],
+      "note": "OTel PR - labeled otel, routed to @mnkeifer"
     },
     {
-      "number": 39386,
-      "title": "Account for actions/cache branch scoping in cache-miss misconfiguration detection",
+      "number": 39623,
+      "title": "Clarify github_api_calls provenance and recover snapshot-only core_consumed accounting",
       "draft": false,
-      "category": "bug",
-      "risk": "medium",
-      "score": 61,
-      "action": "fast_track",
-      "batch": null,
-      "ci": "none",
-      "review": "bot_approved",
-      "review_detail": "github-actions APPROVED; copilot-pull-request-reviewer COMMENTED",
-      "created": "2026-06-15",
-      "labels": ["pr-priority:medium","pr-type:bug","pr-risk:medium","pr-action:fast_track","pr-agent:copilot-swe-agent"],
-      "additions": 132,
-      "deletions": 36,
-      "changedFiles": 6,
-      "author": "app/copilot-swe-agent",
-      "note": "UNCHANGED: Non-fork branch PR; bot-approved; 16 comments; awaiting human review"
+      "category": "feature",
+      "status": "OPEN",
+      "created": "2026-06-16"
     },
     {
-      "number": 39300,
-      "title": "Generalize early wildcard-target validation across safe-outputs MCP tools",
+      "number": 39620,
+      "title": "chore: expand pr to issue tracing for impact report mapped outcomes",
       "draft": false,
-      "category": "bug",
-      "risk": "medium",
-      "score": 61,
-      "action": "batch_review",
-      "batch": null,
-      "ci": "none",
-      "review": "bot_commented",
-      "review_detail": "copilot-pull-request-reviewer COMMENTED",
-      "created": "2026-06-15",
-      "labels": ["smoke","pr-priority:medium","pr-type:bug","pr-action:batch_review","pr-risk:medium","test-label","pr-agent:copilot-swe-agent"],
-      "additions": 490,
-      "deletions": 645,
-      "changedFiles": 7,
-      "author": "app/copilot-swe-agent",
-      "note": "UNCHANGED: Non-fork branch PR; 30 comments; awaiting human review"
+      "category": "chore",
+      "status": "OPEN",
+      "created": "2026-06-16"
     },
     {
       "number": 39540,
       "title": "feat(repo-memory): add format-json option to pretty-print JSON files before commit",
       "draft": true,
       "category": "feature",
-      "risk": "low",
-      "score": 38,
-      "action": "defer",
-      "batch": null,
-      "ci": "none",
-      "review": "none",
-      "review_detail": "no reviews",
+      "status": "DRAFT",
       "created": "2026-06-16",
-      "labels": [],
-      "additions": 201,
-      "deletions": 0,
-      "changedFiles": 5,
-      "author": "app/copilot-swe-agent",
-      "note": "NEW: DRAFT, additive feature for repo-memory JSON formatting, no CI"
-    },
-    {
-      "number": 39486,
-      "title": "Bump AWF Firewall to v0.27.4 and MCP Gateway to v0.3.26",
-      "draft": true,
-      "category": "chore",
-      "risk": "medium",
-      "score": 35,
-      "action": "defer",
-      "batch": null,
-      "ci": "none",
-      "review": "none",
-      "review_detail": "lpcox requested as reviewer",
-      "created": "2026-06-16",
-      "labels": [],
-      "additions": 5141,
-      "deletions": 5299,
-      "changedFiles": 265,
-      "author": "app/copilot-swe-agent",
-      "note": "UNCHANGED: Non-fork branch PR (DRAFT); version bump AWF Firewall v0.27.2->v0.27.4, MCPGateway v0.3.25->v0.3.26; 265 recompiled files"
+      "note": "Persisted from last run"
     }
   ],
-  "github_actions_prs_tracked": [
-    {"number": 39550, "title": "[spec-enforcer] Enforce specifications for cli, console, constants", "category": "testing", "risk": "low", "action": "auto_merge"},
-    {"number": 39542, "title": "[docs] Update documentation for features from 2026-06-16", "category": "docs", "risk": "low", "action": "auto_merge"},
-    {"number": 39537, "title": "[docs] Update glossary - daily scan", "category": "docs", "risk": "low", "action": "auto_merge"},
-    {"number": 39534, "title": "[fp-enhancer] Improve pkg/actionpins", "category": "refactor", "risk": "low", "action": "auto_merge"},
-    {"number": 39533, "title": "[spec-extractor] Update package specifications", "category": "docs", "risk": "low", "action": "auto_merge"},
-    {"number": 39527, "title": "[instructions] Sync instruction files with release v0.79.8", "category": "docs", "risk": "low", "action": "auto_merge"},
-    {"number": 39498, "title": "[jsweep] Clean validate_lockdown_requirements.cjs", "category": "chore", "risk": "low", "action": "batch_review"},
-    {"number": 39472, "title": "[docs] Self-healing documentation fixes from issue analysis - 2026-06-16", "category": "docs", "risk": "low", "action": "auto_merge"},
-    {"number": 39457, "title": "[caveman] Optimize instruction verbosity", "category": "docs", "risk": "low", "action": "auto_merge"},
-    {"number": 39422, "title": "[dead-code] chore: remove dead functions", "category": "chore", "risk": "low", "action": "auto_merge"}
+  "new_since_last_run": [
+    39655,
+    39654,
+    39653,
+    39652,
+    39651,
+    39650,
+    39644,
+    39643,
+    39640,
+    39639,
+    39638,
+    39637,
+    39636,
+    39623,
+    39620
   ],
-  "new_since_last_run": [39540, 39550, 39542, 39537, 39534, 39533, 39527, 39498, 39472, 39457, 39422],
-  "closed_since_last_run": [],
-  "unchanged_copilot_swe_agent": [39486, 39386, 39300, 39100],
+  "closed_since_last_run": [
+    39100,
+    39386,
+    39300,
+    39486,
+    39550,
+    39542,
+    39537,
+    39534,
+    39533,
+    39527,
+    39498,
+    39472,
+    39457,
+    39422
+  ],
   "fork_only_policy": true,
   "total_prs_triaged": 0,
-  "auto_merge_candidates": [39542, 39537, 39533, 39527, 39550, 39457, 39422, 39472, 39534],
-  "fast_track_needed": [39100, 39386],
-  "batches": {
-    "batch-docs-daily": [39542, 39537, 39533, 39527, 39472],
-    "batch-automation": [39550, 39534, 39457, 39422]
-  },
-  "close_candidates": [],
-  "notes": "15 open agent PRs (5 copilot-swe-agent + 10 github-actions), all branch-based (isCrossRepository=false). 1 new copilot-swe-agent PR: #39540 (DRAFT repo-memory feature). 10 new github-actions PRs. No PRs closed/merged since last run. Fork-only triage policy -> 0 PRs eligible for formal triage. #39100 is highest priority (3d old, CI all green, human reviewer engaged).",
+  "otel_actions": [
+    {
+      "pr": 39636,
+      "label": "otel",
+      "routed_to": "mnkeifer",
+      "comment_added": true
+    }
+  ],
+  "open_ready_for_review": [
+    39639,
+    39638,
+    39637,
+    39636,
+    39623,
+    39620
+  ],
+  "active_wips": [
+    39654,
+    39653
+  ],
   "statistics": {
-    "by_category": {"feature": 2, "bug": 2, "chore": 2, "docs": 5, "testing": 1, "refactor": 1},
-    "by_risk": {"high": 1, "medium": 3, "low": 11},
-    "by_action": {"fast_track": 2, "batch_review": 2, "defer": 2, "auto_merge": 9},
-    "by_draft": {"draft": 5, "open": 10},
-    "ci_status": {"all_passing": 1, "none": 14},
-    "resolved_this_run": {"merged": 0, "closed": 0}
-  }
+    "by_category": {
+      "feature": 9,
+      "bug": 4,
+      "chore": 1,
+      "docs": 1,
+      "refactor": 1
+    },
+    "by_status": {
+      "OPEN": 6,
+      "DRAFT": 10
+    },
+    "by_draft": {
+      "draft": 10,
+      "open": 6
+    },
+    "resolved_this_run": {
+      "closed_or_merged": 14
+    }
+  },
+  "notes": "16 open agent PRs (all copilot-swe-agent), all branch-based (isCrossRepository=false). 15 new PRs this run, 14 closed/merged since last run. GraphQL API returned HTTP 502 (CI/label status unavailable). OTel PR #39636 labeled and routed to @mnkeifer. Fork-only triage policy -> 0 PRs eligible for formal triage."
 }
