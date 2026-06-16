@@ -59,11 +59,14 @@ gh extension install github/gh-aw
 From your repository root run:
 
 ```text wrap
+# Claude users: run once per repository to skip Copilot-oriented init artifacts
 gh aw init --engine claude
+
+# Then add the sample workflow
 gh aw add-wizard githubnext/agentics/daily-repo-status
 ```
 
-Use `gh aw init --engine claude` when setting up Claude in a repository. By default, `gh aw init` creates Copilot-oriented artifacts unless `--engine claude` is provided.
+If the repository is already initialized, or if not using Claude, skip the `gh aw init --engine claude` command. By default, `gh aw init` creates Copilot-oriented artifacts unless `--engine claude` is provided.
 
 `add-wizard` accepts workflow references in `<owner>/<repo>/<workflow-name>` format. In this example, `githubnext/agentics/daily-repo-status` references the `daily-repo-status` workflow hosted in the public [githubnext/agentics](https://github.com/githubnext/agentics) examples repository.
 
@@ -88,7 +91,7 @@ The wizard generates a compiled workflow file (`.lock.yml`) automatically — yo
 > **Setting up `ANTHROPIC_API_KEY`?**
 > 1. Create an API key in [Anthropic Console](https://console.anthropic.com/settings/keys).
 > 2. Add it as a repository secret from your repository root with `gh secret set ANTHROPIC_API_KEY < /path/to/key.txt`, or use the GitHub UI. See [Authentication](/gh-aw/reference/auth/#anthropic_api_key) for more detail.
-> 3. `CLAUDE_CODE_OAUTH_TOKEN` (Claude Max/Teams OAuth) is not supported and is ignored by GitHub Agentic Workflows. Use `ANTHROPIC_API_KEY` instead.
+> `CLAUDE_CODE_OAUTH_TOKEN` (Claude Max/Teams OAuth) is not supported and is ignored by GitHub Agentic Workflows. Use `ANTHROPIC_API_KEY` instead.
 >
 
 > [!TIP]
