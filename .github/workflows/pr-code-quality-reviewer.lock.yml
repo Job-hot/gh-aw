@@ -451,6 +451,7 @@ jobs:
     permissions:
       contents: read
       copilot-requests: write
+      issues: read
       pull-requests: read
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
