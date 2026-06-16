@@ -22,6 +22,8 @@
  * @param {any} core - GitHub Actions core library
  * @returns {void}
  */
+const { renderLockdownTokenErrorMessage, renderPublicStrictModeErrorMessage, renderPullRequestTargetErrorMessage } = require("./validate_lockdown_requirements_templates.cjs");
+
 function validateLockdownRequirements(core) {
   /**
    * @param {string} message
@@ -55,19 +57,7 @@ function validateLockdownRequirements(core) {
     core.info(`Custom github-token configured: ${hasCustomToken}`);
 
     if (!hasAnyCustomToken) {
-      failWithError(
-        `Lockdown mode is enabled (lockdown: true) but no custom GitHub token is configured.\n` +
-          `\n` +
-          `Please configure one of the following as a repository secret:\n` +
-          `  - GH_AW_GITHUB_TOKEN (recommended)\n` +
-          `  - GH_AW_GITHUB_MCP_SERVER_TOKEN (alternative)\n` +
-          `  - Custom github-token in your workflow frontmatter\n` +
-          `\n` +
-          `See: https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/auth.mdx\n` +
-          `\n` +
-          `To set a token:\n` +
-          `  gh aw secrets set GH_AW_GITHUB_TOKEN --value "YOUR_FINE_GRAINED_PAT"`
-      );
+      failWithError(renderLockdownTokenErrorMessage());
     }
 
     core.info("✓ Lockdown mode requirements validated: Custom GitHub token is configured");
@@ -83,17 +73,7 @@ function validateLockdownRequirements(core) {
   core.info(`Compiled with strict mode: ${isStrict}`);
 
   if (isPublic && !isStrict) {
-    failWithError(
-      `This workflow is running on a public repository but was not compiled with strict mode.\n` +
-        `\n` +
-        `Public repository workflows must be compiled with strict mode enabled to meet\n` +
-        `the security requirements for public exposure.\n` +
-        `\n` +
-        `To fix this, recompile the workflow with strict mode:\n` +
-        `  gh aw compile --strict\n` +
-        `\n` +
-        `See: https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/security.mdx`
-    );
+    failWithError(renderPublicStrictModeErrorMessage());
   }
 
   if (isPublic && isStrict) {
@@ -107,17 +87,7 @@ function validateLockdownRequirements(core) {
   // and potentially exfiltrate secrets or cause unintended side effects.
   const eventName = process.env.GITHUB_EVENT_NAME;
   if (isPublic && eventName === "pull_request_target") {
-    failWithError(
-      `This workflow is triggered by the pull_request_target event on a public repository.\n` +
-        `\n` +
-        `The pull_request_target event is not allowed on public repositories because it runs\n` +
-        `workflows with access to repository secrets even when triggered from a fork, which\n` +
-        `creates a significant security risk (known as a "pwn request").\n` +
-        `\n` +
-        `To fix this, use the pull_request event instead, or migrate to a private repository.\n` +
-        `\n` +
-        `See: https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/security.mdx`
-    );
+    failWithError(renderPullRequestTargetErrorMessage());
   }
 }
 
