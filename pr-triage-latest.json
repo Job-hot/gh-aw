@@ -1,12 +1,31 @@
 {
-  "run_date": "2026-06-16T01:30:24Z",
-  "run_id": "27587846283",
-  "previous_run_id": "27570973333",
-  "previous_run_date": "2026-06-15T19:31:36Z",
+  "run_date": "2026-06-16T08:19:35Z",
+  "run_id": "27604014549",
+  "previous_run_id": "27587846283",
+  "previous_run_date": "2026-06-16T01:30:24Z",
   "fork_prs": 0,
-  "agent_prs_found": 3,
+  "agent_prs_found": 4,
   "prs_triaged": 0,
   "branch_prs_skipped": [
+    {
+      "number": 39486,
+      "title": "Bump AWF Firewall to v0.27.4 and MCP Gateway to v0.3.26",
+      "draft": true,
+      "category": "chore",
+      "risk": "medium",
+      "score": null,
+      "action": null,
+      "batch": null,
+      "ci": "no_checks",
+      "review": "none",
+      "review_detail": "lpcox requested as reviewer",
+      "created": "2026-06-16",
+      "labels": [],
+      "additions": 5141,
+      "deletions": 5299,
+      "changedFiles": 249,
+      "note": "NEW: Non-fork branch PR (DRAFT); version bump AWF Firewall v0.27.2→v0.27.4, MCPGateway v0.3.25→v0.3.26; 249 recompiled .lock.yml files"
+    },
     {
       "number": 39386,
       "title": "Account for actions/cache branch scoping in cache-miss misconfiguration detection",
@@ -43,7 +62,7 @@
       "additions": 491,
       "deletions": 646,
       "changedFiles": 8,
-      "note": "UNCHANGED: Non-fork branch PR; 1 passing CI check; awaiting full CI run"
+      "note": "UNCHANGED: Non-fork branch PR; partial CI; awaiting full CI run"
     },
     {
       "number": 39100,
@@ -62,18 +81,11 @@
       "additions": 6968,
       "deletions": 12551,
       "changedFiles": 272,
-      "note": "UNCHANGED: Non-fork branch PR; CI all green (20 passing, 10 skipped); highest priority PR; 1130 issue comments"
+      "note": "UNCHANGED: Non-fork branch PR; CI all green (20 passing, 10 skipped); highest priority PR"
     }
   ],
-  "new_since_last_run": [],
-  "closed_since_last_run": [
-    {
-      "number": 39439,
-      "title": "[WIP] Fix failing GitHub Actions job 'agent'",
-      "outcome": "MERGED",
-      "at": "2026-06-16"
-    }
-  ],
+  "new_since_last_run": [39486],
+  "closed_since_last_run": [],
   "unchanged": [39386, 39300, 39100],
   "fork_only_policy": true,
   "total_prs_triaged": 0,
@@ -81,13 +93,13 @@
   "fast_track_needed": [39100, 39386],
   "batches": {},
   "close_candidates": [],
-  "notes": "3 open Copilot PRs (app/github-copilot), all branch-based (isCrossRepository=false). 1 PR resolved since last run: #39439 merged. No new PRs. All 3 remaining are unchanged from prior run. #39100 still highest priority at 83/100 with CI all green (20 passing, 10 skipped). #39386 now has labels applied from prior run.",
+  "notes": "4 open Copilot PRs (app/copilot-swe-agent), all branch-based (isCrossRepository=false). 1 new PR this run: #39486 (DRAFT version bump). No PRs closed/merged since last run. All 3 carry-over PRs unchanged. Fork-only triage policy → 0 PRs eligible for triage.",
   "statistics": {
-    "by_category": {"feature": 1, "bug": 2},
-    "by_risk": {"high": 1, "medium": 2},
-    "by_action": {"fast_track": 2, "batch_review": 1},
-    "by_draft": {"draft": 0, "open": 3},
-    "ci_status": {"all_passing": 1, "partial_passing": 1, "no_checks": 1},
-    "resolved_this_run": {"merged": 1, "closed": 0}
+    "by_category": {"feature": 1, "bug": 2, "chore": 1},
+    "by_risk": {"high": 1, "medium": 3},
+    "by_action": {"fast_track": 2, "batch_review": 1, "none": 1},
+    "by_draft": {"draft": 1, "open": 3},
+    "ci_status": {"all_passing": 1, "partial_passing": 1, "no_checks": 2},
+    "resolved_this_run": {"merged": 0, "closed": 0}
   }
 }
