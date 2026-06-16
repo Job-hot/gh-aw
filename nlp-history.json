@@ -1,6 +1,35 @@
 {
-  "last_updated": "2026-06-12",
+  "last_updated": "2026-06-16",
   "analyses": [
-    {"date": "2026-06-12", "pr_count": 29, "avg_sentiment": 0.0328, "top_topic": "CLI / Tool / MCP", "positive": 13, "neutral": 8, "negative": 8}
+    {
+      "date": "2026-06-12",
+      "pr_count": 29,
+      "avg_sentiment": 0.0328,
+      "top_topic": "CLI / Tool / MCP",
+      "positive": 13,
+      "neutral": 8,
+      "negative": 8
+    },
+    {
+      "date": "2026-06-16",
+      "pr_count": 7,
+      "avg_sentiment": 0.27718571428571426,
+      "positive_count": 4,
+      "neutral_count": 0,
+      "negative_count": 3,
+      "top_topic": "Impact Reports / AWF Infrastructure",
+      "top_keywords": [
+        "aic",
+        "workflow",
+        "sous",
+        "chef",
+        "step",
+        "fallback",
+        "outcome",
+        "generated",
+        "miss",
+        "report"
+      ]
+    }
   ]
 }
