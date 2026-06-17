@@ -1,139 +1,43 @@
 {
-  "run_date": "2026-06-16T19:24:49Z",
-  "run_id": "27642308894",
-  "previous_run_id": "27623380878",
-  "previous_run_date": "2026-06-16T14:08:00Z",
+  "run_date": "2026-06-17T01:27:51Z",
+  "run_id": "27659488840",
+  "previous_run_id": "27642308894",
+  "previous_run_date": "2026-06-16T19:24:49Z",
   "fork_prs": 0,
-  "agent_prs_found": 16,
-  "copilot_swe_agent_prs": 16,
+  "agent_prs_found": 3,
+  "copilot_swe_agent_prs": 3,
   "github_actions_prs": 0,
   "prs_triaged": 0,
-  "graphql_api_status": "HTTP 502 resource labeling failed - CI/label data unavailable",
-  "branch_prs_tracked": [
+  "fork_only_policy": true,
+  "graphql_api_status": "OK",
+  "open_agent_prs": [
     {
-      "number": 39655,
-      "title": "fix: sanitize HTML error pages in getErrorMessage to avoid noisy safe_outputs logs",
-      "draft": true,
-      "category": "bug",
-      "status": "DRAFT",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39654,
-      "title": "[WIP] Support array and object runner specs for runs-on-slim and safe-outputs",
-      "draft": true,
-      "category": "feature",
-      "status": "DRAFT",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39653,
-      "title": "[WIP] Fix network.allowed domains propagation to threat-detection job",
-      "draft": true,
-      "category": "bug",
-      "status": "DRAFT",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39652,
-      "title": "fix: restore interaction permissions for workflow_call workflows with reaction/status-comment",
-      "draft": true,
-      "category": "bug",
-      "status": "DRAFT",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39651,
-      "title": "Ensure inline sub-agents always trigger interpolation step generation",
-      "draft": true,
-      "category": "feature",
-      "status": "DRAFT",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39650,
-      "title": "Sync MCP server toolset/permissions mapping to v1.3.0",
-      "draft": true,
-      "category": "feature",
-      "status": "DRAFT",
-      "created": "2026-06-16"
+      "number": 39697,
+      "title": "compile: clarify --action-mode/--action-tag/--gh-aw-ref relationship, enforce mutual exclusivity",
+      "draft": false,
+      "category": "chore",
+      "status": "OPEN",
+      "created": "2026-06-16",
+      "additions": 84,
+      "deletions": 14,
+      "changed_files": 5,
+      "labels": [],
+      "assignees": ["pelikhan"],
+      "reviewers_requested": ["pelikhan"],
+      "isCrossRepository": false
     },
     {
       "number": 39644,
-      "title": "Include safe-outputs gh-aw-node image in default container predownload and manifest",
-      "draft": true,
-      "category": "feature",
-      "status": "DRAFT",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39643,
-      "title": "schema: add normalize-closing-keywords to create-issue, add-comment, create-pull-request branches",
-      "draft": true,
-      "category": "feature",
-      "status": "DRAFT",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39640,
-      "title": "schema: add required-category to create-discussion branch",
-      "draft": true,
-      "category": "feature",
-      "status": "DRAFT",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39639,
-      "title": "fix: remove dispatch-repository dash alias from parser",
-      "draft": false,
-      "category": "bug",
-      "status": "OPEN",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39638,
-      "title": "docs: clarify Claude quick-start auth + initialization path",
-      "draft": false,
-      "category": "docs",
-      "status": "OPEN",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39637,
-      "title": "Consolidate near-duplicate WorkflowListItem and WorkflowStatus structs in pkg/cli",
-      "draft": false,
-      "category": "refactor",
-      "status": "OPEN",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39636,
-      "title": "Add configurable OTLP resource attributes to workflow observability",
+      "title": "Include and pin safe-outputs gh-aw-node image in default container predownload and manifest",
       "draft": false,
       "category": "feature",
       "status": "OPEN",
       "created": "2026-06-16",
-      "otel": true,
-      "labels_applied": [
-        "otel"
-      ],
-      "note": "OTel PR - labeled otel, routed to @mnkeifer"
-    },
-    {
-      "number": 39623,
-      "title": "Clarify github_api_calls provenance and recover snapshot-only core_consumed accounting",
-      "draft": false,
-      "category": "feature",
-      "status": "OPEN",
-      "created": "2026-06-16"
-    },
-    {
-      "number": 39620,
-      "title": "chore: expand pr to issue tracing for impact report mapped outcomes",
-      "draft": false,
-      "category": "chore",
-      "status": "OPEN",
-      "created": "2026-06-16"
+      "additions": 878,
+      "deletions": 517,
+      "changed_files": 262,
+      "labels": ["smoke"],
+      "isCrossRepository": false
     },
     {
       "number": 39540,
@@ -142,83 +46,33 @@
       "category": "feature",
       "status": "DRAFT",
       "created": "2026-06-16",
-      "note": "Persisted from last run"
+      "additions": 201,
+      "deletions": 0,
+      "changed_files": 5,
+      "labels": [],
+      "assignees": ["dsyme"],
+      "reviewers_requested": ["dsyme"],
+      "isCrossRepository": false
     }
-  ],
-  "new_since_last_run": [
-    39655,
-    39654,
-    39653,
-    39652,
-    39651,
-    39650,
-    39644,
-    39643,
-    39640,
-    39639,
-    39638,
-    39637,
-    39636,
-    39623,
-    39620
   ],
   "closed_since_last_run": [
-    39100,
-    39386,
-    39300,
-    39486,
-    39550,
-    39542,
-    39537,
-    39534,
-    39533,
-    39527,
-    39498,
-    39472,
-    39457,
-    39422
+    39639, 39638, 39637, 39636, 39623, 39620,
+    39655, 39654, 39653, 39652, 39651, 39650,
+    39643, 39640
   ],
-  "fork_only_policy": true,
-  "total_prs_triaged": 0,
-  "otel_actions": [
-    {
-      "pr": 39636,
-      "label": "otel",
-      "routed_to": "mnkeifer",
-      "comment_added": true
-    }
-  ],
-  "open_ready_for_review": [
-    39639,
-    39638,
-    39637,
-    39636,
-    39623,
-    39620
-  ],
-  "active_wips": [
-    39654,
-    39653
-  ],
+  "new_since_last_run": [39697],
   "statistics": {
     "by_category": {
-      "feature": 9,
-      "bug": 4,
-      "chore": 1,
-      "docs": 1,
-      "refactor": 1
+      "feature": 2,
+      "chore": 1
     },
     "by_status": {
-      "OPEN": 6,
-      "DRAFT": 10
-    },
-    "by_draft": {
-      "draft": 10,
-      "open": 6
+      "OPEN": 2,
+      "DRAFT": 1
     },
     "resolved_this_run": {
       "closed_or_merged": 14
     }
   },
-  "notes": "16 open agent PRs (all copilot-swe-agent), all branch-based (isCrossRepository=false). 15 new PRs this run, 14 closed/merged since last run. GraphQL API returned HTTP 502 (CI/label status unavailable). OTel PR #39636 labeled and routed to @mnkeifer. Fork-only triage policy -> 0 PRs eligible for formal triage."
+  "notes": "3 open copilot-swe-agent PRs, all branch-based (isCrossRepository=false). Fork-only triage policy -> 0 PRs eligible for formal triage. 14 PRs closed/merged since last run. 1 new PR (#39697 compile CLI args clarification). #39644 still open with smoke label. #39540 still DRAFT."
 }
