@@ -767,15 +767,9 @@ func isGroupConcurrencyQueueEnabled(data *WorkflowData) bool {
 	deprecatedFlag := strings.ToLower(strings.TrimSpace(string(constants.GroupConcurrencyQueueFeatureFlag)))
 
 	if data != nil && data.Features != nil {
-		// Check the preferred flag first
+		// Check both flag names in a single loop for efficiency
 		for key, value := range data.Features {
-			if strings.EqualFold(key, preferredFlag) {
-				return parseGroupConcurrencyQueueFeatureValue(value)
-			}
-		}
-		// Check the deprecated flag for backward compatibility
-		for key, value := range data.Features {
-			if strings.EqualFold(key, deprecatedFlag) {
+			if strings.EqualFold(key, preferredFlag) || strings.EqualFold(key, deprecatedFlag) {
 				return parseGroupConcurrencyQueueFeatureValue(value)
 			}
 		}
