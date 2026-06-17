@@ -258,11 +258,16 @@ func extractRawExpression(expr string) string {
 // Detection steps only run when the detection guard determines there's output to analyze.
 const detectionStepCondition = "always() && steps.detection_guard.outputs.run_detection == 'true'"
 
-// buildDetectionJobSteps builds the threat detection steps to be run in the separate detection job.
-// These steps run after the agent job completes and analyze agent output for threats using the
+// buildDetectionJobSteps builds the threat detection steps using the default agent source job.
+func (c *Compiler) buildDetectionJobSteps(data *WorkflowData) []string {
+	return c.buildDetectionJobStepsForSource(data, string(constants.AgentJobName))
+}
+
+// buildDetectionJobStepsForSource builds the threat detection steps to be run in the separate detection job.
+// These steps run after the source job completes and analyze agent output for threats using the
 // same agentic engine with sandbox.agent and fully blocked network.
-// The detection job downloads the agent artifact to access the output files.
-func (c *Compiler) buildDetectionJobSteps(data *WorkflowData, sourceJobName string) []string {
+// The detection job downloads the source job artifact to access the output files.
+func (c *Compiler) buildDetectionJobStepsForSource(data *WorkflowData, sourceJobName string) []string {
 	threatLog.Print("Building threat detection steps for detection job")
 	if data.SafeOutputs == nil || data.SafeOutputs.ThreatDetection == nil {
 		return nil
@@ -288,7 +293,7 @@ func (c *Compiler) buildDetectionJobSteps(data *WorkflowData, sourceJobName stri
 	}
 
 	// Step 2: Detection guard - determines whether detection should run
-	steps = append(steps, c.buildDetectionGuardStep()...)
+	steps = append(steps, c.buildDetectionGuardStepForSource(sourceJobName)...)
 
 	// Step 3: Clear MCP configuration files so the detection engine runs without MCP servers
 	steps = append(steps, c.buildClearMCPConfigStep()...)
@@ -302,7 +307,7 @@ func (c *Compiler) buildDetectionJobSteps(data *WorkflowData, sourceJobName stri
 	}
 
 	// Step 6: Setup threat detection (github-script)
-	steps = append(steps, c.buildThreatDetectionAnalysisStep(data)...)
+	steps = append(steps, c.buildThreatDetectionAnalysisStepForSource(data, sourceJobName)...)
 
 	// Step 7: Engine execution (AWF, no network)
 	steps = append(steps, c.buildDetectionEngineExecutionStep(data)...)
@@ -374,6 +379,10 @@ func (c *Compiler) buildPullAWFContainersStep(data *WorkflowData) []string {
 // Uses always() to run even if the agent job failed (detection still analyzes whatever output exists).
 // In the separate detection job, output metadata is read from the agent job's outputs.
 func (c *Compiler) buildDetectionGuardStep() []string {
+	return c.buildDetectionGuardStepForSource(string(constants.AgentJobName))
+}
+
+func (c *Compiler) buildDetectionGuardStepForSource(sourceJobName string) []string {
 	return []string{
 		"      - name: Check if detection needed\n",
 		"        id: detection_guard\n",
@@ -539,6 +548,10 @@ func (c *Compiler) buildDetectionTokenUsageSummaryStep(data *WorkflowData) []str
 
 // buildThreatDetectionAnalysisStep creates the main threat analysis step
 func (c *Compiler) buildThreatDetectionAnalysisStep(data *WorkflowData) []string {
+	return c.buildThreatDetectionAnalysisStepForSource(data, string(constants.AgentJobName))
+}
+
+func (c *Compiler) buildThreatDetectionAnalysisStepForSource(data *WorkflowData, sourceJobName string) []string {
 	var steps []string
 
 	// Setup step
@@ -976,7 +989,7 @@ func (c *Compiler) buildDetectionJobForSource(data *WorkflowData, sourceJobName 
 	steps = append(steps, c.buildWorkspaceCheckoutForDetectionStep(data, sourceJobName)...)
 
 	// Add all threat detection steps
-	detectionStepsContent := c.buildDetectionJobSteps(data, sourceJobName)
+	detectionStepsContent := c.buildDetectionJobStepsForSource(data, sourceJobName)
 	steps = append(steps, detectionStepsContent...)
 
 	// Build job outputs

@@ -572,7 +572,61 @@ func (c *Compiler) mergeImportedOnFields(frontmatter map[string]any, workflowDat
 		}
 	}
 
+	if len(importsResult.MergedDiscussionCategories) > 0 {
+		mergeDiscussionCategoriesOnMap(onMap, importsResult.MergedDiscussionCategories)
+		if workflowData != nil && workflowData.ParsedFrontmatter != nil {
+			if workflowData.ParsedFrontmatter.On == nil {
+				workflowData.ParsedFrontmatter.On = make(map[string]any)
+			}
+			mergeDiscussionCategoriesOnMap(workflowData.ParsedFrontmatter.On, importsResult.MergedDiscussionCategories)
+		}
+	}
+
 	return nil
+}
+
+func mergeDiscussionCategoriesOnMap(onMap map[string]any, importedCategories []string) {
+	if onMap == nil || len(importedCategories) == 0 {
+		return
+	}
+	discussionMap, _ := onMap["discussion"].(map[string]any)
+	if discussionMap == nil {
+		discussionMap = make(map[string]any)
+		onMap["discussion"] = discussionMap
+	}
+	seen := make(map[string]bool, len(importedCategories))
+	existingCount := 0
+	if existing, ok := discussionMap["categories"].([]any); ok {
+		existingCount = len(existing)
+	}
+	merged := make([]string, 0, len(importedCategories)+existingCount)
+	appendCategory := func(category string) {
+		if category == "" || seen[category] {
+			return
+		}
+		seen[category] = true
+		merged = append(merged, category)
+	}
+	switch existing := discussionMap["categories"].(type) {
+	case []any:
+		for _, value := range existing {
+			category, ok := value.(string)
+			if !ok {
+				continue
+			}
+			appendCategory(category)
+		}
+	case []string:
+		for _, category := range existing {
+			appendCategory(category)
+		}
+	}
+	for _, category := range importedCategories {
+		appendCategory(category)
+	}
+	if len(merged) > 0 {
+		discussionMap["categories"] = merged
+	}
 }
 
 func ensureOnMap(frontmatter map[string]any) map[string]any {

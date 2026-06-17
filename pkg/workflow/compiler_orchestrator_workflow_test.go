@@ -304,6 +304,42 @@ func TestExtractYAMLSections_NonEmptyRunsOnSlimRenderedSnippet(t *testing.T) {
 	}
 }
 
+func TestMergeImportedOnFields_MergesDiscussionCategories(t *testing.T) {
+	compiler := NewCompiler()
+	frontmatter := map[string]any{
+		"on": map[string]any{
+			"discussion": map[string]any{
+				"categories": []any{"existing"},
+			},
+		},
+	}
+	workflowData := &WorkflowData{ParsedFrontmatter: &FrontmatterConfig{On: map[string]any{}}}
+	importsResult := &parser.ImportsResult{
+		MergedDiscussionCategories: []string{"shared-a", "existing", "shared-b"},
+	}
+
+	err := compiler.mergeImportedOnFields(frontmatter, workflowData, importsResult)
+	require.NoError(t, err)
+
+	onDiscussion := frontmatter["on"].(map[string]any)["discussion"].(map[string]any)
+	assert.Equal(t, []string{"existing", "shared-a", "shared-b"}, onDiscussion["categories"])
+}
+
+func TestMergeImportedOnFields_AddsDiscussionCategoriesWhenMissing(t *testing.T) {
+	compiler := NewCompiler()
+	frontmatter := map[string]any{}
+	workflowData := &WorkflowData{ParsedFrontmatter: &FrontmatterConfig{}}
+	importsResult := &parser.ImportsResult{
+		MergedDiscussionCategories: []string{"general", "feature"},
+	}
+
+	err := compiler.mergeImportedOnFields(frontmatter, workflowData, importsResult)
+	require.NoError(t, err)
+
+	onDiscussion := frontmatter["on"].(map[string]any)["discussion"].(map[string]any)
+	assert.Equal(t, []string{"general", "feature"}, onDiscussion["categories"])
+}
+
 func TestValidateWorkflowEngineSettings_PreservesLegacyErrorOrder(t *testing.T) {
 	compiler := NewCompiler()
 	compiler.strictMode = true

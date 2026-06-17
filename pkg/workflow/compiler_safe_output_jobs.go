@@ -77,7 +77,7 @@ func (c *Compiler) buildSafeOutputsJobs(data *WorkflowData, jobName, markdownPat
 	// Build safe-jobs if configured
 	// Safe-jobs should depend on agent job (always) AND detection job (if threat detection is enabled)
 	// These custom safe-jobs should also be included in the conclusion job's dependencies
-	safeJobNames, err := c.buildSafeJobs(data, threatDetectionEnabled, downstreamMainJobName)
+	safeJobNames, err := c.buildSafeJobsForSource(data, threatDetectionEnabled, downstreamMainJobName)
 	if err != nil {
 		return fmt.Errorf("failed to build safe-jobs: %w", err)
 	}

@@ -49,6 +49,8 @@ type importAccumulator struct {
 	skipRolesSet             map[string]bool
 	skipBots                 []string
 	skipBotsSet              map[string]bool
+	discussionCategories     []string
+	discussionCategoriesSet  map[string]bool
 	skipIfMatch              string
 	skipIfNoMatch            string
 	caches                   []string
@@ -91,12 +93,13 @@ type importAccumulator struct {
 // during deduplication. Slices are left as nil, which is valid for append operations.
 func newImportAccumulator() *importAccumulator {
 	return &importAccumulator{
-		botsSet:      make(map[string]bool),
-		labelsSet:    make(map[string]bool),
-		skipRolesSet: make(map[string]bool),
-		skipBotsSet:  make(map[string]bool),
-		importInputs: make(map[string]any),
-		envSources:   make(map[string]string),
+		botsSet:                 make(map[string]bool),
+		labelsSet:               make(map[string]bool),
+		skipRolesSet:            make(map[string]bool),
+		skipBotsSet:             make(map[string]bool),
+		discussionCategoriesSet: make(map[string]bool),
+		importInputs:            make(map[string]any),
+		envSources:              make(map[string]string),
 	}
 }
 
@@ -422,6 +425,7 @@ func (acc *importAccumulator) extractActivationFields(fm map[string]any, item im
 	acc.mergeBots(fm)
 	acc.mergeSkipRoles(fm)
 	acc.mergeSkipBots(fm)
+	acc.mergeDiscussionCategories(fm)
 	acc.extractActivationSkipMatchFields(fm, item.fullPath)
 	acc.extractActivationGitHubToken(fm, item.fullPath)
 	acc.extractActivationGitHubAppFields(fm, item.fullPath)
@@ -440,6 +444,35 @@ func (acc *importAccumulator) mergeSkipRoles(fm map[string]any) {
 
 func (acc *importAccumulator) mergeSkipBots(fm map[string]any) {
 	mergeJSONStringListField(fm, "skip-bots", "[]", acc.skipBotsSet, &acc.skipBots, extractOnSectionFieldFromMap)
+}
+
+func (acc *importAccumulator) mergeDiscussionCategories(fm map[string]any) {
+	onMap, ok := fm["on"].(map[string]any)
+	if !ok {
+		return
+	}
+	discussionMap, ok := onMap["discussion"].(map[string]any)
+	if !ok {
+		return
+	}
+	categoriesValue, exists := discussionMap["categories"]
+	if !exists {
+		return
+	}
+	categories, ok := categoriesValue.([]any)
+	if !ok {
+		return
+	}
+	for _, category := range categories {
+		categoryStr, ok := category.(string)
+		if !ok || categoryStr == "" {
+			continue
+		}
+		if !acc.discussionCategoriesSet[categoryStr] {
+			acc.discussionCategoriesSet[categoryStr] = true
+			acc.discussionCategories = append(acc.discussionCategories, categoryStr)
+		}
+	}
 }
 
 func mergeJSONStringListField(
@@ -723,6 +756,7 @@ func (acc *importAccumulator) toImportsResult(topologicalOrder []string) *Import
 		MergedBots:                    acc.bots,
 		MergedSkipRoles:               acc.skipRoles,
 		MergedSkipBots:                acc.skipBots,
+		MergedDiscussionCategories:    acc.discussionCategories,
 		MergedSkipIfMatch:             acc.skipIfMatch,
 		MergedSkipIfNoMatch:           acc.skipIfNoMatch,
 		MergedPostSteps:               acc.postStepsBuilder.String(),

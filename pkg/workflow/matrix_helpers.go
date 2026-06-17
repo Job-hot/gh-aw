@@ -1,7 +1,6 @@
 package workflow
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 )
@@ -27,7 +26,7 @@ func matrixArtifactSuffixExpression(data *WorkflowData) string {
 	slices.Sort(keys)
 	var b strings.Builder
 	for _, key := range keys {
-		b.WriteString(fmt.Sprintf("_${{ matrix.%s }}", key))
+		b.WriteString("_${{ matrix." + key + " }}")
 	}
 	return b.String()
 }

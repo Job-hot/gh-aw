@@ -289,6 +289,38 @@ imports:
 	assert.Contains(t, err.Error(), "SHARED_KEY", "Error should mention the conflicting variable name")
 }
 
+func TestDiscussionCategoriesMergedFromImports(t *testing.T) {
+	tmpDir := t.TempDir()
+	sharedDir := filepath.Join(tmpDir, "shared")
+	require.NoError(t, os.MkdirAll(sharedDir, 0755))
+
+	require.NoError(t, os.WriteFile(filepath.Join(sharedDir, "first.md"), []byte(`---
+on:
+  discussion:
+    categories: [general, feature]
+---
+`), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(sharedDir, "second.md"), []byte(`---
+on:
+  discussion:
+    categories: [feature, bug]
+---
+`), 0644))
+
+	mainContent := `---
+imports:
+  - shared/first.md
+  - shared/second.md
+---
+`
+	result, err := ExtractFrontmatterFromContent(mainContent)
+	require.NoError(t, err)
+
+	importsResult, err := ProcessImportsFromFrontmatterWithSource(result.Frontmatter, tmpDir, nil, "", "")
+	require.NoError(t, err)
+	assert.Equal(t, []string{"general", "feature", "bug"}, importsResult.MergedDiscussionCategories)
+}
+
 // TestExtractAllImportFields_BuiltinCacheHit verifies that extractAllImportFields uses the
 // process-level builtin frontmatter cache for builtin files without inputs.
 func TestExtractAllImportFields_BuiltinCacheHit(t *testing.T) {
