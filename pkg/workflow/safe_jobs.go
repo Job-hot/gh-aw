@@ -164,7 +164,6 @@ func (c *Compiler) buildSafeJobsForSource(data *WorkflowData, threatDetectionEna
 		return nil, nil
 	}
 
-
 	safeJobsLog.Printf("Building %d safe-jobs, threatDetectionEnabled=%v", len(data.SafeOutputs.Jobs), threatDetectionEnabled)
 	var safeJobNames []string
 	for jobName, jobConfig := range data.SafeOutputs.Jobs {
