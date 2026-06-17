@@ -373,7 +373,7 @@ Identify merged PRs from `/tmp/gh-aw/agent/objective-impact-report/merged-prs-li
 Before reporting these as human-authored, apply the following filter to identify **likely-agentic PRs** that may appear human due to attribution gaps:
 
 - PR title matches patterns such as `[docs]`, `[linter-miner]`, `[fix]`, `[refactor]`, `[chore]`, or other known bot-prefixes used in this repository.
-- PR author is a bot account (login ending in `[bot]` or known agentic accounts).
+- PR author is a bot account (login ending in the literal suffix ``[bot]`` — e.g. ``dependabot[bot]`` — or known agentic accounts).
 
 Report likely-agentic PRs in a separate sub-table labelled **"Likely agentic (attribution gap)"** rather than counting them in the human total. This prevents attribution gaps from inflating the human work count. Explicitly note how many PRs were reclassified.
 
