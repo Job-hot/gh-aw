@@ -62,6 +62,9 @@
 #   - ghcr.io/github/github-mcp-server:v1.3.0@sha256:5c83359327a0bacc3d34db730bea6557d39d341cee0bf6c58c9a896e33150e80
 #   - grafana/mcp-grafana@sha256:60a4e3a417a69eeb864a72052c53b4aa4466ff3577d6ef9bacc671f4b77d7090
 #   - node:lts-alpine@sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14
+#
+# GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.
+# To disable for GHES, add: features.concurrency-queue: false
 
 name: "Workflow Portfolio Analyst"
 on:

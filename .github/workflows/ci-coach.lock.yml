@@ -62,6 +62,9 @@
 #   - ghcr.io/github/gh-aw-mcpg:v0.3.26@sha256:d3b03f54eee3a8176818c9a52087623e45b7f644a28814337fcc0838e2534490
 #   - ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b
 #   - ghcr.io/github/github-mcp-server:v1.3.0@sha256:5c83359327a0bacc3d34db730bea6557d39d341cee0bf6c58c9a896e33150e80
+#
+# GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.
+# To disable for GHES, add: features.concurrency-queue: false
 
 name: "CI Optimization Coach"
 on:

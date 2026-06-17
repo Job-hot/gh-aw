@@ -104,6 +104,9 @@
 #   - mcp/notion@sha256:4de8eb0de33402fcbd3740b4f4039918e4893155c7ea833c7a0c472001b88367
 #   - node:lts-alpine@sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14
 #   - python:alpine@sha256:6f873e340e6786787a632c919ecfb1d2301eb33ccfbe9f0d0add16cbc0892116
+#
+# GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.
+# To disable for GHES, add: features.concurrency-queue: false
 
 name: "MCP Inspector Agent"
 on:

@@ -59,6 +59,9 @@
 #   - ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b
 #   - ghcr.io/github/github-mcp-server:v1.3.0@sha256:5c83359327a0bacc3d34db730bea6557d39d341cee0bf6c58c9a896e33150e80
 #   - mcp/ast-grep:latest@sha256:5fc3f2e9dcf2c019e92662f608b8d89e12134ed6d91e6f5461de6efd506a1e72
+#
+# GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.
+# To disable for GHES, add: features.concurrency-queue: false
 
 name: "Go Pattern Detector"
 on:

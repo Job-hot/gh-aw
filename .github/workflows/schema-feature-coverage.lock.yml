@@ -57,6 +57,9 @@
 #   - ghcr.io/github/gh-aw-firewall/squid:0.27.4@sha256:87979038897e40caed22245b64d1daa796390d2dca289b99d3d1174c85740af8
 #   - ghcr.io/github/gh-aw-mcpg:v0.3.26@sha256:d3b03f54eee3a8176818c9a52087623e45b7f644a28814337fcc0838e2534490
 #   - ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b
+#
+# GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.
+# To disable for GHES, add: features.concurrency-queue: false
 
 name: "Schema Feature Coverage Checker"
 on:
