@@ -207,13 +207,19 @@ Create one issue titled:
 Impact Efficiency Report - YYYY-MM-DD
 ```
 
+Use **progressive disclosure** for the report body. Place the Executive Summary first as plain text (no collapsible wrapper). Wrap every other section individually in an HTML `<details><summary>` block so readers can expand only what they need. Use descriptive summary labels that include the section's most important number where possible (e.g. `📋 Summary — 3 accepted outcomes, 43,055 AIC, IE 0.00476`, `🎯 Agentic Work by Objective — top: bug (170 value)`, `📉 Data Quality — 2 gaps`).
+
 The report must include:
 
 ### Executive Summary
 
 Write 2–4 sentences that directly answer: *What did the agent work on, what was the highest-impact agentic work, which workflows contributed most to that impact, how efficiently were AIC tokens spent, and what high-impact work was delivered outside agentic workflows (if any)?* Highlight the most impactful objective categories, the workflows contributing the most value, and any significant gaps (e.g., large AIC spend with no mapped objective value).
 
+The Executive Summary must **not** be wrapped in a `<details>` block — it is always visible.
+
 ### Summary
+
+*(Wrap this section in `<details><summary>📋 Summary — …</summary>…</details>`.)*
 
 | Metric | Value |
 |---|---:|
@@ -233,13 +239,15 @@ Include:
 
 ### Agentic Work by Objective
 
+*(Wrap this section in `<details><summary>🎯 Agentic Work by Objective — …</summary>…</details>`.)*
+
 Group all **accepted, mapped** outcomes by objective category (the highest-value objective label from the mapping). For each category, list:
 
 - Objective category name and its mapping value
 - Number of accepted outcomes in this category
 - Total outcome value contributed
-- AIC consumed by outcomes in this category
-- Impact Efficiency for this category (total outcome value / AIC consumed)
+- AIC consumed by outcomes in this category — use per-workflow AIC from `aic-by-workflow.json` only for workflows that are attributed to outcomes in this category; if attribution is unavailable, show `—` (not `N/A`) and add a note that workflow attribution is required to compute per-category AIC
+- Impact Efficiency for this category (total outcome value / AIC consumed) — show `—` if AIC is unknown for this category
 - Representative examples (up to 3 linked outcomes)
 
 Sort categories by total outcome value descending. Also call out separately which category consumed the **most AIC** (highest denominator cost), so readers can see where budget was spent regardless of value delivered.
@@ -247,6 +255,8 @@ Sort categories by total outcome value descending. Also call out separately whic
 This section should make the most impactful work in the repository obvious at a glance.
 
 ### Which Workflows Drove That Impact
+
+*(Wrap this section in `<details><summary>⚙️ Which Workflows Drove That Impact — …</summary>…</details>`.)*
 
 Group all analyzed outcomes by the workflow that directly produced them. For each workflow, list:
 
@@ -269,12 +279,16 @@ If any analyzed outcomes cannot be attributed to a workflow, report an unattribu
 
 ### Top outcomes by outcome value
 
+*(Wrap this section in `<details><summary>🏆 Top Outcomes by Value — top outcome value: …</summary>…</details>`.)*
+
 | Outcome | Workflow | Type | Root / Associated Objective | Objective Value | Outcome Value |
 |---|---|---|---|---:|---:|
 
 List the top 15 outcomes with highest Outcome Value. Include a link to the PR or issue.
 
 ### Unmapped outcomes
+
+*(Wrap this section in `<details><summary>❓ Unmapped Outcomes — N unmapped</summary>…</details>`. If there are no unmapped outcomes, use the summary label `❓ Unmapped Outcomes — none`.)*
 
 | Outcome | Type | Reason objective was not mapped |
 |---|---|---|
@@ -283,12 +297,18 @@ Only include outcomes that were in scope (linked-issue PRs and safe-output issue
 
 ### Interpretation
 
+*(Wrap this section in `<details><summary>💡 Interpretation</summary>…</details>`.)*
+
 Compare:
 
 - accepted outcome count alone
 - Impact Efficiency
 
 Explain which one better reflects meaningful delivered value relative to cost.
+
+Also compute and report a **scope-adjusted IE**: using only AIC from workflows that produced at least one PR or safe-output outcome in the analysis window (i.e., workflows listed in `aic-by-workflow.json` whose name matches any workflow that attributed at least one analyzed outcome). This gives a fairer picture of efficiency for outcome-producing workflows. Present both the full-denominator IE and the scope-adjusted IE; label them clearly.
+
+Do **not** describe IE as "artificially" depressed. Instead, explain concretely what the denominator includes (all workflows, including reporting and analysis workflows that produced no PR outcomes), and present the scope-adjusted IE as the supplemental view.
 
 Call out the most significant findings:
 
@@ -297,6 +317,8 @@ Call out the most significant findings:
 - which workflows consumed AIC with little or no mapped value
 
 ### Data quality
+
+*(Wrap this section in `<details><summary>📊 Data Quality — N issues</summary>…</details>`. Count the number of ⚠️ and ❌ items and use that count in the summary label.)*
 
 Mention missing or weak links in:
 
@@ -311,9 +333,20 @@ If AI Credits are unavailable, still produce the delivered-value analysis and cl
 
 ### Human Work
 
+*(Wrap this section in `<details><summary>👤 Human Work — N merged PRs</summary>…</details>`.)*
+
 This section is independent of AIC and the agentic efficiency analysis above. It captures pull requests merged in the analysis window that could not be attributed to any GitHub Agentic Workflow run in the deterministic logs.
 
-Identify merged PRs from `/tmp/gh-aw/agent/objective-impact-report/merged-prs-linked.json` that have **no** matching run in `/tmp/gh-aw/agent/objective-impact-report/workflow-logs.json` (i.e., PRs whose author or head branch cannot be linked to any workflow run that produced an outcome). Treat these as human-authored contributions for reporting, but explicitly note that missing log coverage or attribution gaps can inflate this count.
+Identify merged PRs from `/tmp/gh-aw/agent/objective-impact-report/merged-prs-linked.json` that have **no** matching run in `/tmp/gh-aw/agent/objective-impact-report/workflow-logs.json` (i.e., PRs whose author or head branch cannot be linked to any workflow run that produced an outcome).
+
+Before reporting these as human-authored, apply the following filter to identify **likely-agentic PRs** that may appear human due to attribution gaps:
+
+- PR title matches patterns such as `[docs]`, `[linter-miner]`, `[fix]`, `[refactor]`, `[chore]`, or other known bot-prefixes used in this repository.
+- PR author is a bot account (login ending in `[bot]` or known agentic accounts).
+
+Report likely-agentic PRs in a separate sub-table labelled **"Likely agentic (attribution gap)"** rather than counting them in the human total. This prevents attribution gaps from inflating the human work count. Explicitly note how many PRs were reclassified.
+
+For the remaining PRs classified as human-authored, treat them as human contributions for reporting. Explicitly note that missing log coverage or attribution gaps can still inflate this count.
 
 For each human-authored merged PR that has a linked closing issue (non-empty `linked_issue_numbers`), use precomputed objective fields from `merged-prs-with-objective.json` when available; otherwise resolve issue labels from linked issues and apply `objective-mapping.json`. Group results by objective category (highest-value mapped label) and report:
 
@@ -324,9 +357,10 @@ For each human-authored merged PR that has a linked closing issue (non-empty `li
 
 Also report:
 
-- Total number of human-authored merged PRs identified in the analysis window
-- Number with a linked closing issue vs. without
-- Number mapped to an objective vs. unmapped
+- Total number of merged PRs in the dataset
+- Of those: likely-agentic (attribution gap), confirmed-human
+- Of confirmed-human: with linked closing issue vs. without
+- Of confirmed-human with linked issue: mapped to objective vs. unmapped
 
 Sort categories by total objective value descending. Do **not** compute AIC or Impact Efficiency for this section — human work has no associated AI Credits cost.
 
