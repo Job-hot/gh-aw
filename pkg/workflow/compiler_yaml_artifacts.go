@@ -25,7 +25,7 @@ func (c *Compiler) generateUploadAccessLogs(yaml *strings.Builder, tools map[str
 // This consolidates multiple individual upload steps into one, improving workflow readability
 // and reliability. The step always runs (even on cancellation) and ignores missing files.
 // prefix is prepended to the artifact name to avoid clashes in workflow_call context.
-func (c *Compiler) generateUnifiedArtifactUpload(yaml *strings.Builder, paths []string, prefix string) {
+func (c *Compiler) generateUnifiedArtifactUpload(yaml *strings.Builder, paths []string, prefix string, suffix string) {
 	if len(paths) == 0 {
 		compilerYamlArtifactsLog.Print("No paths to upload, skipping unified artifact upload")
 		return
@@ -33,7 +33,7 @@ func (c *Compiler) generateUnifiedArtifactUpload(yaml *strings.Builder, paths []
 
 	compilerYamlArtifactsLog.Printf("Generating unified artifact upload with %d paths", len(paths))
 
-	artifactName := prefix + "agent"
+	artifactName := prefix + "agent" + suffix
 
 	// Record the unified upload so the step-order validator can verify it comes after
 	// secret redaction, covering all collected paths in a single check.

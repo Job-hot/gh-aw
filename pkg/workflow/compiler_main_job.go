@@ -419,6 +419,17 @@ func (c *Compiler) buildMainJob(data *WorkflowData, activationJobCreated bool) (
 		steps = append(steps, c.generateScriptModeCleanupStep())
 	}
 
+	var strategyYAML string
+	if hasAgentMatrix(data) {
+		formattedStrategy, err := formatIndentedYAMLField("strategy", map[string]any{
+			"matrix": data.Matrix.StrategyMatrix,
+		}, false)
+		if err != nil {
+			return nil, fmt.Errorf("failed to build matrix strategy for agent job: %w", err)
+		}
+		strategyYAML = formattedStrategy
+	}
+
 	job := &Job{
 		Name:        string(constants.AgentJobName),
 		If:          jobCondition,
@@ -426,6 +437,7 @@ func (c *Compiler) buildMainJob(data *WorkflowData, activationJobCreated bool) (
 		Environment: c.indentYAMLLines(data.Environment, "    "),
 		Container:   c.indentYAMLLines(data.Container, "    "),
 		Services:    c.indentYAMLLines(data.Services, "    "),
+		Strategy:    c.indentYAMLLines(strategyYAML, "    "),
 		Permissions: c.indentYAMLLines(permissions, "    "),
 		Concurrency: c.indentYAMLLines(agentConcurrency, "    "),
 		Env:         env,

@@ -153,11 +153,17 @@ func (c *Compiler) parseSafeJobsConfig(jobsMap map[string]any) map[string]*SafeJ
 	return result
 }
 
-// buildSafeJobs creates custom safe-output jobs defined in SafeOutputs.Jobs
+// buildSafeJobs creates custom safe-output jobs defined in SafeOutputs.Jobs.
 func (c *Compiler) buildSafeJobs(data *WorkflowData, threatDetectionEnabled bool) ([]string, error) {
+	return c.buildSafeJobsForSource(data, threatDetectionEnabled, string(constants.AgentJobName))
+}
+
+// buildSafeJobsForSource creates safe-jobs using a specific upstream source job for output routing.
+func (c *Compiler) buildSafeJobsForSource(data *WorkflowData, threatDetectionEnabled bool, sourceJobName string) ([]string, error) {
 	if data.SafeOutputs == nil || len(data.SafeOutputs.Jobs) == 0 {
 		return nil, nil
 	}
+
 
 	safeJobsLog.Printf("Building %d safe-jobs, threatDetectionEnabled=%v", len(data.SafeOutputs.Jobs), threatDetectionEnabled)
 	var safeJobNames []string
@@ -175,8 +181,11 @@ func (c *Compiler) buildSafeJobs(data *WorkflowData, threatDetectionEnabled bool
 			job.DisplayName = jobConfig.Name
 		}
 
-		// Safe-jobs depend on agent job
-		job.Needs = append(job.Needs, string(constants.AgentJobName))
+		// Safe-jobs depend on the source safe-output routing job.
+		job.Needs = append(job.Needs, sourceJobName)
+		if sourceJobName != string(constants.AgentJobName) {
+			job.Needs = append(job.Needs, string(constants.AgentJobName))
+		}
 
 		// When threat detection is enabled, safe-jobs also depend on the detection job
 		// so that the condition can gate on needs.detection.result == 'success'
@@ -210,7 +219,7 @@ func (c *Compiler) buildSafeJobs(data *WorkflowData, threatDetectionEnabled bool
 		// Set if condition - combine safe output type check with user-provided condition
 		// Custom safe jobs should only run if the agent output contains the job name (tool call)
 		// Use normalized job name to match the underscore format in output_types
-		safeOutputCondition := BuildSafeOutputType(normalizedJobName) // min=0 means check for the tool in output_types
+		safeOutputCondition := BuildSafeOutputTypeForJob(normalizedJobName, sourceJobName) // min=0 means check for the tool in output_types
 
 		// When detection is expression-controlled the detection job may be skipped at runtime.
 		// Wrap the condition with always() + detection-passed so the safe-job still runs when

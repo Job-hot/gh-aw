@@ -2290,6 +2290,18 @@
       "description": "Custom name for workflow runs that appears in the GitHub Actions interface (supports GitHub expressions like ${{ github.event.issue.title }})",
       "examples": ["Deploy to ${{ github.event.inputs.environment }}", "Build #${{ github.run_number }}"]
     },
+    "matrix": {
+      "type": "object",
+      "description": "Top-level agent matrix configuration. Fields map to jobs.<agent>.strategy.matrix syntax. Supports gh-aw extension field 'safe-outputs' to control judge merge policy.",
+      "properties": {
+        "safe-outputs": {
+          "type": "string",
+          "enum": ["select-first", "concat-all"],
+          "description": "Merge strategy used by the judge job for matrix safeoutputs."
+        }
+      },
+      "additionalProperties": true
+    },
     "jobs": {
       "type": "object",
       "description": "Groups together all the jobs that run in the workflow",

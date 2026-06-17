@@ -544,7 +544,7 @@ func (c *Compiler) buildSafeOutputsJobFromParts(
 	agentNotSkipped := BuildAnd(
 		&NotNode{Child: BuildFunctionCall("cancelled")},
 		BuildNotEquals(
-			BuildPropertyAccess(fmt.Sprintf("needs.%s.result", constants.AgentJobName)),
+			BuildPropertyAccess(fmt.Sprintf("needs.%s.result", mainJobName)),
 			BuildStringLiteral("skipped"),
 		),
 	)
@@ -565,6 +565,9 @@ func (c *Compiler) buildSafeOutputsJobFromParts(
 	// Build dependencies — safe_outputs depends on agent; when threat detection is enabled it also
 	// depends on the detection job (so that detection_success is available).
 	needs := []string{mainJobName}
+	if mainJobName != string(constants.AgentJobName) {
+		needs = append(needs, string(constants.AgentJobName))
+	}
 	if threatDetectionEnabled {
 		needs = append(needs, string(constants.DetectionJobName))
 		consolidatedSafeOutputsJobLog.Print("Added detection job dependency to safe_outputs job")
