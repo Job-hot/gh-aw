@@ -1,40 +1,40 @@
 {
-  "total_runs": 38,
-  "total_findings": 281,
-  "total_tasks": 76,
-  "avg_success_score": 8.78,
-  "last_run": "2026-06-16",
-  "serena_lsp": "23 tools stable R4-38. activate_project --project warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'. SHALLOW CLONE: detect linter adds via main.go registry-count delta + doc-lag. R37(06-15) memory NOT committed -> ALWAYS gh api issues since last_run before strategy.",
+  "total_runs": 39,
+  "total_findings": 287,
+  "total_tasks": 78,
+  "avg_success_score": 8.79,
+  "last_run": "2026-06-17",
+  "serena_lsp": "23 tools stable R4-39. activate_project --project warm. find_symbol broad 70s+ (prefer Grep). Receiver methods need '(*Type).method'. SHALLOW CLONE: detect linter adds via main.go registry-count delta + doc-lag. ALWAYS gh api issues since last_run BEFORE strategy (R37 phantom recurred).",
   "open_issues": {
-    "#38281/#38282": "execcommand precision FP + enforce. OPEN 6d. Complex control-flow=slow. DO NOT REFILE; if 7+d noop/report.",
-    "#38787": "doc-sync. RESOLVED-IN-CODE (doc.go now 'All 29' synced) but issue OPEN. DO NOT REFILE.",
-    "#38788": "hardcodedfilepath hasFormatVerb FP (misses %05d/width/flag+9 verbs). OPEN 4d. Single-file.",
-    "#38789": "ctxbackground syntactic ident.Name=='context' FP/FN. Fix=ObjectOf->PkgName->Path(). OPEN 4d.",
-    "#39180": "timeafterleak enforce. CONVERSION LANDED (-timeafterleak in cgo.yml:1123) but issue OPEN. DO NOT REFILE.",
+    "#38281/#38282": "execcommand precision FP + enforce. OPEN 7d+. Complex control-flow. DO NOT REFILE; noop/report if dead.",
+    "#38787": "doc-sync. RESOLVED-IN-CODE (doc.go 'All 29' synced) but issue OPEN. DO NOT REFILE.",
+    "#38788": "hardcodedfilepath hasFormatVerb FP (misses %05d/width/flag+9 verbs). OPEN. Single-file.",
+    "#38789": "ctxbackground syntactic ident.Name=='context' FP/FN. Fix=ObjectOf->PkgName->Path(). OPEN. SAME class as sg39a2.",
+    "#39180": "timeafterleak enforce. LANDED (cgo.yml:1123) but issue OPEN. DO NOT REFILE.",
     "#39181": "timeafterleak stored-channel FN (timer:=time.After(d);<-timer in loop). Alias-tracking. OPEN.",
-    "#39323/#39324": "timesleepnocontext precision(defer-cleanup FP mcp_inspect.go:138)+enforce. 06-15 run NOT MINE. DO NOT REFILE.",
-    "sg38a1_R38": "ssljson scene_id graph-integrity FN: SSLStep.SceneID(:61) parsed,19 prod uses,never validated. Add Rule 8.",
-    "sg38a2_R38": "ssljson unique-IDs gap: map[string]bool(:96-103) dedups dups; spec 'unique IDs' rule unimplemented. Latent."
+    "#39323/#39324": "timesleepnocontext precision(defer-cleanup FP)+enforce. 06-15 run NOT mine. DO NOT REFILE.",
+    "#39493_R38": "ssljson scene_id graph-integrity FN (SSLStep.SceneID:61 never validated). OPEN+UNFIXED-in-code.",
+    "#39494_R38": "ssljson unique-IDs gap (map[string]bool:96 dedups dups). OPEN+UNFIXED. Latent.",
+    "sg39a1_R39": "uncheckedtypeassertion comma-ok FP: safe-form only checks AssignStmt parent (:76-82); misses ValueSpec `var v,ok=x.(T)` + ParenExpr. CI-enforced. POSTED.",
+    "sg39a2_R39": "regexpcompileinfunction syntactic ident.Name=='regexp' (:81) no TypesInfo -> FN alias-import, FP shadow. Fix per sortslice #38029. CI-enforced. POSTED."
   },
-  "do_not_refile": "ossetenv, contextcancelnotdeferred, fileclosenotdeferred, seenmapbool(#36406), sortslice, execcommand(#38281/2 open6d), hardcodedfilepath(#38788), ctxbackground(#38789), doc-sync(#38787 resolved-in-code), httpnoctx(#39016/17 landed), timeafterleak enforce(#39180 landed)+FN(#39181 open), timesleepnocontext(#39323/4 open, NOT mine).",
+  "do_not_refile": "ossetenv, contextcancelnotdeferred, fileclosenotdeferred, seenmapbool(#36406), sortslice(#38029 landed), execcommand(#38281/2 open7d+), hardcodedfilepath(#38788), ctxbackground(#38789), doc-sync(#38787 resolved-in-code), httpnoctx(#39016/17 landed), timeafterleak(#39180 landed,#39181 FN open), timesleepnocontext(#39323/4 open NOT mine), ssljson(#39493/4 open R38), uncheckedtypeassertion(#sg39a1), regexpcompileinfunction(#sg39a2).",
   "patterns": {
-    "phantom_issue_reconcile": "RECURRED R38: R37(06-15) created #39323/4 but never committed memory. ALWAYS gh api issues?labels=sergo&state=all&sort=created for issues since last_run BEFORE strategy; reconstruct missed runs.",
-    "impl_narrower_than_own_spec": "STRONGEST land-arg (R38 ssljson). When linter embeds/references its OWN spec, diff impl vs that text. ssljson .github/skills/ssl/ssl.json:150 lists Pass-4 rules ('unique IDs','graph integrity')->2 unimplemented=2 spec-backed issues. Authority=repo's own artifact.",
-    "parsed_but_unused_field": "Struct field decoded from JSON/AST that no validation rule consumes = asymmetric gap. ssljson SSLStep.SceneID validated nowhere while every other cross-ref is.",
-    "map_dedup_hides_duplicates": "Lookup sets as map[string]bool silently collapse dup keys->uniqueness unenforceable. Fix: if m[k]{report}; m[k]=true.",
-    "new_linter_precision_audit": "Per new linter: (1)detect type-identity vs syntactic; (2)ctx/control-flow/graph precision; (3)completeness vs Doc/embedded-spec. STRONGEST=impl narrower than own spec OR real prod TP sites.",
-    "enforce_readiness_run_on_prod": "PROVEN R35-37: grep prod for pattern->TP sites=enforce issue (httpnoctx #39016, timeafterleak #39180, timesleepnocontext #39324 all landed/posted). Append flag cgo.yml:1123 zero-vio; convert first if non-zero.",
-    "syntactic_stdlib_match": "ident.Name=='<pkg>' w/o TypesInfo->FP(shadow)+FN(alias). Correct: ObjectOf->*types.PkgName->Imported().Path(). ctxbackground:86 still syntactic(#38789).",
-    "alias_intermediate_var_FN": "RECURRING land: gate on IMMEDIATE-parent AST shape misses intermediate-var. lenstringzero#37741, tolowerequalfold#37492, timeafterleak#39181. Fix=follow var by object identity.",
-    "new_linter_doc_lag": "R34-37 recurring; R38 RESOLVED doc.go synced 29/29. Check main.go count vs doc.go 'All N'+bullets vs spec_test documentedAnalyzers() vs README.",
-    "ci_enforce_14": "cgo.yml:1123 LINTER_FLAGS R38=14 (+timeafterleak): errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion fmterrorfnoverbs tolowerequalfold httpnoctx timeafterleak. NOT enforced: ssljson, timesleepnocontext, execcommand, ctxbackground, hardcodedfilepath, lenstringzero.",
-    "team_closes_fast": "SIMPLE PRs land 1-2d (httpnoctx <1d). COMPLEX linger (execcommand 6d). Issues NOT always auto-closed on land (#39180 landed-but-open)."
+    "phantom_issue_reconcile": "ALWAYS gh api issues?labels=sergo&state=all&sort=created&per_page=20 BEFORE strategy; reconstruct missed runs. R37 created #39323/4 w/o committing memory.",
+    "syntactic_stdlib_match": "STRONGEST recurring land-arg. ident.Name=='<pkg>' w/o TypesInfo -> FP(shadow var named pkg)+FN(alias import). Correct: pass.TypesInfo.ObjectOf(ident).(*types.PkgName).Imported().Path()=='<pkg>'. LANDED: sortslice #38029 (template sortslice.go:58-67). OPEN same-class: ctxbackground #38789, regexpcompileinfunction sg39a2(R39). astutil.go:72 has fmt-equiv helper.",
+    "parent-shape-too-narrow": "R39 land-arg (uncheckedtypeassertion sg39a1). Linter gates safe/unsafe on ONE direct-parent AST type (AssignStmt) but the safe construct also appears as ValueSpec (`var v,ok=x.(T)`)/ParenExpr-wrapped. Enumerate ALL parent shapes of the safe form; unwrap ParenExpr. Same family as alias_intermediate_var_FN.",
+    "impl_narrower_than_own_spec": "R38 ssljson. When linter embeds/references its OWN spec, diff impl vs that text (.github/skills/ssl/ssl.json:150 Pass-4 rules -> #39493/#39494).",
+    "ci_enforce_strengthens_FP": "An FP in a CI-ENFORCED linter is a build-blocker => strongest impact arg. Verify enforcement at .github/workflows/cgo.yml:1123 LINTER_FLAGS before claiming.",
+    "alias_intermediate_var_FN": "Gate on IMMEDIATE-parent AST shape misses intermediate var. lenstringzero#37741, tolowerequalfold#37492, timeafterleak#39181. Fix=follow var by object identity.",
+    "enforce_readiness_run_on_prod": "grep prod for pattern->TP sites=enforce issue (httpnoctx#39016, timeafterleak#39180, timesleepnocontext#39324 landed/posted). Append flag cgo.yml:1123 if zero-vio; convert first if non-zero.",
+    "map_dedup_hides_duplicates": "map[string]bool lookup sets silently collapse dup keys->uniqueness unenforceable (ssljson#39494). Fix: if m[k]{report}; m[k]=true.",
+    "team_closes_fast": "SIMPLE single-file PRs land 1-2d (httpnoctx <1d). COMPLEX control-flow linger (execcommand 7d+). Issues NOT always auto-closed on land (#39180 landed-but-open)."
   },
-  "linters_R38": {
+  "ci_enforce_14": "cgo.yml:1123 LINTER_FLAGS (14): errstringmatch panicinlibrarycode manualmutexunlock osexitinlibrary rawloginlib regexpcompileinfunction fprintlnsprintf strconvparseignorederror jsonmarshalignoredeerror uncheckedtypeassertion fmterrorfnoverbs tolowerequalfold httpnoctx timeafterleak. NOT enforced: ssljson, timesleepnocontext, execcommand, ctxbackground, hardcodedfilepath, lenstringzero, sortslice, seenmapbool, errorfwrapv, excessivefuncparams, largefunc, contextcancelnotdeferred, fileclosenotdeferred, ossetenvlibrary, errormessage, osexitinlibrary(IS in), jsonmarshalignoredeerror(IS in).",
+  "linters_R39": {
     "total_registered": 29,
-    "newest": "ssljson(29th, validates .github/skills/*/ssl.json vs SSL Pass-4 enum+graph, anchor-pkg-once CLEAN). R36 timeafterleak(28th). R35 httpnoctx(27th). R34 hardcodedfilepath(25th),timesleepnocontext(26th).",
-    "doc_status": "SYNCED 29/29: doc.go 'All 29'=main.go=spec_test documentedAnalyzers(). #38787 resolved-in-code.",
-    "next_candidates_R39": "(1)reconcile sg38a1/a2 posted+landing (ssljson title-regex); (2)ssljson deeper: empty-required-id(scene/step id=''), entry_scene='' not flagged(Rule1 guard !=''), unreachable-scene/terminal-reachability graph rule, enforce-readiness(-ssljson? 4 prod files valid under current rules); (3)reverify #38281/2(7d->noop if dead),#38788/9,#39181,#39323/4; (4)watch 30th linter main.go delta; (5)timeafterleak Reset/Stop-completeness. Avoid complex control-flow."
+    "audited_so_far": "ssljson(#39493/4) timeafterleak(#39180/1) httpnoctx timesleepnocontext hardcodedfilepath ctxbackground execcommand sortslice lenstringzero tolowerequalfold seenmapbool uncheckedtypeassertion(R39 sg39a1) regexpcompileinfunction(R39 sg39a2).",
+    "next_candidates_R40": "(1) reverify sg39a1/a2 landing (small single-file, expect 1-2d); (2) FRESH never-audited linters: manualmutexunlock(207), errorfwrapv(207), excessivefuncparams(72 threshold), panicinlibrarycode, rawloginlib, strconvparseignorederror(88), fprintlnsprintf, fmterrorfnoverbs, errstringmatch, jsonmarshalignoredeerror, osexitinlibrary, ossetenvlibrary, manualmutexunlock; (3) apply syntactic_stdlib_match probe to each (any ident.Name==literal-pkg w/o TypesInfo); (4) reverify #38281/2(dead?),#38788/9,#39181,#39323/4,#39493/4 landing; (5) watch 30th linter main.go delta. Prefer single-file precision over complex control-flow."
   },
-  "repo_context": "pkg/: ~917 prod .go. 29 analyzer subpkgs (ssljson=skill-artifact validator not Go-pattern) + internal/astutil+filecheck+nolint. ssljson validates .github/skills/{reporting,jqschema,error-messages,ssl}/ssl.json (4 files,19 scene_id). Largest compiler_types.go 59KB, forecast.go 52KB."
+  "repo_context": "pkg/: ~920 prod .go (R39 count). 29 analyzer subpkgs (ssljson=skill-artifact validator) + internal/astutil+filecheck+nolint. Largest compiler_types.go 59KB, forecast.go 52KB. Issue creation MUST use Write tool for JSON (bash heredoc with {+quotes is sandbox-blocked)."
 }
