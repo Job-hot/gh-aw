@@ -306,7 +306,9 @@ Compare:
 
 Explain which one better reflects meaningful delivered value relative to cost.
 
-Also compute and report a **scope-adjusted IE**: using only AIC from workflows that produced at least one PR or safe-output outcome in the analysis window (i.e., workflows listed in `aic-by-workflow.json` whose name matches any workflow that attributed at least one analyzed outcome). This gives a fairer picture of efficiency for outcome-producing workflows. Present both the full-denominator IE and the scope-adjusted IE; label them clearly.
+Also compute and report a **scope-adjusted IE** when workflow attribution is available: use only AIC from workflows that are attributed to at least one PR or safe-output outcome in the analysis window. If no analyzed outcomes can be attributed to a workflow, show scope-adjusted IE as `—` and explain that workflow attribution is required to compute it.
+
+Present both the full-denominator IE and the scope-adjusted IE; label them clearly.
 
 Do **not** describe IE as "artificially" depressed. Instead, explain concretely what the denominator includes (all workflows, including reporting and analysis workflows that produced no PR outcomes), and present the scope-adjusted IE as the supplemental view.
 
