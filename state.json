@@ -5,8 +5,8 @@
       "yes": 13
     },
     "subagent_model": {
-      "large": 13,
-      "small": 12
+      "large": 12,
+      "small": 13
     }
   },
   "runs": [
@@ -203,11 +203,11 @@
       }
     },
     {
-      "run_id": "27715406155",
-      "timestamp": "2026-06-17T19:49:49.774Z",
+      "run_id": "27715346126",
+      "timestamp": "2026-06-17T19:49:43.554Z",
       "assignments": {
         "caveman": "yes",
-        "subagent_model": "large"
+        "subagent_model": "small"
       }
     }
   ]
