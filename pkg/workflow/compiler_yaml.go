@@ -270,12 +270,12 @@ func (c *Compiler) generateWorkflowHeader(yaml *strings.Builder, data *WorkflowD
 		fmt.Fprintf(yaml, "# Manual approval required: environment '%s'\n", cleanManualApproval)
 	}
 
-	// Add concurrency-queue hint when the feature is enabled (helps GHES users)
+	// Add group-concurrency-queue hint when the feature is enabled (helps GHES users)
 	// Only show this comment when the workflow will actually generate queue: max blocks
 	if isGroupConcurrencyQueueEnabled(data) && willGenerateConcurrencyBlocks(data) {
 		yaml.WriteString("#\n")
 		yaml.WriteString("# GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.\n")
-		yaml.WriteString("# To disable for GHES, add: features.concurrency-queue: false\n")
+		yaml.WriteString("# To disable for GHES, add: features.group-concurrency-queue: false\n")
 	}
 
 	yaml.WriteString("\n")

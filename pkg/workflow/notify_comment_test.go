@@ -972,22 +972,6 @@ func TestConclusionJobConcurrencyGroup(t *testing.T) {
 			expectedGroup:     "gh-aw-conclusion-my-workflow",
 		},
 		{
-			name:              "queue can be disabled with shorter flag name",
-			workflowID:        "my-workflow",
-			features:          map[string]any{"concurrency-queue": false},
-			expectConcurrency: true,
-			expectQueue:       false,
-			expectedGroup:     "gh-aw-conclusion-my-workflow",
-		},
-		{
-			name:              "queue can be disabled with shorter flag name as string",
-			workflowID:        "my-workflow",
-			features:          map[string]any{"concurrency-queue": "false"},
-			expectConcurrency: true,
-			expectQueue:       false,
-			expectedGroup:     "gh-aw-conclusion-my-workflow",
-		},
-		{
 			name:              "empty string feature value keeps queue enabled",
 			workflowID:        "my-workflow",
 			features:          map[string]any{"group-concurrency-queue": ""},

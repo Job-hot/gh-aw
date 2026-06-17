@@ -760,16 +760,13 @@ func buildDailyAICUsageCacheSteps(data *WorkflowData, pinAction func(string) str
 
 // isGroupConcurrencyQueueEnabled reports whether compiler-generated concurrency groups
 // should include queue: max. The feature is enabled by default and can be disabled
-// with features.concurrency-queue: false (or the deprecated features.group-concurrency-queue: false).
+// with features.group-concurrency-queue: false.
 func isGroupConcurrencyQueueEnabled(data *WorkflowData) bool {
-	// Check both the new flag name and the old flag name for backward compatibility
-	preferredFlag := strings.ToLower(strings.TrimSpace(string(constants.ConcurrencyQueueFeatureFlag)))
-	deprecatedFlag := strings.ToLower(strings.TrimSpace(string(constants.GroupConcurrencyQueueFeatureFlag)))
+	flagName := strings.ToLower(strings.TrimSpace(string(constants.GroupConcurrencyQueueFeatureFlag)))
 
 	if data != nil && data.Features != nil {
-		// Check both flag names in a single loop for efficiency
 		for key, value := range data.Features {
-			if strings.EqualFold(key, preferredFlag) || strings.EqualFold(key, deprecatedFlag) {
+			if strings.EqualFold(key, flagName) {
 				return parseGroupConcurrencyQueueFeatureValue(value)
 			}
 		}
