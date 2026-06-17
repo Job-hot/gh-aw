@@ -331,6 +331,35 @@ State whether AI Credits came from deterministic precomputed data or from a live
 
 If AI Credits are unavailable, still produce the delivered-value analysis and clearly state that the cost-normalized Impact Efficiency metric could not be computed.
 
+### Recommendations
+
+*(Wrap this section in `<details><summary>✅ Recommendations — N action items</summary>…</details>`. Count only the action items that apply this cycle (i.e., have concrete evidence from this report's data) and use that count in the summary label.)*
+
+Generate **actionable, evidence-grounded recommendations** to improve the accuracy, determinism, and attribution of the next report. Base each recommendation directly on a gap identified in the Data Quality section or a finding from the analysis — do not produce generic advice.
+
+For each recommendation, include:
+
+- A short title (one line)
+- The specific gap or finding from this cycle that motivates it (with concrete numbers where available, e.g., "993 PRs excluded for lacking `Closes #N`")
+- The expected effect on report accuracy: which metric would improve and by how much, if estimable from available data (e.g., "would convert up to N excluded PRs into analyzable outcomes")
+- The owner or mechanism (workflow name, script, PR template change, etc.)
+
+Generate a recommendation for each of the following gap categories **only when the gap is confirmed by this cycle's data**:
+
+1. **Workflow attribution**: If any analyzed outcomes are unattributed (no `workflow_run_id`/`workflow_name` link), recommend the specific change needed to emit that field — e.g., adding a `workflow_run_id` to PR bodies at creation time, or extending the dataset preparation script to join on head-branch naming conventions. Specify which workflow or script would need the change.
+
+2. **Linked-issue coverage**: If a significant number of PRs were excluded for lacking a `Closes #N` link, recommend adding a PR body template or linter that enforces the link for agentic-workflow-created PRs. Include the exclusion count to quantify the impact.
+
+3. **Objective label coverage**: If any in-scope outcomes were unmapped (objective value = 0 with labels present), recommend adding the missing labels to `.github/objective-mapping.json`. List the specific unmapped labels observed this cycle.
+
+4. **AIC per-outcome attribution**: If per-category or per-workflow AIC could not be computed because attribution was missing, recommend the minimal dataset join that would enable it (e.g., matching workflow log entries to outcome PRs by branch name or run ID).
+
+5. **PR dataset cap**: If the merged or closed-unmerged PR dataset was capped at fewer records than the window might contain (check `dataset-manifest.json` for cap warnings), recommend increasing `OBJECTIVE_IMPACT_PR_LIST_LIMIT` or paginating the fetch.
+
+6. **Likely-agentic reclassification**: If a significant number of PRs were moved to the "likely agentic (attribution gap)" bucket in the Human Work section, recommend the specific attribution improvement (e.g., stamping the producing workflow name in the PR body) that would collapse that bucket in the next cycle.
+
+Only include recommendations that are directly supported by data from this cycle. Omit any category where the data shows no gap (e.g., if attribution is fully resolved, omit recommendation 1). Sort recommendations by expected impact on report accuracy, highest first.
+
 ### Human Work
 
 *(Wrap this section in `<details><summary>👤 Human Work — N merged PRs</summary>…</details>`.)*
