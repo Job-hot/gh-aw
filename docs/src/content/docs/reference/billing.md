@@ -23,8 +23,9 @@ There are two billing paths for the Copilot engine (`engine: copilot`, the defau
 
 **Organization billing** — Inference is charged as AI Credits (AIC) against the organization's Copilot tenant. This requires all three of the following:
 
-1. The organization has centralized billing enabled for Copilot requests in its Copilot policies (see [Authentication](/gh-aw/reference/auth/#copilot-requests-write-permission)).
-2. The workflow declares `copilot_requests: true` under `permissions`:
+1. The organization has centralized billing enabled for Copilot requests in its Copilot policies. Enable it under **Organization → Settings → Copilot → Policies → Copilot CLI → "Allow use of Copilot CLI billed to the organization"**. See also [Authentication](/gh-aw/reference/auth/#copilot-requests-write-permission).
+
+2. The workflow declares `copilot_requests: write` under `permissions`:
 
        permissions:
          contents: read
