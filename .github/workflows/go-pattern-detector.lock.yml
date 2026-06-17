@@ -61,7 +61,7 @@
 #   - mcp/ast-grep:latest@sha256:5fc3f2e9dcf2c019e92662f608b8d89e12134ed6d91e6f5461de6efd506a1e72
 #
 # GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.
-# To disable for GHES, add: features.concurrency-queue: false
+# To disable for GHES, add: features.group-concurrency-queue: false
 
 name: "Go Pattern Detector"
 on:

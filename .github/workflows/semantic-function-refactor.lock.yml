@@ -64,7 +64,7 @@
 #   - ghcr.io/github/serena-mcp-server:latest@sha256:bf343399e3725c45528f531a230f3a04521d4cdef29f9a5af6282ff0d3c393c5
 #
 # GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.
-# To disable for GHES, add: features.concurrency-queue: false
+# To disable for GHES, add: features.group-concurrency-queue: false
 
 name: "Semantic Function Refactoring"
 on:

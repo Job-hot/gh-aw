@@ -61,7 +61,7 @@
 #   - ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b
 #
 # GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.
-# To disable for GHES, add: features.concurrency-queue: false
+# To disable for GHES, add: features.group-concurrency-queue: false
 
 name: "GitHub MCP Remote Server Tools Report Generator"
 on:

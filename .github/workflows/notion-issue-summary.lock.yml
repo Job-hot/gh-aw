@@ -61,7 +61,7 @@
 #   - mcp/notion@sha256:4de8eb0de33402fcbd3740b4f4039918e4893155c7ea833c7a0c472001b88367
 #
 # GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.
-# To disable for GHES, add: features.concurrency-queue: false
+# To disable for GHES, add: features.group-concurrency-queue: false
 
 name: "Issue Summary to Notion"
 on:
