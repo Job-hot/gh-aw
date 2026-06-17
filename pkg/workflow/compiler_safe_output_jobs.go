@@ -26,13 +26,27 @@ func (c *Compiler) buildSafeOutputsJobs(data *WorkflowData, jobName, markdownPat
 	// explicitly disabled. When engine is false with no custom steps, the detection job has
 	// nothing to run so it is skipped entirely.
 	threatDetectionEnabled := IsDetectionJobEnabled(data.SafeOutputs)
+	downstreamMainJobName := jobName
+
+	if hasAgentMatrix(data) {
+		judgeJob, err := c.buildJudgeJob(data)
+		if err != nil {
+			return fmt.Errorf("failed to build judge job: %w", err)
+		}
+		if judgeJob != nil {
+			if err := c.jobManager.AddJob(judgeJob); err != nil {
+				return fmt.Errorf("failed to add judge job: %w", err)
+			}
+			downstreamMainJobName = judgeJob.Name
+		}
+	}
 
 	// Build the separate detection job. Detection runs by default for all safe-outputs workflows
 	// and is only skipped when ThreatDetection is nil (i.e. threat-detection: false was set).
 	// The detection job runs after the agent job, downloads the agent artifact,
 	// and outputs detection_success and detection_conclusion for downstream jobs.
 	if threatDetectionEnabled {
-		detectionJob, err := c.buildDetectionJob(data)
+		detectionJob, err := c.buildDetectionJobForSource(data, downstreamMainJobName)
 		if err != nil {
 			return fmt.Errorf("failed to build detection job: %w", err)
 		}
@@ -48,7 +62,7 @@ func (c *Compiler) buildSafeOutputsJobs(data *WorkflowData, jobName, markdownPat
 	var safeOutputJobNames []string
 
 	// Build consolidated safe outputs job containing all safe output operations as steps
-	consolidatedJob, consolidatedStepNames, err := c.buildConsolidatedSafeOutputsJob(data, jobName, markdownPath)
+	consolidatedJob, consolidatedStepNames, err := c.buildConsolidatedSafeOutputsJob(data, downstreamMainJobName, markdownPath)
 	if err != nil {
 		return fmt.Errorf("failed to build consolidated safe outputs job: %w", err)
 	}
@@ -63,7 +77,7 @@ func (c *Compiler) buildSafeOutputsJobs(data *WorkflowData, jobName, markdownPat
 	// Build safe-jobs if configured
 	// Safe-jobs should depend on agent job (always) AND detection job (if threat detection is enabled)
 	// These custom safe-jobs should also be included in the conclusion job's dependencies
-	safeJobNames, err := c.buildSafeJobs(data, threatDetectionEnabled)
+	safeJobNames, err := c.buildSafeJobs(data, threatDetectionEnabled, downstreamMainJobName)
 	if err != nil {
 		return fmt.Errorf("failed to build safe-jobs: %w", err)
 	}
@@ -78,7 +92,7 @@ func (c *Compiler) buildSafeOutputsJobs(data *WorkflowData, jobName, markdownPat
 	// 3. Different permissions (contents: write)
 	if data.SafeOutputs != nil && data.SafeOutputs.UploadAssets != nil {
 		compilerSafeOutputJobsLog.Print("Building separate upload_assets job")
-		uploadAssetsJob, err := c.buildUploadAssetsJob(data, jobName, threatDetectionEnabled)
+		uploadAssetsJob, err := c.buildUploadAssetsJob(data, downstreamMainJobName, threatDetectionEnabled)
 		if err != nil {
 			return fmt.Errorf("failed to build upload_assets job: %w", err)
 		}
@@ -134,7 +148,7 @@ func (c *Compiler) buildSafeOutputsJobs(data *WorkflowData, jobName, markdownPat
 	// Build conclusion job if add-comment is configured OR if command trigger is configured with reactions
 	// This job runs last, after all safe output jobs (and push_repo_memory if configured), to update the activation comment on failure
 	// The buildConclusionJob function itself will decide whether to create the job based on the configuration
-	conclusionJob, err := c.buildConclusionJob(data, jobName, safeOutputJobNames)
+	conclusionJob, err := c.buildConclusionJob(data, downstreamMainJobName, safeOutputJobNames)
 	if err != nil {
 		return fmt.Errorf("failed to build conclusion job: %w", err)
 	}

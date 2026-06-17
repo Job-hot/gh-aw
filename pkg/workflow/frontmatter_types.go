@@ -314,6 +314,7 @@ type FrontmatterConfig struct {
 	RuntimesTyped    *RuntimesConfig    `json:"-"`                     // New typed field (not in JSON to avoid conflict)
 	Runtimes         map[string]any     `json:"runtimes,omitempty"`    // Deprecated: use RuntimesTyped
 	Jobs             map[string]any     `json:"jobs,omitempty"`        // Custom workflow jobs (too dynamic to type)
+	Matrix           map[string]any     `json:"matrix,omitempty"`      // Matrix configuration for agent job fan-out
 	SafeOutputs      *SafeOutputsConfig `json:"safe-outputs,omitempty"`
 	MCPScripts       *MCPScriptsConfig  `json:"mcp-scripts,omitempty"`
 	PermissionsTyped *PermissionsConfig `json:"-"` // New typed field (not in JSON to avoid conflict)

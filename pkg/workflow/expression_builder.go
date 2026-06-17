@@ -343,6 +343,17 @@ func BuildNotFromFork() *ComparisonNode {
 }
 
 func BuildSafeOutputType(outputType string) ConditionNode {
+	return buildSafeOutputTypeForJob(outputType, string(constants.AgentJobName))
+}
+
+func BuildSafeOutputTypeForJob(outputType, jobName string) ConditionNode {
+	if jobName == "" {
+		jobName = string(constants.AgentJobName)
+	}
+	return buildSafeOutputTypeForJob(outputType, jobName)
+}
+
+func buildSafeOutputTypeForJob(outputType, jobName string) ConditionNode {
 	expressionBuilderLog.Printf("Building safe-output condition for output type: %s", outputType)
 	// Use !cancelled() && needs.agent.result != 'skipped' to properly handle workflow cancellation
 	// !cancelled() allows jobs to run when dependencies fail (for error reporting)
@@ -353,7 +364,7 @@ func BuildSafeOutputType(outputType string) ConditionNode {
 
 	// Check that agent job was not skipped (happens when workflow is cancelled)
 	agentNotSkipped := &ComparisonNode{
-		Left:     BuildPropertyAccess(fmt.Sprintf("needs.%s.result", constants.AgentJobName)),
+		Left:     BuildPropertyAccess(fmt.Sprintf("needs.%s.result", jobName)),
 		Operator: "!=",
 		Right:    BuildStringLiteral("skipped"),
 	}
@@ -368,7 +379,7 @@ func BuildSafeOutputType(outputType string) ConditionNode {
 	// This prevents the job from running when the agent didn't produce any outputs of this type
 	// The min constraint is enforced by the job itself, not by skipping this check
 	containsFunc := BuildFunctionCall("contains",
-		BuildPropertyAccess(fmt.Sprintf("needs.%s.outputs.output_types", constants.AgentJobName)),
+		BuildPropertyAccess(fmt.Sprintf("needs.%s.outputs.output_types", jobName)),
 		BuildStringLiteral(outputType),
 	)
 

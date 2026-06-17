@@ -61,6 +61,7 @@ const ActivationJobName JobName = "activation"
 const PreActivationJobName JobName = "pre_activation"
 const PreActivationHyphenJobName JobName = "pre-activation"
 const DetectionJobName JobName = "detection"
+const JudgeJobName JobName = "judge"
 const SafeOutputsJobName JobName = "safe_outputs"
 const SafeOutputsHyphenJobName JobName = "safe-outputs"
 const UploadAssetsJobName JobName = "upload_assets"
@@ -78,6 +79,7 @@ var KnownBuiltInJobNames = map[string]struct{}{
 	string(PreActivationJobName):       {},
 	string(PreActivationHyphenJobName): {},
 	string(DetectionJobName):           {},
+	string(JudgeJobName):               {},
 	string(SafeOutputsJobName):         {},
 	string(SafeOutputsHyphenJobName):   {},
 	string(UploadAssetsJobName):        {},

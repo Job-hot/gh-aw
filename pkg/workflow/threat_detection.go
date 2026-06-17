@@ -262,7 +262,7 @@ const detectionStepCondition = "always() && steps.detection_guard.outputs.run_de
 // These steps run after the agent job completes and analyze agent output for threats using the
 // same agentic engine with sandbox.agent and fully blocked network.
 // The detection job downloads the agent artifact to access the output files.
-func (c *Compiler) buildDetectionJobSteps(data *WorkflowData) []string {
+func (c *Compiler) buildDetectionJobSteps(data *WorkflowData, sourceJobName string) []string {
 	threatLog.Print("Building threat detection steps for detection job")
 	if data.SafeOutputs == nil || data.SafeOutputs.ThreatDetection == nil {
 		return nil
@@ -379,8 +379,8 @@ func (c *Compiler) buildDetectionGuardStep() []string {
 		"        id: detection_guard\n",
 		"        if: always()\n",
 		"        env:\n",
-		"          OUTPUT_TYPES: ${{ needs.agent.outputs.output_types }}\n",
-		"          HAS_PATCH: ${{ needs.agent.outputs.has_patch }}\n",
+		fmt.Sprintf("          OUTPUT_TYPES: ${{ needs.%s.outputs.output_types }}\n", sourceJobName),
+		fmt.Sprintf("          HAS_PATCH: ${{ needs.%s.outputs.has_patch }}\n", sourceJobName),
 		"        run: |\n",
 		"          if [[ -n \"$OUTPUT_TYPES\" || \"$HAS_PATCH\" == \"true\" ]]; then\n",
 		"            echo \"run_detection=true\" >> \"$GITHUB_OUTPUT\"\n",
@@ -551,7 +551,7 @@ func (c *Compiler) buildThreatDetectionAnalysisStep(data *WorkflowData) []string
 	steps = append(steps, c.buildWorkflowContextEnvVars(data)...)
 
 	// Add HAS_PATCH environment variable from the agent job output (detection runs in a separate job)
-	steps = append(steps, "          HAS_PATCH: ${{ needs.agent.outputs.has_patch }}\n")
+	steps = append(steps, fmt.Sprintf("          HAS_PATCH: ${{ needs.%s.outputs.has_patch }}\n", sourceJobName))
 
 	// Add custom prompt instructions if configured
 	customPrompt := ""
@@ -906,7 +906,7 @@ func (c *Compiler) buildUploadDetectionLogStep(data *WorkflowData) []string {
 // buildWorkspaceCheckoutForDetectionStep creates a checkout step for the detection job.
 // It runs only when the agent job produced a patch, so the detection engine can
 // analyze code changes in the context of the surrounding codebase.
-func (c *Compiler) buildWorkspaceCheckoutForDetectionStep(data *WorkflowData) []string {
+func (c *Compiler) buildWorkspaceCheckoutForDetectionStep(data *WorkflowData, sourceJobName string) []string {
 	checkoutPin := getActionPin("actions/checkout")
 	if checkoutPin == "" {
 		threatLog.Print("No action pin found for actions/checkout, skipping workspace checkout step")
@@ -915,7 +915,7 @@ func (c *Compiler) buildWorkspaceCheckoutForDetectionStep(data *WorkflowData) []
 
 	steps := []string{
 		"      - name: Checkout repository for patch context\n",
-		fmt.Sprintf("        if: needs.%s.outputs.has_patch == 'true'\n", constants.AgentJobName),
+		fmt.Sprintf("        if: needs.%s.outputs.has_patch == 'true'\n", sourceJobName),
 		fmt.Sprintf("        uses: %s\n", checkoutPin),
 		"        with:\n",
 		"          persist-credentials: false\n",
@@ -930,6 +930,10 @@ func (c *Compiler) buildWorkspaceCheckoutForDetectionStep(data *WorkflowData) []
 // steps. It outputs detection_success and detection_conclusion for downstream jobs.
 // Returns nil if threat detection is not configured.
 func (c *Compiler) buildDetectionJob(data *WorkflowData) (*Job, error) {
+	return c.buildDetectionJobForSource(data, string(constants.AgentJobName))
+}
+
+func (c *Compiler) buildDetectionJobForSource(data *WorkflowData, sourceJobName string) (*Job, error) {
 	threatLog.Print("Building separate detection job")
 	if data.SafeOutputs == nil || data.SafeOutputs.ThreatDetection == nil {
 		threatLog.Print("Threat detection not configured, skipping detection job")
@@ -969,10 +973,10 @@ func (c *Compiler) buildDetectionJob(data *WorkflowData) (*Job, error) {
 
 	// Conditionally checkout the target repository so the detection engine can
 	// analyze patches in the context of the surrounding codebase.
-	steps = append(steps, c.buildWorkspaceCheckoutForDetectionStep(data)...)
+	steps = append(steps, c.buildWorkspaceCheckoutForDetectionStep(data, sourceJobName)...)
 
 	// Add all threat detection steps
-	detectionStepsContent := c.buildDetectionJobSteps(data)
+	detectionStepsContent := c.buildDetectionJobSteps(data, sourceJobName)
 	steps = append(steps, detectionStepsContent...)
 
 	// Build job outputs
@@ -985,6 +989,9 @@ func (c *Compiler) buildDetectionJob(data *WorkflowData) (*Job, error) {
 
 	// Detection job depends on agent job and activation job (for trace ID)
 	needs := []string{string(constants.AgentJobName), string(constants.ActivationJobName)}
+	if sourceJobName != string(constants.AgentJobName) {
+		needs = append(needs, sourceJobName)
+	}
 
 	// Determine runs-on: use threat detection override if set, otherwise ubuntu-latest.
 	// The detection job runs on a fresh runner separate from the agent job, so it does
@@ -999,15 +1006,15 @@ func (c *Compiler) buildDetectionJob(data *WorkflowData) (*Job, error) {
 	// so downstream jobs (safe_outputs) are also correctly skipped.
 	alwaysFunc := BuildFunctionCall("always")
 	agentNotSkipped := BuildNotEquals(
-		BuildPropertyAccess(fmt.Sprintf("needs.%s.result", constants.AgentJobName)),
+		BuildPropertyAccess(fmt.Sprintf("needs.%s.result", sourceJobName)),
 		BuildStringLiteral("skipped"),
 	)
 	outputTypesNotEmpty := BuildNotEquals(
-		BuildPropertyAccess(fmt.Sprintf("needs.%s.outputs.output_types", constants.AgentJobName)),
+		BuildPropertyAccess(fmt.Sprintf("needs.%s.outputs.output_types", sourceJobName)),
 		BuildStringLiteral(""),
 	)
 	hasPatchTrue := BuildEquals(
-		BuildPropertyAccess(fmt.Sprintf("needs.%s.outputs.has_patch", constants.AgentJobName)),
+		BuildPropertyAccess(fmt.Sprintf("needs.%s.outputs.has_patch", sourceJobName)),
 		BuildStringLiteral("true"),
 	)
 	hasContent := BuildOr(outputTypesNotEmpty, hasPatchTrue)

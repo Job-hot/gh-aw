@@ -535,6 +535,7 @@ type WorkflowData struct {
 	TopLevelGitHubApp              *GitHubAppConfig                // top-level github-app fallback for all nested github-app token minting operations
 	LockForAgent                   bool                            // whether to lock the issue during agent workflow execution
 	Jobs                           map[string]any                  // custom job configurations with dependencies
+	Matrix                         *AgentMatrixConfig              // top-level matrix strategy for agent job fan-out
 	Cache                          string                          // cache configuration
 	NeedsTextOutput                bool                            // whether the workflow uses ${{ needs.task.outputs.text }}
 	NetworkPermissions             *NetworkPermissions             // parsed network permissions
@@ -640,6 +641,14 @@ type BaseSafeOutputConfig struct {
 	NormalizeClosingKeywords *bool            `yaml:"normalize-closing-keywords,omitempty"` // When true for this output type, strip backticks from recognized issue-closing keywords in body fields.
 	// Samples carries deterministic replay samples for the hidden `gh aw compile --use-samples` flag. Each entry is the JSON object passed to the corresponding MCP tool's `tools/call` arguments. Sample-only sidecar fields (e.g. `patch` for create_pull_request) are stripped before the call and used by the replay driver.
 	Samples []map[string]any `yaml:"samples,omitempty"`
+}
+
+// AgentMatrixConfig holds top-level matrix configuration for agent job fan-out.
+// StrategyMatrix is copied to jobs.agent.strategy.matrix and MergePolicy controls
+// how judge merges safeoutputs emitted by matrix legs.
+type AgentMatrixConfig struct {
+	StrategyMatrix map[string]any
+	MergePolicy    string
 }
 
 // SafeOutputsConfig holds configuration for automatic output routes

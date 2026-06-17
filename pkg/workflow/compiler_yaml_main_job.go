@@ -780,7 +780,7 @@ func (c *Compiler) generatePostAgentCollectionAndUpload(yaml *strings.Builder, d
 	// Generate single unified artifact upload with all collected paths.
 	// In workflow_call context, apply the per-invocation prefix to avoid name clashes.
 	agentArtifactPrefix := artifactPrefixExprForDownstreamJob(data)
-	c.generateUnifiedArtifactUpload(yaml, artifactPaths, agentArtifactPrefix)
+	c.generateUnifiedArtifactUpload(yaml, artifactPaths, agentArtifactPrefix, matrixArtifactSuffixExpression(data))
 
 	// In dev mode the setup action is referenced via a local path (./actions/setup), so its files
 	// live in the workspace. When a checkout: entry targets an external repository without a path
