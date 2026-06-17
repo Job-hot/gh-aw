@@ -38,8 +38,7 @@ func TestBuildSharedPRCheckoutSteps(t *testing.T) {
 				"persist-credentials: false",
 				"fetch-depth: 1",
 				"name: Configure Git credentials",
-				"git config --global user.email",
-				"github-actions[bot]@users.noreply.github.com",
+				"configure_git_credentials.sh",
 			},
 		},
 		{
@@ -141,7 +140,7 @@ func TestBuildSharedPRCheckoutSteps(t *testing.T) {
 				"repository: org/target-repo",
 				"token: ${{ secrets.GH_AW_CROSS_REPO_PAT }}",
 				"GIT_TOKEN: ${{ secrets.GH_AW_CROSS_REPO_PAT }}",
-				`REPO_NAME: "org/target-repo"`,
+				`GITHUB_REPOSITORY: "org/target-repo"`,
 				// Cross-repo checkout must not use github.ref_name
 				"ref: ${{ steps.extract-base-branch.outputs.base-branch || github.base_ref || github.event.pull_request.base.ref || github.event.repository.default_branch }}",
 			},
@@ -260,7 +259,7 @@ func TestBuildSharedPRCheckoutSteps(t *testing.T) {
 			},
 			checkContains: []string{
 				"repository: microsoft/vscode",
-				`REPO_NAME: "microsoft/vscode"`,
+				`GITHUB_REPOSITORY: "microsoft/vscode"`,
 				// Cross-repo checkout must not use github.ref_name
 				"ref: ${{ steps.extract-base-branch.outputs.base-branch || github.base_ref || github.event.pull_request.base.ref || github.event.repository.default_branch }}",
 			},
@@ -278,10 +277,10 @@ func TestBuildSharedPRCheckoutSteps(t *testing.T) {
 				},
 				PushToPullRequestBranch: &PushToPullRequestBranchConfig{},
 			},
-			// update-pull-request is API-only; its target-repo must NOT set repository:/REPO_NAME
+			// update-pull-request is API-only; its target-repo must NOT set repository:/GITHUB_REPOSITORY
 			checkNotContains: []string{
 				"repository: microsoft/vscode",
-				`REPO_NAME: "microsoft/vscode"`,
+				`GITHUB_REPOSITORY: "microsoft/vscode"`,
 			},
 		},
 		{
@@ -298,7 +297,7 @@ func TestBuildSharedPRCheckoutSteps(t *testing.T) {
 			},
 			checkContains: []string{
 				"repository: org/push-branch-target",
-				`REPO_NAME: "org/push-branch-target"`,
+				`GITHUB_REPOSITORY: "org/push-branch-target"`,
 			},
 			checkNotContains: []string{
 				"org/update-pr-target",
@@ -316,7 +315,7 @@ func TestBuildSharedPRCheckoutSteps(t *testing.T) {
 			},
 			checkContains: []string{
 				"repository: org/create-pr-target",
-				`REPO_NAME: "org/create-pr-target"`,
+				`GITHUB_REPOSITORY: "org/create-pr-target"`,
 			},
 			checkNotContains: []string{
 				"org/push-branch-target",
