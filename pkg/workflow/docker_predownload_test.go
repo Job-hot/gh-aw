@@ -15,14 +15,11 @@ import (
 )
 
 func TestDockerImagePredownload(t *testing.T) {
-	pinnedGhAwNodeImage := resolveContainerImage(constants.DefaultGhAwNodeImage, nil)
-
 	// Representative sample - tests key docker image predownload scenarios
 	tests := []struct {
 		name           string
 		frontmatter    string
 		expectedImages []string
-		manifestImages []string
 		expectStep     bool
 	}{
 		{
@@ -80,7 +77,7 @@ Test workflow with custom MCP container.`,
 			expectStep: true,
 		},
 		{
-			name: "Safe outputs predownloads gh-aw-node",
+			name: "Safe outputs does not pull node:lts-alpine",
 			frontmatter: `---
 on: issues
 engine: claude
@@ -94,11 +91,7 @@ network:
 # Test
 Test workflow - safe outputs MCP server without GitHub tool.`,
 			expectedImages: []string{
-				pinnedGhAwNodeImage,
 				"ghcr.io/github/gh-aw-mcpg:" + string(constants.DefaultMCPGatewayVersion),
-			},
-			manifestImages: []string{
-				constants.DefaultGhAwNodeImage,
 			},
 			expectStep: true,
 		},
@@ -143,29 +136,6 @@ Test workflow - safe outputs MCP server without GitHub tool.`,
 					// Check that the image is being passed as an argument to the script
 					if !strings.Contains(string(yaml), expectedImage) {
 						t.Errorf("Expected to find image '%s' in generated YAML", expectedImage)
-					}
-				}
-
-				if len(tt.manifestImages) > 0 {
-					manifest, err := ExtractGHAWManifestFromLockFile(string(yaml))
-					if err != nil {
-						t.Fatalf("Failed to parse gh-aw-manifest: %v", err)
-					}
-					if manifest == nil {
-						t.Fatal("Expected gh-aw-manifest to be present")
-					}
-
-					for _, expectedImage := range tt.manifestImages {
-						foundImage := false
-						for _, container := range manifest.Containers {
-							if container.Image == expectedImage {
-								foundImage = true
-								break
-							}
-						}
-						if !foundImage {
-							t.Fatalf("Expected gh-aw-manifest containers to include %q, got %#v", expectedImage, manifest.Containers)
-						}
 					}
 				}
 			}
