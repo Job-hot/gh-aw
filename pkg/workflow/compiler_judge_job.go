@@ -2,7 +2,6 @@ package workflow
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/github/gh-aw/pkg/constants"
 )
@@ -26,6 +25,7 @@ func (c *Compiler) buildJudgeJob(data *WorkflowData) (*Job, error) {
 		fmt.Sprintf("          pattern: %sagent_*\n", agentArtifactPrefix),
 		"          path: /tmp/gh-aw/matrix-artifacts\n",
 		"      - name: Merge matrix safe outputs\n",
+		"        id: merge-matrix\n",
 		"        env:\n",
 		fmt.Sprintf("          GH_AW_MATRIX_MERGE_POLICY: %q\n", policy),
 		"        run: |\n",
@@ -113,14 +113,6 @@ func (c *Compiler) buildJudgeJob(data *WorkflowData) (*Job, error) {
 	}
 	if hasWorkflowCallTrigger(data.On) {
 		outputs[constants.ArtifactPrefixOutputName] = "${{ needs.activation.outputs.artifact_prefix }}"
-	}
-
-	// add explicit step ID to output-producing step
-	for i, step := range steps {
-		if strings.HasPrefix(step, "      - name: Merge matrix safe outputs") {
-			steps = append(steps[:i+1], append([]string{"        id: merge-matrix\n"}, steps[i+1:]...)...)
-			break
-		}
 	}
 
 	return &Job{
