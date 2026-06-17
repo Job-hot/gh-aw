@@ -1,15 +1,75 @@
 {
-  "run_date": "2026-06-17T08:13:31Z",
-  "run_id": "27675141076",
-  "previous_run_id": "27659488840",
-  "previous_run_date": "2026-06-17T01:27:51Z",
+  "run_date": "2026-06-17T13:31:32Z",
+  "run_id": "27692522379",
+  "previous_run_id": "27675141076",
+  "previous_run_date": "2026-06-17T08:13:31Z",
   "fork_prs": 0,
-  "agent_prs_found": 6,
-  "copilot_swe_agent_prs": 6,
+  "agent_prs_found": 10,
+  "copilot_swe_agent_prs": 10,
   "github_actions_prs": 0,
   "prs_triaged": 0,
   "fork_only_policy": true,
   "open_agent_prs": [
+    {
+      "number": 39784,
+      "title": "Fix Impact report statistics to use outcome root-level resolver and objective mapping",
+      "draft": true,
+      "category": "bug",
+      "status": "DRAFT",
+      "created": "2026-06-17",
+      "labels": [],
+      "is_fork": false
+    },
+    {
+      "number": 39774,
+      "title": "uncheckedtypeassertion: recognize safe comma-ok form in var init and parenthesized assertions",
+      "draft": false,
+      "category": "bug",
+      "status": "OPEN",
+      "created": "2026-06-17",
+      "labels": [],
+      "is_fork": false
+    },
+    {
+      "number": 39773,
+      "title": "fix(regexpcompileinfunction): resolve package identity via type checker instead of identifier name",
+      "draft": false,
+      "category": "bug",
+      "status": "OPEN",
+      "created": "2026-06-17",
+      "labels": [],
+      "is_fork": false
+    },
+    {
+      "number": 39771,
+      "title": "fix: add git safe.directory to resolve dubious ownership error in safe_outputs job and gh-aw-node container",
+      "draft": true,
+      "category": "bug",
+      "status": "DRAFT",
+      "created": "2026-06-17",
+      "labels": [],
+      "is_fork": false
+    },
+    {
+      "number": 39770,
+      "title": "fix: prune stale container pins and move UpdateContainerPins to after compilation",
+      "draft": false,
+      "category": "chore",
+      "status": "OPEN",
+      "created": "2026-06-17",
+      "labels": [],
+      "is_fork": false
+    },
+    {
+      "number": 39767,
+      "title": "safe-outputs: add `merge-pull-request` schema parity for `samples` and cross-repo targeting",
+      "draft": true,
+      "category": "feature",
+      "status": "DRAFT",
+      "created": "2026-06-17",
+      "labels": [],
+      "is_fork": false
+    },
     {
       "number": 39742,
       "title": "Harden workflow_call jobs against GHES output masking for artifact prefixes and target repo resolution",
@@ -18,57 +78,27 @@
       "status": "DRAFT",
       "created": "2026-06-17",
       "labels": [],
-      "assignees": ["pelikhan"],
-      "reviewers_requested": ["pelikhan"],
-      "isCrossRepository": false
-    },
-    {
-      "number": 39741,
-      "title": "logs: keep paging in all-workflows mode when full batches filter to zero runs",
-      "draft": true,
-      "category": "bug",
-      "status": "DRAFT",
-      "created": "2026-06-17",
-      "labels": [],
-      "assignees": ["pelikhan"],
-      "reviewers_requested": ["pelikhan"],
-      "isCrossRepository": false
-    },
-    {
-      "number": 39740,
-      "title": "Fix misplaced zizmor ignore comment in GHES host step generator",
-      "draft": true,
-      "category": "bug",
-      "status": "DRAFT",
-      "created": "2026-06-17",
-      "labels": [],
-      "assignees": ["pelikhan"],
-      "reviewers_requested": ["pelikhan"],
-      "isCrossRepository": false
+      "is_fork": false
     },
     {
       "number": 39739,
-      "title": "Implement `mcp-scripts.dependencies` end-to-end with runtime-manager install flow",
-      "draft": true,
+      "title": "Implement `mcp-scripts.dependencies` end-to-end with runtime-manager install flow and pinned release-tag validation",
+      "draft": false,
       "category": "feature",
-      "status": "DRAFT",
+      "status": "OPEN",
       "created": "2026-06-17",
       "labels": [],
-      "assignees": ["pelikhan"],
-      "reviewers_requested": ["pelikhan"],
-      "isCrossRepository": false
+      "is_fork": false
     },
     {
       "number": 39721,
       "title": "Add failure category filtering to report-failure-as-issue",
-      "draft": true,
+      "draft": false,
       "category": "feature",
-      "status": "DRAFT",
+      "status": "OPEN",
       "created": "2026-06-17",
       "labels": [],
-      "assignees": ["pelikhan"],
-      "reviewers_requested": ["pelikhan"],
-      "isCrossRepository": false
+      "is_fork": false
     },
     {
       "number": 39540,
@@ -78,24 +108,24 @@
       "status": "DRAFT",
       "created": "2026-06-16",
       "labels": [],
-      "assignees": ["dsyme"],
-      "reviewers_requested": ["dsyme"],
-      "isCrossRepository": false
+      "is_fork": false
     }
   ],
-  "closed_since_last_run": [39697, 39644],
-  "new_since_last_run": [39742, 39741, 39740, 39739, 39721],
+  "closed_since_last_run": [39741, 39740],
+  "new_since_last_run": [39784, 39774, 39773, 39771, 39770, 39767],
   "statistics": {
     "by_category": {
-      "bug": 3,
-      "feature": 3
+      "bug": 5,
+      "feature": 4,
+      "chore": 1
     },
     "by_status": {
-      "DRAFT": 6
+      "DRAFT": 5,
+      "OPEN": 5
     },
     "resolved_this_run": {
       "closed_or_merged": 2
     }
   },
-  "notes": "6 open copilot-swe-agent PRs, all branch-based (isCrossRepository=false). Fork-only triage policy → 0 PRs eligible for formal triage. 2 PRs merged since last run (#39697 at 2026-06-17T01:33Z, #39644 at 2026-06-17T02:37Z). 5 new PRs created today: #39739-#39742 (GHES hardening, logs pagination, zizmor fix, mcp-scripts.dependencies) and #39721 (failure category filtering). #39540 still DRAFT from dsyme/Copilot."
+  "notes": "10 open copilot-swe-agent PRs, all branch-based (is_fork=false). Fork-only triage policy → 0 PRs eligible for formal triage. 2 PRs closed/merged since last run (#39741, #39740). 6 new PRs since last run: #39767 (safe-outputs merge-pull-request), #39770 (container pins prune), #39771 (git safe.directory fix), #39773 (regexpcompileinfunction fix), #39774 (uncheckedtypeassertion fix), #39784 (impact report stats fix). Mix of drafts and ready-for-review PRs, all assigned to pelikhan except #39540 (dsyme)."
 }
