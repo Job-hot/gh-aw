@@ -38,7 +38,7 @@ func (c *Compiler) buildConsolidatedSafeOutputsJob(data *WorkflowData, mainJobNa
 	threatDetectionEnabled := IsDetectionJobEnabled(data.SafeOutputs)
 
 	// Compute artifact prefix once; it is referenced in all three phases.
-	agentArtifactPrefix := artifactPrefixExprForDownstreamJob(data)
+	agentArtifactPrefix := artifactPrefixExprForCurrentJob(data)
 
 	// Phase 1: Setup action, artifact downloads, and user-provided steps
 	setupSteps, err := c.buildSafeOutputsSetupAndDownloadSteps(data, agentArtifactPrefix)
@@ -109,6 +109,9 @@ func (c *Compiler) buildSafeOutputsSetupAndDownloadSteps(data *WorkflowData, age
 
 	// Add artifact download steps after setup.
 	// In workflow_call context, use the per-invocation prefix to avoid artifact name clashes.
+	if hasWorkflowCallTrigger(data.On) {
+		steps = append(steps, generateArtifactPrefixStep()...)
+	}
 	steps = append(steps, buildAgentOutputDownloadSteps(agentArtifactPrefix, c.getActionPin)...)
 
 	// Add patch artifact download if create-pull-request or push-to-pull-request-branch is enabled
@@ -434,7 +437,7 @@ func (c *Compiler) buildSafeOutputsJobFromParts(
 		// without the owner prefix when `owner` is also set.
 		var appTokenFallbackRepo string
 		if hasWorkflowCallTrigger(data.On) {
-			appTokenFallbackRepo = "${{ needs.activation.outputs.target_repo_name }}"
+			appTokenFallbackRepo = targetRepoNameExprForWorkflowCall()
 		}
 		appTokenSteps := c.buildGitHubAppTokenMintStepForRepository(
 			data.SafeOutputs.GitHubApp,

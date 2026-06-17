@@ -62,6 +62,15 @@ func artifactPrefixExprForActivationJob(data *WorkflowData) string {
 	return "${{ steps.artifact-prefix.outputs.prefix }}"
 }
 
+// artifactPrefixExprForCurrentJob returns the GitHub Actions expression for the artifact prefix
+// when the current job computes the prefix locally via generateArtifactPrefixStep.
+func artifactPrefixExprForCurrentJob(data *WorkflowData) string {
+	if !hasWorkflowCallTrigger(data.On) {
+		return ""
+	}
+	return "${{ steps.artifact-prefix.outputs.prefix }}"
+}
+
 // artifactPrefixExprForDownstreamJob returns the GitHub Actions expression for the artifact
 // prefix used in jobs that depend on the activation job (references an activation job output).
 // Returns empty string for non-workflow_call workflows.
@@ -80,6 +89,14 @@ func artifactPrefixExprForAgentDownstreamJob(data *WorkflowData) string {
 		return ""
 	}
 	return "${{ needs.agent.outputs.artifact_prefix }}"
+}
+
+func targetRepoExprForWorkflowCall() string {
+	return "${{ needs.activation.outputs.target_repo || github.repository }}"
+}
+
+func targetRepoNameExprForWorkflowCall() string {
+	return "${{ needs.activation.outputs.target_repo_name || github.event.repository.name }}"
 }
 
 // injectWorkflowCallOutputs adds on.workflow_call.outputs declarations for safe-output results

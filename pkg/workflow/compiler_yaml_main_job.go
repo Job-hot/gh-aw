@@ -85,7 +85,7 @@ func (c *Compiler) generateInitialAndCheckoutSteps(yaml *strings.Builder, data *
 	// for .github/.agents sparse checkouts when called cross-repo.
 	// The activation job exposes this as needs.activation.outputs.target_repo.
 	if hasWorkflowCallTrigger(data.On) && !data.InlinedImports {
-		checkoutMgr.SetCrossRepoTargetRepo("${{ needs.activation.outputs.target_repo }}")
+		checkoutMgr.SetCrossRepoTargetRepo(targetRepoExprForWorkflowCall())
 	}
 
 	// Mint checkout app tokens directly in the agent job before checkout steps are executed.
@@ -389,7 +389,12 @@ func (c *Compiler) generateEngineInstallAndPreAgentSteps(yaml *strings.Builder, 
 	// This must happen BEFORE pre-agent-steps so the base-branch snapshot
 	// (saved in /tmp/gh-aw/base/ inside the artifact) is available for the restore step below.
 	compilerYamlLog.Print("Adding activation artifact download step")
-	activationArtifactName := artifactPrefixExprForDownstreamJob(data) + constants.ActivationArtifactName
+	if hasWorkflowCallTrigger(data.On) {
+		for _, step := range generateArtifactPrefixStep() {
+			yaml.WriteString(step)
+		}
+	}
+	activationArtifactName := artifactPrefixExprForCurrentJob(data) + constants.ActivationArtifactName
 	yaml.WriteString("      - name: Download activation artifact\n")
 	fmt.Fprintf(yaml, "        uses: %s\n", c.getActionPin("actions/download-artifact"))
 	yaml.WriteString("        with:\n")
@@ -779,7 +784,7 @@ func (c *Compiler) generatePostAgentCollectionAndUpload(yaml *strings.Builder, d
 
 	// Generate single unified artifact upload with all collected paths.
 	// In workflow_call context, apply the per-invocation prefix to avoid name clashes.
-	agentArtifactPrefix := artifactPrefixExprForDownstreamJob(data)
+	agentArtifactPrefix := artifactPrefixExprForCurrentJob(data)
 	c.generateUnifiedArtifactUpload(yaml, artifactPaths, agentArtifactPrefix)
 
 	// In dev mode the setup action is referenced via a local path (./actions/setup), so its files

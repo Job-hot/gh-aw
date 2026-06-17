@@ -60,7 +60,7 @@ func (c *Compiler) buildConclusionJob(data *WorkflowData, mainJobName string, sa
 		// without the owner prefix when `owner` is also set.
 		var appTokenFallbackRepo string
 		if hasWorkflowCallTrigger(data.On) {
-			appTokenFallbackRepo = "${{ needs.activation.outputs.target_repo_name }}"
+			appTokenFallbackRepo = targetRepoNameExprForWorkflowCall()
 		}
 		steps = append(steps, c.buildGitHubAppTokenMintStepForRepository(
 			data.SafeOutputs.GitHubApp,
@@ -72,10 +72,13 @@ func (c *Compiler) buildConclusionJob(data *WorkflowData, mainJobName string, sa
 
 	// Add artifact download steps once (shared by noop and conclusion steps).
 	// In workflow_call context, use the per-invocation prefix to avoid artifact name clashes.
-	steps = append(steps, buildAgentOutputDownloadSteps(artifactPrefixExprForDownstreamJob(data), c.getActionPin)...)
+	if hasWorkflowCallTrigger(data.On) {
+		steps = append(steps, generateArtifactPrefixStep()...)
+	}
+	steps = append(steps, buildAgentOutputDownloadSteps(artifactPrefixExprForCurrentJob(data), c.getActionPin)...)
 	// Package a compact usage artifact so forecasting/analytics commands can fetch
 	// token usage and aw_info without downloading full agent artifacts.
-	steps = append(steps, buildUsageArtifactUploadSteps(artifactPrefixExprForDownstreamJob(data), c.getActionPin)...)
+	steps = append(steps, buildUsageArtifactUploadSteps(artifactPrefixExprForCurrentJob(data), c.getActionPin)...)
 	// Write this run's AIC to the per-workflow usage cache and save it via actions/cache
 	// so the next activation can skip artifact downloads for known runs.
 	if hasMaxDailyAICGuardrail(data) && data.WorkflowID != "" {

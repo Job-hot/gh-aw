@@ -960,7 +960,10 @@ func (c *Compiler) buildDetectionJob(data *WorkflowData) (*Job, error) {
 
 	// Download agent output artifact to access output files (prompt.txt, agent_output.json, patches).
 	// Use agent-downstream prefix since this job depends on the agent job.
-	agentArtifactPrefix := artifactPrefixExprForAgentDownstreamJob(data)
+	if hasWorkflowCallTrigger(data.On) {
+		steps = append(steps, generateArtifactPrefixStep()...)
+	}
+	agentArtifactPrefix := artifactPrefixExprForCurrentJob(data)
 	steps = append(steps, buildAgentOutputDownloadSteps(agentArtifactPrefix, c.getActionPin)...)
 
 	// Download experiment artifact so the detection agent can read the current variant assignments.
