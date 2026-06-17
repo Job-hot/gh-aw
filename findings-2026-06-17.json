@@ -1,0 +1,37 @@
+{
+  "date": "2026-06-17",
+  "files_analyzed": {
+    "documentation": [
+      "docs/src/content/docs/reference/aw-yml-package-manifest.md",
+      "docs/src/content/docs/guides/network-configuration.md"
+    ],
+    "cli": [],
+    "messages": [
+      ".github/workflows/dev-hawk.md",
+      ".github/workflows/stale-pr-cleanup.md"
+    ],
+    "validation": [
+      "pkg/workflow/safe_outputs_needs_validation.go"
+    ]
+  },
+  "overall_quality": "mixed-strong-docs-theatrical-messages",
+  "quality_highlights": [
+    "stale-pr-cleanup.md: Professional status messages with clear emojis (🧹/✅/❌), actionable failure context ('Some PRs may not be processed'), includes {status} variable",
+    "safe_outputs_needs_validation.go: Error messages include specific bad value, expected values, and a concrete example in one message — model pattern",
+    "aw-yml-package-manifest.md: Clean reference table with inline example comments explaining each file type; links to normative spec"
+  ],
+  "single_file_improvements": [
+    {
+      "file": "docs/src/content/docs/guides/network-configuration.md",
+      "lines": [64, 65, 70],
+      "priority": "high",
+      "issue": "Three-way documentation inconsistency: (1) Line 64 bare domain comment 'Matches api.example.com and subdomains' uses non-standard behavior with no point-of-use explanation; (2) Line 65 wildcard comment says 'any subdomain of cdn.example.com' omitting the base domain; (3) Line 70 bullet correctly states *.example.com matches example.com itself — contradicting line 65. The TIP on line 74 explains the behavior but is positioned after the confusing content."
+    },
+    {
+      "file": ".github/workflows/dev-hawk.md",
+      "priority": "high",
+      "issue": "All three status messages use theatrical hawk metaphors (run-started: 'circles the sky', run-success: 'reconnaissance / Intel delivered', run-failure: 'Hawk down! The skies grow quiet'). Recurring pending task since 2026-05-27. run-failure provides no actionable guidance. Scope expanded from prior finding: all three messages need replacement, not just run-failure.",
+      "status": "recurring-pending-since-2026-05-27"
+    }
+  ]
+}
