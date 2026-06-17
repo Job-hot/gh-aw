@@ -1,0 +1,135 @@
+{
+  "date": "2026-06-17",
+  "pr_count": 38,
+  "message_count": 76,
+  "avg_sentiment": 0.1014,
+  "positive_count": 41,
+  "neutral_count": 15,
+  "negative_count": 20,
+  "top_topic": "CI/CD & Tooling",
+  "top_keywords": [
+    "workflow",
+    "output",
+    "safe",
+    "test",
+    "coverage",
+    "updated",
+    "path",
+    "aic",
+    "agent",
+    "tool"
+  ],
+  "cluster_labels": {
+    "0": "CI/CD & Tooling",
+    "1": "Validation & Safety",
+    "2": "Documentation & Tests",
+    "3": "General Changes",
+    "4": "Validation & Safety"
+  },
+  "cluster_counts": {
+    "Validation & Safety": 5,
+    "CI/CD & Tooling": 12,
+    "General Changes": 7,
+    "Documentation & Tests": 3
+  },
+  "most_positive_pr": {
+    "number": 39100,
+    "title": "Run safe-outputs MCP in the gh-aw node container",
+    "sentiment": 0.687
+  },
+  "most_negative_pr": {
+    "number": 39726,
+    "title": "ci: store Windows Defender scan logs as artifact on cross-platform build",
+    "sentiment": -0.595
+  },
+  "top_bigrams": [
+    [
+      "safe output",
+      43
+    ],
+    [
+      "sou chef",
+      22
+    ],
+    [
+      "smoke claude",
+      18
+    ],
+    [
+      "agentic workflow",
+      13
+    ],
+    [
+      "workflow smoke",
+      12
+    ],
+    [
+      "aic agentic",
+      11
+    ],
+    [
+      "aic aic",
+      10
+    ],
+    [
+      "sub agent",
+      10
+    ]
+  ],
+  "sentiment_by_type": {
+    "titles": 0.0998,
+    "bodies": 0.103
+  },
+  "cluster_top_terms": {
+    "0": [
+      "value",
+      "string",
+      "attribute",
+      "non",
+      "env",
+      "add",
+      "site",
+      "test"
+    ],
+    "1": [
+      "field",
+      "issue",
+      "handler",
+      "failure",
+      "workflow",
+      "validation",
+      "schema",
+      "html"
+    ],
+    "2": [
+      "permission",
+      "toolset",
+      "activation",
+      "compiled",
+      "comment",
+      "status",
+      "tool",
+      "github"
+    ],
+    "3": [
+      "snapshot",
+      "schema",
+      "fallback",
+      "sou chef",
+      "chef",
+      "sou",
+      "copilot",
+      "aic"
+    ],
+    "4": [
+      "container",
+      "claude",
+      "firewall",
+      "safe output",
+      "output",
+      "safe",
+      "summary",
+      "image"
+    ]
+  }
+}
