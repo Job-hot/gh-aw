@@ -250,7 +250,7 @@ Group all **accepted, mapped** outcomes by objective category (the highest-value
 - Impact Efficiency for this category (total outcome value / AIC consumed) — show `—` if AIC is unknown for this category
 - Representative examples (up to 3 linked outcomes)
 
-Sort categories by total outcome value descending. Also call out separately which category consumed the **most AIC** (highest denominator cost), so readers can see where budget was spent regardless of value delivered.
+Sort categories by total outcome value descending. If per-category AIC is available, also call out separately which category consumed the **most AIC**; otherwise state that the most-AIC category cannot be determined without workflow attribution.
 
 This section should make the most impactful work in the repository obvious at a glance.
 
