@@ -1,42 +1,73 @@
 {
-  "run_date": "2026-06-17T01:27:51Z",
-  "run_id": "27659488840",
-  "previous_run_id": "27642308894",
-  "previous_run_date": "2026-06-16T19:24:49Z",
+  "run_date": "2026-06-17T08:13:31Z",
+  "run_id": "27675141076",
+  "previous_run_id": "27659488840",
+  "previous_run_date": "2026-06-17T01:27:51Z",
   "fork_prs": 0,
-  "agent_prs_found": 3,
-  "copilot_swe_agent_prs": 3,
+  "agent_prs_found": 6,
+  "copilot_swe_agent_prs": 6,
   "github_actions_prs": 0,
   "prs_triaged": 0,
   "fork_only_policy": true,
-  "graphql_api_status": "OK",
   "open_agent_prs": [
     {
-      "number": 39697,
-      "title": "compile: clarify --action-mode/--action-tag/--gh-aw-ref relationship, enforce mutual exclusivity",
-      "draft": false,
-      "category": "chore",
-      "status": "OPEN",
-      "created": "2026-06-16",
-      "additions": 84,
-      "deletions": 14,
-      "changed_files": 5,
+      "number": 39742,
+      "title": "Harden workflow_call jobs against GHES output masking for artifact prefixes and target repo resolution",
+      "draft": true,
+      "category": "bug",
+      "status": "DRAFT",
+      "created": "2026-06-17",
       "labels": [],
       "assignees": ["pelikhan"],
       "reviewers_requested": ["pelikhan"],
       "isCrossRepository": false
     },
     {
-      "number": 39644,
-      "title": "Include and pin safe-outputs gh-aw-node image in default container predownload and manifest",
-      "draft": false,
+      "number": 39741,
+      "title": "logs: keep paging in all-workflows mode when full batches filter to zero runs",
+      "draft": true,
+      "category": "bug",
+      "status": "DRAFT",
+      "created": "2026-06-17",
+      "labels": [],
+      "assignees": ["pelikhan"],
+      "reviewers_requested": ["pelikhan"],
+      "isCrossRepository": false
+    },
+    {
+      "number": 39740,
+      "title": "Fix misplaced zizmor ignore comment in GHES host step generator",
+      "draft": true,
+      "category": "bug",
+      "status": "DRAFT",
+      "created": "2026-06-17",
+      "labels": [],
+      "assignees": ["pelikhan"],
+      "reviewers_requested": ["pelikhan"],
+      "isCrossRepository": false
+    },
+    {
+      "number": 39739,
+      "title": "Implement `mcp-scripts.dependencies` end-to-end with runtime-manager install flow",
+      "draft": true,
       "category": "feature",
-      "status": "OPEN",
-      "created": "2026-06-16",
-      "additions": 878,
-      "deletions": 517,
-      "changed_files": 262,
-      "labels": ["smoke"],
+      "status": "DRAFT",
+      "created": "2026-06-17",
+      "labels": [],
+      "assignees": ["pelikhan"],
+      "reviewers_requested": ["pelikhan"],
+      "isCrossRepository": false
+    },
+    {
+      "number": 39721,
+      "title": "Add failure category filtering to report-failure-as-issue",
+      "draft": true,
+      "category": "feature",
+      "status": "DRAFT",
+      "created": "2026-06-17",
+      "labels": [],
+      "assignees": ["pelikhan"],
+      "reviewers_requested": ["pelikhan"],
       "isCrossRepository": false
     },
     {
@@ -46,33 +77,25 @@
       "category": "feature",
       "status": "DRAFT",
       "created": "2026-06-16",
-      "additions": 201,
-      "deletions": 0,
-      "changed_files": 5,
       "labels": [],
       "assignees": ["dsyme"],
       "reviewers_requested": ["dsyme"],
       "isCrossRepository": false
     }
   ],
-  "closed_since_last_run": [
-    39639, 39638, 39637, 39636, 39623, 39620,
-    39655, 39654, 39653, 39652, 39651, 39650,
-    39643, 39640
-  ],
-  "new_since_last_run": [39697],
+  "closed_since_last_run": [39697, 39644],
+  "new_since_last_run": [39742, 39741, 39740, 39739, 39721],
   "statistics": {
     "by_category": {
-      "feature": 2,
-      "chore": 1
+      "bug": 3,
+      "feature": 3
     },
     "by_status": {
-      "OPEN": 2,
-      "DRAFT": 1
+      "DRAFT": 6
     },
     "resolved_this_run": {
-      "closed_or_merged": 14
+      "closed_or_merged": 2
     }
   },
-  "notes": "3 open copilot-swe-agent PRs, all branch-based (isCrossRepository=false). Fork-only triage policy -> 0 PRs eligible for formal triage. 14 PRs closed/merged since last run. 1 new PR (#39697 compile CLI args clarification). #39644 still open with smoke label. #39540 still DRAFT."
+  "notes": "6 open copilot-swe-agent PRs, all branch-based (isCrossRepository=false). Fork-only triage policy → 0 PRs eligible for formal triage. 2 PRs merged since last run (#39697 at 2026-06-17T01:33Z, #39644 at 2026-06-17T02:37Z). 5 new PRs created today: #39739-#39742 (GHES hardening, logs pagination, zizmor fix, mcp-scripts.dependencies) and #39721 (failure category filtering). #39540 still DRAFT from dsyme/Copilot."
 }
