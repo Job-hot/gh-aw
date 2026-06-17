@@ -207,7 +207,7 @@ Create one issue titled:
 Impact Efficiency Report - YYYY-MM-DD
 ```
 
-Use **progressive disclosure** for the report body. Place the Executive Summary first as plain text (no collapsible wrapper). Wrap every other section individually in an HTML `<details><summary>` block so readers can expand only what they need. Use descriptive summary labels that include the section's most important number where possible (e.g. `📋 Summary — 3 accepted outcomes, 43,055 AIC, IE 0.00476`, `🎯 Agentic Work by Objective — top: bug (170 value)`, `📉 Data Quality — 2 gaps`).
+Use **progressive disclosure** for the report body. Place the Executive Summary first as plain text (no collapsible wrapper). Wrap every other section individually in an HTML `<details>` block using the canonical structure (`<details>` on its own line, `<summary>…</summary>` on its own line, then a blank line before the section body, ending with `</details>`). Use descriptive summary labels that include the section's most important number where possible (e.g. `📋 Summary — 3 accepted outcomes, 43,055 AIC, IE 0.00476`, `🎯 Agentic Work by Objective — top: bug (170 value)`, `📉 Data Quality — 2 gaps`).
 
 The report must include:
 
