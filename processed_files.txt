@@ -27,3 +27,4 @@
 ./pkg/workflow/frontmatter_extraction_yaml_test.go|2026-05-30
 ./pkg/cli/checks_command_test.go|2026-06-01
 ./pkg/parser/frontmatter_extraction_test.go|2026-05-31
+./pkg/constants/permissions_policy_test.go|2026-06-17
