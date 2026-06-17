@@ -91,10 +91,17 @@ func artifactPrefixExprForAgentDownstreamJob(data *WorkflowData) string {
 	return "${{ needs.agent.outputs.artifact_prefix }}"
 }
 
+// targetRepoExprForWorkflowCall returns a cross-job target repository expression with a
+// github.repository fallback. GHES secret masking can blank activation outputs when their
+// values match registered secret substrings, so downstream jobs must tolerate empty
+// needs.activation.outputs.target_repo values.
 func targetRepoExprForWorkflowCall() string {
 	return "${{ needs.activation.outputs.target_repo || github.repository }}"
 }
 
+// targetRepoNameExprForWorkflowCall returns a repo-name-only expression with a fallback to
+// github.event.repository.name. This keeps GitHub App token minting resilient when GHES
+// secret masking blanks needs.activation.outputs.target_repo_name in downstream jobs.
 func targetRepoNameExprForWorkflowCall() string {
 	return "${{ needs.activation.outputs.target_repo_name || github.event.repository.name }}"
 }
