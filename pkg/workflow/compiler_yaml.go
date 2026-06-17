@@ -17,6 +17,20 @@ import (
 
 var compilerYamlLog = logger.New("workflow:compiler_yaml")
 
+// willGenerateConcurrencyBlocks checks if the workflow will generate any concurrency blocks
+// with queue: max. This is used to determine if we should show the GHES compatibility hint.
+func willGenerateConcurrencyBlocks(data *WorkflowData) bool {
+	// Conclusion job gets concurrency if WorkflowID is set
+	if data.WorkflowID != "" && data.SafeOutputs != nil {
+		return true
+	}
+	// Agent job gets concurrency if it doesn't have special triggers
+	if data.EngineConfig != nil && data.EngineConfig.ID != "" && !hasSpecialTriggers(data) {
+		return true
+	}
+	return false
+}
+
 // effectiveStrictMode computes the effective strict mode for a workflow.
 // Priority: CLI flag (c.strictMode) > frontmatter strict field > default (true).
 // This should be used when emitting metadata/env vars to correctly reflect the
@@ -254,6 +268,14 @@ func (c *Compiler) generateWorkflowHeader(yaml *strings.Builder, data *WorkflowD
 		yaml.WriteString("#\n")
 		cleanManualApproval := stringutil.StripANSI(data.ManualApproval)
 		fmt.Fprintf(yaml, "# Manual approval required: environment '%s'\n", cleanManualApproval)
+	}
+
+	// Add concurrency-queue hint when the feature is enabled (helps GHES users)
+	// Only show this comment when the workflow will actually generate queue: max blocks
+	if isGroupConcurrencyQueueEnabled(data) && willGenerateConcurrencyBlocks(data) {
+		yaml.WriteString("#\n")
+		yaml.WriteString("# GHES compatibility: This workflow generates 'queue: max' in concurrency blocks.\n")
+		yaml.WriteString("# To disable for GHES, add: features.concurrency-queue: false\n")
 	}
 
 	yaml.WriteString("\n")

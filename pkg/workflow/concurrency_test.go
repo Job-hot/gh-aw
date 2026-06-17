@@ -576,6 +576,19 @@ func TestGenerateJobConcurrencyConfig(t *testing.T) {
 			description: "feature flag can disable queue:max emission for generated job concurrency",
 		},
 		{
+			name: "generated job concurrency can disable queue max with shorter flag name",
+			workflowData: &WorkflowData{
+				On:           "on:\n  schedule:\n    - cron: '0 0 * * *'",
+				EngineConfig: &EngineConfig{ID: "copilot"},
+				Features: map[string]any{
+					"concurrency-queue": false,
+				},
+			},
+			expected: `concurrency:
+  group: "gh-aw-copilot-${{ github.workflow }}"`,
+			description: "shorter flag name concurrency-queue also disables queue:max emission",
+		},
+		{
 			name: "Job discriminator ignored when push trigger (special trigger, no default group)",
 			workflowData: &WorkflowData{
 				On:                          "on:\n  push:\n    branches: [main]",

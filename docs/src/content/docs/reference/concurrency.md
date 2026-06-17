@@ -83,12 +83,16 @@ concurrency:
   queue: max
 ```
 
-Compiler-generated concurrency groups (agent, output, and conclusion jobs) emit `queue: max` by default so back-to-back triggers run sequentially rather than being dropped. Set `features.group-concurrency-queue: false` to omit `queue` from generated groups and revert to the Actions default:
+Compiler-generated concurrency groups (agent, output, and conclusion jobs) emit `queue: max` by default so back-to-back triggers run sequentially rather than being dropped. Set `features.concurrency-queue: false` to omit `queue` from generated groups and revert to the Actions default:
 
 ```yaml wrap
 features:
-  group-concurrency-queue: false
+  concurrency-queue: false
 ```
+
+:::note[GHES Compatibility]
+GitHub Enterprise Server (GHES) does not support the `queue` field in concurrency blocks. If you're deploying to GHES, set `features.concurrency-queue: false` in your workflow frontmatter to disable `queue: max` generation.
+:::
 
 ## Conclusion Job Concurrency
 

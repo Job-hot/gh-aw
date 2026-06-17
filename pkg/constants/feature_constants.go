@@ -68,8 +68,17 @@ const (
 	//	features:
 	//	  integrity-reactions: true
 	IntegrityReactionsFeatureFlag FeatureFlag = "integrity-reactions"
-	// GroupConcurrencyQueueFeatureFlag controls whether compiler-generated group
-	// concurrency blocks include queue: max.
+	// ConcurrencyQueueFeatureFlag controls whether compiler-generated group
+	// concurrency blocks include queue: max. This is the preferred flag name.
+	// GroupConcurrencyQueueFeatureFlag is an alias for backward compatibility.
+	//
+	// Workflow frontmatter usage:
+	//
+	//	features:
+	//	  concurrency-queue: false
+	ConcurrencyQueueFeatureFlag FeatureFlag = "concurrency-queue"
+	// GroupConcurrencyQueueFeatureFlag is deprecated. Use ConcurrencyQueueFeatureFlag instead.
+	// This alias is maintained for backward compatibility.
 	//
 	// Workflow frontmatter usage:
 	//
