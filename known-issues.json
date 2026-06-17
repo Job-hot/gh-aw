@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16",
+  "updated": "2026-06-17T22:00Z",
   "issues": [
     {
       "id": "model-param-config-incompatibility",
@@ -299,11 +299,12 @@
       "severity": "MEDIUM",
       "new": true,
       "first_seen": "2026-06-16",
-      "last_seen": "2026-06-16",
-      "recurrence_count": 1,
-      "recurrence": "NEW 2026-06-16: 2 prod-main runs. Daily Code Metrics (run 27643027159, agent SUCCESS 53turns/4.27M tok, chart upload_asset x2) + Daily Project Performance Summary (run 27649783375, agent SUCCESS). job_details: activation/agent/detection/safe_outputs all success, ONLY upload_assets:failure -> overall run conclusion=failure.",
+      "last_seen": "2026-06-17",
+      "recurrence_count": 2,
+      "recurrence": "RECUR 2026-06-17 (count 2): Daily Project Performance Summary Generator copilot run 27720651183 — observability flagged 100% failure (1/1), GitHub status=completed 21.7m. Same upload_assets safe-output reddening signature as 06-16. Still unfixed.",
       "affected": [
         "Daily Code Metrics and Trend Tracking Agent",
+        "Daily Project Performance Summary Generator",
         "Daily Project Performance Summary Generator (Using MCP Scripts)"
       ],
       "note": "Variant of safe-output-partial-failure-intolerance isolated to the upload_assets chart-upload job. Same upload_asset path this audit agent uses.",

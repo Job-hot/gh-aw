@@ -1,24 +1,24 @@
 {
-  "updated": "2026-06-16T22:10Z",
-  "date": "2026-06-16",
+  "updated": "2026-06-17T22:00Z",
+  "date": "2026-06-17",
   "partial": true,
-  "latest_window": "2026-06-16 ~3.3h evening cluster (18:41-21:57Z); ~20h gap 06-15 22:00->06-16 18:41 unobserved (logs 120s timeout). 66 completed: 47 s / 19 f = 71.2% overall (skewed by 9-run PR container-validation cluster). prod-main 27/32=84.4%. 4 prod-main fails: 2x copilot-sdk tool-perm-lockout (Safe Output Integrator day10, Daily Testify NEW) + 2x NEW upload_assets-reddens-successful-run (Daily Code Metrics, Daily Project Performance Summary). missing_tools=0 missing_data=0 mcp_failures=0. fw 197/4314=4.6% all by-design smoke egress probes.",
+  "latest_window": "2026-06-17 last-24h (~8.1h compute, evening cluster). 43 completed runs, 0 in-progress counted (this audit + Release excluded). 42 s / 1 f = 97.7% — strong recovery from 06-16 71.2%. Only flagged failure: Daily Project Performance Summary (upload-assets-reddens-successful-run, recur count 2). missing_tools=0 missing_data=0 mcp_failures=0. fw 489/2436=20.1% — ALL by-design smoke egress probes (google/playwright/golang-proxy). Engines: copilot 21, codex 7, claude 6, antigravity/gemini/pi 3 each.",
   "totals": {
-    "r": 66,
-    "completed": 66,
-    "s": 47,
-    "f": 19,
-    "rate": 71.2,
-    "prod_main_rate": 84.4,
-    "tok": 41946177,
-    "turns": 894,
-    "action_min": 750,
+    "r": 43,
+    "completed": 43,
+    "s": 42,
+    "f": 1,
+    "rate": 97.7,
+    "prod_main_rate": 97.7,
+    "tok": 23678641,
+    "turns": 569,
+    "action_min": 505,
     "missing_tools": 0,
     "missing_data": 0,
     "mcp_failures": 0,
-    "safe_items": 5,
-    "fw_total": 4314,
-    "fw_blocked": 197
+    "safe_items": 27,
+    "fw_total": 2436,
+    "fw_blocked": 489
   },
   "engines": {
     "copilot": 42,
@@ -238,6 +238,13 @@
       "tok": 41946177,
       "partial": true,
       "note": "~3.3h evening window. Overall 71.2% skewed by 9-run PR container-validation cluster (copilot/add-gh-aw-node-to-default-containers smoke+container tests, by-design). prod-main 84.4% (4 fail: 2 sdk-perm-lockout, 2 NEW upload_assets-redden). missing_tools/data/mcp=0."
+    },
+    {
+      "d": "2026-06-17",
+      "r": 43,
+      "s": 42,
+      "rate": 97.7,
+      "tok": 23678641
     }
   ]
 }

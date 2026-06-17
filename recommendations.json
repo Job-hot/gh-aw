@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16",
+  "updated": "2026-06-17T22:00Z",
   "recommendations": [
     {
       "id": "rec-sdk-toolperm-allowlist-or-relax-guard",
@@ -166,6 +166,18 @@
       "status": "open",
       "rec": "NEW prod-main false-red: the upload_assets safe-output job failing reddens 2 fully-successful runs (Daily Code Metrics agent SUCCESS 53turns/4.27M tok; Daily Project Performance Summary agent SUCCESS) even though agent+safe_outputs+detection all green. Make the upload_assets job non-fatal to overall run conclusion (skip-and-warn), or add retry/validation, so a transient chart-asset upload failure does not discard a successful agent run. Note: this is the same upload_asset path used by chart-emitting audit/report agents fleet-wide, so impact is broad.",
       "note": "Watch recurrence — if it persists it joins safe-output-partial-failure-intolerance family."
+    },
+    {
+      "id": "rec-upload-assets-noredden",
+      "linked_issue": "upload-assets-reddens-successful-run",
+      "priority": "MEDIUM",
+      "date": "2026-06-17",
+      "first_seen": "2026-06-16",
+      "last_seen": "2026-06-17",
+      "recurrence": 2,
+      "status": "open",
+      "rec": "upload_assets safe-output job failure should not redden a run whose agent + other safe_outputs + detection all succeeded. Make the asset-publish step non-fatal (continue-on-error / soft-fail) and surface a warning annotation instead, OR validate asset path resolution earlier. Note: asset paths must resolve under $GITHUB_WORKSPACE — host safeoutputs server cannot read /tmp/gh-aw/{python,agent,cache-memory}; document this so chart-generating workflows copy to workspace before upload.",
+      "note": "Recurs 06-16 (Daily Code Metrics, Daily Project Performance Summary) -> 06-17 (Daily Project Performance Summary). 2 consecutive days."
     }
   ]
 }
