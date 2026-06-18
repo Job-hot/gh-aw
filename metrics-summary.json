@@ -1,32 +1,32 @@
 {
-  "updated": "2026-06-17T22:00Z",
-  "date": "2026-06-17",
+  "updated": "2026-06-18T22:00Z",
+  "date": "2026-06-18",
   "partial": true,
-  "latest_window": "2026-06-17 last-24h (~8.1h compute, evening cluster). 43 completed runs, 0 in-progress counted (this audit + Release excluded). 42 s / 1 f = 97.7% — strong recovery from 06-16 71.2%. Only flagged failure: Daily Project Performance Summary (upload-assets-reddens-successful-run, recur count 2). missing_tools=0 missing_data=0 mcp_failures=0. fw 489/2436=20.1% — ALL by-design smoke egress probes (google/playwright/golang-proxy). Engines: copilot 21, codex 7, claude 6, antigravity/gemini/pi 3 each.",
+  "latest_window": "2026-06-18 last-24h (~13.1h compute, evening cluster). 78 runs w/summary (76 completed, 2 in-progress=this audit + PR Description Updater). 67 s / 9 f = 88.2% completed. prod-main(main+schedule) 23/31 = 74.2% — DIP vs 06-17 (97.7%), driven by an 8-failure cluster ALL mapping to KNOWN recurring issues (no new class). missing_tools=0 missing_data=0 mcp_failures=0 errors=0. fw 80/5552=1.4% blocked, ALL by-design (google safebrowsing smoke egress probes + github-cloud/golang-proxy asset pulls). Engines (downloaded subset): copilot 60, claude 17, codex 1 — NOTE gemini/antigravity/pi smoke runs undercounted (logs tool 120s timeout left ~90 run dirs empty).",
   "totals": {
-    "r": 43,
-    "completed": 43,
-    "s": 42,
-    "f": 1,
-    "rate": 97.7,
-    "prod_main_rate": 97.7,
-    "tok": 23678641,
-    "turns": 569,
-    "action_min": 505,
+    "r": 78,
+    "completed": 76,
+    "s": 67,
+    "f": 9,
+    "in_progress": 2,
+    "rate": 88.2,
+    "prod_main_rate": 74.2,
+    "tok": 42796721,
+    "turns": 1015,
+    "action_min": 786,
     "missing_tools": 0,
     "missing_data": 0,
     "mcp_failures": 0,
-    "safe_items": 27,
-    "fw_total": 2436,
-    "fw_blocked": 489
+    "errors": 0,
+    "safe_items": 11,
+    "fw_total": 5552,
+    "fw_blocked": 80
   },
   "engines": {
-    "copilot": 42,
-    "claude": 14,
-    "codex": 5,
-    "gemini": 1,
-    "antigravity": 1,
-    "pi": 1
+    "copilot": 60,
+    "claude": 17,
+    "codex": 1,
+    "note": "partial: gemini/antigravity/pi undercounted due to logs-timeout empty dirs"
   },
   "history": [
     {
@@ -245,6 +245,15 @@
       "s": 42,
       "rate": 97.7,
       "tok": 23678641
+    },
+    {
+      "d": "2026-06-18",
+      "r": 78,
+      "s": 67,
+      "rate": 88.2,
+      "tok": 42796721,
+      "partial": true,
+      "note": "prod-main 74.2%; 8-fail cluster all KNOWN-recurring (avenger x2, copilot-sdk-lockout x2, doc-unbloat, codex-binary, security-obs 0tok, PR-Sous-Chef safe_outputs); 0 missing-tools/data/mcp"
     }
   ]
 }

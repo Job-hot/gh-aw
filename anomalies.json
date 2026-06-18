@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16",
+  "updated": "2026-06-18",
   "anomalies": [
     {
       "id": "anom-sdk-toolperm-reescalate",
@@ -7,11 +7,11 @@
       "wf": "Daily Safe Output Integrator",
       "run": "27101776716",
       "kind": "sdk-driver-tool-permission-lockout",
-      "persistence": 4,
+      "persistence": 5,
       "escalation": "PERSISTING-ESCALATE",
-      "detail": "RECUR 06-07 on 1 prod-main schedule (Safe Output Integrator): denies read(*_test.go)/shell(sed), 13 denials, 5-denial abort. Down from 3 wf on 06-06. sdk-driver path now 1/8 fails (minimatch gone). | …",
+      "detail": "RECUR 06-07 on 1 prod-main schedule (Safe Output Integrator): denies read(*_test.go)/shell(sed), 13 denials, 5-denial abort. Down from 3 wf on 06-06. sdk-driver path now 1/8 fails (minimatch gone). | … | 06-18: spread to NEW wf (SPDD Spec Planner) + Safe Output Integrator, 2 prod-main 0-tok lockout fails, recur day11.",
       "status": "ACTIVE",
-      "last_seen": "2026-06-10"
+      "last_seen": "2026-06-18"
     },
     {
       "id": "anom-ambient-back-under-cap",
@@ -168,6 +168,18 @@
       "status": "ACTIVE",
       "last_seen": "2026-06-16",
       "detail": "2 prod-main runs reddened by upload_assets job failure despite agent SUCCESS (Daily Code Metrics 53turns/4.27M tok, Daily Project Performance Summary). agent+safe_outputs+detection all green. New false-red class on chart-upload path."
+    },
+    {
+      "id": "anom-avenger-errconfig-resurge",
+      "date": "2026-06-18",
+      "wf": "Avenger",
+      "run": "27777515515,27783264854",
+      "kind": "err-config-no-structured-logs",
+      "persistence": 2,
+      "escalation": "WATCH",
+      "detail": "Avenger claude resurfaced 06-18 x2 (77K tok/2-turn agent:failure) after 4-day quiet since 06-14; chronic top prod-main offender (issue recur 11). Bash tool error stalls observed in agent-stdio.",
+      "status": "ACTIVE",
+      "last_seen": "2026-06-18"
     }
   ]
 }

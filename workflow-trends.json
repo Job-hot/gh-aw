@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16",
+  "updated": "2026-06-18",
   "workflows": {
     "Linter Miner": {
       "last": "2026-06-06",
@@ -37,11 +37,11 @@
       "note": "MODULE_NOT_FOUND minimatch (run 27070604747); observability flagged as overkill_for_agentic"
     },
     "Daily SPDD Spec Planner": {
-      "last": "2026-06-06",
+      "last": "2026-06-18",
       "last_concl": "failure",
-      "eff_tok": 43605,
-      "class": "copilot-sdk-driver-tool-permission-lockout",
-      "note": "permissionDeniedCount=10; sdk-driver denied shell/read on cache-memory (run 27067363723)"
+      "eff_tok": 0,
+      "class": "copilot-sdk-driver-failures",
+      "note": "NEW affected wf, same lockout signature"
     },
     "GEO Optimizer Daily Audit": {
       "last": "2026-06-06",
@@ -58,23 +58,18 @@
       "note": "RECUR day 3: 400 'This model does not support the effort parameter' (run 27104658186, retries 1/11). Unfixed; drop effort param from frontmatter."
     },
     "Daily Cache Strategy Analyzer": {
-      "last": "2026-06-15",
+      "last": "2026-06-18",
       "last_concl": "failure",
       "eff_tok": 0,
-      "class": "codex",
-      "note": "gh-aw-binary-not-found-for-mcp exit1 06-15 (new sig); 100% fail",
-      "last_seen": "2026-06-11",
-      "last_status": "failure",
-      "reliability": "recurring model-not-found (codex gpt-5-codex-alpha 404); failed 06-05 & 06-11",
-      "engine": "codex"
+      "class": "codex-gh-aw-binary-not-found-for-mcp",
+      "note": "codex 0-tok agent:failure; persistent ~100% fail-rate"
     },
     "Daily Safe Output Integrator": {
-      "last": "2026-06-16",
+      "last": "2026-06-18",
       "last_concl": "failure",
-      "class": "copilot-sdk-driver-tool-permission-lockout",
-      "note": "RECUR day10 (run 27643760095): 5-denial lockout (read /pkg/*, shell go version/git status) ~24min 0-tok",
-      "engine": "copilot-sdk",
-      "reliability": "chronic prod-main tool-perm-lockout, longest-running unresolved class"
+      "eff_tok": 0,
+      "class": "copilot-sdk-driver-failures",
+      "note": "0-tok/25min tool-perm-lockout, recur day11"
     },
     "Design Decision Gate": {
       "last": "2026-06-06",
@@ -84,12 +79,11 @@
       "note": "agent succeeded (turns=3); detection job reddened with ERR_PARSE no THREAT_DETECTION_RESULT (run 27065879421)"
     },
     "PR Sous Chef": {
-      "last": "2026-06-14",
-      "last_concl": "success",
-      "last_seen": "2026-06-14",
-      "last_status": "success",
-      "reliability": "RECOVERED 10/10 success (was 6x fail 06-13); fix branch copilot/aw-fix-pr-sous-chef-fail landed",
-      "engine": "copilot/gpt-5-mini"
+      "last": "2026-06-18",
+      "last_concl": "failure",
+      "eff_tok": 625705,
+      "class": "safe-output-partial-failure-intolerance",
+      "note": "agent SUCCESS but safe_outputs job failed -> red"
     },
     "Test Quality Sentinel": {
       "last": "2026-06-06",
@@ -103,11 +97,10 @@
       "last_note": "2026-06-09 copilot 15min action-timeout (valid work wasted)"
     },
     "Daily Ambient Context Optimizer": {
-      "last": "2026-06-16",
+      "last": "2026-06-18",
       "last_concl": "success",
-      "eff_tok": 5905929,
-      "note": "top token consumer 5.91M tok, success, under-cap (no 429)",
-      "engine": "copilot"
+      "eff_tok": 6853644,
+      "note": "top consumer 6.85M tok/101 turns, success"
     },
     "Matt Pocock Skills Reviewer": {
       "last": "2026-06-06",
@@ -155,13 +148,11 @@
       "engine": "pi"
     },
     "Avenger": {
-      "last": "2026-06-14",
+      "last": "2026-06-18",
       "last_concl": "failure",
-      "last_seen": "2026-06-14",
-      "last_status": "failure",
+      "eff_tok": 77000,
       "class": "avenger-err-config-no-structured-logs",
-      "reliability": "0/3 (day2). 2 agents did real work+created PRs then run reddened; fix branch not yet effective",
-      "engine": "claude/opus-4-8"
+      "note": "x2 fails 06-18 (2-turn each) after 4 quiet days; chronic, recur 11"
     },
     "Daily Formal Spec Verifier": {
       "last": "2026-06-14",
@@ -172,13 +163,11 @@
       "engine": "copilot-sdk"
     },
     "Documentation Unbloat": {
-      "last": "2026-06-15",
+      "last": "2026-06-18",
       "last_concl": "failure",
-      "last_seen": "2026-06-14",
-      "class": "claude",
-      "reliability": "empty-output/digest-mismatch reddens 2 days running",
-      "engine": "claude",
-      "note": "cache-memory-git-integrity git-exit2 day3 06-15"
+      "eff_tok": 0,
+      "class": "doc-unbloat-empty-output",
+      "note": "empty {items:[]}, recur 5"
     },
     "Repository Tree Map Generator": {
       "last": "2026-06-15",
@@ -187,10 +176,11 @@
       "note": "copilot-harness-action-timeout 5min (tok=579624 partial) 06-15"
     },
     "Daily Security Observability Report": {
-      "last": "2026-06-15",
+      "last": "2026-06-18",
       "last_concl": "failure",
-      "class": "copilot",
-      "note": "0-tok agent-artifact-missing 06-15 (new)"
+      "eff_tok": 0,
+      "class": "copilot-agent-artifact-missing-0tok",
+      "note": "0-tok agent:failure, recur 2"
     },
     "Daily Code Metrics and Trend Tracking Agent": {
       "last": "2026-06-16",

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T22:00Z",
+  "updated": "2026-06-18",
   "recommendations": [
     {
       "id": "rec-sdk-toolperm-allowlist-or-relax-guard",
@@ -7,11 +7,11 @@
       "priority": "HIGH",
       "date": "2026-06-12",
       "first_seen": "2026-06-02",
-      "last_seen": "2026-06-16",
-      "recurrence": 10,
+      "last_seen": "2026-06-18",
+      "recurrence": 11,
       "status": "open",
       "rec": "TOP PRIORITY (6 consecutive days, dominant prod-main fail class — 4 prod-main hard-fails today). The copilot-sdk-driver path denies routine read-only/branch-setup commands the workflows legitimately need (`git checkout -b`, `git status`, `git show`, `awk`/`sed` over source, `read` of .changeset/.md/.go/_test.go) then aborts at 5 denials with NO retry, wasting up to 6.18M tokens (Daily Agent of the Day). Two-part fix:…",
-      "note": "RECONFIRM 06-16 (day10, 2 prod-main: Daily Safe Output Integrator + Daily Testify Uber Super Expert NEW). Longest-running unresolved prod-main class. Still TOP PRIORITY."
+      "note": "RECONFIRM 06-18 (day11). Spread to NEW wf SPDD Spec Planner (2 prod-main lockout fails w/ Safe Output Integrator). 11 days unresolved — still TOP PRIORITY."
     },
     {
       "id": "rec-chroot-node-bindmount",
