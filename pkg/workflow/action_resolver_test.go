@@ -90,6 +90,9 @@ func TestActionResolverFailedResolutionCache(t *testing.T) {
 	if !resolver.failedResolutions[cacheKey] {
 		t.Errorf("Expected failed resolution to be tracked for %s", cacheKey)
 	}
+	if !resolver.GetUsedCacheKeys()[cacheKey] {
+		t.Errorf("Expected used cache keys to track attempted resolution for %s", cacheKey)
+	}
 
 	// Second attempt should be skipped and return error immediately
 	_, err2 := resolver.ResolveSHA(context.Background(), repo, version)
@@ -101,6 +104,9 @@ func TestActionResolverFailedResolutionCache(t *testing.T) {
 	expectedErrMsg := "previously failed to resolve"
 	if !strings.Contains(err2.Error(), expectedErrMsg) {
 		t.Errorf("Expected error message to contain %q, got: %v", expectedErrMsg, err2)
+	}
+	if !resolver.GetUsedCacheKeys()[cacheKey] {
+		t.Errorf("Expected used cache keys to retain attempted resolution key %s", cacheKey)
 	}
 }
 
@@ -200,5 +206,53 @@ func TestParseTagRefTSV(t *testing.T) {
 				t.Errorf("ParseTagRefTSV(%q): type = %q, want %q", tt.input, objType, tt.wantType)
 			}
 		})
+	}
+}
+
+// TestActionResolverUsedCacheKeysOnCacheHit verifies that GetUsedCacheKeys tracks
+// cache hits — i.e. keys that were already in the cache and returned by ResolveSHA.
+func TestActionResolverUsedCacheKeysOnCacheHit(t *testing.T) {
+	tmpDir := testutil.TempDir(t, "test-*")
+	cache := NewActionCache(tmpDir)
+	resolver := NewActionResolver(cache)
+
+	// Pre-populate the cache with two entries.
+	cache.Set("owner/action-a", "v1", "sha_a")
+	cache.Set("owner/action-b", "v2", "sha_b")
+
+	// Resolve only action-a — it should appear in UsedCacheKeys.
+	sha, err := resolver.ResolveSHA(context.Background(), "owner/action-a", "v1")
+	if err != nil {
+		t.Fatalf("Expected no error for cached entry, got: %v", err)
+	}
+
+	if sha != "sha_a" {
+		t.Errorf("Expected sha_a, got %q", sha)
+	}
+
+	usedKeys := resolver.GetUsedCacheKeys()
+	if !usedKeys["owner/action-a@v1"] {
+		t.Error("Expected owner/action-a@v1 to be in used cache keys after a cache hit")
+	}
+	if usedKeys["owner/action-b@v2"] {
+		t.Error("Expected owner/action-b@v2 to be absent from used cache keys (never resolved)")
+	}
+}
+
+func TestActionResolverGetUsedCacheKeysReturnsCopy(t *testing.T) {
+	tmpDir := testutil.TempDir(t, "test-*")
+	cache := NewActionCache(tmpDir)
+	resolver := NewActionResolver(cache)
+	cache.Set("owner/action-a", "v1", "sha_a")
+
+	if _, err := resolver.ResolveSHA(context.Background(), "owner/action-a", "v1"); err != nil {
+		t.Fatalf("Expected no error resolving cache hit: %v", err)
+	}
+
+	usedKeys := resolver.GetUsedCacheKeys()
+	delete(usedKeys, "owner/action-a@v1")
+
+	if !resolver.GetUsedCacheKeys()["owner/action-a@v1"] {
+		t.Error("Expected resolver used cache keys to be immutable via returned map")
 	}
 }

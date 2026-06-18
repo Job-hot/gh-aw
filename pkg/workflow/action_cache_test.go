@@ -881,3 +881,166 @@ func TestActionCacheReleasedAtClearedOnSHAChange(t *testing.T) {
 		t.Error("ReleasedAt should be cleared when SHA changes")
 	}
 }
+
+// TestPruneOrphanedEntries verifies that PruneOrphanedEntries removes entries
+// whose keys are absent from the referenced set, while preserving referenced ones.
+func TestPruneOrphanedEntries(t *testing.T) {
+	tmpDir := testutil.TempDir(t, "test-*")
+	cache := NewActionCache(tmpDir)
+
+	// Simulate a version bump: v1.7.2 was old, v1.9.1 is now used.
+	cache.Set("microsoft/apm-action", "v1.7.2", "sha_old")
+	cache.Set("microsoft/apm-action", "v1.9.1", "sha_new")
+	cache.Set("actions/checkout", "v4", "sha_checkout")
+
+	if len(cache.Entries) != 3 {
+		t.Fatalf("Expected 3 entries before pruning, got %d", len(cache.Entries))
+	}
+
+	// Only v1.9.1 and checkout are referenced by compiled workflows.
+	referenced := map[string]bool{
+		"microsoft/apm-action@v1.9.1": true,
+		"actions/checkout@v4":         true,
+	}
+	pruned := cache.PruneOrphanedEntries(referenced)
+
+	if pruned != 1 {
+		t.Errorf("Expected 1 pruned entry, got %d", pruned)
+	}
+	if len(cache.Entries) != 2 {
+		t.Errorf("Expected 2 entries after pruning, got %d", len(cache.Entries))
+	}
+	if _, exists := cache.Entries["microsoft/apm-action@v1.7.2"]; exists {
+		t.Error("Expected orphaned entry microsoft/apm-action@v1.7.2 to be removed")
+	}
+	if _, exists := cache.Entries["microsoft/apm-action@v1.9.1"]; !exists {
+		t.Error("Expected referenced entry microsoft/apm-action@v1.9.1 to remain")
+	}
+	if _, exists := cache.Entries["actions/checkout@v4"]; !exists {
+		t.Error("Expected referenced entry actions/checkout@v4 to remain")
+	}
+}
+
+// TestPruneOrphanedEntries_EmptyReferenced verifies that passing an empty
+// referenced set is a no-op (safe guard: an empty set most likely means no
+// compilation happened, not that all entries are orphaned).
+func TestPruneOrphanedEntries_EmptyReferenced(t *testing.T) {
+	tmpDir := testutil.TempDir(t, "test-*")
+	cache := NewActionCache(tmpDir)
+
+	cache.Set("actions/checkout", "v4", "sha1")
+	cache.Set("actions/setup-node", "v4", "sha2")
+
+	pruned := cache.PruneOrphanedEntries(map[string]bool{})
+
+	if pruned != 0 {
+		t.Errorf("Expected 0 pruned entries (empty referenced set is a no-op), got %d", pruned)
+	}
+	if len(cache.Entries) != 2 {
+		t.Errorf("Expected 2 entries (unchanged), got %d", len(cache.Entries))
+	}
+}
+
+// TestPruneOrphanedEntries_NoneOrphaned verifies that no entries are removed
+// when all cached entries are referenced.
+func TestPruneOrphanedEntries_NoneOrphaned(t *testing.T) {
+	tmpDir := testutil.TempDir(t, "test-*")
+	cache := NewActionCache(tmpDir)
+
+	cache.Set("actions/checkout", "v4", "sha1")
+	cache.Set("actions/setup-node", "v4", "sha2")
+
+	referenced := map[string]bool{
+		"actions/checkout@v4":   true,
+		"actions/setup-node@v4": true,
+	}
+	pruned := cache.PruneOrphanedEntries(referenced)
+
+	if pruned != 0 {
+		t.Errorf("Expected 0 pruned entries, got %d", pruned)
+	}
+	if len(cache.Entries) != 2 {
+		t.Errorf("Expected 2 entries (unchanged), got %d", len(cache.Entries))
+	}
+}
+
+// TestPruneOrphanedEntries_AllOrphaned verifies that all entries are removed
+// when none are referenced (but referenced set is non-empty).
+func TestPruneOrphanedEntries_AllOrphaned(t *testing.T) {
+	tmpDir := testutil.TempDir(t, "test-*")
+	cache := NewActionCache(tmpDir)
+
+	// Use actions that are NOT runtime-managed or compiler-generated
+	cache.Set("microsoft/apm-action", "v1.7.2", "sha1")
+	cache.Set("cli/gh-extension-precompile", "v2.1.0", "sha2")
+
+	// Referenced set is non-empty but contains neither of the cached entries.
+	referenced := map[string]bool{
+		"some/other-action@v1": true,
+	}
+	pruned := cache.PruneOrphanedEntries(referenced)
+
+	// Both entries should be pruned (neither is compiler-generated or runtime-managed)
+	if pruned != 2 {
+		t.Errorf("Expected 2 pruned entries, got %d", pruned)
+	}
+	if len(cache.Entries) != 0 {
+		t.Errorf("Expected 0 entries after pruning all orphans, got %d", len(cache.Entries))
+	}
+}
+
+// TestPruneOrphanedEntries_PreservesCompilerGenerated verifies that compiler-generated
+// actions are never pruned, even when not in the referenced set.
+func TestPruneOrphanedEntries_PreservesCompilerGenerated(t *testing.T) {
+	tmpDir := testutil.TempDir(t, "test-*")
+	cache := NewActionCache(tmpDir)
+
+	// Add compiler-generated actions, runtime-managed actions, and a regular action
+	cache.Set("actions/cache/save", "v4", "sha_cache_save")
+	cache.Set("actions/checkout", "v4", "sha_checkout")
+	cache.Set("github/codeql-action/upload-sarif", "v4", "sha_codeql")
+	cache.Set("actions/setup-node", "v6", "sha_node")     // runtime-managed
+	cache.Set("actions/setup-python", "v5", "sha_python") // runtime-managed
+	cache.Set("ruby/setup-ruby", "v1", "sha_ruby")        // runtime-managed
+	cache.Set("microsoft/apm-action", "v1.7.2", "sha_old")
+
+	if len(cache.Entries) != 7 {
+		t.Fatalf("Expected 7 entries before pruning, got %d", len(cache.Entries))
+	}
+
+	// Only reference microsoft/apm-action, but not the compiler-generated or runtime-managed ones
+	referenced := map[string]bool{
+		"microsoft/apm-action@v1.7.2": true,
+	}
+	pruned := cache.PruneOrphanedEntries(referenced)
+
+	// Should not prune compiler-generated or runtime-managed actions
+	if pruned != 0 {
+		t.Errorf("Expected 0 pruned entries (compiler-generated and runtime-managed actions preserved), got %d", pruned)
+	}
+	if len(cache.Entries) != 7 {
+		t.Errorf("Expected 7 entries after pruning (all preserved), got %d", len(cache.Entries))
+	}
+
+	// Verify compiler-generated actions are preserved
+	if _, exists := cache.Entries["actions/cache/save@v4"]; !exists {
+		t.Error("Expected compiler-generated actions/cache/save@v4 to be preserved")
+	}
+	if _, exists := cache.Entries["actions/checkout@v4"]; !exists {
+		t.Error("Expected compiler-generated actions/checkout@v4 to be preserved")
+	}
+	if _, exists := cache.Entries["github/codeql-action/upload-sarif@v4"]; !exists {
+		t.Error("Expected compiler-generated github/codeql-action/upload-sarif@v4 to be preserved")
+	}
+
+	// Verify runtime-managed actions are preserved
+	if _, exists := cache.Entries["actions/setup-node@v6"]; !exists {
+		t.Error("Expected runtime-managed actions/setup-node@v6 to be preserved")
+	}
+	if _, exists := cache.Entries["actions/setup-python@v5"]; !exists {
+		t.Error("Expected runtime-managed actions/setup-python@v5 to be preserved")
+	}
+	if _, exists := cache.Entries["ruby/setup-ruby@v1"]; !exists {
+		t.Error("Expected runtime-managed ruby/setup-ruby@v1 to be preserved")
+	}
+}

@@ -96,6 +96,59 @@ func (c *ActionCache) DeleteContainerPin(image string) {
 	}
 }
 
+// PruneOrphanedEntries removes action cache entries whose keys are not present
+// in referencedKeys. It returns the number of entries that were removed.
+// This is used to keep actions-lock.json a faithful reflection of what the
+// compiled workflows actually reference — entries for old action versions that
+// are no longer used by any workflow are removed.
+func (c *ActionCache) PruneOrphanedEntries(referencedKeys map[string]bool) int {
+	if len(referencedKeys) == 0 {
+		return 0
+	}
+
+	// Compiler-generated actions that should never be pruned.
+	// These are embedded in Go code rather than markdown workflows and include:
+	// - Core workflow actions (cache, checkout, github-script)
+	// - Runtime setup actions (from runtime_definitions.go)
+	// - Security scanning actions (CodeQL)
+	compilerGeneratedRepos := []string{
+		"actions/cache/",
+		"actions/checkout",
+		"actions/github-script",
+		"github/codeql-action/upload-sarif",
+	}
+
+	// Add all runtime-managed actions from runtime_definitions.go
+	for _, runtime := range knownRuntimes {
+		if runtime.ActionRepo != "" {
+			compilerGeneratedRepos = append(compilerGeneratedRepos, runtime.ActionRepo)
+		}
+	}
+
+	isCompilerGenerated := func(cacheKey string) bool {
+		for _, repo := range compilerGeneratedRepos {
+			if strings.HasPrefix(cacheKey, repo) {
+				return true
+			}
+		}
+		return false
+	}
+
+	pruned := 0
+	for key := range c.Entries {
+		if !referencedKeys[key] && !isCompilerGenerated(key) {
+			delete(c.Entries, key)
+			c.dirty = true
+			pruned++
+			actionCacheLog.Printf("Pruned orphaned action cache entry: %s", key)
+		}
+	}
+	if pruned > 0 {
+		actionCacheLog.Printf("Pruned %d orphaned action cache entries, %d entries remaining", pruned, len(c.Entries))
+	}
+	return pruned
+}
+
 // PruneStaleContainerPins removes container pin entries whose keys are not present
 // in knownImages. It returns the number of entries that were removed.
 // This is used to keep actions-lock.json consistent with the set of images
@@ -351,6 +404,30 @@ func (c *ActionCache) FindEntryBySHA(repo, sha string) (ActionCacheEntry, bool) 
 		}
 	}
 	return ActionCacheEntry{}, false
+}
+
+// FindAnyEntryForRepo finds any cache entry for the given repo,
+// preferring the newest version (by sorting keys and taking first match).
+// Returns the cache key, entry, and true if found, or empty values and false if not found.
+// This is used when the compiler needs to reference an action but doesn't know the version.
+func (c *ActionCache) FindAnyEntryForRepo(repo string) (string, ActionCacheEntry, bool) {
+	prefix := repo + "@"
+	var matchedKeys []string
+	for key := range c.Entries {
+		if strings.HasPrefix(key, prefix) {
+			matchedKeys = append(matchedKeys, key)
+		}
+	}
+	if len(matchedKeys) == 0 {
+		actionCacheLog.Printf("No cache entries found for repo: %s", repo)
+		return "", ActionCacheEntry{}, false
+	}
+	// Sort keys and take the first one (lexicographically, which tends to favor newer versions)
+	sort.Strings(matchedKeys)
+	firstKey := matchedKeys[len(matchedKeys)-1] // Take the last one for descending order (v9 > v1)
+	entry := c.Entries[firstKey]
+	actionCacheLog.Printf("Found cache entry for %s: %s", repo, firstKey)
+	return firstKey, entry, true
 }
 
 // Set stores a new cache entry, preserving any already-cached inputs when the SHA
