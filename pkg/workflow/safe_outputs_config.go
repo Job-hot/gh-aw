@@ -579,6 +579,37 @@ func (c *Compiler) extractSafeOutputsConfig(frontmatter map[string]any) *SafeOut
 				}
 			}
 
+			// Handle disclosure-footer configuration (shorthand for standard AI authorship disclosure footer).
+			// Accepted shapes:
+			//   - true: use the built-in standard disclosure footer text
+			//   - {template: "..."}: use a custom disclosure footer text
+			// disclosure-footer only sets messages.footer when a footer template is not already explicitly
+			// provided via messages.footer, so an explicit messages.footer always takes precedence.
+			if disclosureFooter, exists := outputMap["disclosure-footer"]; exists {
+				switch v := disclosureFooter.(type) {
+				case bool:
+					if v {
+						if config.Messages == nil {
+							config.Messages = &SafeOutputMessagesConfig{}
+						}
+						if config.Messages.Footer == "" {
+							config.Messages.Footer = DefaultDisclosureFooter
+							safeOutputsConfigLog.Print("Applied built-in disclosure footer via disclosure-footer: true")
+						}
+					}
+				case map[string]any:
+					if tmpl, ok := v["template"].(string); ok && tmpl != "" {
+						if config.Messages == nil {
+							config.Messages = &SafeOutputMessagesConfig{}
+						}
+						if config.Messages.Footer == "" {
+							config.Messages.Footer = tmpl
+							safeOutputsConfigLog.Print("Applied custom disclosure footer via disclosure-footer.template")
+						}
+					}
+				}
+			}
+
 			// Handle activation-comments at safe-outputs top level (templatable boolean)
 			if err := preprocessBoolFieldAsString(outputMap, "activation-comments", safeOutputsConfigLog); err != nil {
 				safeOutputsConfigLog.Printf("activation-comments: %v", err)
