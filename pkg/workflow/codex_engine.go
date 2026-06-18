@@ -348,7 +348,7 @@ func buildCodexBaseEnv(workflowData *WorkflowData, firewallEnabled bool) map[str
 
 // applyCodexModelAndCustomEnv sets the max-turns, model, custom engine/agent env vars and
 // mcp-scripts secrets on the given env map for a Codex execution step.
-func applyCodexModelAndCustomEnv(env map[string]string, workflowData *WorkflowData, firewallEnabled bool, modelConfigured bool, modelEnvVar string) {
+func applyCodexModelAndCustomEnv(env map[string]string, workflowData *WorkflowData, modelConfigured bool, modelEnvVar string) {
 	if workflowData.ToolsStartupTimeout != "" {
 		env["GH_AW_STARTUP_TIMEOUT"] = workflowData.ToolsStartupTimeout
 	}
@@ -408,7 +408,7 @@ func (e *CodexEngine) GetExecutionSteps(workflowData *WorkflowData, logFile stri
 	}
 
 	env := buildCodexBaseEnv(workflowData, firewallEnabled)
-	applyCodexModelAndCustomEnv(env, workflowData, firewallEnabled, modelConfigured, modelEnvVar)
+	applyCodexModelAndCustomEnv(env, workflowData, modelConfigured, modelEnvVar)
 
 	stepLines := []string{
 		"      - name: Execute Codex CLI",

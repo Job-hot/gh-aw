@@ -108,8 +108,9 @@ func buildPreActivationPermissions(data *WorkflowData, needsContentsRead bool) s
 // buildPreActivationInitialSteps initializes the steps slice with checkout, setup, and optional membership/rate-limit steps.
 // It returns the initial steps and whether contents:read permission is needed.
 func (c *Compiler) buildPreActivationInitialSteps(data *WorkflowData, setupActionRef string, needsPermissionCheck bool) (steps []string, needsContentsRead bool) {
-	steps = append(steps, c.generateCheckoutActionsFolder(data)...)
-	needsContentsRead = (c.actionMode.IsDev() || c.actionMode.IsScript()) && len(c.generateCheckoutActionsFolder(data)) > 0
+	checkoutSteps := c.generateCheckoutActionsFolder(data)
+	steps = append(steps, checkoutSteps...)
+	needsContentsRead = (c.actionMode.IsDev() || c.actionMode.IsScript()) && len(checkoutSteps) > 0
 	steps = append(steps, c.generateSetupStep(data, setupActionRef, SetupActionDestination, false, "", "")...)
 	if needsPermissionCheck {
 		steps = c.generateMembershipCheck(data, steps)
