@@ -88,3 +88,85 @@ Test workflow`
 		t.Error("Separate detection job should exist")
 	}
 }
+
+// TestExternalDetectorPath verifies that when features: gh-aw-detection: true is set,
+// the compiler emits the external threat-detect binary path instead of the inline engine path.
+func TestExternalDetectorPath(t *testing.T) {
+	compiler := NewCompiler()
+
+	tmpDir := testutil.TempDir(t, "test-external-detector-*")
+	workflowPath := filepath.Join(tmpDir, "test-external-detector.md")
+
+	workflowContent := `---
+on: push
+safe-outputs:
+  create-issue:
+features:
+  gh-aw-detection: true
+tools:
+  github:
+    allowed: ["*"]
+---
+Test workflow`
+
+	if err := os.WriteFile(workflowPath, []byte(workflowContent), 0644); err != nil {
+		t.Fatalf("Failed to write workflow file: %v", err)
+	}
+
+	if err := compiler.CompileWorkflow(workflowPath); err != nil {
+		t.Fatalf("Failed to compile workflow: %v", err)
+	}
+
+	lockFile := stringutil.MarkdownToLockFile(workflowPath)
+	result, err := os.ReadFile(lockFile)
+	if err != nil {
+		t.Fatalf("Failed to read compiled workflow: %v", err)
+	}
+
+	yamlStr := string(result)
+	detectionSection := extractJobSection(yamlStr, "detection")
+	if detectionSection == "" {
+		t.Fatal("Detection job not found in compiled workflow")
+	}
+
+	// The external detector path must emit threat-detect conclude, not the .cjs module
+	if strings.Contains(detectionSection, "parse_threat_detection_results.cjs") {
+		t.Error("External detector path must NOT emit parse_threat_detection_results.cjs")
+	}
+	if !strings.Contains(detectionSection, "threat-detect conclude") {
+		t.Error("External detector path must emit 'threat-detect conclude' as the conclude step")
+	}
+
+	// The install step must reference the pinned version
+	if !strings.Contains(detectionSection, "install_threat_detect_binary.sh") {
+		t.Error("External detector path must emit 'install_threat_detect_binary.sh' install step")
+	}
+
+	// The AWF execution step must use threat-detect as the command
+	if !strings.Contains(detectionSection, "threat-detect --engine") {
+		t.Error("External detector path must invoke 'threat-detect --engine' inside AWF")
+	}
+
+	// The upload step must include detection_result.json
+	if !strings.Contains(detectionSection, "detection_result.json") {
+		t.Error("External detector path must upload detection_result.json")
+	}
+
+	// The detection guard and detection_conclusion step must still exist (gate contract preserved)
+	if !strings.Contains(detectionSection, "detection_guard") {
+		t.Error("External detector path must contain detection_guard step")
+	}
+	if !strings.Contains(detectionSection, "detection_conclusion") {
+		t.Error("External detector path must contain detection_conclusion step")
+	}
+
+	// The rw mount for the threat-detection directory must be present
+	if !strings.Contains(detectionSection, "/tmp/gh-aw/threat-detection:/tmp/gh-aw/threat-detection:rw") {
+		t.Error("External detector path must include read-write mount for /tmp/gh-aw/threat-detection")
+	}
+
+	// The output path flag must point to detection_result.json
+	if !strings.Contains(detectionSection, "/tmp/gh-aw/threat-detection/detection_result.json") {
+		t.Error("External detector path must pass --output /tmp/gh-aw/threat-detection/detection_result.json")
+	}
+}
