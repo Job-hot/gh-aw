@@ -17,11 +17,20 @@ const AwContextInputName = "aw_context"
 // network allowlist at runtime for reusable workflows.
 const NetworkAllowedInputName = "network_allowed"
 
+// PayloadInputName is the workflow_call input that carries the serialized agent
+// arguments forwarded by call-workflow safe outputs. Callers always pass a
+// `payload` value, so every workflow_call worker must declare this input or
+// GitHub Actions rejects the run with startup_failure for an undeclared input.
+const PayloadInputName = "payload"
+
 // awContextInputDescription is the description for the aw_context workflow_dispatch input.
 // It signals to users that this input is managed internally by the agentic workflow system.
 const awContextInputDescription = "Agent caller context (used internally by Agentic Workflows)."
 
 const networkAllowedInputDescription = "Additional allowed network domains or ecosystem identifiers to union with network.allowed (comma-separated, for example: \"rust\" or \"python,github.com\")."
+
+// payloadInputDescription is the description for the payload workflow_call input.
+const payloadInputDescription = "Serialized agent arguments payload (used internally by Agentic Workflows call-workflow)."
 
 // injectAwContextIntoOnYAML adds the aw_context input to internal workflow triggers
 // in the given on-section YAML string.
@@ -39,6 +48,9 @@ const networkAllowedInputDescription = "Additional allowed network domains or ec
 func injectAwContextIntoOnYAML(onSection string) string {
 	updated := injectInputIntoTrigger(onSection, "workflow_dispatch", AwContextInputName, buildAwContextInputLines)
 	updated = injectInputIntoTrigger(updated, "workflow_call", AwContextInputName, buildAwContextInputLines)
+	// call-workflow callers always forward a `payload` input, so every workflow_call
+	// worker must declare it to avoid a startup_failure for an undeclared input.
+	updated = injectInputIntoTrigger(updated, "workflow_call", PayloadInputName, buildPayloadInputLines)
 	return updated
 }
 
@@ -162,6 +174,18 @@ func buildNetworkAllowedInputLines(wdIndent int) []string {
 		inputIndent + NetworkAllowedInputName + ":",
 		propIndent + "default: \"\"",
 		propIndent + "description: " + strconv.Quote(networkAllowedInputDescription),
+		propIndent + "required: false",
+		propIndent + "type: string",
+	}
+}
+
+func buildPayloadInputLines(wdIndent int) []string {
+	inputIndent := strings.Repeat(" ", wdIndent+4)
+	propIndent := strings.Repeat(" ", wdIndent+6)
+	return []string{
+		inputIndent + PayloadInputName + ":",
+		propIndent + "default: \"\"",
+		propIndent + "description: " + strconv.Quote(payloadInputDescription),
 		propIndent + "required: false",
 		propIndent + "type: string",
 	}

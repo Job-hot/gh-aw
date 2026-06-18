@@ -363,6 +363,81 @@ Compile without the optional workflow_call network input.
 	assert.NotContains(t, lockYAML, "GH_AW_WORKFLOW_CALL_NETWORK_ALLOWED:", "engine step env should not reference network_allowed unless opted in")
 }
 
+// TestWorkflowCallCompile_InjectsPayloadInput verifies that every workflow_call worker
+// declares the `payload` input. call-workflow callers always forward a `payload` value,
+// so the callee must declare it or GitHub Actions rejects the run with startup_failure
+// for an undeclared input.
+func TestWorkflowCallCompile_InjectsPayloadInput(t *testing.T) {
+	tmpDir := testutil.TempDir(t, "workflow-call-payload-input")
+	workflowsDir := filepath.Join(tmpDir, ".github", "workflows")
+	require.NoError(t, os.MkdirAll(workflowsDir, 0755))
+
+	workflowMD := `---
+on: workflow_call
+engine: copilot
+permissions:
+  contents: read
+---
+
+# Reusable worker
+
+Compile a worker that should auto-declare the payload input.
+`
+	lockYAML := compileAndReadLock(t, filepath.Join(workflowsDir, "worker.md"), workflowMD)
+
+	var compiled map[string]any
+	require.NoError(t, yaml.Unmarshal([]byte(lockYAML), &compiled), "compiled workflow should remain valid YAML")
+	onMap, ok := compiled["on"].(map[string]any)
+	require.True(t, ok, "compiled workflow should include an on map")
+	workflowCallMap, ok := onMap["workflow_call"].(map[string]any)
+	require.True(t, ok, "compiled workflow should include on.workflow_call")
+	inputsMap, ok := workflowCallMap["inputs"].(map[string]any)
+	require.True(t, ok, "compiled workflow should include on.workflow_call.inputs")
+	payloadMap, ok := inputsMap[PayloadInputName].(map[string]any)
+	require.True(t, ok, "compiled workflow should include on.workflow_call.inputs.payload")
+	assert.Equal(t, "string", payloadMap["type"], "payload input should be typed as string")
+	assert.Equal(t, false, payloadMap["required"], "payload input should be optional")
+	assert.Equal(t, payloadInputDescription, payloadMap["description"], "payload description should round-trip as YAML")
+}
+
+// TestWorkflowCallCompile_PreservesUserDeclaredPayloadInput verifies that when a worker
+// already declares a `payload` input, the compiler does not duplicate or override it.
+func TestWorkflowCallCompile_PreservesUserDeclaredPayloadInput(t *testing.T) {
+	tmpDir := testutil.TempDir(t, "workflow-call-payload-preserve")
+	workflowsDir := filepath.Join(tmpDir, ".github", "workflows")
+	require.NoError(t, os.MkdirAll(workflowsDir, 0755))
+
+	workflowMD := `---
+on:
+  workflow_call:
+    inputs:
+      payload:
+        type: string
+        required: true
+        description: User declared payload
+engine: copilot
+permissions:
+  contents: read
+---
+
+# Reusable worker
+
+Compile a worker that already declares the payload input.
+`
+	lockYAML := compileAndReadLock(t, filepath.Join(workflowsDir, "worker.md"), workflowMD)
+
+	var compiled map[string]any
+	require.NoError(t, yaml.Unmarshal([]byte(lockYAML), &compiled), "compiled workflow should remain valid YAML")
+	onMap := compiled["on"].(map[string]any)
+	workflowCallMap := onMap["workflow_call"].(map[string]any)
+	inputsMap := workflowCallMap["inputs"].(map[string]any)
+	payloadMap, ok := inputsMap[PayloadInputName].(map[string]any)
+	require.True(t, ok, "compiled workflow should retain the user-declared payload input")
+	assert.Equal(t, "User declared payload", payloadMap["description"], "user-declared payload description should be preserved")
+	assert.Equal(t, true, payloadMap["required"], "user-declared payload required flag should be preserved")
+	assert.Equal(t, 1, strings.Count(lockYAML, "payload:"), "payload input should not be duplicated")
+}
+
 // TestCallWorkflowCompile_WorkflowCallGateway tests compilation when the gateway itself
 // is triggered via workflow_call (cross-repo use case)
 func TestCallWorkflowCompile_WorkflowCallGateway(t *testing.T) {

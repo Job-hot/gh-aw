@@ -61,6 +61,11 @@ name: "Smoke Workflow Call with Inputs"
 on:
   workflow_call:
     inputs:
+      payload:
+        default: ""
+        description: "Serialized agent arguments payload (used internally by Agentic Workflows call-workflow)."
+        required: false
+        type: string
       aw_context:
         default: ""
         description: "Agent caller context (used internally by Agentic Workflows)."
