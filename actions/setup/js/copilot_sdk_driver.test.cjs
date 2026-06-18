@@ -87,6 +87,116 @@ describe("copilot_sdk_driver.cjs", () => {
       }
     });
 
+    it("writes assistant.usage events to token-usage.jsonl", async () => {
+      const disconnect = vi.fn().mockResolvedValue(undefined);
+      const stop = vi.fn().mockResolvedValue(undefined);
+      const stderrWriteSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+      const tokenUsageDir = fs.mkdtempSync(path.join(os.tmpdir(), "gh-aw-test-token-usage-"));
+      const tokenUsagePath = path.join(tokenUsageDir, "token-usage.jsonl");
+      const prevTokenUsagePath = process.env.GH_AW_TOKEN_USAGE_PATH;
+      process.env.GH_AW_TOKEN_USAGE_PATH = tokenUsagePath;
+      try {
+        let onEvent = () => {};
+        const session = {
+          sessionId: "session-usage",
+          on: handler => {
+            onEvent = handler;
+          },
+          sendAndWait: vi.fn().mockImplementation(async () => {
+            // Fire an ephemeral assistant.usage event (token counts for one LLM call).
+            onEvent({
+              type: "assistant.usage",
+              ephemeral: true,
+              timestamp: new Date().toISOString(),
+              data: {
+                model: "claude-sonnet-4.6",
+                inputTokens: 1000,
+                outputTokens: 250,
+                cacheReadTokens: 500,
+                cacheWriteTokens: 100,
+                reasoningTokens: 50,
+                duration: 1234,
+              },
+            });
+            // Fire a second usage event to confirm multiple calls are appended.
+            onEvent({
+              type: "assistant.usage",
+              ephemeral: true,
+              timestamp: new Date().toISOString(),
+              data: {
+                model: "claude-sonnet-4.6",
+                inputTokens: 200,
+                outputTokens: 80,
+                cacheReadTokens: 0,
+                cacheWriteTokens: 0,
+                reasoningTokens: 0,
+                duration: 456,
+              },
+            });
+            onEvent({
+              type: "assistant.message",
+              ephemeral: false,
+              timestamp: new Date().toISOString(),
+              data: { content: "done" },
+            });
+            return { data: { content: "done" } };
+          }),
+          disconnect,
+        };
+        class FakeCopilotClient {
+          start = vi.fn().mockResolvedValue(undefined);
+          createSession = vi.fn().mockResolvedValue(session);
+          stop = stop;
+        }
+
+        const result = await runWithCopilotSDK({
+          sdkUri: "http://127.0.0.1:3002",
+          prompt: "test prompt",
+          logger: () => {},
+          sdkModule: {
+            CopilotClient: FakeCopilotClient,
+            RuntimeConnection: { forUri: vi.fn(() => ({})) },
+            approveAll: () => "allow",
+          },
+        });
+
+        expect(result.exitCode).toBe(0);
+
+        // token-usage.jsonl should have one line per assistant.usage event.
+        const lines = fs.readFileSync(tokenUsagePath, "utf8").trim().split("\n");
+        expect(lines).toHaveLength(2);
+
+        // Verify the first entry contains the expected snake_case fields.
+        const firstEntry = JSON.parse(lines[0]);
+        expect(firstEntry).toMatchObject({
+          model: "claude-sonnet-4.6",
+          input_tokens: 1000,
+          output_tokens: 250,
+          cache_read_tokens: 500,
+          cache_write_tokens: 100,
+          reasoning_tokens: 50,
+          duration_ms: 1234,
+        });
+
+        // Verify the second entry.
+        const secondEntry = JSON.parse(lines[1]);
+        expect(secondEntry).toMatchObject({
+          model: "claude-sonnet-4.6",
+          input_tokens: 200,
+          output_tokens: 80,
+          cache_read_tokens: 0,
+          cache_write_tokens: 0,
+          reasoning_tokens: 0,
+          duration_ms: 456,
+        });
+      } finally {
+        stderrWriteSpy.mockRestore();
+        if (prevTokenUsagePath === undefined) delete process.env.GH_AW_TOKEN_USAGE_PATH;
+        else process.env.GH_AW_TOKEN_USAGE_PATH = prevTokenUsagePath;
+        fs.rmSync(tokenUsageDir, { recursive: true, force: true });
+      }
+    });
+
     it("disconnects session and stops client on send failure", async () => {
       const disconnect = vi.fn().mockResolvedValue(undefined);
       const stop = vi.fn().mockResolvedValue(undefined);
