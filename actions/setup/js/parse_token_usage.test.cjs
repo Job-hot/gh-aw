@@ -16,6 +16,7 @@ const {
   TOKEN_USAGE_PATH,
   TOKEN_USAGE_PATHS,
   AGENT_USAGE_PATH,
+  AGENT_USAGE_JSONL_PATH,
   DEFAULT_SUMMARY_TITLE,
 } = require("./parse_token_usage.cjs");
 
@@ -50,6 +51,11 @@ describe("parse_token_usage", () => {
 
     test("AGENT_USAGE_PATH points to agent_usage.json", () => {
       expect(AGENT_USAGE_PATH).toBe("/tmp/gh-aw/agent_usage.json");
+    });
+
+    test("AGENT_USAGE_JSONL_PATH points to agent_usage.jsonl", () => {
+      const { AGENT_USAGE_JSONL_PATH } = require("./parse_token_usage.cjs");
+      expect(AGENT_USAGE_JSONL_PATH).toBe("/tmp/gh-aw/agent_usage.jsonl");
     });
 
     test("DEFAULT_SUMMARY_TITLE points to Token Usage", () => {
@@ -183,6 +189,8 @@ describe("parse_token_usage", () => {
       fs.writeFileSync = vi.fn((p, data) => {
         if (p === AGENT_USAGE_PATH) {
           originalWriteFileSync(agentUsageFile, data);
+        } else if (p === AGENT_USAGE_JSONL_PATH) {
+          // agent_usage.jsonl is written alongside agent_usage.json; no additional assertions needed
         } else {
           originalWriteFileSync(p, data);
         }
@@ -254,6 +262,7 @@ describe("parse_token_usage", () => {
 
     test("writes agent_usage.json with aggregated token totals and primary_model", async () => {
       const agentUsageFile = path.join(tmpDir, "agent_usage.json");
+      const agentUsageJsonlFile = path.join(tmpDir, "agent_usage.jsonl");
 
       fs.existsSync = vi.fn(p => {
         if (p === TOKEN_USAGE_PATH) return true;
@@ -273,6 +282,8 @@ describe("parse_token_usage", () => {
       fs.writeFileSync = vi.fn((p, data) => {
         if (p === AGENT_USAGE_PATH) {
           originalWriteFileSync(agentUsageFile, data);
+        } else if (p === AGENT_USAGE_JSONL_PATH) {
+          originalWriteFileSync(agentUsageJsonlFile, data);
         } else {
           originalWriteFileSync(p, data);
         }
@@ -290,6 +301,10 @@ describe("parse_token_usage", () => {
       expect(typeof agentUsage.ai_credits).toBe("number");
       // primary_model is the actual model from token-usage data (not a user alias)
       expect(agentUsage.primary_model).toBe("claude-sonnet-4-6");
+      // agent_usage.jsonl is also written so the usage artifact collector can find it
+      expect(fs.existsSync(agentUsageJsonlFile)).toBe(true);
+      const agentUsageJsonl = JSON.parse(fs.readFileSync(agentUsageJsonlFile, "utf8"));
+      expect(agentUsageJsonl.ai_credits).toBe(agentUsage.ai_credits);
     });
 
     test("handles multiple model entries", async () => {
@@ -313,6 +328,8 @@ describe("parse_token_usage", () => {
       fs.writeFileSync = vi.fn((p, data) => {
         if (p === AGENT_USAGE_PATH) {
           originalWriteFileSync(agentUsageFile, data);
+        } else if (p === AGENT_USAGE_JSONL_PATH) {
+          // agent_usage.jsonl is written alongside agent_usage.json; no additional assertions needed
         } else {
           originalWriteFileSync(p, data);
         }
@@ -354,6 +371,8 @@ describe("parse_token_usage", () => {
       fs.writeFileSync = vi.fn((p, data) => {
         if (p === AGENT_USAGE_PATH) {
           originalWriteFileSync(agentUsageFile, data);
+        } else if (p === AGENT_USAGE_JSONL_PATH) {
+          // agent_usage.jsonl is written alongside agent_usage.json; no additional assertions needed
         } else {
           originalWriteFileSync(p, data);
         }
@@ -422,6 +441,8 @@ describe("parse_token_usage", () => {
       fs.writeFileSync = vi.fn((p, data) => {
         if (p === AGENT_USAGE_PATH) {
           originalWriteFileSync(agentUsageFile, data);
+        } else if (p === AGENT_USAGE_JSONL_PATH) {
+          // agent_usage.jsonl is written alongside agent_usage.json; no additional assertions needed
         } else {
           originalWriteFileSync(p, data);
         }

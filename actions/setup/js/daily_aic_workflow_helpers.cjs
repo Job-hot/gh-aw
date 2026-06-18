@@ -214,6 +214,12 @@ function sumAICFromUsageJSONLFiles(filePaths) {
           total += explicitAIC;
           continue;
         }
+        // Prefer proxy-emitted per-request AIC over locally computed when present.
+        const explicitPerRequest = getNumericAliasField(usage, parsed, ["ai_credits_this_response"]);
+        if (explicitPerRequest > 0) {
+          total += explicitPerRequest;
+          continue;
+        }
 
         const computed = computeInferenceAIC({
           provider: getStringField(usage, parsed, "provider", "provider"),

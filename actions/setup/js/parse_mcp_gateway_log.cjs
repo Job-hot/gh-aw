@@ -18,9 +18,11 @@ const { parseUnknownModelAICreditsFromAuditLog } = require("./ai_credits_context
  *  - /tmp/gh-aw/mcp-logs/gateway.log (main gateway log, fallback)
  *  - /tmp/gh-aw/mcp-logs/stderr.log (stderr output, fallback)
  *  - /tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl (token usage from firewall proxy)
+ *  - /tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl (audit copy, checked as fallback)
  */
 
 const TOKEN_USAGE_PATH = "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl";
+const TOKEN_USAGE_AUDIT_PATH = "/tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy-logs/token-usage.jsonl";
 const MAX_RPC_SUMMARY_DETAILS_LENGTH = 120;
 const MAX_RPC_SUMMARY_GENERIC_LENGTH = 160;
 const MAX_RPC_MESSAGE_LABEL_LENGTH = 80;
@@ -66,7 +68,7 @@ function parseTokenUsageJsonl(jsonlContent) {
     totalAIC: 0,
     ambientContextTokens: undefined,
     byModel: {},
-    /** @type {{ model: string, provider: string, inputTokens: number, outputTokens: number, cacheReadTokens: number, cacheWriteTokens: number, reasoningTokens: number, durationMs: number, deltaAIC: number }[]} */
+    /** @type {{ model: string, provider: string, inputTokens: number, outputTokens: number, cacheReadTokens: number, cacheWriteTokens: number, reasoningTokens: number, durationMs: number, deltaAIC: number, explicitDeltaAIC: number | null }[]} */
     entries: [],
   };
 
@@ -84,6 +86,9 @@ function parseTokenUsageJsonl(jsonlContent) {
       const cacheWriteTokens = entry.cache_write_tokens || 0;
       const reasoningTokens = entry.reasoning_tokens || 0;
       const durationMs = entry.duration_ms || 0;
+      // When the proxy emits an explicit per-request AIC value, prefer it over
+      // the locally-computed value so that proxy-side pricing updates take effect.
+      const explicitDeltaAIC = typeof entry.ai_credits_this_response === "number" && entry.ai_credits_this_response > 0 ? entry.ai_credits_this_response : null;
 
       summary.totalInputTokens += inputTokens;
       summary.totalOutputTokens += outputTokens;
@@ -117,7 +122,7 @@ function parseTokenUsageJsonl(jsonlContent) {
       m.requests++;
       m.durationMs += durationMs;
 
-      summary.entries.push({ model, provider: m.provider, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens, reasoningTokens, durationMs, deltaAIC: 0 });
+      summary.entries.push({ model, provider: m.provider, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens, reasoningTokens, durationMs, deltaAIC: 0, explicitDeltaAIC });
     } catch {
       // skip malformed lines
     }
@@ -125,25 +130,11 @@ function parseTokenUsageJsonl(jsonlContent) {
 
   if (summary.totalRequests === 0) return null;
 
-  let totalAIC = 0;
-  for (const [model, usage] of Object.entries(summary.byModel)) {
-    const aic = computeInferenceAIC({
-      provider: usage.provider || "",
-      model,
-      inputTokens: usage.inputTokens,
-      outputTokens: usage.outputTokens,
-      cacheReadTokens: usage.cacheReadTokens,
-      cacheWriteTokens: usage.cacheWriteTokens,
-      reasoningTokens: usage.reasoningTokens || 0,
-    });
-    usage.aic = aic;
-    totalAIC += aic;
-  }
-  summary.totalAIC = totalAIC;
-
   // Compute per-request AI credits.
+  // Prefer the proxy-emitted explicit value when available; fall back to
+  // computing from token counts and the local pricing catalog.
   for (const entry of summary.entries) {
-    entry.deltaAIC = computeInferenceAIC({
+    const computed = computeInferenceAIC({
       provider: entry.provider || "",
       model: entry.model,
       inputTokens: entry.inputTokens,
@@ -152,7 +143,18 @@ function parseTokenUsageJsonl(jsonlContent) {
       cacheWriteTokens: entry.cacheWriteTokens,
       reasoningTokens: entry.reasoningTokens || 0,
     });
+    entry.deltaAIC = entry.explicitDeltaAIC ?? computed;
   }
+
+  // Aggregate per-model AIC and overall total by summing per-entry deltaAIC.
+  // This keeps model totals consistent with the per-entry view regardless of
+  // whether explicit or computed AIC is used.
+  let totalAIC = 0;
+  for (const entry of summary.entries) {
+    summary.byModel[entry.model].aic += entry.deltaAIC;
+    totalAIC += entry.deltaAIC;
+  }
+  summary.totalAIC = totalAIC;
 
   return summary;
 }
@@ -202,25 +204,47 @@ function generateTokenUsageSummary(summary) {
  * @param {typeof import('@actions/core')} coreObj - The GitHub Actions core object
  */
 function writeStepSummaryWithTokenUsage(coreObj) {
-  if (!fs.existsSync(TOKEN_USAGE_PATH)) {
-    coreObj.debug(`No token-usage.jsonl found at: ${TOKEN_USAGE_PATH}`);
-  } else {
-    const content = fs.readFileSync(TOKEN_USAGE_PATH, "utf8");
-    if (content?.trim()) {
-      coreObj.info(`Found token-usage.jsonl (${content.length} bytes)`);
-      const parsedSummary = parseTokenUsageJsonl(content);
-      if (parsedSummary && parsedSummary.totalAIC > 0) {
-        const roundedAIC = parsedSummary.totalAIC.toFixed(3);
-        coreObj.exportVariable("GH_AW_AIC", roundedAIC);
-        coreObj.setOutput("aic", roundedAIC);
-        coreObj.info(`AI Credits: ${roundedAIC}`);
-      }
-      if (parsedSummary && typeof parsedSummary.ambientContextTokens === "number" && parsedSummary.ambientContextTokens > 0) {
-        const roundedAmbientContext = String(Math.round(parsedSummary.ambientContextTokens));
-        coreObj.exportVariable("GH_AW_AMBIENT_CONTEXT", roundedAmbientContext);
-        coreObj.setOutput("ambient_context", roundedAmbientContext);
-        coreObj.info(`Ambient context: ${roundedAmbientContext}`);
-      }
+  // Read from both the primary path and the audit path, deduplicating by request_id.
+  // The audit path may contain additional entries when the primary path is absent or
+  // partially written (e.g. the proxy was restarted mid-run).
+  const paths = [TOKEN_USAGE_AUDIT_PATH, TOKEN_USAGE_PATH];
+  const seenRequestIds = new Set();
+  const dedupedLines = [];
+
+  for (const filePath of paths) {
+    if (!fs.existsSync(filePath)) {
+      coreObj.debug(`No token-usage.jsonl found at: ${filePath}`);
+      continue;
+    }
+    const raw = fs.readFileSync(filePath, "utf8");
+    if (!raw?.trim()) continue;
+    coreObj.info(`Found token-usage.jsonl at ${filePath} (${raw.length} bytes)`);
+    for (const rawLine of raw.split("\n")) {
+      const line = rawLine.trim();
+      if (!line) continue;
+      // Lightweight request_id extraction for deduplication.
+      const idMatch = line.match(/"request_id"\s*:\s*"((?:\\.|[^"\\])*)"/);
+      const dedupeKey = idMatch ? `request_id:${idMatch[1]}` : line;
+      if (seenRequestIds.has(dedupeKey)) continue;
+      seenRequestIds.add(dedupeKey);
+      dedupedLines.push(line);
+    }
+  }
+
+  if (dedupedLines.length > 0) {
+    const content = dedupedLines.join("\n");
+    const parsedSummary = parseTokenUsageJsonl(content);
+    if (parsedSummary && parsedSummary.totalAIC > 0) {
+      const roundedAIC = parsedSummary.totalAIC.toFixed(3);
+      coreObj.exportVariable("GH_AW_AIC", roundedAIC);
+      coreObj.setOutput("aic", roundedAIC);
+      coreObj.info(`AI Credits: ${roundedAIC}`);
+    }
+    if (parsedSummary && typeof parsedSummary.ambientContextTokens === "number" && parsedSummary.ambientContextTokens > 0) {
+      const roundedAmbientContext = String(Math.round(parsedSummary.ambientContextTokens));
+      coreObj.exportVariable("GH_AW_AMBIENT_CONTEXT", roundedAmbientContext);
+      coreObj.setOutput("ambient_context", roundedAmbientContext);
+      coreObj.info(`Ambient context: ${roundedAmbientContext}`);
     }
   }
 
@@ -1126,6 +1150,8 @@ if (typeof module !== "undefined" && module.exports) {
     hasAICreditsRateLimitError,
     hasUnknownModelAICreditsError,
     setUnknownModelAICreditsOutput,
+    TOKEN_USAGE_PATH,
+    TOKEN_USAGE_AUDIT_PATH,
   };
 }
 

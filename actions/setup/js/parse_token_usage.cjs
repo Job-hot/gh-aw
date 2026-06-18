@@ -18,6 +18,8 @@ const TOKEN_USAGE_AUDIT_PATH = "/tmp/gh-aw/sandbox/firewall-audit-logs/api-proxy
 const TOKEN_USAGE_PATH = "/tmp/gh-aw/sandbox/firewall/logs/api-proxy-logs/token-usage.jsonl";
 const TOKEN_USAGE_PATHS = [TOKEN_USAGE_AUDIT_PATH, TOKEN_USAGE_PATH];
 const AGENT_USAGE_PATH = "/tmp/gh-aw/agent_usage.json";
+// agent_usage.jsonl is the path expected by the usage artifact collector; keep both in sync.
+const AGENT_USAGE_JSONL_PATH = "/tmp/gh-aw/agent_usage.jsonl";
 const DEFAULT_SUMMARY_TITLE = "Token Usage";
 
 /**
@@ -171,6 +173,8 @@ async function main() {
       ...(primaryModel ? { primary_model: primaryModel } : {}),
     };
     fs.writeFileSync(AGENT_USAGE_PATH, JSON.stringify(agentUsage) + "\n");
+    // Also write the .jsonl path so the usage artifact collector can find it.
+    fs.writeFileSync(AGENT_USAGE_JSONL_PATH, JSON.stringify(agentUsage) + "\n");
 
     if (summary.totalAIC > 0) {
       const aic = summary.totalAIC.toFixed(3);
@@ -203,6 +207,7 @@ if (typeof module !== "undefined" && module.exports) {
     TOKEN_USAGE_PATH,
     TOKEN_USAGE_PATHS,
     AGENT_USAGE_PATH,
+    AGENT_USAGE_JSONL_PATH,
     DEFAULT_SUMMARY_TITLE,
   };
 }

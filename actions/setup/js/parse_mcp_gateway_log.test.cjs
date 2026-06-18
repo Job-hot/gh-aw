@@ -1,6 +1,10 @@
 // @ts-check
 /// <reference types="@actions/github-script" />
 
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+
 const {
   generateGatewayLogSummary,
   generatePlainTextGatewaySummary,
@@ -18,6 +22,8 @@ const {
   parseTokenUsageJsonl,
   generateTokenUsageSummary,
   formatDurationMs,
+  TOKEN_USAGE_PATH,
+  TOKEN_USAGE_AUDIT_PATH,
 } = require("./parse_mcp_gateway_log.cjs");
 
 describe("parse_mcp_gateway_log", () => {
@@ -467,6 +473,160 @@ Some content here.`;
         expect(mockCore.summary.addDetails).not.toHaveBeenCalledWith("Token Usage", expect.any(String));
         expect(mockCore.exportVariable).toHaveBeenCalledWith("GH_AW_AIC", expect.any(String));
         expect(mockCore.exportVariable).toHaveBeenCalledWith("GH_AW_AMBIENT_CONTEXT", expect.any(String));
+        expect(mockCore.summary.write).toHaveBeenCalled();
+      } finally {
+        fs.existsSync = originalExistsSync;
+        fs.readFileSync = originalReadFileSync;
+        delete global.core;
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    test("exports GH_AW_AIC from audit path when primary token-usage.jsonl is absent", async () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mcp-test-"));
+      const gatewayMdPath = path.join(tmpDir, "gateway.md");
+      const auditTokenUsagePath = path.join(tmpDir, "audit-token-usage.jsonl");
+      const originalExistsSync = fs.existsSync;
+      const originalReadFileSync = fs.readFileSync;
+
+      try {
+        fs.writeFileSync(gatewayMdPath, "# Gateway Summary\n\nSome markdown content");
+        fs.writeFileSync(
+          auditTokenUsagePath,
+          JSON.stringify({
+            model: "claude-sonnet-4.6",
+            provider: "copilot",
+            input_tokens: 27252,
+            output_tokens: 461,
+            cache_read_tokens: 0,
+            cache_write_tokens: 0,
+            duration_ms: 6230,
+            ai_credits_this_response: 8.8671,
+            ai_credits_total: 8.8671,
+          })
+        );
+
+        const mockCore = {
+          info: vi.fn(),
+          debug: vi.fn(),
+          startGroup: vi.fn(),
+          endGroup: vi.fn(),
+          notice: vi.fn(),
+          warning: vi.fn(),
+          error: vi.fn(),
+          setFailed: vi.fn(),
+          exportVariable: vi.fn(),
+          setOutput: vi.fn(),
+          summary: {
+            addRaw: vi.fn().mockReturnThis(),
+            addDetails: vi.fn().mockReturnThis(),
+            write: vi.fn(),
+          },
+        };
+
+        fs.existsSync = vi.fn(filepath => {
+          if (filepath === "/tmp/gh-aw/mcp-logs/gateway.md") return true;
+          // Primary token-usage.jsonl is absent — audit path is present.
+          if (filepath === TOKEN_USAGE_PATH) return false;
+          if (filepath === TOKEN_USAGE_AUDIT_PATH) return true;
+          return originalExistsSync(filepath);
+        });
+
+        fs.readFileSync = vi.fn((filepath, encoding) => {
+          if (filepath === "/tmp/gh-aw/mcp-logs/gateway.md") {
+            return originalReadFileSync(gatewayMdPath, encoding);
+          }
+          if (filepath === TOKEN_USAGE_AUDIT_PATH) {
+            return originalReadFileSync(auditTokenUsagePath, encoding);
+          }
+          return originalReadFileSync(filepath, encoding);
+        });
+
+        global.core = mockCore;
+
+        const { main } = require("./parse_mcp_gateway_log.cjs");
+        await main();
+
+        expect(mockCore.exportVariable).toHaveBeenCalledWith("GH_AW_AIC", "8.867");
+        expect(mockCore.summary.write).toHaveBeenCalled();
+      } finally {
+        fs.existsSync = originalExistsSync;
+        fs.readFileSync = originalReadFileSync;
+        delete global.core;
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      }
+    });
+
+    test("deduplicates entries shared between primary and audit token-usage.jsonl paths", async () => {
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "mcp-test-"));
+      const gatewayMdPath = path.join(tmpDir, "gateway.md");
+      const primaryTokenUsagePath = path.join(tmpDir, "primary-token-usage.jsonl");
+      const auditTokenUsagePath = path.join(tmpDir, "audit-token-usage.jsonl");
+      const originalExistsSync = fs.existsSync;
+      const originalReadFileSync = fs.readFileSync;
+
+      try {
+        const entry = JSON.stringify({
+          request_id: "req-dedup-1",
+          model: "claude-sonnet-4.6",
+          provider: "copilot",
+          input_tokens: 1000,
+          output_tokens: 100,
+          cache_read_tokens: 0,
+          cache_write_tokens: 0,
+          duration_ms: 1000,
+          ai_credits_this_response: 4.0,
+        });
+        fs.writeFileSync(gatewayMdPath, "# Gateway Summary\n\nSome markdown content");
+        // Both paths contain the same entry (same request_id).
+        fs.writeFileSync(primaryTokenUsagePath, entry);
+        fs.writeFileSync(auditTokenUsagePath, entry);
+
+        const mockCore = {
+          info: vi.fn(),
+          debug: vi.fn(),
+          startGroup: vi.fn(),
+          endGroup: vi.fn(),
+          notice: vi.fn(),
+          warning: vi.fn(),
+          error: vi.fn(),
+          setFailed: vi.fn(),
+          exportVariable: vi.fn(),
+          setOutput: vi.fn(),
+          summary: {
+            addRaw: vi.fn().mockReturnThis(),
+            addDetails: vi.fn().mockReturnThis(),
+            write: vi.fn(),
+          },
+        };
+
+        fs.existsSync = vi.fn(filepath => {
+          if (filepath === "/tmp/gh-aw/mcp-logs/gateway.md") return true;
+          if (filepath === TOKEN_USAGE_PATH) return true;
+          if (filepath === TOKEN_USAGE_AUDIT_PATH) return true;
+          return originalExistsSync(filepath);
+        });
+
+        fs.readFileSync = vi.fn((filepath, encoding) => {
+          if (filepath === "/tmp/gh-aw/mcp-logs/gateway.md") {
+            return originalReadFileSync(gatewayMdPath, encoding);
+          }
+          if (filepath === TOKEN_USAGE_PATH) {
+            return originalReadFileSync(primaryTokenUsagePath, encoding);
+          }
+          if (filepath === TOKEN_USAGE_AUDIT_PATH) {
+            return originalReadFileSync(auditTokenUsagePath, encoding);
+          }
+          return originalReadFileSync(filepath, encoding);
+        });
+
+        global.core = mockCore;
+
+        const { main } = require("./parse_mcp_gateway_log.cjs");
+        await main();
+
+        // With deduplication, entry should only be counted once → AIC = 4.0, not 8.0.
+        expect(mockCore.exportVariable).toHaveBeenCalledWith("GH_AW_AIC", "4.000");
         expect(mockCore.summary.write).toHaveBeenCalled();
       } finally {
         fs.existsSync = originalExistsSync;
@@ -1721,13 +1881,44 @@ not-json
       expect(md).not.toContain("effective token");
     });
 
-    test("does not include cache efficiency or effective token wording", () => {
-      const content = JSON.stringify({ model: "m", input_tokens: 100, output_tokens: 10, cache_read_tokens: 900, cache_write_tokens: 0, duration_ms: 100 });
-      const summary = parseTokenUsageJsonl(content);
-      const md = generateTokenUsageSummary(summary);
-      expect(md).not.toContain("●");
-      expect(md).not.toContain("Cache efficiency");
-      expect(md).not.toContain("effective token");
+    test("uses ai_credits_this_response field when present instead of computing from tokens", () => {
+      const explicitAIC = 8.8671;
+      const line = JSON.stringify({
+        model: "claude-sonnet-4.6",
+        provider: "copilot",
+        input_tokens: 27252,
+        output_tokens: 461,
+        cache_read_tokens: 0,
+        cache_write_tokens: 0,
+        duration_ms: 6230,
+        ai_credits_this_response: explicitAIC,
+        ai_credits_total: explicitAIC,
+      });
+      const summary = parseTokenUsageJsonl(line);
+      expect(summary).not.toBeNull();
+      expect(summary.entries).toHaveLength(1);
+      expect(summary.entries[0].explicitDeltaAIC).toBe(explicitAIC);
+      expect(summary.entries[0].deltaAIC).toBe(explicitAIC);
+      expect(Math.abs(summary.totalAIC - explicitAIC)).toBeLessThan(0.0001);
+    });
+
+    test("sums explicit ai_credits_this_response across multiple entries", () => {
+      const lines = [
+        JSON.stringify({ model: "claude-sonnet-4.6", provider: "copilot", input_tokens: 1000, output_tokens: 100, cache_read_tokens: 0, cache_write_tokens: 0, duration_ms: 1000, ai_credits_this_response: 3.5 }),
+        JSON.stringify({ model: "claude-sonnet-4.6", provider: "copilot", input_tokens: 2000, output_tokens: 200, cache_read_tokens: 0, cache_write_tokens: 0, duration_ms: 2000, ai_credits_this_response: 5.25 }),
+      ];
+      const summary = parseTokenUsageJsonl(lines.join("\n"));
+      expect(summary).not.toBeNull();
+      expect(Math.abs(summary.totalAIC - 8.75)).toBeLessThan(0.0001);
+      expect(Math.abs(summary.byModel["claude-sonnet-4.6"].aic - 8.75)).toBeLessThan(0.0001);
+    });
+
+    test("falls back to computed AIC when ai_credits_this_response is absent", () => {
+      const line = JSON.stringify({ model: "claude-sonnet-4-6", provider: "anthropic", input_tokens: 100, output_tokens: 50, cache_read_tokens: 0, cache_write_tokens: 0, duration_ms: 100 });
+      const summary = parseTokenUsageJsonl(line);
+      expect(summary).not.toBeNull();
+      expect(summary.entries[0].explicitDeltaAIC).toBeNull();
+      expect(summary.entries[0].deltaAIC).toBeGreaterThan(0);
     });
   });
 });
