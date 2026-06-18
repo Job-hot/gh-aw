@@ -39,8 +39,8 @@ const jsCoreMock = `const core = {
 };`
 
 // runNodeScript writes script to a temporary parser.js file, executes it with
-// node, and writes the trimmed stdout to outputPath.  The temporary directory
-// is cleaned up automatically.
+// node, and writes the trimmed combined output (stdout and stderr) to
+// outputPath.  The temporary directory is cleaned up automatically.
 func runNodeScript(script, outputPath string) error {
 	tempDir, err := os.MkdirTemp("", "node_parser")
 	if err != nil {
