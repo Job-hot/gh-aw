@@ -144,13 +144,6 @@ safe-outputs:
     update-branch: true
     max: 10
     target: "*"
-  push-to-pull-request-branch:
-    target: "*"
-    if-no-changes: ignore
-    commit-title-suffix: " [pr-sous-chef]"
-    excluded-files:
-      - ".github/workflows/**"
-    max: 10
   mentions:
     allowed: ["@copilot"]
   noop:
@@ -179,7 +172,7 @@ Move open non-draft PRs toward a state where a maintainer can investigate quickl
 6. If a `pr-processor` call returns non-JSON or an error, record `{pr_number: <N>, skip_reason: "sub_agent_error"}` in the `skipped` array of the run-summary noop payload and move to the next PR without retrying.
 7. Do not fetch full PR diffs or large file lists unless absolutely required for a skip decision.
 8. **Never finish without at least one safe-output tool call.** If you have not called `add_comment` or `update_pull_request`, you must call the run-summary `noop` (see **Run summary** below) before finishing.
-9. Call safe-output MCP tools directly (`add_comment`, `update_pull_request`, `push_to_pull_request_branch`, `noop`, `report_incomplete`). Do **not** use `gh pr comment`, `gh api ... -X POST`, or `safeoutputs ...` shell wrappers for write actions.
+9. Call safe-output MCP tools directly (`add_comment`, `update_pull_request`, `noop`, `report_incomplete`). Do **not** use `gh pr comment`, `gh api ... -X POST`, or `safeoutputs ...` shell wrappers for write actions.
 
 ## Required skip rules per PR
 
@@ -198,40 +191,18 @@ Before any nudge for a PR:
 
 ## Required nudges for eligible PRs
 
-For each PR that is not skipped:
+For each PR that is not skipped, apply the following nudges:
 
-0. **Run formatters and push if needed**
-   - Checkout the PR branch: `git checkout <headRefName>`
-   - Run `make fmt` to format all code (Go, JavaScript, JSON)
-   - Check for changes: `git diff --quiet || echo "dirty"`
-   - If dirty, call `push_to_pull_request_branch` with the PR number to push the formatting fixes
-   - Return to the original branch: `git checkout -`
-   - Skip this step silently if `make fmt` exits non-zero (tools unavailable)
+| # | Trigger | Nudge type | Action |
+|---|---------|------------|--------|
+| 1 | PR is behind its base branch | Branch update | Call `update_pull_request` with `update_branch: true`; include a minimal append body marker with `pr-sous-chef` and the run URL |
+| 2 | Unresolved review feedback exists | Review nudge | Call `add_comment` with hidden marker `<!-- gh-aw-pr-sous-chef-nudge -->`, `@copilot review all comments`, and a short sentence to address feedback |
+| 3 | Always (unless skipped) | Progress nudge | Call `add_comment` with one concise nudge (refresh branch, summarize blockers, or post completion plan); include `<!-- gh-aw-pr-sous-chef-nudge -->` |
 
-1. **Update branch if possible**
-   - If the PR is behind its base branch (or otherwise indicates branch update needed), attempt `update_pull_request` with `update_branch: true`.
-   - Use a minimal append body marker so maintainers can trace the action, including `pr-sous-chef` and the run URL.
-
-2. **Nudge unresolved review feedback**
-   - Check pull request review threads/comments.
-   - If unresolved or active review feedback exists, add a PR comment that includes:
-     - `<!-- gh-aw-pr-sous-chef-nudge -->` as a hidden marker line.
-     - @copilot review all comments
-     - a short sentence asking Copilot to address unresolved review feedback.
-   - Every `add_comment` must include `pr_number` set to the current PR's numeric `number` from the loop item.
-   - Never emit `add_comment` without a numeric target field (`pr_number`/`pull_request_number`/`issue_number`/`item_number`) when `target: "*"` is configured.
-   - Example (`add_comment` tool call):
-     ```json
-     {"add_comment":{"pr_number":12345,"body":"<!-- gh-aw-pr-sous-chef-nudge -->\n@copilot review all comments and address unresolved review feedback."}}
-     ```
-
-3. **Apply one additional forward-progress nudge**
-   - Choose one concise nudge to unblock progress, e.g. ask Copilot to:
-     - refresh branch and rerun checks,
-     - summarize remaining blockers,
-     - or post a completion plan for unresolved items.
-   - Include `<!-- gh-aw-pr-sous-chef-nudge -->` in the comment body.
-   - Keep comments brief and actionable.
+**`add_comment` requirements:**
+- Every `add_comment` must include `pr_number` set to the current PR's numeric `number`.
+- Never emit `add_comment` without a numeric target field (`pr_number`/`pull_request_number`/`issue_number`/`item_number`) when `target: "*"` is configured.
+- Example: `{"add_comment":{"pr_number":12345,"body":"<!-- gh-aw-pr-sous-chef-nudge -->\n@copilot review all comments and address unresolved review feedback."}}`
 
 ## Run summary
 
@@ -242,12 +213,11 @@ At the end, call **exactly one** `noop` with a compact summary including counts 
 - nudged_review_comments
 - nudged_other
 - branch_update_attempts
-- formatter_pushes (number of PRs that had formatting fixes committed and pushed)
 
 Example (`noop` tool call):
 
 ```json
-{"noop":{"message":"processed=4; skipped_checks_running=0; skipped_last_comment_from_sous_chef=2; nudged_review_comments=1; nudged_other=1; branch_update_attempts=0; formatter_pushes=0"}}
+{"noop":{"message":"processed=4; skipped_checks_running=0; skipped_last_comment_from_sous_chef=2; nudged_review_comments=1; nudged_other=1; branch_update_attempts=0"}}
 ```
 
 ## Formatting Requirements
