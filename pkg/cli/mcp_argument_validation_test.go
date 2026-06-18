@@ -95,7 +95,7 @@ func TestExtractUnknownParamsFromSchemaError(t *testing.T) {
 
 // TestFindSimilarParam verifies the fuzzy matching of parameter names.
 func TestFindSimilarParam(t *testing.T) {
-	compileParams := []string{"actionlint", "fix", "max_tokens", "poutine", "runner-guard", "strict", "workflows", "zizmor"}
+	compileParams := []string{"actionlint", "fix", "max_tokens", "poutine", "strict", "workflows", "zizmor"}
 
 	tests := []struct {
 		name        string
@@ -126,12 +126,6 @@ func TestFindSimilarParam(t *testing.T) {
 			unknown:     "max-tokens",
 			validParams: compileParams,
 			expected:    "max_tokens",
-		},
-		{
-			name:        "runnerguard → runner-guard (compile)",
-			unknown:     "runnerguard",
-			validParams: compileParams,
-			expected:    "runner-guard",
 		},
 		{
 			name:        "completely unrelated — no match",
@@ -206,7 +200,7 @@ func TestBuildHelpfulParamError(t *testing.T) {
 // that the middleware replaces raw schema validation errors with helpful messages.
 func TestArgumentValidationMiddleware_TransformsAdditionalPropertiesError(t *testing.T) {
 	toolParams := map[string]toolParamEntry{
-		"compile": {"actionlint", "fix", "max_tokens", "poutine", "runner-guard", "strict", "workflows", "zizmor"},
+		"compile": {"actionlint", "fix", "max_tokens", "poutine", "strict", "workflows", "zizmor"},
 	}
 
 	middleware := argumentValidationMiddleware(toolParams)

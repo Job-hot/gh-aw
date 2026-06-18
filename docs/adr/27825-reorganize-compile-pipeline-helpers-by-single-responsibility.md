@@ -10,7 +10,7 @@
 
 ### Context
 
-The `pkg/cli/compile_*.go` package grew organically as new compilation features were added. By the time of this decision, three structural problems had accumulated: (1) `CompilationStats` and `WorkflowFailure` types were defined in `compile_config.go` while their operations (`trackWorkflowFailure`, `printCompilationSummary`) lived in `compile_file_operations.go`, splitting a cohesive abstraction across two files; (2) `compile_post_processing.go` bundled manifest/workflow generation wrappers alongside infrastructure side-effects such as updating `.gitattributes` and persisting the action cache; (3) each directory-scanning tool (poutine, runner-guard) had its own private pass-through wrapper that duplicated the same strict/non-strict error-handling pattern verbatim.
+The `pkg/cli/compile_*.go` package grew organically as new compilation features were added. By the time of this decision, three structural problems had accumulated: (1) `CompilationStats` and `WorkflowFailure` types were defined in `compile_config.go` while their operations (`trackWorkflowFailure`, `printCompilationSummary`) lived in `compile_file_operations.go`, splitting a cohesive abstraction across two files; (2) `compile_post_processing.go` bundled manifest/workflow generation wrappers alongside infrastructure side-effects such as updating `.gitattributes` and persisting the action cache; (3) the directory-scanning poutine tool had its own private pass-through wrapper that duplicated the same strict/non-strict error-handling pattern verbatim.
 
 ### Decision
 

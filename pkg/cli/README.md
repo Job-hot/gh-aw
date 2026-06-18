@@ -143,7 +143,6 @@ All diagnostic output MUST go to `stderr` using `console` formatting helpers. St
 | `RunActionlintOnFiles` | `func([]string, bool, bool) error` | Runs actionlint linter on compiled lock files |
 | `RunZizmorOnFiles` | `func([]string, bool, bool) error` | Runs zizmor linter on compiled lock files |
 | `RunPoutineOnDirectory` | `func(string, bool, bool) error` | Runs poutine supply-chain scanner on workflow directory |
-| `RunRunnerGuardOnDirectory` | `func(string, bool, bool) error` | Runs runner-guard scanner on workflow directory |
 | `AddMCPTool` | `func(string, string, ...) error` | Adds an MCP server to a workflow file |
 | `InspectWorkflowMCP` | `func(string, ...) error` | Inspects MCP server configurations |
 | `ListWorkflowMCP` | `func(string, bool) error` | Lists MCP server info for a workflow |
@@ -203,7 +202,7 @@ All diagnostic output MUST go to `stderr` using `console` formatting helpers. St
 | `IsDockerImageAvailable` | `func(string) bool` | Returns true if a Docker image is present locally |
 | `IsDockerImageDownloading` | `func(string) bool` | Returns true if an image pull is in progress |
 | `StartDockerImageDownload` | `func(ctx, image string) bool` | Begins a background image pull; returns false if already pulling |
-| `CheckAndPrepareDockerImages` | `func(ctx, useZizmor, usePoutine, useActionlint, useRunnerGuard bool) error` | Pre-pulls security-scanner Docker images |
+| `CheckAndPrepareDockerImages` | `func(ctx, useZizmor, usePoutine, useActionlint bool) error` | Pre-pulls security-scanner Docker images |
 | `UpdateContainerPins` | `func(ctx, workflowDir string, verbose bool) error` | Updates container image SHA pins in workflow files |
 | `CreatePRWithChanges` | `func(branchPrefix, commitMessage, prTitle, prBody string, verbose bool) (string, error)` | Creates a GitHub PR from uncommitted changes |
 | `AutoMergePullRequestsCreatedAfter` | `func(repoSlug string, createdAfter time.Time, verbose bool) error` | Auto-merges eligible PRs created after a given time |

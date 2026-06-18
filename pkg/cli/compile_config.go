@@ -24,7 +24,6 @@ type CompileConfig struct {
 	Zizmor                 bool     // Run zizmor security scanner on generated .lock.yml files
 	Poutine                bool     // Run poutine security scanner on generated .lock.yml files
 	Actionlint             bool     // Run actionlint linter on generated .lock.yml files
-	RunnerGuard            bool     // Run runner-guard taint analysis scanner on generated .lock.yml files
 	JSONOutput             bool     // Output validation results as JSON
 	ShowAllErrors          bool     // Display all prioritized errors instead of the default top five
 	ActionMode             string   // How action scripts are referenced: dev, release, or action. Auto-detected if empty.

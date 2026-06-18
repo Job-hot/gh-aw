@@ -72,7 +72,6 @@ Artifacts uploaded/downloaded between workflow jobs:
 | `trending-charts` | Agent job | Upload assets job | Charts generated from trending data |
 | `data-charts` | Agent job | Upload assets job | General data visualization charts |
 | `code-scanning-sarif` | Detection/SARIF job | upload_code_scanning_sarif job | SARIF formatted code scanning results |
-| `runner-guard-results` | Runner guard job | Debug/analysis step | Runner security guard check results |
 | `sbom-artifacts` | SBOM job | Download step | Software Bill of Materials artifacts |
 | `skill-optimizer-results` | Skill optimizer job | Download step | Results from the skill optimizer run |
 | `spellcheck-results` | Spellcheck job | Download step | Spellcheck findings and summary data |

@@ -32,7 +32,7 @@ This release brings [distributed tracing](https://github.com/github/gh-aw/releas
 
 ### [v0.67.4](https://github.com/github/gh-aw/releases/tag/v0.67.4) — April 9
 
-This one led with **five new agentic workflow templates**: [approach-validator](https://github.com/github/gh-aw/pull/25354), [test-quality-sentinel](https://github.com/github/gh-aw/pull/25353), [refactoring-cadence](https://github.com/github/gh-aw/pull/25352), [architecture-guardian](https://github.com/github/gh-aw/pull/25334), and [design-decision-gate](https://github.com/github/gh-aw/pull/25323). These expand the built-in library for code quality, ADR enforcement, and architectural governance. The release also included Copilot driver retry logic and a `--runner-guard` compilation flag.
+This one led with **five new agentic workflow templates**: [approach-validator](https://github.com/github/gh-aw/pull/25354), [test-quality-sentinel](https://github.com/github/gh-aw/pull/25353), [refactoring-cadence](https://github.com/github/gh-aw/pull/25352), [architecture-guardian](https://github.com/github/gh-aw/pull/25334), and [design-decision-gate](https://github.com/github/gh-aw/pull/25323). These expand the built-in library for code quality, ADR enforcement, and architectural governance. The release also included Copilot driver retry logic.
 
 ### [v0.67.3](https://github.com/github/gh-aw/releases/tag/v0.67.3) — April 8
 

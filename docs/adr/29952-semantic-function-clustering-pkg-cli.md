@@ -10,7 +10,7 @@
 
 ### Context
 
-The `pkg/cli` package in this repository had grown organically, with utility functions placed near their first point of use rather than alongside semantically related functions. This produced four concrete cohesion findings: format helpers living in `audit_diff.go` instead of `audit_math_helpers.go`, external tool runners (actionlint, zizmor, poutine, runner-guard) mixed into a general-purpose `compile_batch_operations.go`, file-discovery functions in a parsing-focused `logs_parsing_core.go`, and path utilities in the compilation-specific `compile_file_operations.go`. The result was files with weak cohesion, long import lists, and poor discoverability for new contributors.
+The `pkg/cli` package in this repository had grown organically, with utility functions placed near their first point of use rather than alongside semantically related functions. This produced four concrete cohesion findings: format helpers living in `audit_diff.go` instead of `audit_math_helpers.go`, external tool runners (actionlint, zizmor, poutine) mixed into a general-purpose `compile_batch_operations.go`, file-discovery functions in a parsing-focused `logs_parsing_core.go`, and path utilities in the compilation-specific `compile_file_operations.go`. The result was files with weak cohesion, long import lists, and poor discoverability for new contributors.
 
 ### Decision
 
@@ -39,7 +39,7 @@ A common Go pattern is to create a single `utils.go` (or `helpers.go`) catch-all
 - Function moves break `git blame` lineage; the original authorship and rationale are only recoverable by looking at the commit that introduced the function in its old location.
 
 #### Neutral
-- No public API surface changes: all exported functions (`RunActionlintOnFiles`, `RunZizmorOnFiles`, `RunPoutineOnDirectory`, `RunRunnerGuardOnDirectory`) are re-exported from the new file, preserving callers.
+- No public API surface changes: all exported functions (`RunActionlintOnFiles`, `RunZizmorOnFiles`, `RunPoutineOnDirectory`) are re-exported from the new file, preserving callers.
 - Tests are unaffected because Go's same-package compilation treats all `.go` files in `pkg/cli` as a single compilation unit.
 
 ---
@@ -53,7 +53,7 @@ A common Go pattern is to create a single `utils.go` (or `helpers.go`) catch-all
 1. Functions in `pkg/cli` **MUST** be placed in the file whose stated responsibility most closely matches the function's domain, not in the file where the function was first needed.
 2. A function **MUST NOT** be placed in a file solely because it is called from that file; co-location with semantically related functions takes precedence.
 3. Format and math helpers for audit reporting **MUST** reside in `audit_math_helpers.go`.
-4. External tool runner functions (actionlint, zizmor, poutine, runner-guard) **MUST** reside in `compile_external_tools.go`.
+4. External tool runner functions (actionlint, zizmor, poutine) **MUST** reside in `compile_external_tools.go`.
 5. Post-compilation cleanup, warning display, and action cache pruning **MUST** reside in `compile_post_processing.go`.
 6. General path and repository utilities **MUST** reside in `helpers.go`.
 7. Log file discovery functions **MUST** reside in `logs_utils.go`, not in parsing-specific files.

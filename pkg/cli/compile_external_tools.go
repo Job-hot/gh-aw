@@ -1,7 +1,7 @@
 // This file provides external tool runners for workflow compilation.
 //
 // This file contains functions that invoke external analysis tools
-// (actionlint, zizmor, poutine, runner-guard) on compiled workflow files.
+// (actionlint, zizmor, poutine) on compiled workflow files.
 //
 // # Organization Rationale
 //
@@ -17,7 +17,6 @@
 //   - RunActionlintOnFiles() - Run actionlint on multiple lock files
 //   - RunZizmorOnFiles() - Run zizmor on multiple lock files
 //   - RunPoutineOnDirectory() - Run poutine security scanner on a directory
-//   - RunRunnerGuardOnDirectory() - Run runner-guard taint analysis on a directory
 
 package cli
 
@@ -50,12 +49,6 @@ func RunZizmorOnFiles(lockFiles []string, verbose bool, strict bool) error {
 // Poutine scans all workflows in a directory, so it only needs to run once.
 func RunPoutineOnDirectory(workflowDir string, verbose bool, strict bool) error {
 	return runPoutineOnDirectory(workflowDir, verbose, strict)
-}
-
-// RunRunnerGuardOnDirectory runs runner-guard taint analysis scanner once on a directory.
-// Runner-guard scans all workflows in a directory, so it only needs to run once.
-func RunRunnerGuardOnDirectory(workflowDir string, verbose bool, strict bool) error {
-	return runRunnerGuardOnDirectory(workflowDir, verbose, strict)
 }
 
 // runBatchLockFileTool runs a batch tool on lock files with uniform error handling

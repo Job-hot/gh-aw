@@ -325,7 +325,6 @@ Examples:
 		zizmor, _ := cmd.Flags().GetBool("zizmor")
 		poutine, _ := cmd.Flags().GetBool("poutine")
 		actionlint, _ := cmd.Flags().GetBool("actionlint")
-		runnerGuard, _ := cmd.Flags().GetBool("runner-guard")
 		jsonOutput, _ := cmd.Flags().GetBool("json")
 		showAllErrors, _ := cmd.Flags().GetBool("show-all")
 		fix, _ := cmd.Flags().GetBool("fix")
@@ -389,7 +388,6 @@ Examples:
 			Zizmor:                 zizmor,
 			Poutine:                poutine,
 			Actionlint:             actionlint,
-			RunnerGuard:            runnerGuard,
 			JSONOutput:             jsonOutput,
 			ShowAllErrors:          showAllErrors,
 			Stats:                  stats,
@@ -750,7 +748,6 @@ Use "` + string(constants.CLIExtensionPrefix) + ` help all" to show help for all
 	compileCmd.Flags().Bool("zizmor", false, "Run zizmor security scanner on generated .lock.yml files")
 	compileCmd.Flags().Bool("poutine", false, "Run poutine security scanner on generated .lock.yml files")
 	compileCmd.Flags().Bool("actionlint", false, "Run actionlint linter on generated .lock.yml files")
-	compileCmd.Flags().Bool("runner-guard", false, "Run runner-guard taint analysis scanner on generated .lock.yml files (uses Docker image "+cli.RunnerGuardImage+")")
 	compileCmd.Flags().Bool("fix", false, "Apply automatic codemod fixes to workflows before compiling")
 	compileCmd.Flags().BoolP("json", "j", false, "Output results in JSON format")
 	compileCmd.Flags().Bool("show-all", false, "Display all prioritized compilation errors instead of the default top five")

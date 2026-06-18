@@ -62,7 +62,7 @@ func compileSpecificFiles(
 	var errorCount int
 	var lockFilesForActionlint []string
 	var lockFilesForZizmor []string
-	var lockFilesForDirTools []string // lock files for directory-based tools (poutine, runner-guard)
+	var lockFilesForDirTools []string // lock files for directory-based tools (poutine)
 
 	// Compile each specified file
 	for _, markdownFile := range config.MarkdownFiles {
@@ -145,7 +145,7 @@ func compileSpecificFiles(
 					if config.Zizmor {
 						lockFilesForZizmor = append(lockFilesForZizmor, fileResult.lockFile)
 					}
-					if config.Poutine || config.RunnerGuard {
+					if config.Poutine {
 						lockFilesForDirTools = append(lockFilesForDirTools, fileResult.lockFile)
 					}
 				}
@@ -187,20 +187,6 @@ func compileSpecificFiles(
 		}
 		workflowDir := filepath.Dir(lockFilesForDirTools[0])
 		if err := runBatchDirectoryTool("poutine", workflowDir, config.Verbose && !config.JSONOutput, config.Strict, RunPoutineOnDirectory); err != nil {
-			if config.Strict {
-				return workflowDataList, err
-			}
-		}
-	}
-
-	// Run batch runner-guard once on the workflow directory
-	// Get the directory from the first lock file (all should be in same directory)
-	if config.RunnerGuard && !config.NoEmit && len(lockFilesForDirTools) > 0 {
-		if err := ctx.Err(); err != nil {
-			return workflowDataList, err
-		}
-		workflowDir := filepath.Dir(lockFilesForDirTools[0])
-		if err := runBatchDirectoryTool("runner-guard", workflowDir, config.Verbose && !config.JSONOutput, config.Strict, RunRunnerGuardOnDirectory); err != nil {
 			if config.Strict {
 				return workflowDataList, err
 			}
@@ -301,7 +287,7 @@ func compileAllFilesInDirectory(
 	var errorCount int
 	var lockFilesForActionlint []string
 	var lockFilesForZizmor []string
-	var lockFilesForDirTools []string // lock files for directory-based tools (poutine, runner-guard)
+	var lockFilesForDirTools []string // lock files for directory-based tools (poutine)
 
 	for _, file := range mdFiles {
 		// Respect context cancellation between files (e.g. Ctrl+C)
@@ -353,7 +339,7 @@ func compileAllFilesInDirectory(
 					if config.Zizmor {
 						lockFilesForZizmor = append(lockFilesForZizmor, fileResult.lockFile)
 					}
-					if config.Poutine || config.RunnerGuard {
+					if config.Poutine {
 						lockFilesForDirTools = append(lockFilesForDirTools, fileResult.lockFile)
 					}
 				}
@@ -393,18 +379,6 @@ func compileAllFilesInDirectory(
 			return workflowDataList, err
 		}
 		if err := runBatchDirectoryTool("poutine", workflowsDir, config.Verbose && !config.JSONOutput, config.Strict, RunPoutineOnDirectory); err != nil {
-			if config.Strict {
-				return workflowDataList, err
-			}
-		}
-	}
-
-	// Run batch runner-guard once on the workflow directory
-	if config.RunnerGuard && !config.NoEmit && len(lockFilesForDirTools) > 0 {
-		if err := ctx.Err(); err != nil {
-			return workflowDataList, err
-		}
-		if err := runBatchDirectoryTool("runner-guard", workflowsDir, config.Verbose && !config.JSONOutput, config.Strict, RunRunnerGuardOnDirectory); err != nil {
 			if config.Strict {
 				return workflowDataList, err
 			}

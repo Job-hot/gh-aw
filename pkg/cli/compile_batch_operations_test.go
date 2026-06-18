@@ -32,11 +32,11 @@ func TestRunBatchDirectoryTool_StrictWrapsErrors(t *testing.T) {
 		return errors.New("boom")
 	}
 
-	err := runBatchDirectoryTool("runner-guard", "/tmp/workflows", false, true, runner)
+	err := runBatchDirectoryTool("poutine", "/tmp/workflows", false, true, runner)
 	if err == nil {
 		t.Fatal("expected error in strict mode, got nil")
 	}
-	if !strings.Contains(err.Error(), "runner-guard failed: boom") {
+	if !strings.Contains(err.Error(), "poutine failed: boom") {
 		t.Fatalf("expected wrapped error message, got %q", err.Error())
 	}
 }
