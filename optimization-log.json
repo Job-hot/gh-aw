@@ -168,5 +168,15 @@
     "recommendations_count": 4,
     "subagent_candidates": 1,
     "estimated_aic_savings_per_run": 38
+  },
+  {
+    "date": "2026-06-18",
+    "workflow_name": "PR Description Updater",
+    "workflow_file": "pr-description-caveman",
+    "total_aic_analyzed": 382.3265,
+    "runs_audited": 3,
+    "recommendations_count": 4,
+    "subagent_candidates": 0,
+    "estimated_aic_savings_per_run": 75
   }
 ]
