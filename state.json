@@ -1,13 +1,20 @@
 {
   "counts": {
     "model_size": {
-      "claude-haiku-4-5-20251001": 1
+      "claude-haiku-4-5-20251001": 2
     }
   },
   "runs": [
     {
       "run_id": "27690465002",
       "timestamp": "2026-06-17T12:55:39.697Z",
+      "assignments": {
+        "model_size": "claude-haiku-4-5-20251001"
+      }
+    },
+    {
+      "run_id": "27759992344",
+      "timestamp": "2026-06-18T12:39:28.517Z",
       "assignments": {
         "model_size": "claude-haiku-4-5-20251001"
       }
