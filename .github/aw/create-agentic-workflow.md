@@ -100,7 +100,7 @@ For `deployment_status` and `workflow_run` triggered incident workflows that cre
 safe-outputs:
   create-issue:
     title-prefix: "[incident] "
-    deduplicate-by-title: true   # skip if open issue with same title exists (exact match)
+    deduplicate-by-title: true   # skip if open issue with same title exists (case-insensitive, full-title match including prefix; use integer N for fuzzy edit-distance matching)
     expires: 3                   # auto-close after 3 days
 ```
 
