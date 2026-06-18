@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/stringutil"
 
 	"github.com/github/gh-aw/pkg/testutil"
@@ -140,6 +141,10 @@ Test workflow`
 	// The install step must reference the pinned version
 	if !strings.Contains(detectionSection, "install_threat_detect_binary.sh") {
 		t.Error("External detector path must emit 'install_threat_detect_binary.sh' install step")
+	}
+	// The install step must pass the pinned DefaultThreatDetectVersion to the script
+	if !strings.Contains(detectionSection, string(constants.DefaultThreatDetectVersion)) {
+		t.Errorf("External detector path must use pinned version %q from DefaultThreatDetectVersion", constants.DefaultThreatDetectVersion)
 	}
 
 	// The AWF execution step must use threat-detect as the command
