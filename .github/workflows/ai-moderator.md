@@ -113,53 +113,37 @@ Analyze for link spam indicators:
 
 ### 3. AI-Generated Content Detection
 
-Analyze for AI-generated content indicators:
-- Use of em-dashes (—) in casual contexts
-- Excessive use of emoji, especially in technical discussions
-- Perfect grammar and punctuation in informal settings
-- Constructions like "it's not X - it's Y" or "X isn't just Y - it's Z"
-- Overly formal paragraph responses to casual questions
-- Enthusiastic but content-free responses ("That's incredible!", "Amazing!")
-- "Snappy" quips that sound clever but add little substance
-- Generic excitement without specific technical engagement
-- Perfectly structured responses that lack natural conversational flow
-- Responses that sound like they're trying too hard to be engaging
-
-Human-written content typically has:
-- Natural imperfections in grammar and spelling
-- Casual internet language and slang
-- Specific technical details and personal experiences
-- Natural conversational flow with genuine questions or frustrations
-- Authentic emotional reactions to technical problems
+| Signal | Indicates AI | Indicates Human |
+|--------|-------------|-----------------|
+| Em-dashes (—) in casual contexts | ✓ | |
+| Excessive emoji in technical discussions | ✓ | |
+| Perfect grammar/punctuation informally | ✓ | |
+| "It's not X — it's Y" constructions | ✓ | |
+| Formal paragraphs for casual questions | ✓ | |
+| Generic enthusiasm ("Amazing!", "That's incredible!") | ✓ | |
+| Perfectly structured, lacking conversational flow | ✓ | |
+| Grammar/spelling imperfections | | ✓ |
+| Casual internet language and slang | | ✓ |
+| Specific technical details and personal experiences | | ✓ |
+| Authentic emotional reactions to technical problems | | ✓ |
 
 ## Actions
 
-Based on your analysis:
+Based on your analysis, apply the following outputs:
 
-1. **For Issues** (when issue number is present):
-   - If generic spam is detected, use the `add-labels` safe output to add the `spam` label to the issue
-   - If link spam is detected, use the `add-labels` safe output to add the `link-spam` label to the issue
-   - If AI-generated content is detected, use the `add-labels` safe output to add the `ai-generated` label to the issue
-   - Multiple labels can be added if multiple types are detected
-   - **If no warnings or issues are found** and the content appears legitimate and on-topic, use the `add-labels` safe output to add the `ai-inspected` label to indicate the issue has been reviewed and no threats were found
-   - **If workflow_dispatch** was used, ensure the labels are applied to the correct issue/PR as specified in the input URL when calling `add-labels`
+| Trigger | Output | Details |
+|---------|--------|---------|
+| Issue — generic spam | `add-labels`: `spam` | |
+| Issue — link spam | `add-labels`: `link-spam` | |
+| Issue — AI-generated | `add-labels`: `ai-generated` | |
+| Issue — clean | `add-labels`: `ai-inspected` | No threats found |
+| Comment — any spam type | `hide-comment` reason=`spam` + label parent issue | See Issue rows above |
+| Comment — clean | `add-labels`: `ai-inspected` on parent issue | |
+| PR — spam/link-spam/AI patterns in diff | `add-labels`: `spam`/`link-spam`/`ai-generated` | Fetch diff first via `pull_request_read` method=`get_diff` |
+| PR — clean | `add-labels`: `ai-inspected` | |
+| `workflow_dispatch` | Apply labels to the issue/PR specified in the input URL | |
 
-2. **For Comments** (when comment ID is present):
-   - If any type of spam, link spam, or AI-generated spam is detected:
-     - Use the `hide-comment` safe output to hide the comment with reason 'spam'
-     - Also add appropriate labels to the parent issue as described above
-   - If the comment appears legitimate and on-topic, add the `ai-inspected` label to the parent issue
-
-3. **For Pull Requests** (when pull request number is present):
-   - Fetch the PR diff using `pull_request_read` with method `get_diff`
-   - Analyze the diff for spam patterns:
-     - Large amounts of promotional content or links in code comments
-     - Suspicious file additions (e.g., cryptocurrency miners, malware)
-     - Mass link injection across multiple files
-     - AI-generated code comments with promotional content
-   - If spam, link spam, or suspicious patterns are detected:
-     - Use the `add-labels` safe output to add appropriate labels (`spam`, `link-spam`, `ai-generated`)
-   - **If no warnings or issues are found** and the PR appears legitimate, use the `add-labels` safe output to add the `ai-inspected` label
+Multiple labels may be added when multiple types are detected.
 
 ## Spam Tracking (Cache Memory)
 

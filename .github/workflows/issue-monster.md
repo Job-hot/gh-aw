@@ -461,35 +461,7 @@ Find up to three issues that need work and assign them to the Copilot coding age
 
 ### 1. Review Pre-Searched and Prioritized Issue List
 
-The issue search has already been performed in the pre-activation job with smart filtering and prioritization:
-
-**Rate Limiting Protection:**
-- 🛡️ **Checks for rate-limited PRs in the last hour** before scheduling new work
-- If rate limiting is detected in recent Copilot PRs, the workflow skips all assignments to prevent further API issues
-- Looks for patterns: "rate limit", "API rate limit", "secondary rate limit", "abuse detection", "429", "too many requests"
-
-**Filtering Applied:**
-- ✅ Only open issues **with "cookie" label** (indicating approved work queue items from automated workflows)
-- ✅ Excluded issues with labels: wontfix, duplicate, invalid, question, discussion, needs-discussion, blocked, on-hold, waiting-for-feedback, needs-more-info, no-bot, no-campaign
-- ✅ Excluded issues with campaign labels (campaign:*) - these are managed by campaign orchestrators
-- ✅ Excluded issues that already have assignees
-- ✅ Excluded issues that have sub-issues (parent/organizing issues)
-- ✅ Excluded issues with closed or merged PRs (treating those as complete)
-- ✅ Excluded issues with open PRs from Copilot coding agent (already being worked on)
-- ✅ Prioritized issues with labels: good-first-issue, bug, security, documentation, enhancement, feature, performance, tech-debt, refactoring
-
-**Scoring System:**
-Issues are scored and sorted by priority:
-- **Community**: +60 points *(always highest — issues from external contributors)*
-- Good first issue: +50 points
-- Security: +45 points
-- Bug: +40 points
-- Documentation: +35 points
-- Enhancement/Feature: +30 points
-- Performance: +25 points
-- Tech-debt/Refactoring: +20 points
-- Has any priority label: +10 points
-- Age bonus: +0-20 points (older issues get slight priority)
+The pre-activation job has already filtered out ineligible issues (wrong labels, existing assignees, open/closed PRs, sub-issues, rate-limit signals) and scored the remaining candidates by label priority (community › security › bug › enhancement) plus an age bonus. Issues are already sorted highest-score first — use this list directly without re-fetching.
 
 **Issue Count**: ${{ needs.pre_activation.outputs.issue_count }}
 **Issue Numbers**: ${{ needs.pre_activation.outputs.issue_numbers }}
@@ -503,8 +475,6 @@ ${{ needs.pre_activation.outputs.issue_list }}
 ```
 ${{ needs.pre_activation.outputs.issue_context }}
 ```
-
-Work with this pre-fetched, filtered, and prioritized list of issues. Do not perform additional searches - candidate issue numbers and body excerpts are already identified above.
 
 ### 1a. Handle Parent-Child Issue Relationships (for "task" or "plan" labeled issues)
 
@@ -639,7 +609,7 @@ Issue Monster runs frequently (every 30 minutes), so keeping each run lean is cr
 - ✅ **Sibling awareness**: For "task" or "plan" sub-issues, skip if any sibling already has an open Copilot PR
 - ✅ **Process in order**: For sub-issues of the same parent, process oldest first
 - ✅ **Always report outcome**: If no issues are assigned, use the `noop` tool to explain why
-- ✅ **Skip integrity-blocked issues**: If `issue_read` is blocked by integrity policy, skip that issue and continue — never call `missing_data` for integrity errors
+- ✅ **Skip integrity-blocked issues**: See Step 3 for full handling rules
 - ❌ **Don't force batching**: If only 1-2 clearly separate issues exist, assign only those
 
 ## skill: `issue-monster-report-formatting`
@@ -674,7 +644,7 @@ If anything goes wrong or no work can be assigned:
 - **No issues found**: Use the `noop` tool with message: "🍽️ No suitable candidate issues - the plate is empty!"
 - **All issues assigned**: Use the `noop` tool with message: "🍽️ All issues are already being worked on!"
 - **No suitable separate issues**: Use the `noop` tool explaining which issues were considered and why they couldn't be assigned (e.g., overlapping topics, sibling PRs, etc.)
-- **Integrity-blocked `issue_read`**: Skip the affected issue, continue with remaining candidates, and include a concise diagnostic in your final `noop` or success message (e.g., "Skipped #NNN (integrity-filtered)."). **Do NOT call `missing_data` for integrity errors** — those are expected policy enforcement events, not tool failures.
+- **Integrity-blocked `issue_read`**: See Step 3 for full handling rules.
 - **Unexpected API errors** (non-integrity): Use the `missing_data` tool to report the issue
 
 **CRITICAL**: You MUST call at least one safe output tool every run. If you don't assign any issues, you MUST call the `noop` tool to explain why. Never complete a run without making at least one tool call.
