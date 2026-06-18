@@ -37,12 +37,13 @@ import (
 var awfHelpersLog = logger.New("workflow:awf_helpers")
 
 const (
-	awfArcDindPrefixArgsVarName = "GH_AW_DOCKER_HOST_PATH_PREFIX_ARGS"
-	awfDockerHostVarName        = "GH_AW_DOCKER_HOST"
-	awfToolCacheMountVarName    = "GH_AW_TOOL_CACHE_MOUNT"
-	awfMaxAICreditsVarName      = "GH_AW_MAX_AI_CREDITS"
-	awfConfigRuntimePathExpr    = "${RUNNER_TEMP}/gh-aw/awf-config.json"
-	awfModelsJSONPathExpr       = "/tmp/gh-aw/models.json"
+	awfArcDindPrefixArgsVarName  = "GH_AW_DOCKER_HOST_PATH_PREFIX_ARGS"
+	awfDockerHostVarName         = "GH_AW_DOCKER_HOST"
+	awfToolCacheMountVarName     = "GH_AW_TOOL_CACHE_MOUNT"
+	awfToolCacheHostMountVarName = "GH_AW_TOOL_CACHE_HOST_MOUNT"
+	awfMaxAICreditsVarName       = "GH_AW_MAX_AI_CREDITS"
+	awfConfigRuntimePathExpr     = "${RUNNER_TEMP}/gh-aw/awf-config.json"
+	awfModelsJSONPathExpr        = "/tmp/gh-aw/models.json"
 	// Bash regex used in [[ ... =~ ... ]] to detect TCP Docker hosts (ARC/DinD).
 	// Any tcp:// DOCKER_HOST indicates the Docker daemon runs on a separate filesystem,
 	// requiring --docker-host-path-prefix so AWF bind-mounts resolve against the daemon.
@@ -269,19 +270,26 @@ fi`,
 		arcDindPrefixArgsRef = fmt.Sprintf("${%s}", awfArcDindPrefixArgsVarName)
 	}
 	toolCacheMountProbe := fmt.Sprintf(`%s=""
+%s=""
 GH_AW_TOOL_CACHE="${RUNNER_TOOL_CACHE:-/opt/hostedtoolcache}"
 if [ -d "$GH_AW_TOOL_CACHE" ]; then
   if [[ "$GH_AW_TOOL_CACHE" != /opt/* ]]; then
     %s="$GH_AW_TOOL_CACHE:$GH_AW_TOOL_CACHE:ro"
+    %s="$GH_AW_TOOL_CACHE:/host$GH_AW_TOOL_CACHE:ro"
   fi
 elif [ -d "/home/runner/work/_tool" ]; then
   %s="/home/runner/work/_tool:/home/runner/work/_tool:ro"
+  %s="/home/runner/work/_tool:/host/home/runner/work/_tool:ro"
 fi`,
 		awfToolCacheMountVarName,
+		awfToolCacheHostMountVarName,
 		awfToolCacheMountVarName,
+		awfToolCacheHostMountVarName,
 		awfToolCacheMountVarName,
+		awfToolCacheHostMountVarName,
 	)
 	toolCacheMountRef := fmt.Sprintf("${%s:+--mount \"$%s\"}", awfToolCacheMountVarName, awfToolCacheMountVarName)
+	toolCacheHostMountRef := fmt.Sprintf("${%s:+--mount \"$%s\"}", awfToolCacheHostMountVarName, awfToolCacheHostMountVarName)
 
 	// Build the expandable args string for args that need shell variable expansion.
 	// These MUST be appended as raw (unescaped) strings because single-quoting would
@@ -425,7 +433,7 @@ fi`,
 %s
 %s
 # shellcheck disable=SC1003
-%s %s %s %s %s %s \
+%s %s %s %s %s %s %s \
   -- %s 2>&1 | tee -a %s`,
 			writeAgentCLIStartMs,
 			config.PathSetup,
@@ -438,6 +446,7 @@ fi`,
 			awfCommand,
 			expandableArgs,
 			toolCacheMountRef,
+			toolCacheHostMountRef,
 			arcDindDockerHostRef,
 			arcDindPrefixArgsRef,
 			shellJoinArgs(awfArgs),
@@ -454,7 +463,7 @@ fi`,
 %s
 %s
 # shellcheck disable=SC1003
-%s %s %s %s %s %s \
+%s %s %s %s %s %s %s \
   -- %s 2>&1 | tee -a %s`,
 			writeAgentCLIStartMs,
 			config.PathSetup,
@@ -466,6 +475,7 @@ fi`,
 			awfCommand,
 			expandableArgs,
 			toolCacheMountRef,
+			toolCacheHostMountRef,
 			arcDindDockerHostRef,
 			arcDindPrefixArgsRef,
 			shellJoinArgs(awfArgs),
@@ -481,7 +491,7 @@ fi`,
 %s
 %s
 # shellcheck disable=SC1003
-%s %s %s %s %s %s \
+%s %s %s %s %s %s %s \
   -- %s 2>&1 | tee -a %s`,
 			writeAgentCLIStartMs,
 			preCreateLog,
@@ -493,6 +503,7 @@ fi`,
 			awfCommand,
 			expandableArgs,
 			toolCacheMountRef,
+			toolCacheHostMountRef,
 			arcDindDockerHostRef,
 			arcDindPrefixArgsRef,
 			shellJoinArgs(awfArgs),
@@ -507,7 +518,7 @@ fi`,
 %s
 %s
 # shellcheck disable=SC1003
-%s %s %s %s %s %s \
+%s %s %s %s %s %s %s \
   -- %s 2>&1 | tee -a %s`,
 			writeAgentCLIStartMs,
 			preCreateLog,
@@ -518,6 +529,7 @@ fi`,
 			awfCommand,
 			expandableArgs,
 			toolCacheMountRef,
+			toolCacheHostMountRef,
 			arcDindDockerHostRef,
 			arcDindPrefixArgsRef,
 			shellJoinArgs(awfArgs),
