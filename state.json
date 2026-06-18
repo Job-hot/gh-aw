@@ -2,7 +2,7 @@
   "counts": {
     "prompt_style": {
       "concise": 10,
-      "detailed": 14
+      "detailed": 15
     }
   },
   "runs": [
@@ -172,6 +172,13 @@
       "timestamp": "2026-06-17T14:20:09.910Z",
       "assignments": {
         "prompt_style": "concise"
+      }
+    },
+    {
+      "run_id": "27765426610",
+      "timestamp": "2026-06-18T14:10:48.205Z",
+      "assignments": {
+        "prompt_style": "detailed"
       }
     }
   ]
