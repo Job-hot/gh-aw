@@ -7,7 +7,9 @@ package cli
 // These tests cover predicates P1–P13 derived from the formal model in
 // specs/forecast-compliance-fixtures/README.md (T-FC-031 – T-FC-040).
 //
-// Formal notation cross-references:
+// Formal notation cross-references (derived from the specification analysis in
+// specs/forecast-compliance-fixtures/README.md and the formal model that produced
+// the issue — see the "Formal Model" section of issue #40114):
 //   - TLA+ invariants: P1, P5, P7, P8, P9
 //   - F* pre/post conditions: P2, P3, P4, P6, P10, P11
 //   - Z3-SMT schema gap: P12, P13
