@@ -15,6 +15,14 @@ import (
 
 var compilerActivationJobsLog = logger.New("workflow:compiler_activation_jobs")
 
+// preActivationAllowedFields is the set of field names permitted inside a pre-activation job config.
+// Defined at package level to avoid repeated allocations on every call to extractPreActivationVariantFields.
+var preActivationAllowedFields = map[string]struct{}{
+	"steps":     {},
+	"outputs":   {},
+	"pre-steps": {}, // handled by generic built-in pre-steps insertion in compiler_jobs.go
+}
+
 // buildPreActivationJob creates a unified pre-activation job that combines membership checks and stop-time validation.
 // This job exposes a single "activated" output that indicates whether the workflow should proceed.
 func (c *Compiler) buildPreActivationJob(data *WorkflowData, needsPermissionCheck bool) (*Job, error) {
@@ -559,11 +567,6 @@ func (c *Compiler) extractPreActivationCustomFields(jobs map[string]any) ([]stri
 // extractPreActivationVariantFields validates and extracts steps and outputs from a single
 // pre-activation job variant config map (e.g. jobs.pre-activation or jobs.pre_activation).
 func extractPreActivationVariantFields(jobName string, configMap map[string]any) ([]string, map[string]string, error) {
-	allowedFields := map[string]struct{}{
-		"steps":     {},
-		"outputs":   {},
-		"pre-steps": {}, // handled by generic built-in pre-steps insertion in compiler_jobs.go
-	}
 	for field := range configMap {
 		if field == "setup-steps" {
 			return nil, nil, fmt.Errorf(
@@ -571,7 +574,7 @@ func extractPreActivationVariantFields(jobName string, configMap map[string]any)
 				jobName,
 			)
 		}
-		if _, ok := allowedFields[field]; !ok {
+		if _, ok := preActivationAllowedFields[field]; !ok {
 			return nil, nil, fmt.Errorf("jobs.%s: unsupported field '%s' - only 'steps', 'outputs', and 'pre-steps' are allowed", jobName, field)
 		}
 	}

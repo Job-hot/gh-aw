@@ -502,33 +502,33 @@ func (e *CodexEngine) expandNeutralToolsToCodexToolsFromMap(tools map[string]any
 
 func (e *CodexEngine) getShellEnvironmentPolicyVars(tools map[string]any, mcpTools []string) []string {
 	// Collect all environment variables needed by MCP servers
-	envVars := make(map[string]struct{})
+	envVarNames := make(map[string]struct{})
 
 	// Always include core environment variables
-	envVars["PATH"] = struct{}{}
-	envVars["HOME"] = struct{}{}
+	envVarNames["PATH"] = struct{}{}
+	envVarNames["HOME"] = struct{}{}
 
 	// Add CODEX_API_KEY for authentication
-	envVars["CODEX_API_KEY"] = struct{}{}
-	envVars["OPENAI_API_KEY"] = struct{}{} // Fallback for CODEX_API_KEY
+	envVarNames["CODEX_API_KEY"] = struct{}{}
+	envVarNames["OPENAI_API_KEY"] = struct{}{} // Fallback for CODEX_API_KEY
 
 	// Check each MCP tool for required environment variables
 	for _, toolName := range mcpTools {
 		switch toolName {
 		case "github":
 			// GitHub MCP server needs GITHUB_PERSONAL_ACCESS_TOKEN
-			envVars["GITHUB_PERSONAL_ACCESS_TOKEN"] = struct{}{}
+			envVarNames["GITHUB_PERSONAL_ACCESS_TOKEN"] = struct{}{}
 		case "agentic-workflows":
 			// Agentic workflows MCP server needs GITHUB_TOKEN
-			envVars["GITHUB_TOKEN"] = struct{}{}
+			envVarNames["GITHUB_TOKEN"] = struct{}{}
 		case "safe-outputs":
 			// Safe outputs MCP server needs several environment variables
-			envVars["GH_AW_SAFE_OUTPUTS"] = struct{}{}
-			envVars["GH_AW_ASSETS_BRANCH"] = struct{}{}
-			envVars["GH_AW_ASSETS_MAX_SIZE_KB"] = struct{}{}
-			envVars["GH_AW_ASSETS_ALLOWED_EXTS"] = struct{}{}
-			envVars["GITHUB_REPOSITORY"] = struct{}{}
-			envVars["GITHUB_SERVER_URL"] = struct{}{}
+			envVarNames["GH_AW_SAFE_OUTPUTS"] = struct{}{}
+			envVarNames["GH_AW_ASSETS_BRANCH"] = struct{}{}
+			envVarNames["GH_AW_ASSETS_MAX_SIZE_KB"] = struct{}{}
+			envVarNames["GH_AW_ASSETS_ALLOWED_EXTS"] = struct{}{}
+			envVarNames["GITHUB_REPOSITORY"] = struct{}{}
+			envVarNames["GITHUB_SERVER_URL"] = struct{}{}
 		default:
 			// For custom MCP tools, check if they have env configuration
 			if toolValue, ok := tools[toolName]; ok {
@@ -536,7 +536,7 @@ func (e *CodexEngine) getShellEnvironmentPolicyVars(tools map[string]any, mcpToo
 					// Extract environment variable names from env configuration
 					if env, hasEnv := toolConfig["env"].(map[string]any); hasEnv {
 						for envKey := range env {
-							envVars[envKey] = struct{}{}
+							envVarNames[envKey] = struct{}{}
 						}
 					}
 				}
@@ -545,7 +545,7 @@ func (e *CodexEngine) getShellEnvironmentPolicyVars(tools map[string]any, mcpToo
 	}
 
 	var sortedEnvVars []string
-	for envVar := range envVars {
+	for envVar := range envVarNames {
 		sortedEnvVars = append(sortedEnvVars, envVar)
 	}
 	sort.Strings(sortedEnvVars)
