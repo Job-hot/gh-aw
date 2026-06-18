@@ -222,7 +222,9 @@ function writeStepSummaryWithTokenUsage(coreObj) {
     for (const rawLine of raw.split("\n")) {
       const line = rawLine.trim();
       if (!line) continue;
-      // Lightweight request_id extraction for deduplication.
+      // Lightweight request_id extraction for deduplication — mirrors extractRequestId() in
+      // parse_token_usage.cjs. The pattern covers standard JSON escaping (\\, \") but not
+      // exotic cases; api-proxy request IDs are UUIDs so this is sufficient in practice.
       const idMatch = line.match(/"request_id"\s*:\s*"((?:\\.|[^"\\])*)"/);
       const dedupeKey = idMatch ? `request_id:${idMatch[1]}` : line;
       if (seenRequestIds.has(dedupeKey)) continue;

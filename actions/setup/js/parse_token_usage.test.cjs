@@ -54,7 +54,6 @@ describe("parse_token_usage", () => {
     });
 
     test("AGENT_USAGE_JSONL_PATH points to agent_usage.jsonl", () => {
-      const { AGENT_USAGE_JSONL_PATH } = require("./parse_token_usage.cjs");
       expect(AGENT_USAGE_JSONL_PATH).toBe("/tmp/gh-aw/agent_usage.jsonl");
     });
 
