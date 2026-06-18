@@ -1280,10 +1280,14 @@ function sanitizeContentCore(content, maxLength, maxBotMentions) {
   sanitized = applyToNonCodeRegions(sanitized, convertXmlTags);
 
   // URI filtering - replace non-https protocols with "(redacted)"
-  sanitized = sanitizeUrlProtocols(sanitized);
+  // applyToNonCodeRegions preserves fenced code blocks (including ```suggestion blocks)
+  // so that patch content is never corrupted by URL rewriting.
+  sanitized = applyToNonCodeRegions(sanitized, sanitizeUrlProtocols);
 
   // Domain filtering for HTTPS URIs
-  sanitized = sanitizeUrlDomains(sanitized, allowedDomains);
+  // applyToNonCodeRegions preserves fenced code blocks (including ```suggestion blocks)
+  // so that patch content is never corrupted by URL rewriting.
+  sanitized = applyToNonCodeRegions(sanitized, s => sanitizeUrlDomains(s, allowedDomains));
 
   // Apply truncation limits
   sanitized = applyTruncation(sanitized, maxLength);
