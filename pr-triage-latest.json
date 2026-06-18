@@ -1,92 +1,112 @@
 {
-  "run_date": "2026-06-18T08:02:09Z",
-  "run_id": "27745353989",
-  "previous_run_id": "27730556812",
-  "previous_run_date": "2026-06-18T01:25:55Z",
+  "run_date": "2026-06-18T13:28:29Z",
+  "run_id": "27762753975",
+  "previous_run_id": "27745353989",
+  "previous_run_date": "2026-06-18T08:02:09Z",
   "fork_prs": 0,
-  "agent_prs_found": 8,
-  "copilot_swe_agent_prs": 8,
+  "agent_prs_found": 10,
+  "copilot_swe_agent_prs": 10,
   "github_actions_prs": 0,
   "prs_triaged": 0,
   "fork_only_policy": true,
   "open_agent_prs": [
     {
-      "number": 40001,
-      "title": "safe-outputs: validate extracted base branch with `git check-ref-format --branch`",
+      "number": 40064,
+      "title": "[WIP] Fix permissions schema to support vulnerability-alerts",
       "draft": true,
       "status": "DRAFT",
       "created": "2026-06-18",
       "labels": [],
       "is_fork": false,
       "category": "bug",
-      "additions": 31,
-      "deletions": 5,
-      "changed_files": 3
+      "ci": "unknown"
     },
     {
-      "number": 40000,
-      "title": "feat: add `disclosure-footer` shorthand for AI authorship disclosure in safe-outputs",
-      "draft": true,
-      "status": "DRAFT",
-      "created": "2026-06-18",
-      "labels": [],
-      "is_fork": false,
-      "category": "feature",
-      "additions": 194,
-      "deletions": 1,
-      "changed_files": 5
-    },
-    {
-      "number": 39998,
-      "title": "Clean up stale gh-aw gateway containers before binding port on self-hosted runners",
-      "draft": true,
-      "status": "DRAFT",
-      "created": "2026-06-18",
-      "labels": [],
-      "is_fork": false,
-      "category": "bug",
-      "additions": 313,
-      "deletions": 270,
-      "changed_files": 265
-    },
-    {
-      "number": 39997,
-      "title": "Align docs site custom CSS with GitHub Docs color system",
-      "draft": true,
-      "status": "DRAFT",
-      "created": "2026-06-18",
-      "labels": [],
-      "is_fork": false,
-      "category": "chore",
-      "additions": 77,
-      "deletions": 77,
-      "changed_files": 5
-    },
-    {
-      "number": 39995,
-      "title": "[WIP] Fix failing GitHub Actions job 'Integration: Workflow Features'",
-      "draft": true,
-      "status": "DRAFT",
-      "created": "2026-06-18",
-      "labels": [],
-      "is_fork": false,
-      "category": "bug",
-      "additions": 2,
-      "deletions": 2,
-      "changed_files": 1
-    },
-    {
-      "number": 39959,
-      "title": "Improve Copilot harness classification for opaque exitCode=1 failures",
+      "number": 40062,
+      "title": "fix: upload_assets looks in RUNNER_TEMP but artifact is downloaded to /tmp",
       "draft": false,
       "status": "OPEN",
       "created": "2026-06-18",
       "labels": [],
       "is_fork": false,
       "category": "bug",
-      "additions": 154,
-      "deletions": 6,
-      "changed_files": 4
+      "ci": "in_progress",
+      "reviews": 2,
+      "comments": 1
+    },
+    {
+      "number": 40061,
+      "title": "fix: add `samples`, `target`, and cross-repo properties to `merge-pull-request` schema; fix testifylint",
+      "draft": true,
+      "status": "DRAFT",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "bug",
+      "ci": "unknown"
+    },
+    {
+      "number": 40060,
+      "title": "[WIP] Fix samples mode to report errors correctly from safe-output handler",
+      "draft": true,
+      "status": "DRAFT",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "bug",
+      "ci": "unknown"
+    },
+    {
+      "number": 40052,
+      "title": "Improve Copilot 403 auth guidance for copilot-requests mode",
+      "draft": false,
+      "status": "OPEN",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "docs",
+      "ci": "passing",
+      "reviews": 6,
+      "comments": 9
+    },
+    {
+      "number": 40035,
+      "title": "fix: soft-skip target:triggering safe outputs when no triggering context",
+      "draft": false,
+      "status": "OPEN",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "bug",
+      "ci": "no_checks",
+      "reviews": 10,
+      "comments": 15
+    },
+    {
+      "number": 40033,
+      "title": "fix: double-mount runner tool cache at /host prefix for AWF chroot on GPU runners",
+      "draft": false,
+      "status": "OPEN",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "bug",
+      "ci": "failure",
+      "reviews": 1,
+      "comments": 0
+    },
+    {
+      "number": 40028,
+      "title": "Honor default GH host in `PinContext` hardcoded-pin fallback guard",
+      "draft": false,
+      "status": "OPEN",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "bug",
+      "ci": "no_checks",
+      "reviews": 4,
+      "comments": 4
     },
     {
       "number": 39927,
@@ -97,9 +117,9 @@
       "labels": [],
       "is_fork": false,
       "category": "bug",
-      "additions": 45,
-      "deletions": 2,
-      "changed_files": 2
+      "ci": "passing",
+      "reviews": 1,
+      "comments": 1
     },
     {
       "number": 39830,
@@ -110,27 +130,32 @@
       "labels": [],
       "is_fork": false,
       "category": "docs",
-      "additions": 73,
-      "deletions": 8,
-      "changed_files": 2
+      "ci": "passing",
+      "reviews": 1,
+      "comments": 4
     }
   ],
-  "closed_since_last_run": [39942, 39941, 39940, 39938, 39933, 39926, 39905, 39742],
-  "new_since_last_run": [40001, 40000, 39998, 39997, 39995, 39959],
+  "closed_since_last_run": [40001, 40000, 39998, 39997, 39995, 39959],
+  "new_since_last_run": [40064, 40062, 40061, 40060, 40052, 40035, 40033, 40028],
   "statistics": {
     "by_status": {
-      "DRAFT": 5,
-      "OPEN": 3
+      "DRAFT": 3,
+      "OPEN": 7
     },
     "by_category": {
-      "bug": 5,
-      "feature": 1,
-      "chore": 1,
-      "docs": 1
+      "bug": 8,
+      "docs": 2
+    },
+    "by_ci": {
+      "passing": 3,
+      "in_progress": 1,
+      "failure": 1,
+      "no_checks": 2,
+      "unknown": 3
     },
     "resolved_this_run": {
-      "closed_or_merged": 8
+      "closed_or_merged": 6
     }
   },
-  "notes": "8 open copilot-swe-agent PRs, all branch-based (is_fork=false). Fork-only triage policy → 0 PRs eligible for formal triage. 8 PRs closed/merged since last run (#39942, #39941, #39940, #39938, #39933, #39926, #39905, #39742). 6 new PRs since last run (#40001, #40000, #39998, #39997, #39995, #39959). 3 non-draft open PRs: #39959 (Copilot harness classification), #39927 (URL sanitization fix), #39830 (Impact Efficiency Report). Dominant category: bug fixes (5/8). All PRs continue to be same-repo Copilot SWE agent branches. #39998 is a large change (265 files) touching lock.yml files."
+  "notes": "10 open copilot-swe-agent PRs, all branch-based (is_fork=false). Fork-only triage policy → 0 PRs eligible for formal triage. 6 PRs closed/merged since last run (#40001, #40000, #39998, #39997, #39995, #39959). 8 new PRs since last run (#40064, #40062, #40061, #40060, #40052, #40035, #40033, #40028). Still open from last run: #39927, #39830. Notable: #40033 has CI failures (agent failure check). Most active PR: #40035 (10 reviews, 15 comments). Dominant category: bug fixes (8/10)."
 }
