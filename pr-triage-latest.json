@@ -1,64 +1,92 @@
 {
-  "run_date": "2026-06-18T01:25:55Z",
-  "run_id": "27730556812",
-  "previous_run_id": "27712972667",
-  "previous_run_date": "2026-06-17T19:07:16Z",
+  "run_date": "2026-06-18T08:02:09Z",
+  "run_id": "27745353989",
+  "previous_run_id": "27730556812",
+  "previous_run_date": "2026-06-18T01:25:55Z",
   "fork_prs": 0,
-  "agent_prs_found": 10,
-  "copilot_swe_agent_prs": 10,
+  "agent_prs_found": 8,
+  "copilot_swe_agent_prs": 8,
   "github_actions_prs": 0,
   "prs_triaged": 0,
   "fork_only_policy": true,
   "open_agent_prs": [
     {
-      "number": 39942,
-      "title": "fix: disable LFS checkout in docs build and unbloat-docs AW",
+      "number": 40001,
+      "title": "safe-outputs: validate extracted base branch with `git check-ref-format --branch`",
       "draft": true,
       "status": "DRAFT",
       "created": "2026-06-18",
       "labels": [],
       "is_fork": false,
-      "category": "bug"
+      "category": "bug",
+      "additions": 31,
+      "deletions": 5,
+      "changed_files": 3
     },
     {
-      "number": 39941,
-      "title": "fix: correct assign-to-agent GraphQL mutations per official docs",
+      "number": 40000,
+      "title": "feat: add `disclosure-footer` shorthand for AI authorship disclosure in safe-outputs",
       "draft": true,
       "status": "DRAFT",
       "created": "2026-06-18",
       "labels": [],
       "is_fork": false,
-      "category": "bug"
+      "category": "feature",
+      "additions": 194,
+      "deletions": 1,
+      "changed_files": 5
     },
     {
-      "number": 39940,
-      "title": "fix: isolate copilot_sdk_driver test session state writes to prevent false-positive tool-denial issues",
+      "number": 39998,
+      "title": "Clean up stale gh-aw gateway containers before binding port on self-hosted runners",
       "draft": true,
       "status": "DRAFT",
       "created": "2026-06-18",
       "labels": [],
       "is_fork": false,
-      "category": "bug"
+      "category": "bug",
+      "additions": 313,
+      "deletions": 270,
+      "changed_files": 265
     },
     {
-      "number": 39938,
-      "title": "Extract hardcoded file paths to named constants",
+      "number": 39997,
+      "title": "Align docs site custom CSS with GitHub Docs color system",
       "draft": true,
       "status": "DRAFT",
       "created": "2026-06-18",
       "labels": [],
       "is_fork": false,
-      "category": "refactor"
+      "category": "chore",
+      "additions": 77,
+      "deletions": 77,
+      "changed_files": 5
     },
     {
-      "number": 39933,
-      "title": "fix: increase sendAndWait timeout in sample SDK drivers from 60s to 10min",
+      "number": 39995,
+      "title": "[WIP] Fix failing GitHub Actions job 'Integration: Workflow Features'",
       "draft": true,
       "status": "DRAFT",
       "created": "2026-06-18",
       "labels": [],
       "is_fork": false,
-      "category": "bug"
+      "category": "bug",
+      "additions": 2,
+      "deletions": 2,
+      "changed_files": 1
+    },
+    {
+      "number": 39959,
+      "title": "Improve Copilot harness classification for opaque exitCode=1 failures",
+      "draft": false,
+      "status": "OPEN",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "bug",
+      "additions": 154,
+      "deletions": 6,
+      "changed_files": 4
     },
     {
       "number": 39927,
@@ -68,27 +96,10 @@
       "created": "2026-06-18",
       "labels": [],
       "is_fork": false,
-      "category": "bug"
-    },
-    {
-      "number": 39926,
-      "title": "fix: add_comment silently skips when integration token can't write to discussions",
-      "draft": false,
-      "status": "OPEN",
-      "created": "2026-06-18",
-      "labels": [],
-      "is_fork": false,
-      "category": "bug"
-    },
-    {
-      "number": 39905,
-      "title": "fix: prune orphaned entries from actions-lock.json on full compile",
-      "draft": false,
-      "status": "OPEN",
-      "created": "2026-06-17",
-      "labels": [],
-      "is_fork": false,
-      "category": "bug"
+      "category": "bug",
+      "additions": 45,
+      "deletions": 2,
+      "changed_files": 2
     },
     {
       "number": 39830,
@@ -98,34 +109,28 @@
       "created": "2026-06-17",
       "labels": [],
       "is_fork": false,
-      "category": "docs"
-    },
-    {
-      "number": 39742,
-      "title": "Harden workflow_call jobs against GHES output masking for artifact prefixes and target repo resolution",
-      "draft": true,
-      "status": "DRAFT",
-      "created": "2026-06-17",
-      "labels": [],
-      "is_fork": false,
-      "category": "bug"
+      "category": "docs",
+      "additions": 73,
+      "deletions": 8,
+      "changed_files": 2
     }
   ],
-  "closed_since_last_run": [39875, 39873, 39867, 39771, 39767],
-  "new_since_last_run": [39942, 39941, 39940, 39938, 39933, 39927, 39926, 39905],
+  "closed_since_last_run": [39942, 39941, 39940, 39938, 39933, 39926, 39905, 39742],
+  "new_since_last_run": [40001, 40000, 39998, 39997, 39995, 39959],
   "statistics": {
     "by_status": {
-      "DRAFT": 6,
-      "OPEN": 4
+      "DRAFT": 5,
+      "OPEN": 3
     },
     "by_category": {
-      "bug": 8,
-      "refactor": 1,
+      "bug": 5,
+      "feature": 1,
+      "chore": 1,
       "docs": 1
     },
     "resolved_this_run": {
-      "closed_or_merged": 5
+      "closed_or_merged": 8
     }
   },
-  "notes": "10 open copilot-swe-agent PRs, all branch-based (is_fork=false). Fork-only triage policy → 0 PRs eligible for formal triage. 5 PRs closed/merged since last run (#39875, #39873, #39867, #39771, #39767). 8 new PRs since last run. 4 non-draft open PRs: #39927 (URL sanitization fix), #39926 (add_comment discussion fix), #39905 (actions-lock.json prune fix), #39830 (Impact Efficiency Report). Dominant category: bug fixes (8/10). All PRs continue to be same-repo Copilot SWE agent branches."
+  "notes": "8 open copilot-swe-agent PRs, all branch-based (is_fork=false). Fork-only triage policy → 0 PRs eligible for formal triage. 8 PRs closed/merged since last run (#39942, #39941, #39940, #39938, #39933, #39926, #39905, #39742). 6 new PRs since last run (#40001, #40000, #39998, #39997, #39995, #39959). 3 non-draft open PRs: #39959 (Copilot harness classification), #39927 (URL sanitization fix), #39830 (Impact Efficiency Report). Dominant category: bug fixes (5/8). All PRs continue to be same-repo Copilot SWE agent branches. #39998 is a large change (265 files) touching lock.yml files."
 }
