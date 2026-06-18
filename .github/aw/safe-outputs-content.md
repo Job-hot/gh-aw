@@ -4,6 +4,39 @@ description: Safe-output reference for issue, discussion, comment, and pull requ
 
 # Safe Outputs: GitHub Content
 
+## Tool Naming Convention
+
+YAML configuration keys use **kebab-case**; the MCP tool names the agent calls use **snake_case**.
+
+| YAML key (`safe-outputs:`) | MCP tool name (agent calls) |
+|---|---|
+| `create-issue:` | `create_issue` |
+| `add-comment:` | `add_comment` |
+| `create-pull-request:` | `create_pull_request` |
+| `close-issue:` | `close_issue` |
+| `create-discussion:` | `create_discussion` |
+| `update-issue:` | `update_issue` |
+| `add-labels:` | `add_labels` |
+| `upload-artifact:` | `upload_artifact` |
+| `upload-asset:` | `upload_asset` |
+
+Custom `jobs:` and `actions:` entries follow the same rule: the key `send-notification:` becomes the MCP tool `send_notification`.
+
+## Comment vs Issue Pattern
+
+Choose the output type based on the write target and lifecycle:
+
+| Scenario | Use |
+|---|---|
+| Inline finding on the triggering PR or issue (e.g., PR review, per-run status) | `add-comment` |
+| Scheduled or incident report that needs follow-up and tracking across runs | `create-issue` |
+| Ephemeral status that should update in place (not accumulate) | `add-comment` + `hide-older-comments: true` |
+| Recurring digest with a single rolling thread | `create-issue` + `group-by-day: true` (or `create-discussion`) |
+
+**Prefer `add-comment` when:** the triggering context is a PR or issue and the output is ephemeral (review notes, analysis summary). The comment lives on the triggering item and needs no separate tracking.
+
+**Prefer `create-issue` when:** the output represents a standalone actionable incident, a recurring report, or something that must persist independently of any triggering PR/issue. Pair with `deduplicate-by-title: true` or `close-older-issues: true` to prevent stacking duplicate issues across runs.
+
 - `create-issue:` - Safe GitHub issue creation (bugs, features)
 
   ```yaml

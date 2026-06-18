@@ -90,7 +90,47 @@ Compact scenario examples:
 - **Deployment incident triage**: use `deployment_status` for external provider failures and `workflow_run` for GitHub Actions failures, publish incident reports via `create-issue`, call `noop` when a failure self-recovers or is duplicate noise.
 - **Product/stakeholder digest**: use fuzzy `schedule` plus optional `workflow_dispatch`, publish digest with `create-issue`, call `noop` when there are no updates in the date window.
 
-### 2a. Backend review compact guidance
+### 2a. Incident workflow duplicate-detection guidance
+
+For `deployment_status` and `workflow_run` triggered incident workflows that create issues, prevent duplicate noise with these patterns:
+
+**Title-based deduplication** (simplest — skip when an open issue with the same title already exists):
+
+```yaml
+safe-outputs:
+  create-issue:
+    title-prefix: "[incident] "
+    deduplicate-by-title: true   # skip if open issue with same title exists (exact match)
+    expires: 3                   # auto-close after 3 days
+```
+
+**Rolling incident tracker** (replace previous open issue with each new failure):
+
+```yaml
+safe-outputs:
+  create-issue:
+    title-prefix: "[incident] "
+    close-older-issues: true     # close previous open issues from the same workflow before creating a new one
+    expires: 7
+```
+
+**Prompt-side deduplication check** (instruct the agent to query for existing open issues):
+
+In the workflow prompt, tell the agent to:
+1. Search for open issues with the same title prefix before calling `create_issue`.
+2. Call `noop` if an identical open issue already exists (the failure is already tracked).
+3. Call `create_issue` only when no open duplicate is found.
+
+Example prompt snippet:
+```
+Before creating an incident issue, search for open issues titled "[incident] <workflow-name>" using `gh issue list`.
+If an open issue already exists for this failure, call `noop` with a note referencing that issue number.
+Only call `create_issue` when no open duplicate exists.
+```
+
+> **When to use which**: `deduplicate-by-title: true` is a compile-time guardrail applied at the handler level; it costs nothing in agent tokens. The prompt-side check is more flexible (the agent can decide based on context) but consumes extra tokens. Combine both for defense-in-depth on high-volume triggers.
+
+### 2b. Backend review compact guidance
 
 For backend-focused PR automation (schema migrations and API compatibility):
 
