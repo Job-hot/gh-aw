@@ -118,7 +118,7 @@ on: push
 
 			// Collect includes
 			var dependencies []IncludeDependency
-			seen := make(map[string]bool)
+			seen := make(map[string]struct{})
 			err := collectLocalIncludeDependenciesRecursive(tt.content, tmpDir, &dependencies, seen, false)
 
 			// Check error expectation
@@ -167,7 +167,7 @@ func TestCollectPackageIncludesRecursive_CircularReference(t *testing.T) {
 
 	// Collect includes starting from a.md
 	var dependencies []IncludeDependency
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	err := collectLocalIncludeDependenciesRecursive(aContent, tmpDir, &dependencies, seen, false)
 
 	if err != nil {

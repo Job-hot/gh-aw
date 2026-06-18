@@ -135,12 +135,12 @@ func ResolveArtifactFilter(sets []string) []string {
 		}
 	}
 
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	var names []string
 	for _, s := range sets {
 		for _, name := range artifactSetArtifacts[ArtifactSet(s)] {
-			if !seen[name] {
-				seen[name] = true
+			if _, ok := seen[name]; !ok {
+				seen[name] = struct{}{}
 				names = append(names, name)
 			}
 		}

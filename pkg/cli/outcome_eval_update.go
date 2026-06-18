@@ -204,18 +204,25 @@ func mutableStringSlice(raw any) []string {
 		slices.Sort(out)
 		return out
 	case []any:
-		out := make([]string, 0, len(values))
-		for _, value := range values {
-			s := strings.TrimSpace(fmt.Sprint(value))
-			if s != "" {
-				out = append(out, s)
-			}
-		}
+		out := anySliceToStrings(values)
 		slices.Sort(out)
 		return out
 	default:
 		return nil
 	}
+}
+
+// anySliceToStrings Sprint-converts each element of values to a string,
+// trims whitespace, and drops empty results.
+func anySliceToStrings(values []any) []string {
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		s := strings.TrimSpace(fmt.Sprint(value))
+		if s != "" {
+			out = append(out, s)
+		}
+	}
+	return out
 }
 
 func extractCurrentIssueUpdateState(repo string, number int) (map[string]any, bool, error) {

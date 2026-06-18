@@ -29,6 +29,29 @@ func Truncate(s string, maxLen int) string {
 	return s[:maxLen-3] + "..."
 }
 
+// HasExpressionMarker reports whether s contains a GitHub Actions expression opening marker "${{".
+// This is a permissive check: it returns true even for partial or unclosed expressions.
+func HasExpressionMarker(s string) bool {
+	return strings.Contains(s, "${{")
+}
+
+// ContainsExpression reports whether s contains a complete non-empty GitHub Actions expression.
+// A complete expression has a "${{" marker followed by at least one character before "}}".
+func ContainsExpression(s string) bool {
+	_, afterOpen, found := strings.Cut(s, "${{")
+	if !found {
+		return false
+	}
+	closeIdx := strings.Index(afterOpen, "}}")
+	return closeIdx > 0
+}
+
+// IsExpression reports whether the entire string s is a single GitHub Actions expression,
+// i.e. it starts with "${{" and ends with "}}".
+func IsExpression(s string) bool {
+	return strings.HasPrefix(s, "${{") && strings.HasSuffix(s, "}}")
+}
+
 // NormalizeWhitespace normalizes trailing whitespace and newlines to reduce spurious conflicts.
 // It trims trailing whitespace from each line and ensures exactly one trailing newline.
 func NormalizeWhitespace(content string) string {

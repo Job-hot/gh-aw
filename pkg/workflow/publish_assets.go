@@ -3,7 +3,6 @@ package workflow
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/github/gh-aw/pkg/constants"
@@ -12,19 +11,13 @@ import (
 )
 
 var publishAssetsLog = logger.New("workflow:publish_assets")
-var githubExpressionPattern = regexp.MustCompile(`(?s)^\$\{\{.*\}\}$`)
-
-func isGitHubExpression(value string) bool {
-	trimmed := strings.TrimSpace(value)
-	return githubExpressionPattern.MatchString(trimmed)
-}
 
 func normalizeAllowedExtension(extension string) string {
 	trimmed := strings.TrimSpace(extension)
 	if trimmed == "" {
 		return ""
 	}
-	if isGitHubExpression(trimmed) {
+	if isExpression(trimmed) {
 		return trimmed
 	}
 	normalized := strings.ToLower(trimmed)

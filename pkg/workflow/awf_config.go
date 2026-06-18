@@ -68,6 +68,7 @@ import (
 	"github.com/github/gh-aw/pkg/constants"
 	"github.com/github/gh-aw/pkg/jsonutil"
 	"github.com/github/gh-aw/pkg/logger"
+	"github.com/github/gh-aw/pkg/sliceutil"
 	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
@@ -483,16 +484,10 @@ func BuildAWFConfigJSON(config AWFCommandConfig) (string, error) {
 // slice. Empty entries are ignored. The order of the original list is preserved for
 // non-duplicate entries; this keeps the allow-list deterministic.
 func splitDomainList(domains string) []string {
-	var result []string
-	seen := make(map[string]bool)
-	for d := range strings.SplitSeq(domains, ",") {
-		d = strings.TrimSpace(d)
-		if d != "" && !seen[d] {
-			seen[d] = true
-			result = append(result, d)
-		}
+	if domains == "" {
+		return nil
 	}
-	return result
+	return sliceutil.DeduplicateTrimmed(strings.Split(domains, ","))
 }
 
 func extractModelMultipliers(workflowData *WorkflowData) map[string]float64 {

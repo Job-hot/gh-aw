@@ -110,15 +110,11 @@ func ParseStringArrayOrExprFromConfig(m map[string]any, key string, debugLog *lo
 // Returns the string value, or empty string if not present or invalid
 // If log is provided, it will log the extracted value for debugging
 func extractStringFromMap(m map[string]any, key string, debugLog *logger.Logger) string {
-	if value, exists := m[key]; exists {
-		if valueStr, ok := value.(string); ok {
-			if debugLog != nil {
-				debugLog.Printf("Parsed %s from config: %s", key, valueStr)
-			}
-			return valueStr
-		}
+	valueStr, ok := typeutil.LookupString(m, key)
+	if ok && debugLog != nil {
+		debugLog.Printf("Parsed %s from config: %s", key, valueStr)
 	}
-	return ""
+	return valueStr
 }
 
 // parseTargetRepoWithValidation extracts the target-repo value from a config map and validates it.

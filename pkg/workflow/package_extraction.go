@@ -351,15 +351,15 @@ func collectPackagesFromWorkflow(
 ) []string {
 	pkgLog.Printf("Collecting packages from workflow: toolCommand=%s", toolCommand)
 	var packages []string
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 
 	// Extract from custom steps
 	if workflowData.CustomSteps != "" {
 		pkgs := extractor(workflowData.CustomSteps)
 		for _, pkg := range pkgs {
-			if !seen[pkg] {
+			if _, ok := seen[pkg]; !ok {
 				packages = append(packages, pkg)
-				seen[pkg] = true
+				seen[pkg] = struct{}{}
 			}
 		}
 	}
@@ -377,10 +377,12 @@ func collectPackagesFromWorkflow(
 								for _, arg := range argsSlice {
 									if pkgStr, ok := arg.(string); ok {
 										// Skip flags (arguments starting with - or --)
-										if !strings.HasPrefix(pkgStr, "-") && !seen[pkgStr] {
-											packages = append(packages, pkgStr)
-											seen[pkgStr] = true
-											break // Only take the first non-flag argument
+										if !strings.HasPrefix(pkgStr, "-") {
+											if _, ok := seen[pkgStr]; !ok {
+												packages = append(packages, pkgStr)
+												seen[pkgStr] = struct{}{}
+												break // Only take the first non-flag argument
+											}
 										}
 									}
 								}
@@ -393,9 +395,9 @@ func collectPackagesFromWorkflow(
 				// Use the extractor function to parse the command string
 				pkgs := extractor(cmdStr)
 				for _, pkg := range pkgs {
-					if !seen[pkg] {
+					if _, ok := seen[pkg]; !ok {
 						packages = append(packages, pkg)
-						seen[pkg] = true
+						seen[pkg] = struct{}{}
 					}
 				}
 			}

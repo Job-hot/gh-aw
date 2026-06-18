@@ -152,7 +152,7 @@ func transformStepsWithinSection(sectionLines []string, sectionIndent string) ([
 
 func rewriteStepRunSecretsToEnv(stepLines []string, stepIndent string) ([]string, bool) {
 	modified := false
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	orderedBindings := make([]string, 0)
 	bindingExprs := make(map[string]string)
 	firstRunLine := -1
@@ -160,7 +160,7 @@ func rewriteStepRunSecretsToEnv(stepLines []string, stepIndent string) ([]string
 	envEnd := -1
 	envIndent := ""
 	var envKeyIndentLen int
-	existingEnvKeys := make(map[string]bool)
+	existingEnvKeys := make(map[string]struct{})
 
 	// First pass: detect shell type so PowerShell steps get $env:VARNAME syntax.
 	// Restrict the scan to lines at the direct step-key indentation level so
@@ -209,7 +209,7 @@ func rewriteStepRunSecretsToEnv(stepLines []string, stepIndent string) ([]string
 				envEnd = j
 				key := parseYAMLMapKey(t)
 				if key != "" {
-					existingEnvKeys[key] = true
+					existingEnvKeys[key] = struct{}{}
 				}
 			}
 		}
@@ -244,8 +244,8 @@ func rewriteStepRunSecretsToEnv(stepLines []string, stepIndent string) ([]string
 					modified = true
 				}
 				for _, binding := range bindings {
-					if !seen[binding.Name] {
-						seen[binding.Name] = true
+					if _, ok := seen[binding.Name]; !ok {
+						seen[binding.Name] = struct{}{}
 						orderedBindings = append(orderedBindings, binding.Name)
 						bindingExprs[binding.Name] = binding.Expression
 					}
@@ -260,8 +260,8 @@ func rewriteStepRunSecretsToEnv(stepLines []string, stepIndent string) ([]string
 			modified = true
 		}
 		for _, binding := range bindings {
-			if !seen[binding.Name] {
-				seen[binding.Name] = true
+			if _, ok := seen[binding.Name]; !ok {
+				seen[binding.Name] = struct{}{}
 				orderedBindings = append(orderedBindings, binding.Name)
 				bindingExprs[binding.Name] = binding.Expression
 			}
@@ -276,7 +276,7 @@ func rewriteStepRunSecretsToEnv(stepLines []string, stepIndent string) ([]string
 
 	missingBindings := make([]string, 0, len(orderedBindings))
 	for _, name := range orderedBindings {
-		if !existingEnvKeys[name] {
+		if _, ok := existingEnvKeys[name]; !ok {
 			missingBindings = append(missingBindings, name)
 		}
 	}

@@ -281,14 +281,7 @@ func metadataStringSlice(metadata map[string]any, key string) []string {
 	case []string:
 		return values
 	case []any:
-		out := make([]string, 0, len(values))
-		for _, value := range values {
-			s := strings.TrimSpace(fmt.Sprint(value))
-			if s != "" {
-				out = append(out, s)
-			}
-		}
-		return out
+		return anySliceToStrings(values)
 	default:
 		return nil
 	}

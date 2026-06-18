@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/github/gh-aw/pkg/logger"
+	"github.com/github/gh-aw/pkg/stringutil"
 	"github.com/github/gh-aw/pkg/typeutil"
 )
 
@@ -112,7 +113,7 @@ func normalizeLegacyBudgetValue(raw any, allowNegativeOne bool) (string, bool) {
 	}
 
 	trimmed := strings.TrimSpace(rawStr)
-	if trimmed == "" || isExpressionValue(trimmed) {
+	if trimmed == "" || stringutil.ContainsExpression(trimmed) {
 		return "", false
 	}
 	if allowNegativeOne && trimmed == "-1" {
@@ -135,10 +136,6 @@ func convertEffectiveTokensToAICredits(effectiveTokens int) (string, bool) {
 		return "", false
 	}
 	return strconv.Itoa(aiCredits), true
-}
-
-func isExpressionValue(value string) bool {
-	return strings.Contains(value, "${{") && strings.Contains(value, "}}")
 }
 
 func rewriteTopLevelScalarLine(line, newKey, normalizedValue string) string {

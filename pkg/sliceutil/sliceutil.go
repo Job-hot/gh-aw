@@ -3,6 +3,7 @@ package sliceutil
 
 import (
 	"slices"
+	"strings"
 
 	"github.com/github/gh-aw/pkg/logger"
 )
@@ -76,6 +77,26 @@ func Deduplicate[T comparable](slice []T) []T {
 	}
 	if sliceutilLog.Enabled() && len(result) < len(slice) {
 		sliceutilLog.Printf("Deduplicate: removed %d duplicate(s) from %d items", len(slice)-len(result), len(slice))
+	}
+	return result
+}
+
+// DeduplicateTrimmed returns a new slice of strings with each element trimmed of
+// leading/trailing whitespace. Empty strings (after trimming) are dropped, and
+// duplicate values are removed preserving the first-occurrence order.
+// This is a pure function that does not modify the input slice.
+func DeduplicateTrimmed(slice []string) []string {
+	seen := make(map[string]struct{}, len(slice))
+	result := make([]string, 0, len(slice))
+	for _, item := range slice {
+		item = strings.TrimSpace(item)
+		if item == "" {
+			continue
+		}
+		if _, ok := seen[item]; !ok {
+			seen[item] = struct{}{}
+			result = append(result, item)
+		}
 	}
 	return result
 }

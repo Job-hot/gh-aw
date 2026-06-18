@@ -366,12 +366,12 @@ func extractTerminalSubExpressions(content string) []string {
 		return nil
 	}
 
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	var result []string
 	_ = VisitExpressionTree(tree, func(node *ExpressionNode) error {
 		expr := strings.TrimSpace(node.Expression)
-		if isQualifyingSubExpression(expr) && !seen[expr] {
-			seen[expr] = true
+		if _, ok := seen[expr]; !ok && isQualifyingSubExpression(expr) {
+			seen[expr] = struct{}{}
 			result = append(result, expr)
 		}
 		return nil

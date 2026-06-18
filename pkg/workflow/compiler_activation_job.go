@@ -301,11 +301,11 @@ func buildCentralizedCommandOnSection(commandEvents []string) string {
 	var b strings.Builder
 	b.WriteString("on:\n")
 	// Derive ordering from GetAllCommentEvents to stay consistent with the rest of the codebase.
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	for _, mapping := range GetAllCommentEvents() {
 		name := GetActualGitHubEventName(mapping.EventName)
-		if eventSet[name] && !seen[name] {
-			seen[name] = true
+		if _, ok := seen[name]; !ok && eventSet[name] {
+			seen[name] = struct{}{}
 			b.WriteString("  " + name + ":\n    types: [created]\n")
 		}
 	}

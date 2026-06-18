@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/github/gh-aw/pkg/logger"
+	"github.com/github/gh-aw/pkg/sliceutil"
 )
 
 var schemaErrorsLog = logger.New("parser:schema_errors")
@@ -175,14 +176,7 @@ func synthesizeOneOfTypeConflictMessage(lines []string) string {
 	}
 
 	// Deduplicate expected types (e.g., multiple "object" branches in oneOf)
-	seen := make(map[string]bool)
-	var uniqueWantTypes []string
-	for _, t := range wantTypes {
-		if !seen[t] {
-			seen[t] = true
-			uniqueWantTypes = append(uniqueWantTypes, t)
-		}
-	}
+	uniqueWantTypes := sliceutil.Deduplicate(wantTypes)
 
 	result := fmt.Sprintf("expected %s, got %s", strings.Join(uniqueWantTypes, " or "), gotType)
 
@@ -412,11 +406,11 @@ func uniqueClosestScopeSuggestions(unknownProps []string, scopes []string) []str
 		}
 		allSuggestions = append(allSuggestions, FindClosestMatches(prop, scopes, maxClosestMatches)...)
 	}
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	var unique []string
 	for _, s := range allSuggestions {
-		if !seen[s] {
-			seen[s] = true
+		if _, ok := seen[s]; !ok {
+			seen[s] = struct{}{}
 			unique = append(unique, s)
 		}
 	}

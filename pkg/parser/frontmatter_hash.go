@@ -218,7 +218,7 @@ func computeFrontmatterHashFromContent(content string, parsedFrontmatter map[str
 func extractRelevantTemplateExpressions(markdown string) []string {
 	frontmatterHashLog.Printf("Extracting relevant template expressions from markdown: size=%d bytes", len(markdown))
 	var expressions []string
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 
 	// Regex to match ${{ ... }} expressions
 	matches := templateExpressionRegex.FindAllStringSubmatch(markdown, -1)
@@ -235,9 +235,9 @@ func extractRelevantTemplateExpressions(markdown string) []string {
 			// Store the full expression including ${{ }}
 			expr := match[0]
 			// Deduplicate expressions
-			if !seen[expr] {
+			if _, ok := seen[expr]; !ok {
 				expressions = append(expressions, expr)
-				seen[expr] = true
+				seen[expr] = struct{}{}
 			}
 		}
 	}

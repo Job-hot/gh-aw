@@ -12,11 +12,7 @@ package cli
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
-
-	"github.com/github/gh-aw/pkg/constants"
 
 	"github.com/github/gh-aw/pkg/console"
 	"github.com/github/gh-aw/pkg/fileutil"
@@ -67,40 +63,15 @@ func parseFirewallLogs(runDir string, verbose bool) error {
 		fmt.Fprintln(os.Stderr, console.FormatInfoMessage("Found firewall logs in "+logsDir))
 	}
 
-	// Create a temporary directory for running the parser
-	tempDir, err := os.MkdirTemp("", "firewall_log_parser")
-	if err != nil {
-		return fmt.Errorf("failed to create temp dir: %w", err)
-	}
-	defer os.RemoveAll(tempDir)
-
-	// Create a Node.js script that mimics the GitHub Actions environment
-	// The firewall parser expects logs in /tmp/gh-aw/squid-logs-{workflow}/
-	// We'll set GITHUB_WORKFLOW to a value that makes the parser look in our temp directory
+	// Build a Node.js script that mimics the GitHub Actions environment.
+	// The firewall parser expects logs in /tmp/gh-aw/squid-logs-{workflow}/;
+	// we inject our own directory via a custom main wrapper.
 	nodeScript := fmt.Sprintf(`
 const fs = require('fs');
 const path = require('path');
 
 // Mock @actions/core for the parser
-const core = {
-	summary: {
-		addRaw: function(content) {
-			this._content = content;
-			return this;
-		},
-		write: function() {
-			console.log(this._content);
-		},
-		_content: ''
-	},
-	setFailed: function(message) {
-		console.error('FAILED:', message);
-		process.exit(1);
-	},
-	info: function(message) {
-		// Silent in CLI mode
-	}
-};
+%s
 
 // Set up environment
 // We'll use a custom workflow name that points to our temp directory
@@ -213,29 +184,8 @@ const originalMain = function() {
 
 // Replace main() call with our custom version
 originalMain();
-`, logsDir, jsScript)
+`, jsCoreMock, logsDir, jsScript)
 
-	// Write the Node.js script
-	nodeFile := filepath.Join(tempDir, "parser.js")
-	if err := os.WriteFile(nodeFile, []byte(nodeScript), constants.FilePermPublic); err != nil {
-		return fmt.Errorf("failed to write node script: %w", err)
-	}
-
-	// Execute the Node.js script using the absolute path for cross-platform compatibility
-	// #nosec G204 -- nodeFile is an absolute path to a script written by this process to tempDir;
-	// exec.Command with separate args (not shell execution) prevents shell injection.
-	cmd := exec.Command("node", nodeFile)
-	cmd.Dir = tempDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to execute firewall parser script: %w\nOutput: %s", err, string(output))
-	}
-
-	// Write the output to firewall.md in the run directory
 	firewallMdPath := filepath.Join(runDir, "firewall.md")
-	if err := os.WriteFile(firewallMdPath, []byte(strings.TrimSpace(string(output))), constants.FilePermPublic); err != nil {
-		return fmt.Errorf("failed to write firewall.md: %w", err)
-	}
-
-	return nil
+	return runNodeScript(nodeScript, firewallMdPath)
 }

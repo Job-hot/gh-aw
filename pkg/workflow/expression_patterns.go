@@ -58,31 +58,33 @@ package workflow
 
 import (
 	"regexp"
-	"strings"
+
+	"github.com/github/gh-aw/pkg/stringutil"
 )
 
 // hasExpressionMarker reports whether s contains a GitHub Actions expression opening marker.
 // This is a permissive check used in scenarios where partial expressions should be treated
 // as dynamic values.
+//
+// Delegates to stringutil.HasExpressionMarker.
 func hasExpressionMarker(s string) bool {
-	return strings.Contains(s, "${{")
+	return stringutil.HasExpressionMarker(s)
 }
 
 // containsExpression reports whether s contains a complete non-empty GitHub Actions expression.
 // A complete expression has a "${{" marker that appears before a closing "}}" marker
 // with at least one character between them.
+//
+// Delegates to stringutil.ContainsExpression.
 func containsExpression(s string) bool {
-	_, afterOpen, found := strings.Cut(s, "${{")
-	if !found {
-		return false
-	}
-	closeIdx := strings.Index(afterOpen, "}}")
-	return closeIdx > 0
+	return stringutil.ContainsExpression(s)
 }
 
 // isExpression reports whether the entire string s is a GitHub Actions expression.
+//
+// Delegates to stringutil.IsExpression.
 func isExpression(s string) bool {
-	return strings.HasPrefix(s, "${{") && strings.HasSuffix(s, "}}")
+	return stringutil.IsExpression(s)
 }
 
 // Core Expression Patterns

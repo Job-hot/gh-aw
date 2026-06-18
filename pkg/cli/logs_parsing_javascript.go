@@ -12,9 +12,7 @@ package cli
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/github/gh-aw/pkg/constants"
 
@@ -96,60 +94,12 @@ func parseAgentLog(runDir string, engine workflow.CodingAgentEngine, verbose boo
 		}
 	}
 
-	// Create a Node.js script that mimics the GitHub Actions environment
-	nodeScript := fmt.Sprintf(`
-const fs = require('fs');
+	// Build a Node.js script that mimics the GitHub Actions environment.
+	nodeScript := fmt.Sprintf(
+		"const fs = require('fs');\n\n// Mock @actions/core for the parser\n%s\n\n// Set global core for the parser scripts\nglobal.core = core;\n\n// Set up environment\nprocess.env.GH_AW_AGENT_OUTPUT = '%s';\n\n// Execute the parser script\n%s\n",
+		jsCoreMock, logFile, jsScript,
+	)
 
-// Mock @actions/core for the parser
-const core = {
-	summary: {
-		addRaw: function(content) {
-			this._content = content;
-			return this;
-		},
-		write: function() {
-			console.log(this._content);
-		},
-		_content: ''
-	},
-	setFailed: function(message) {
-		console.error('FAILED:', message);
-		process.exit(1);
-	},
-	info: function(message) {
-		// Silent in CLI mode
-	}
-};
-
-// Set global core for the parser scripts
-global.core = core;
-
-// Set up environment
-process.env.GH_AW_AGENT_OUTPUT = '%s';
-
-// Execute the parser script
-%s
-`, logFile, jsScript)
-
-	// Write the Node.js script
-	nodeFile := filepath.Join(tempDir, "parser.js")
-	if err := os.WriteFile(nodeFile, []byte(nodeScript), constants.FilePermPublic); err != nil {
-		return fmt.Errorf("failed to write node script: %w", err)
-	}
-
-	// Execute the Node.js script
-	cmd := exec.Command("node", "parser.js")
-	cmd.Dir = tempDir
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to execute parser script: %w\nOutput: %s", err, string(output))
-	}
-
-	// Write the output to log.md in the run directory
 	logMdPath := filepath.Join(runDir, "log.md")
-	if err := os.WriteFile(logMdPath, []byte(strings.TrimSpace(string(output))), constants.FilePermPublic); err != nil {
-		return fmt.Errorf("failed to write log.md: %w", err)
-	}
-
-	return nil
+	return runNodeScript(nodeScript, logMdPath)
 }

@@ -197,12 +197,12 @@ func extractSafeOutputLabels(data *workflow.WorkflowData) []string {
 		return nil
 	}
 
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	var labels []string
 
 	addLabel := func(label string) {
-		if label != "" && !seen[label] {
-			seen[label] = true
+		if _, ok := seen[label]; label != "" && !ok {
+			seen[label] = struct{}{}
 			labels = append(labels, label)
 		}
 	}

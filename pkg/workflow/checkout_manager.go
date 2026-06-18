@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/github/gh-aw/pkg/logger"
+	"github.com/github/gh-aw/pkg/sliceutil"
 )
 
 var checkoutManagerLog = logger.New("workflow:checkout_manager")
@@ -413,45 +414,14 @@ func deeperFetchDepth(a, b *int) *int {
 // mergeSparsePatterns parses and unions sparse-checkout patterns.
 // Patterns can be newline-separated.
 func mergeSparsePatterns(existing []string, newPatterns string) []string {
-	seen := make(map[string]bool, len(existing))
-	result := make([]string, 0, len(existing))
-
-	for _, p := range existing {
-		p = strings.TrimSpace(p)
-		if p != "" && !seen[p] {
-			seen[p] = true
-			result = append(result, p)
-		}
-	}
-
+	var extra []string
 	for p := range strings.SplitSeq(newPatterns, "\n") {
-		p = strings.TrimSpace(p)
-		if p != "" && !seen[p] {
-			seen[p] = true
-			result = append(result, p)
-		}
+		extra = append(extra, p)
 	}
-
-	return result
+	return sliceutil.DeduplicateTrimmed(append(existing, extra...))
 }
 
 // mergeFetchRefs unions two sets of fetch ref patterns preserving insertion order.
 func mergeFetchRefs(existing []string, newRefs []string) []string {
-	seen := make(map[string]bool, len(existing))
-	result := make([]string, 0)
-	for _, r := range existing {
-		r = strings.TrimSpace(r)
-		if r != "" && !seen[r] {
-			seen[r] = true
-			result = append(result, r)
-		}
-	}
-	for _, r := range newRefs {
-		r = strings.TrimSpace(r)
-		if r != "" && !seen[r] {
-			seen[r] = true
-			result = append(result, r)
-		}
-	}
-	return result
+	return sliceutil.DeduplicateTrimmed(append(existing, newRefs...))
 }

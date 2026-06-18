@@ -650,7 +650,7 @@ func findFieldLocationsInSchema(schemaDoc any, targetField, currentPath string) 
 	allLocations := collectSchemaPropertyPaths(schemaDoc, "", 0)
 	targetLower := strings.ToLower(targetField)
 
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 
 	// Collect exact matches first
 	var exactMatches []schemaFieldLocation
@@ -659,10 +659,10 @@ func findFieldLocationsInSchema(schemaDoc any, targetField, currentPath string) 
 			continue
 		}
 		key := loc.FieldName + "|" + loc.SchemaPath
-		if seen[key] {
+		if _, ok := seen[key]; ok {
 			continue
 		}
-		seen[key] = true
+		seen[key] = struct{}{}
 
 		if strings.EqualFold(loc.FieldName, targetField) {
 			loc.Distance = 0
@@ -676,17 +676,17 @@ func findFieldLocationsInSchema(schemaDoc any, targetField, currentPath string) 
 	}
 
 	// Fall back to fuzzy matching with a stricter distance threshold for high confidence
-	seenFuzzy := make(map[string]bool)
+	seenFuzzy := make(map[string]struct{})
 	var fuzzyMatches []schemaFieldLocation
 	for _, loc := range allLocations {
 		if loc.SchemaPath == currentPath {
 			continue
 		}
 		key := loc.FieldName + "|" + loc.SchemaPath
-		if seenFuzzy[key] {
+		if _, ok := seenFuzzy[key]; ok {
 			continue
 		}
-		seenFuzzy[key] = true
+		seenFuzzy[key] = struct{}{}
 
 		dist := LevenshteinDistance(targetLower, strings.ToLower(loc.FieldName))
 		if dist > 0 && dist <= maxPathSearchDistance {

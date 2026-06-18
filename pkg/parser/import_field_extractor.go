@@ -827,7 +827,7 @@ func extractOTLPEndpointsFromObsMap(obs map[string]any) []observabilityImportEnd
 // attributes are also merged across imports (first occurrence wins per key).
 // Returns "" when no valid endpoints or attributes are found.
 func mergeObservabilityConfigs(configs []string) string {
-	seen := make(map[string]bool)
+	seen := make(map[string]struct{})
 	var allEndpoints []observabilityImportEndpoint
 	mergedAttrs := make(map[string]string)
 	var mergedGitHubApp map[string]any
@@ -842,8 +842,8 @@ func mergeObservabilityConfigs(configs []string) string {
 			continue
 		}
 		for _, e := range extractOTLPEndpointsFromObsMap(obs) {
-			if !seen[e.URL] {
-				seen[e.URL] = true
+			if _, ok := seen[e.URL]; !ok {
+				seen[e.URL] = struct{}{}
 				allEndpoints = append(allEndpoints, e)
 			}
 		}
