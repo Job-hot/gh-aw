@@ -1560,6 +1560,101 @@ table img[src*="badge.svg"] {
   font-weight: 400;
 }
 
+/* Keep the landing page on the previous purple palette while docs pages use the GitHub Docs blues. */
+body.landing-page {
+  --sl-color-accent-low: #6639ba;
+  --sl-color-accent: #d896ff;
+  --sl-color-accent-high: #e5c7ff;
+  --sl-color-text-accent: #d896ff;
+  background: linear-gradient(180deg, #1c2128 0%, #22272e 50%, #0d1117 100%) !important;
+}
+
+:root[data-theme='light'] body.landing-page {
+  --sl-color-accent-low: #5b3da3;
+  --sl-color-accent: #6b46c1;
+  --sl-color-accent-high: #5b3da3;
+  --sl-color-text-accent: #5b3da3;
+  background: linear-gradient(180deg, #f6f8fa 0%, #eef2f7 35%, #e6eaf0 65%, #f6f8fa 100%) !important;
+}
+
+body.landing-page::before {
+  display: block;
+  background:
+    radial-gradient(ellipse 800px 600px at 20% 30%, rgba(139, 92, 246, 0.15), transparent),
+    radial-gradient(ellipse 600px 800px at 80% 70%, rgba(192, 110, 255, 0.12), transparent),
+    radial-gradient(ellipse 1000px 400px at 50% 100%, rgba(236, 108, 185, 0.08), transparent);
+}
+
+:root[data-theme='light'] body.landing-page::before {
+  background:
+    radial-gradient(ellipse 800px 600px at 20% 30%, rgba(91, 61, 163, 0.22), transparent),
+    radial-gradient(ellipse 600px 800px at 80% 70%, rgba(107, 70, 193, 0.18), transparent),
+    radial-gradient(ellipse 1000px 400px at 50% 100%, rgba(123, 85, 214, 0.15), transparent);
+}
+
+body.landing-page a {
+  color: #d896ff;
+}
+
+body.landing-page a:hover,
+body.landing-page nav a[aria-current="page"] {
+  color: #e5c7ff;
+}
+
+body.landing-page .sl-markdown-content a:hover,
+body.landing-page nav a:hover {
+  color: #d896ff;
+  border-bottom-color: rgba(216, 150, 255, 0.3);
+}
+
+:root[data-theme='light'] body.landing-page a,
+:root[data-theme='light'] body.landing-page nav a:hover,
+:root[data-theme='light'] body.landing-page nav a[aria-current="page"],
+:root[data-theme='light'] body.landing-page .sl-markdown-content a:hover {
+  color: #5b3da3;
+}
+
+:root[data-theme='light'] body.landing-page a:hover,
+:root[data-theme='light'] body.landing-page .sl-markdown-content a:hover {
+  border-bottom-color: rgba(91, 61, 163, 0.3);
+}
+
+body.landing-page .sl-link-button.primary {
+  background: rgba(139, 92, 246, 0.35) !important;
+  border: 1px solid rgba(139, 92, 246, 0.6) !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25), 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.landing-page .sl-link-button.primary:hover {
+  background: rgba(139, 92, 246, 0.5) !important;
+  border-color: #8b5cf6 !important;
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35), 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+:root[data-theme='light'] body.landing-page .sl-link-button.primary {
+  background: #8b5cf6 !important;
+  border: 2px solid #6b46c1 !important;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+:root[data-theme='light'] body.landing-page .sl-link-button.primary:hover {
+  background: #a78bfa !important;
+  border: 2px solid #7c3aed !important;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4), 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.landing-page .experimental-badge {
+  background: rgba(139, 92, 246, 0.12) !important;
+  border: 1px solid rgba(139, 92, 246, 0.4) !important;
+  color: #d896ff !important;
+}
+
+:root[data-theme='light'] body.landing-page .experimental-badge {
+  background: rgba(107, 70, 193, 0.12) !important;
+  border: 1px solid rgba(107, 70, 193, 0.3) !important;
+  color: #5b3da3 !important;
+}
+
 /* Responsive improvements to prevent horizontal overflow */
 * {
   box-sizing: border-box;
