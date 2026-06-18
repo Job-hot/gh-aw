@@ -41,3 +41,27 @@
 
 ## Do Not Re-File (Full List)
 Tool denial cluster, PR Sous Chef (RESOLVED), Daily Model Inventory #39471, Code Simplifier #39199/#39489/#39729, upload_artifact #38998, Smoke Trigger #38999, Agentic workflows out of sync #38993, Git Simulator #39024, Failure Investigator #39037, Perf regression #38870/#38871/#38872, AIC Budget Crisis #39077, Smoke Gemini #39172, Dictation #39196/#39200, Remote MCP Auth #39193/#39505, BYOK Ollama #39476, Safe Output Integrator #39477, AI Moderator #39452 (recovering), Cache Strategy #39451, Compiler Threat #39343, Smoke Pi/Codex/Antigravity #39560-#39562, pr-code-quality-reviewer #39507, LintMonster #39511 (commented), Incomplete Result cluster #39787/#39762/#39775/#39753, Test Quality Sentinel #39782, Matt Pocock #39781, Design Decision Gate #39779/#39776, Glossary Maintainer #39769, Daily News #39758, Daily Compiler Quality #39724, Metrics Collector #39727, Instructions Janitor #39757
+
+---
+## Updated 2026-06-18T06:10Z (Workflow Health Manager)
+
+### P1 Changes (Jun 18)
+- Code Simplifier: Day 11 (unchanged)
+- Daily Safe Outputs Git Simulator: Day 10+ confirmed Jun 18 failure
+- Daily Model Inventory Checker: Day 9 confirmed Jun 18 failure
+- Daily Safe Output Integrator: Day 10 (unchanged)
+- Daily BYOK Ollama Test: Day 10 (unchanged)
+- Tool Denial Cluster: 7+ workflows (unchanged)
+
+### New (Jun 18)
+- **Smoke test cluster broadened:** 6 new auto-filed issues: #39994/#39992/#39989/#39988/#39987/#39986 across Copilot, AOAI, Codex, Claude, Gemini — possible systemic smoke test regression.
+- **Daily Compiler Quality Check (Day 2):** model_not_supported_error. Config fix: update gpt-5-mini model name.
+
+### Recoveries (Jun 18)
+- Daily Docs Updater (#39775): RECOVERED ✅
+- Daily Workflow Updater (#39753): RECOVERED ✅
+- Instructions Janitor (#39757): RECOVERED ✅
+- Glossary Maintainer (#39769): RECOVERED ✅
+
+### Do Not Re-File Additions (Jun 18)
+Smoke test auto-filed: #39994, #39992, #39989, #39988, #39987, #39986

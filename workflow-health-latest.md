@@ -1,71 +1,44 @@
-# Workflow Health — 2026-06-17T06:10Z
+# Workflow Health — 2026-06-18T06:10Z
 
-Score: 68/100 (↓2 from 70)
-Workflows: 249 | Lock files: 249/249 (100% ✅) | Run: §27669432726
+Score: 67/100 (↓1 from 68)
+Workflows: 250 | Lock files: 250/250 (100% ✅) | Run: §27740219260
 
 ## KEY FINDINGS
 
-### Status (June 17)
-- **Compilation:** 249/249 workflows have lock files (100% ✅)
-- **Code Simplifier (Day 10, #39199/#39489):** Still 0/5 fail. api-proxy cap + HTTP 429. DO NOT RE-FILE.
-- **Daily Model Inventory Checker (Day 8, #39471):** Still 0/5 fail. session.idle 60s. DO NOT RE-FILE.
-- **Daily Safe Outputs Git Simulator (Day 9+):** Still failing. Branch missing. Issue Monster queued fix. DO NOT RE-FILE.
-- **Daily Safe Output Integrator (Day 9, #39477):** Still 0/5 fail. Tool denial. DO NOT RE-FILE.
-- **Daily BYOK Ollama Test (Day 9, #39476):** Still 0/5 fail. transient_bad_request. DO NOT RE-FILE.
-- **Tool Denial Cluster (systemic, filed Jun 16):** Breaking Change Checker (0/3), Daily Agent of Blog Writer (0/3), Delight (1/3), etc. DO NOT RE-FILE.
-- **LintMonster (NEW regression):** Failing Jun 16 AND Jun 17 despite #39511 closed Jun 16. Commented on #39511.
-- **Smoke Codex/Antigravity (1/3 success):** Ongoing, tracked #39560-39562.
-- **Smoke Copilot (~75% fail, #38998):** upload_artifact malformed 400. DO NOT RE-FILE.
+### Status (June 18)
+- **Compilation:** 250/250 workflows have lock files (100% ✅)
+- **Code Simplifier (Day 11, #39199/#39489):** Still 0/5 fail. api-proxy cap + HTTP 429. DO NOT RE-FILE.
+- **Daily Model Inventory Checker (Day 9, #39471):** Confirmed failing Jun 18. session.idle 60s. DO NOT RE-FILE.
+- **Daily Safe Outputs Git Simulator (Day 10+):** Still failing Jun 18. Branch missing. Issue Monster queued fix. DO NOT RE-FILE.
+- **Daily Safe Output Integrator (Day 10, #39477):** Still 0/5 fail. Tool denial. DO NOT RE-FILE.
+- **Daily BYOK Ollama Test (Day 10, #39476):** Still failing. transient_bad_request. DO NOT RE-FILE.
+- **Tool Denial Cluster (systemic, filed Jun 16):** 7+ workflows. Daily MCP Tool Concurrency Analysis added Jun 17. DO NOT RE-FILE.
+- **Smoke Copilot (~75% fail, #38998):** upload_artifact malformed 400 continues. + New auto-filed today: #39994/#39992/#39989/#39988/#39987/#39986. DO NOT RE-FILE.
+- **AIC Budget Crisis (Day 11, #39077):** Root fix still pending. DO NOT RE-FILE.
 
-### Improving ✅
-- **AI Moderator:** Recovering — consecutive successes Jun 17.
-- **Daily Cache Strategy Analyzer (#39451):** ~50% alternating — slightly improving.
-- **PR Sous Chef:** Fully recovered. Still healthy.
-- **Avenger:** Healthy (5/5 successes Jun 16-17).
-- **Daily Semgrep Scan:** Healthy.
+### Recovering/Resolved ✅
+- **Daily Documentation Updater (#39775):** RECOVERED — 3 consecutive successes Jun 18.
+- **Daily Workflow Updater (#39753):** RECOVERED — 3 consecutive successes.
+- **Instructions Janitor (#39757):** RECOVERED — successes Jun 17-18.
+- **Glossary Maintainer (#39769):** RECOVERED — success Jun 18.
+- **Avenger:** Healthy — 4+ consecutive successes today.
+- **AI Moderator:** Running today.
 
-### Transient (Single failure, watch)
-- **Documentation Noob Tester:** 1 failure Jun 17 after 4 consecutive successes. Likely transient. DO NOT FILE.
-
-### Critical Issues (P1) 🚨
-- Code Simplifier (Day 10): api-proxy cap. DO NOT RE-FILE.
-- Daily Safe Outputs Git Simulator (Day 9+): branch missing. DO NOT RE-FILE.
-- Daily Safe Output Integrator (Day 9): tool denial. DO NOT RE-FILE.
-- Daily BYOK Ollama Test (Day 9): transient_bad_request. DO NOT RE-FILE.
-- Daily Model Inventory Checker (Day 8): session.idle. DO NOT RE-FILE.
-- Tool Denial Cluster (systemic): 6+ workflows. DO NOT RE-FILE.
-- Smoke Copilot: upload_artifact malformed. DO NOT RE-FILE.
-- Smoke Gemini (#39172): preview model error. DO NOT RE-FILE.
+### New Patterns (Jun 18)
+- **Smoke cluster broadened:** 6 new auto-filed failure issues across Copilot, AOAI, Codex, Claude, Gemini. Same day = possible systemic issue.
+- **Daily Compiler Quality Check (Day 2, #39724 closed):** model_not_supported_error (`gpt-5-mini`). Config fix needed.
+- **LintMonster time-of-day pattern:** Success at 00:50, failure at 03:44. Possible race condition.
 
 ### Warnings (P2) ⚠️
-- LintMonster: regression continues despite #39511 closed — commented.
-- Smoke Codex/Antigravity/Pi: tracked #39560-39562.
-- AIC Budget Crisis (#39077): Day 10 — root fix still pending.
+- Daily Compiler Quality Check: Day 2 config error (gpt-5-mini model unavailable)
+- Daily News: Day 5+ engine exit
+- LintMonster: Alternating (success midnight, fail ~04:00)
+- Daily Cache Strategy Analyzer (#39451): ~50% alternating
 
 ### Actions Taken This Run
-- 1 comment added to #29109 (health dashboard Jun 17)
-- 1 comment added to #39511 (LintMonster regression note)
+- 1 comment added to #29109 (health dashboard Jun 18)
 
 ## Do Not Re-File
-(all from previous runs — see shared-alerts.md for full list)
-- Tool denial cluster: systemic issue filed Jun 16
-- Daily Safe Outputs Git Simulator: DO NOT RE-FILE (Issue Monster fix queued)
-- #39477: Daily Safe Output Integrator Day 9
-- #39476: Daily BYOK Ollama Test Day 9
-- #39471: Daily Model Inventory Checker Day 8
-- #39199/#39489: Code Simplifier Day 10
-- #38998: upload_artifact malformed 400
-- #38999: Smoke Trigger startup_failure
-- #38993: Agentic workflows out of sync
-- #39037: Failure Investigator pre-fetch blind spot
-- #38870/#38871/#38872: Performance regression cluster
-- #39077: AIC Budget Crisis Day 10
-- #39172: Smoke Gemini preview model
-- #39196/#39200: Dictation Prompt Generator
-- #39193/#39505: GitHub Remote MCP Auth
-- #39452: AI Moderator pagination timeout (recovering)
-- #39451: Daily Cache Strategy Analyzer Codex 404
-- #39343: Daily Compiler Threat Spec Optimizer tool denial
-- #39560-39562: Smoke Pi/Codex/Antigravity no safe outputs
-- #39507: pr-code-quality-reviewer compile failure
-- #39511: LintMonster (closed, commented today)
+All from previous runs plus new Jun 18:
+- #39994/#39992/#39989/#39988/#39987/#39986 — Smoke test auto-filed Jun 18
+- All previous: see shared-alerts.md
