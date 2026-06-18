@@ -18,6 +18,7 @@ This package currently provides custom Go analyzers in the following subpackages
 - `fprintlnsprintf` — reports `fmt.Fprintln(..., fmt.Sprintf(...))` patterns and recommends direct formatting calls.
 - `hardcodedfilepath` — reports hard-coded file path string literals that match known path constants or should be extracted into named constants; also annotates paths that appear in log/print calls.
 - `httpnoctx` — reports HTTP client and package-level HTTP calls that do not accept a `context.Context`.
+- `httpresponsebodyclose` — reports HTTP response `Body.Close()` calls that are not deferred immediately after a successful request.
 - `jsonmarshalignoredeerror` — reports `json.Marshal` and `json.Unmarshal` calls where the error return is discarded.
 - `largefunc` — reports function bodies that exceed a configurable line-count threshold.
 - `lenstringzero` — reports `len(s) == 0` / `len(s) != 0` comparisons on string values that should use `s == ""` / `s != ""`.
@@ -55,6 +56,7 @@ This package currently provides custom Go analyzers in the following subpackages
 | `fprintlnsprintf` | Custom `go/analysis` analyzer that flags `fmt.Fprintln(..., fmt.Sprintf(...))` patterns |
 | `hardcodedfilepath` | Custom `go/analysis` analyzer that flags hard-coded file path string literals that match known path constants or should be extracted as named constants; annotates paths in log/print calls |
 | `httpnoctx` | Custom `go/analysis` analyzer that flags HTTP calls that do not accept a `context.Context` |
+| `httpresponsebodyclose` | Custom `go/analysis` analyzer that flags HTTP response `Body.Close()` calls that are not deferred immediately |
 | `jsonmarshalignoredeerror` | Custom `go/analysis` analyzer that flags `json.Marshal`/`json.Unmarshal` calls where the error return is discarded |
 | `largefunc` | Custom `go/analysis` analyzer that flags large functions with actionable diagnostics |
 | `lenstringzero` | Custom `go/analysis` analyzer that flags `len(s) == 0` / `len(s) != 0` on string values that should use `s == ""` / `s != ""` |
@@ -94,6 +96,7 @@ import (
 	"github.com/github/gh-aw/pkg/linters/largefunc"
 	"github.com/github/gh-aw/pkg/linters/lenstringzero"
 	"github.com/github/gh-aw/pkg/linters/manualmutexunlock"
+	"github.com/github/gh-aw/pkg/linters/httpresponsebodyclose"
 	"github.com/github/gh-aw/pkg/linters/osexitinlibrary"
 	panicinlibrarycode "github.com/github/gh-aw/pkg/linters/panic-in-library-code"
 	"github.com/github/gh-aw/pkg/linters/rawloginlib"
@@ -110,6 +113,7 @@ _ = errstringmatch.Analyzer
 _ = execcommandwithoutcontext.Analyzer
 _ = fileclosenotdeferred.Analyzer
 _ = hardcodedfilepath.Analyzer
+_ = httpresponsebodyclose.Analyzer
 _ = largefunc.Analyzer
 _ = lenstringzero.Analyzer
 _ = manualmutexunlock.Analyzer
@@ -134,6 +138,7 @@ _ = ssljson.Analyzer
 - `github.com/github/gh-aw/pkg/linters/fmterrorfnoverbs` — fmt-errorf-no-verbs analyzer subpackage
 - `github.com/github/gh-aw/pkg/linters/fprintlnsprintf` — fprintln-sprintf analyzer subpackage
 - `github.com/github/gh-aw/pkg/linters/hardcodedfilepath` — hard-coded-file-path analyzer subpackage
+- `github.com/github/gh-aw/pkg/linters/httpresponsebodyclose` — HTTP-response-body-close analyzer subpackage
 - `github.com/github/gh-aw/pkg/linters/jsonmarshalignoredeerror` — json-marshal-ignored-error analyzer subpackage
 - `github.com/github/gh-aw/pkg/linters/largefunc` — large-func analyzer subpackage
 - `github.com/github/gh-aw/pkg/linters/lenstringzero` — len-string-zero analyzer subpackage

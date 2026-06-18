@@ -9,7 +9,7 @@ Calling `resp.Body.Close()` directly — rather than `defer resp.Body.Close()` �
 
 ## Decision
 
-We will add a bespoke `go/analysis` analyzer, `httpresponsebodyclose`, to the project's custom linter suite rather than adopting an external linter. The analyzer walks each non-test `*ast.FuncDecl`, tracks variables whose type is `*net/http.Response` (verified via `types.Object` identity against `net/http`, not a syntactic name match), and records for each whether its `Body.Close()` is deferred versus called manually (either as a bare expression statement or captured in an assignment such as `closeErr := resp.Body.Close()`). When a response variable has a manual close but no deferred close, it reports a diagnostic at the assignment line. It does not descend into function literals, so closures are analyzed independently to avoid false positives, and it is registered in the multichecker in `cmd/linters/main.go`.
+We will add a bespoke `go/analysis` analyzer, `httpresponsebodyclose`, to the project's custom linter suite rather than adopting an external linter. The analyzer walks each non-test `*ast.FuncDecl`, tracks variables whose type is `*net/http.Response` (verified via `types.Object` identity against `net/http`, not a syntactic name match), and records for each whether its `Body.Close()` is deferred versus called manually (either as a bare expression statement or captured in an assignment such as `closeErr := resp.Body.Close()`). When a response variable has a manual close but no deferred close, it reports a diagnostic at the response-acquisition site so the warning highlights where `defer resp.Body.Close()` should be added. It does not descend into function literals, so closures are analyzed independently to avoid false positives, and it is registered in the multichecker in `cmd/linters/main.go`.
 
 ## Alternatives Considered
 
@@ -35,7 +35,7 @@ A simpler analyzer could flag any `Body.Close()` whose receiver is named `resp`.
 
 ### Neutral
 - Test files are excluded from analysis, matching the suite's existing conventions.
-- The analyzer reports at the assignment line (where the fix — inserting `defer` — belongs), not at the manual `Close()` call site.
+- The analyzer reports at the response-acquisition site, not at the later manual `Close()` call site.
 
 ---
 

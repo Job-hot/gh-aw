@@ -1,6 +1,6 @@
 // Package linters is a namespace for gh-aw's custom Go analysis linters.
 //
-// The actual analyzers are implemented in subpackages. All 29 active analyzers:
+// The actual analyzers are implemented in subpackages. All 30 active analyzers:
 //
 //   - contextcancelnotdeferred — flags context cancel functions called directly instead of deferred
 //   - ctxbackground — flags context.Background() inside functions that already receive a context
@@ -13,6 +13,7 @@
 //   - fmterrorfnoverbs — flags fmt.Errorf calls with no format verbs, recommending errors.New
 //   - fprintlnsprintf — flags fmt.Fprintln(..., fmt.Sprintf(...)) patterns
 //   - httpnoctx — flags HTTP calls that do not accept a context.Context
+//   - httpresponsebodyclose — flags HTTP response Body.Close() calls that are not deferred
 //   - jsonmarshalignoredeerror — flags json.Marshal/Unmarshal calls where the error is discarded with _
 //   - largefunc — flags function bodies that exceed a configurable line-count threshold
 //   - lenstringzero — flags len(s) == 0 / len(s) != 0 on string values that should use s == "" / s != ""

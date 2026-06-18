@@ -116,6 +116,10 @@ func analyzeResponseNode(pass *analysis.Pass, responseVars map[types.Object]*res
 }
 
 func trackResponseAssignment(pass *analysis.Pass, responseVars map[types.Object]*responseVarState, assign *ast.AssignStmt) {
+	// Track any binding whose LHS has type *net/http.Response. Unlike
+	// fileclosenotdeferred (which tracks explicit os.Open/os.Create call sites),
+	// this intentionally keys on the assigned variable's type so responses
+	// returned by helper functions are also covered.
 	for _, lhs := range assign.Lhs {
 		ident, ok := lhs.(*ast.Ident)
 		if !ok || ident.Name == "_" {
@@ -134,7 +138,13 @@ func trackResponseAssignment(pass *analysis.Pass, responseVars map[types.Object]
 				Message: "HTTP response Body.Close() should be deferred immediately after error check to prevent resource leaks",
 			})
 		}
-		responseVars[obj] = &responseVarState{assignPos: assign.Pos()}
+		assignPos := ident.Pos()
+		if len(assign.Rhs) == 1 {
+			if call, ok := assign.Rhs[0].(*ast.CallExpr); ok {
+				assignPos = call.Pos()
+			}
+		}
+		responseVars[obj] = &responseVarState{assignPos: assignPos}
 	}
 }
 
@@ -150,6 +160,9 @@ func markManualBodyClose(pass *analysis.Pass, responseVars map[types.Object]*res
 
 // getHTTPBodyCloseObject returns the types.Object for the *http.Response variable
 // in a resp.Body.Close() call, or nil if the call does not match that pattern.
+// Known limitation: body aliasing (body := resp.Body; body.Close()) is not
+// detected because the selector chain no longer starts from the *http.Response
+// variable directly.
 func getHTTPBodyCloseObject(pass *analysis.Pass, call *ast.CallExpr) types.Object {
 	sel, ok := call.Fun.(*ast.SelectorExpr)
 	if !ok || sel.Sel.Name != "Close" {

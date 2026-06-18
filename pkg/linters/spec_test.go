@@ -23,6 +23,7 @@ import (
 	"github.com/github/gh-aw/pkg/linters/fprintlnsprintf"
 	"github.com/github/gh-aw/pkg/linters/hardcodedfilepath"
 	"github.com/github/gh-aw/pkg/linters/httpnoctx"
+	"github.com/github/gh-aw/pkg/linters/httpresponsebodyclose"
 	"github.com/github/gh-aw/pkg/linters/jsonmarshalignoredeerror"
 	"github.com/github/gh-aw/pkg/linters/largefunc"
 	"github.com/github/gh-aw/pkg/linters/lenstringzero"
@@ -55,15 +56,16 @@ type docAnalyzer struct {
 }
 
 // documentedAnalyzers returns the analyzer subpackages documented in the README
-// "Public API > Subpackages" table. The README documents 29 analyzer
+// "Public API > Subpackages" table. The README documents 30 analyzer
 // subpackages (the non-analyzer `internal` helper subpackage is excluded because
 // it exposes no Analyzer).
 //
 // Spec (README "Public API > Subpackages"):
 //
 //	contextcancelnotdeferred, ctxbackground, errorfwrapv, excessivefuncparams, errormessage,
-//	errstringmatch, execcommandwithoutcontext, fileclosenotdeferred, fmterrorfnoverbs, fprintlnsprintf,
-//	hardcodedfilepath, httpnoctx, jsonmarshalignoredeerror, largefunc, lenstringzero,
+//	errstringmatch, execcommandwithoutcontext, fileclosenotdeferred, fmterrorfnoverbs,
+//	fprintlnsprintf, hardcodedfilepath, httpnoctx, httpresponsebodyclose,
+//	jsonmarshalignoredeerror, largefunc, lenstringzero,
 //	manualmutexunlock, osexitinlibrary, ossetenvlibrary, panic-in-library-code, rawloginlib,
 //	regexpcompileinfunction, seenmapbool, sortslice, ssljson, strconvparseignorederror,
 //	timeafterleak, timesleepnocontext, tolowerequalfold, uncheckedtypeassertion
@@ -81,6 +83,7 @@ func documentedAnalyzers() []docAnalyzer {
 		{"fprintlnsprintf", fprintlnsprintf.Analyzer},
 		{"hardcodedfilepath", hardcodedfilepath.Analyzer},
 		{"httpnoctx", httpnoctx.Analyzer},
+		{"httpresponsebodyclose", httpresponsebodyclose.Analyzer},
 		{"jsonmarshalignoredeerror", jsonmarshalignoredeerror.Analyzer},
 		{"largefunc", largefunc.Analyzer},
 		{"lenstringzero", lenstringzero.Analyzer},
