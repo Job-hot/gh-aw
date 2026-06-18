@@ -1,6 +1,20 @@
 {
-  "last_updated": "2026-06-17",
+  "last_updated": "2026-06-18",
   "pending_tasks": [
+    {
+      "file": ".github/workflows/smoke-copilot-aoai-apikey.md",
+      "created": "2026-06-18",
+      "status": "pending",
+      "priority": "high",
+      "title": "Replace theatrical newspaper status messages with professional, actionable messages (lines 140-143)"
+    },
+    {
+      "file": "docs/src/content/docs/guides/open-telemetry.mdx",
+      "created": "2026-06-18",
+      "status": "pending",
+      "priority": "medium",
+      "title": "Reorder Built-in telemetry section: describe what is emitted before stating stability guarantee; fix vague 'These fields' referent (lines 95-99)"
+    },
     {
       "file": "docs/src/content/docs/guides/network-configuration.md",
       "created": "2026-06-17",

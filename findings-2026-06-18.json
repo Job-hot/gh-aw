@@ -1,0 +1,36 @@
+{
+  "date": "2026-06-18",
+  "files_analyzed": {
+    "documentation": [
+      "docs/src/content/docs/blog/2026-01-13-meet-the-workflows-testing-validation.md",
+      "docs/src/content/docs/guides/open-telemetry.mdx"
+    ],
+    "cli": [],
+    "messages": [
+      ".github/workflows/smoke-opencode.md",
+      ".github/workflows/smoke-copilot-aoai-apikey.md"
+    ],
+    "validation": [
+      "pkg/workflow/template_include_validation_test.go"
+    ]
+  },
+  "overall_quality": "mixed-strong-docs-theatrical-messages",
+  "quality_highlights": [
+    "pkg/workflow/template_include_validation_test.go: Error messages are clear and use consistent terminology — 'import directives cannot be used inside template regions' is precise and actionable",
+    "docs/src/content/docs/guides/open-telemetry.mdx: Excellent use of <details> to collapse the advanced low-level API, keeping primary content scannable; well-structured with clear h2 anchored sections"
+  ],
+  "single_file_improvements": [
+    {
+      "file": ".github/workflows/smoke-copilot-aoai-apikey.md",
+      "lines": [140, 141, 142, 143],
+      "priority": "high",
+      "issue": "All four status messages use a pervasive newspaper/breaking-news metaphor. Most critically, run-success (line 142) says 'This is a developing story' after the workflow completes — actively misleading. run-failure says 'Our correspondents are investigating' with no actionable guidance. footer uses 'BREAKING:' prefix on every message."
+    },
+    {
+      "file": "docs/src/content/docs/guides/open-telemetry.mdx",
+      "lines": [95, 97, 99],
+      "priority": "medium",
+      "issue": "Lines 95-99: Section 'Built-in telemetry emitted by gh-aw' opens with a vague referent — 'These fields are a compatibility contract' (line 97) follows 'gh-aw emits a small set of built-in spans' without specifying what 'fields' means. The stability guarantee is front-loaded before explaining what is actually emitted, reversing the logical read order."
+    }
+  ]
+}
