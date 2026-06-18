@@ -1,41 +1,94 @@
 {
-  "run_date": "2026-06-17T19:07:16Z",
-  "run_id": "27712972667",
-  "previous_run_id": "27692522379",
-  "previous_run_date": "2026-06-17T13:31:32Z",
+  "run_date": "2026-06-18T01:25:55Z",
+  "run_id": "27730556812",
+  "previous_run_id": "27712972667",
+  "previous_run_date": "2026-06-17T19:07:16Z",
   "fork_prs": 0,
-  "agent_prs_found": 7,
-  "copilot_swe_agent_prs": 7,
+  "agent_prs_found": 10,
+  "copilot_swe_agent_prs": 10,
   "github_actions_prs": 0,
   "prs_triaged": 0,
   "fork_only_policy": true,
   "open_agent_prs": [
     {
-      "number": 39875,
-      "title": "Suppress ANSI installer colors in CI and explicit no-color environments",
+      "number": 39942,
+      "title": "fix: disable LFS checkout in docs build and unbloat-docs AW",
       "draft": true,
       "status": "DRAFT",
-      "created": "2026-06-17",
+      "created": "2026-06-18",
       "labels": [],
-      "is_fork": false
+      "is_fork": false,
+      "category": "bug"
     },
     {
-      "number": 39873,
-      "title": "Improve copilot billing tip: add org requirement note and billing docs link",
+      "number": 39941,
+      "title": "fix: correct assign-to-agent GraphQL mutations per official docs",
       "draft": true,
       "status": "DRAFT",
-      "created": "2026-06-17",
+      "created": "2026-06-18",
       "labels": [],
-      "is_fork": false
+      "is_fork": false,
+      "category": "bug"
     },
     {
-      "number": 39867,
-      "title": "Clarify Test Quality Sentinel safe-output comment invocation to prevent Copilot engine permission failures",
+      "number": 39940,
+      "title": "fix: isolate copilot_sdk_driver test session state writes to prevent false-positive tool-denial issues",
       "draft": true,
       "status": "DRAFT",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "bug"
+    },
+    {
+      "number": 39938,
+      "title": "Extract hardcoded file paths to named constants",
+      "draft": true,
+      "status": "DRAFT",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "refactor"
+    },
+    {
+      "number": 39933,
+      "title": "fix: increase sendAndWait timeout in sample SDK drivers from 60s to 10min",
+      "draft": true,
+      "status": "DRAFT",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "bug"
+    },
+    {
+      "number": 39927,
+      "title": "fix: preserve fenced code blocks during URL sanitization to prevent suggestion block corruption",
+      "draft": false,
+      "status": "OPEN",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "bug"
+    },
+    {
+      "number": 39926,
+      "title": "fix: add_comment silently skips when integration token can't write to discussions",
+      "draft": false,
+      "status": "OPEN",
+      "created": "2026-06-18",
+      "labels": [],
+      "is_fork": false,
+      "category": "bug"
+    },
+    {
+      "number": 39905,
+      "title": "fix: prune orphaned entries from actions-lock.json on full compile",
+      "draft": false,
+      "status": "OPEN",
       "created": "2026-06-17",
       "labels": [],
-      "is_fork": false
+      "is_fork": false,
+      "category": "bug"
     },
     {
       "number": 39830,
@@ -44,25 +97,8 @@
       "status": "OPEN",
       "created": "2026-06-17",
       "labels": [],
-      "is_fork": false
-    },
-    {
-      "number": 39771,
-      "title": "fix: add git safe.directory and refactor git config to shell script to resolve dubious ownership error",
-      "draft": false,
-      "status": "OPEN",
-      "created": "2026-06-17",
-      "labels": [],
-      "is_fork": false
-    },
-    {
-      "number": 39767,
-      "title": "safe-outputs: add `merge-pull-request` schema parity for `samples` and cross-repo targeting",
-      "draft": false,
-      "status": "OPEN",
-      "created": "2026-06-17",
-      "labels": [],
-      "is_fork": false
+      "is_fork": false,
+      "category": "docs"
     },
     {
       "number": 39742,
@@ -71,19 +107,25 @@
       "status": "DRAFT",
       "created": "2026-06-17",
       "labels": [],
-      "is_fork": false
+      "is_fork": false,
+      "category": "bug"
     }
   ],
-  "closed_since_last_run": [39784, 39774, 39773, 39770, 39739, 39721, 39540],
-  "new_since_last_run": [39875, 39873, 39867, 39830],
+  "closed_since_last_run": [39875, 39873, 39867, 39771, 39767],
+  "new_since_last_run": [39942, 39941, 39940, 39938, 39933, 39927, 39926, 39905],
   "statistics": {
     "by_status": {
-      "DRAFT": 4,
-      "OPEN": 3
+      "DRAFT": 6,
+      "OPEN": 4
+    },
+    "by_category": {
+      "bug": 8,
+      "refactor": 1,
+      "docs": 1
     },
     "resolved_this_run": {
-      "closed_or_merged": 7
+      "closed_or_merged": 5
     }
   },
-  "notes": "7 open copilot-swe-agent PRs, all branch-based (isCrossRepository=false). Fork-only triage policy → 0 PRs eligible for formal triage. 7 PRs closed/merged since last run (#39784, #39774, #39773, #39770, #39739, #39721, #39540). 4 new PRs since last run: #39875 (ANSI color suppression), #39873 (billing tip improvement), #39867 (safe-output comment clarification), #39830 (Impact Efficiency Report). 3 open non-draft: #39830, #39771, #39767. All assigned to internal repo branches, no external fork contributions."
+  "notes": "10 open copilot-swe-agent PRs, all branch-based (is_fork=false). Fork-only triage policy → 0 PRs eligible for formal triage. 5 PRs closed/merged since last run (#39875, #39873, #39867, #39771, #39767). 8 new PRs since last run. 4 non-draft open PRs: #39927 (URL sanitization fix), #39926 (add_comment discussion fix), #39905 (actions-lock.json prune fix), #39830 (Impact Efficiency Report). Dominant category: bug fixes (8/10). All PRs continue to be same-repo Copilot SWE agent branches."
 }
