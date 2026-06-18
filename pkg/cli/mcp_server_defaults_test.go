@@ -14,12 +14,9 @@ import (
 func TestMCPToolElicitationDefaults(t *testing.T) {
 	t.Run("compile tool has strict default", func(t *testing.T) {
 		type compileArgs struct {
-			Workflows  []string `json:"workflows,omitempty" jsonschema:"Workflow files to compile (empty for all)"`
-			Strict     bool     `json:"strict,omitempty" jsonschema:"Override frontmatter to enforce strict mode validation for all workflows"`
-			Zizmor     bool     `json:"zizmor,omitempty" jsonschema:"Run zizmor security scanner on generated .lock.yml files"`
-			Poutine    bool     `json:"poutine,omitempty" jsonschema:"Run poutine security scanner on generated .lock.yml files"`
-			Actionlint bool     `json:"actionlint,omitempty" jsonschema:"Run actionlint linter on generated .lock.yml files"`
-			Fix        bool     `json:"fix,omitempty" jsonschema:"Apply automatic codemod fixes to workflows before compiling"`
+			Workflows []string `json:"workflows,omitempty" jsonschema:"Workflow files to compile (empty for all)"`
+			Strict    bool     `json:"strict,omitempty" jsonschema:"Override frontmatter to enforce strict mode validation for all workflows"`
+			Fix       bool     `json:"fix,omitempty" jsonschema:"Apply automatic codemod fixes to workflows before compiling"`
 		}
 
 		schema, err := GenerateSchema[compileArgs]()
