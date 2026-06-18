@@ -1,33 +1,50 @@
-# Copilot CLI Research Notes (Last 7 runs)
+# Copilot CLI Research Notes (Last 8 runs)
 
-### 2026-06-16 (Run 27596173580) — This Run
+### 2026-06-18 (Run 27738311748) — This Run
+- **250 total workflows** (up from 249 on 06-16 — +1 net)
+- 136 Copilot (~54%): 40 scalar form + 96 object form; 63 copilot-sdk
+- **✅ IMPROVEMENTS vs last run:**
+  - `engine.agent`: 8 → 24 (+200% — major recovery! exceeds prior 21 state, still below 34 peak)
+    - 13 using `agent: awf` (AWF firewall mode migration pattern)
+    - 11 using custom agent files
+  - `append-only-comments`: 0 → 8 (new feature with strong adoption)
+  - `total workflows`: 249 → 250 (+1)
+- **⚠️ REGRESSIONS vs last run:**
+  - `blocked-domains`: 1 → 0 (the one user removed it — now 0/250!)
+- **max-continuations: 7** (stable — 5% of copilot workflows)
+- **copilot-sdk: 63** (stable — 46% of all copilot workflows)
+- **copilot-sdk-driver: 3** (stable)
+- **network configured: 132** (stable)
+- **sandbox: 23** (17% — 113 without sandbox)
+- **min-integrity: 34** (stable)
+- **max-ai-credits: 18/136** (13% — 118/136 still missing!)
+- **max-tool-denials: 0/63 SDK** (PERSISTENT GAP — 0% adoption — 7th+ consecutive run)
+- **experiments: 41 workflows** (stable)
+- **mcp.session-timeout**: 0 (PERSISTENT GAP)
+- **mcp.tool-timeout**: 0 (PERSISTENT GAP)
+- **blocked-domains**: 0 (REGRESSION from 1!)
+- **startup-timeout**: 1/250 (barely used)
+- **engine.args**: 0 in engine block (PERSISTENT GAP, 20th+ consecutive run)
+- **engine.api-target**: 0 (PERSISTENT GAP, 20th+ consecutive run)
+- **engine.harness**: 0 (never used as custom override)
+- **engine.token-weights**: 0 (never used)
+- **Unused agent files**: grumpy-reviewer, interactive-agent-designer, w3c-specification-writer, create-safe-output-type, custom-engine-implementation (5 files — unchanged)
+- Discussion created: "Copilot CLI Deep Research - 2026-06-18"
+
+### 2026-06-16 (Run 27596173580)
 - **249 total workflows** (up from 246 on 06-15 — +3 net)
 - 136 Copilot (~55%): 40 scalar form + 96 object form; 63 copilot-sdk
-- **�� IMPROVEMENTS vs last run:**
+- **✅ IMPROVEMENTS vs last run:**
   - `max-ai-credits`: 6 → 18 (+200% — budget guardrails finally spreading!)
   - `min-integrity`: 22 → 34 (+12, improving security posture)
   - `total workflows`: 246 → 249 (+3)
-  - `strict: true`: 79 → 151 (may include broader engine count now)
+  - `strict: true`: 79 → 151 (likely counting all engines now)
 - **⚠️ REGRESSIONS vs last run:**
   - `engine.agent`: 21 → 8 (further decline from 34 peak on 06-10)
 - **max-continuations: 7** (stable — 5% of copilot workflows)
 - **copilot-sdk: 63** (stable — 46% of all copilot workflows)
-- **copilot-sdk-driver: 3** (stable)
-- **network configured: 132** (all copilot workflows now have some network config!)
-- **sandbox: 23** (17% — 113 without sandbox)
-- **min-integrity: 34** (only 6 in copilot-specific workflows)
-- **max-ai-credits: 18/136** (13% — 118/136 still missing)
-- **max-tool-denials: 0/63 SDK** (PERSISTENT GAP — 0% adoption)
-- **experiments: 41 workflows** (new tracking — A/B testing feature well adopted)
-- **mcp.session-timeout**: 0 (PERSISTENT GAP)
-- **mcp.tool-timeout**: 0 (PERSISTENT GAP)
-- **blocked-domains**: 1 (new feature, nearly unadopted)
-- **startup-timeout**: 1/249 (barely used)
 - **engine.args**: 0 (PERSISTENT GAP, 19th consecutive run)
 - **engine.api-target**: 0 (PERSISTENT GAP, 19th consecutive run)
-- **engine.harness**: 0 (never used)
-- **engine.token-weights**: 0 (never used)
-- **Unused agent files**: grumpy-reviewer, interactive-agent-designer, w3c-specification-writer, create-safe-output-type, custom-engine-implementation (5 files — unchanged)
 - Discussion created: "Copilot CLI Deep Research - 2026-06-16"
 
 ### 2026-06-15 (Run 27525865107)
@@ -78,26 +95,25 @@
 
 ## Key Persistent Gaps (Tracked Across All Runs)
 
-1. **engine.args** — 19+ consecutive runs with ZERO usage (custom CLI arguments)
-2. **engine.api-target** — 19 consecutive runs with ZERO usage (custom API endpoints)
-3. **engine.harness** — Never used (custom harness scripts)
-4. **engine.version** (Copilot pin) — Zero explicit Copilot CLI version pins (50 with version: in engine block, may be other fields)
+1. **engine.args** — 20+ consecutive runs with ZERO usage (custom CLI arguments)
+2. **engine.api-target** — 20+ consecutive runs with ZERO usage (custom API endpoints)
+3. **engine.harness** — Never used as custom override (always uses built-in copilot_harness.cjs)
+4. **engine.token-weights** — Never used
 5. **max-continuations** — Only 7/136 copilot workflows (5%) use autopilot mode
 6. **MCP session/tool timeout** — Never configured (engine.mcp.session-timeout, engine.mcp.tool-timeout)
-7. **engine.token-weights** — Never used
-8. **max-tool-denials** — 0/63 SDK workflows (should pair with copilot-sdk: true)
-9. **startup-timeout** — Only 1/249 workflows
-10. **blocked-domains** — Only 1/249 (brand new feature)
+7. **max-tool-denials** — 0/63 SDK workflows (should pair with copilot-sdk: true)
+8. **startup-timeout** — Only 1/250 workflows
+9. **blocked-domains** — 0/250 (regression from 1 to 0)
+10. **max-ai-credits** — Only 18/136 copilot workflows (13%) — 118 without budget guardrails
 
-## Trends
+## Trends Summary
 
-- `engine.agent` adoption: 25→25→13→34→21→8 (very volatile, declining trend — concerning)
+- `engine.agent` adoption: 25→25→13→34→21→8→**24** (volatile but recovering; AWF migration explains jump)
 - `copilot-sdk`: 0 → 63 (stabilized at 63 since June 2026)
 - `copilot-sdk-driver`: 0 → 3 → 3 → 3 (stable small usage)
-- `max-ai-credits`: 0→5→14→6→18 (recovering after last week's regression)
-- `min-integrity`: 22→34 (improving slowly)
+- `max-ai-credits`: 0→5→14→6→18→**18** (stable after recovery)
+- `min-integrity`: 22→34→**34** (stable)
 - `experiments`: 41 (new tracking — strong adoption of A/B testing)
-- `max-continuations` adoption: 5→5→6→6→7 (very slow growth)
-- Total workflows: 233→236→340→245→246→249 (stabilized at ~249)
-- Copilot share: 43%→53%→39%→54%→54%→55% (very stable)
-- Persistent gaps unchanged across 19+ runs — likely not on developer radar
+- `max-continuations` adoption: 5→5→6→6→7→**7** (very slow growth)
+- `append-only-comments`: 0→**8** (strong new feature adoption)
+- `blocked-domains`: 0→1→**0** (regression)
