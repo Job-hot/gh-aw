@@ -326,6 +326,79 @@ describe("apply_samples.cjs preStagePatch (create_pull_request / push_to_pull_re
     expect(diff).toContain("+hello from a deterministic sample");
   });
 
+  it("stages the patch in the cross-repo checkout subdirectory (path: github) (issue #40086)", async () => {
+    // Reproduce the failing layout: a main repo at the workspace root and a
+    // side-repo checked out into a `github/` subdirectory. The checkout manifest
+    // maps the target repo to path "github", so preStagePatch must create the
+    // branch + commit inside ${workspace}/github — not the main repo root —
+    // otherwise the safe-outputs MCP server cannot pin the branch.
+    const workspace = makeTempDir("gh-aw-prestage-subdir-");
+    initRepo(workspace, "main");
+
+    const subdir = path.join(workspace, "github");
+    fs.mkdirSync(subdir);
+    initRepo(subdir, "main");
+
+    const manifestPath = path.join(workspace, "checkout-manifest.json");
+    fs.writeFileSync(
+      manifestPath,
+      JSON.stringify({
+        "githubnext/gh-aw-side-repo": {
+          repository: "githubnext/gh-aw-side-repo",
+          path: "github",
+          default_branch: "main",
+        },
+      })
+    );
+
+    const configPath = path.join(workspace, "config.json");
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify({
+        create_pull_request: { "target-repo": "githubnext/gh-aw-side-repo" },
+      })
+    );
+
+    const branchName = "gh-aw-sample-copilot-siderepo-subdir-pr";
+    const fileToAdd = "subdir-notes.md";
+    const entry = {
+      tool: "create_pull_request",
+      arguments: { title: "Subdir PR", body: "body", branch: branchName },
+      sidecars: { patch: newFileDiff(fileToAdd, "side repo content\n") },
+    };
+
+    // Reset the checkout-manifest module cache so our manifest is loaded fresh.
+    require("./checkout_manifest.cjs")._resetCache();
+
+    const prevBase = process.env.GH_AW_CUSTOM_BASE_BRANCH;
+    const prevManifest = process.env.GH_AW_CHECKOUT_MANIFEST;
+    const prevConfig = process.env.GH_AW_SAFE_OUTPUTS_CONFIG_PATH;
+    process.env.GH_AW_CUSTOM_BASE_BRANCH = "main";
+    process.env.GH_AW_CHECKOUT_MANIFEST = manifestPath;
+    process.env.GH_AW_SAFE_OUTPUTS_CONFIG_PATH = configPath;
+    try {
+      await preStagePatch(entry, 0, workspace);
+    } finally {
+      require("./checkout_manifest.cjs")._resetCache();
+      if (prevBase === undefined) delete process.env.GH_AW_CUSTOM_BASE_BRANCH;
+      else process.env.GH_AW_CUSTOM_BASE_BRANCH = prevBase;
+      if (prevManifest === undefined) delete process.env.GH_AW_CHECKOUT_MANIFEST;
+      else process.env.GH_AW_CHECKOUT_MANIFEST = prevManifest;
+      if (prevConfig === undefined) delete process.env.GH_AW_SAFE_OUTPUTS_CONFIG_PATH;
+      else process.env.GH_AW_SAFE_OUTPUTS_CONFIG_PATH = prevConfig;
+    }
+
+    // The branch + commit + file land in the side-repo subdirectory...
+    expect(git(["rev-parse", "--abbrev-ref", "HEAD"], subdir).trim()).toBe(branchName);
+    expect(git(["branch", "--list", branchName], subdir)).toContain(branchName);
+    expect(fs.existsSync(path.join(subdir, fileToAdd))).toBe(true);
+
+    // ...and NOT in the main repo root (which stays on its seed branch).
+    expect(git(["rev-parse", "--abbrev-ref", "HEAD"], workspace).trim()).toBe("main");
+    expect(git(["branch", "--list", branchName], workspace).trim()).toBe("");
+    expect(fs.existsSync(path.join(workspace, fileToAdd))).toBe(false);
+  });
+
   it("derives push_to_pull_request_branch branch from pull_request event payload", async () => {
     const workspace = makeTempDir("gh-aw-prestage-push-pr-");
     initRepo(workspace, "main");
@@ -487,5 +560,47 @@ describe("apply_samples.cjs preStagePatch (create_pull_request / push_to_pull_re
     expect(git(["rev-parse", "--abbrev-ref", "HEAD"], workspace).trim()).toBe("main");
     const log = git(["log", "--pretty=%s"], workspace).trim().split("\n");
     expect(log).toEqual(["seed"]);
+  });
+});
+
+describe("apply_samples.cjs sampleResultIsError", () => {
+  const { sampleResultIsError } = require("./apply_samples.cjs");
+
+  it("returns false for a successful result (no isError, no error content)", () => {
+    const result = { content: [{ type: "text", text: JSON.stringify({ result: "success", id: 1 }) }], isError: false };
+    expect(sampleResultIsError(result)).toBe(false);
+  });
+
+  it("returns true when isError is true on the result (flag takes precedence)", () => {
+    const result = {
+      // Content is a success payload — proves the early-return on the isError flag,
+      // not the content-text fallback path.
+      content: [{ type: "text", text: JSON.stringify({ result: "success", id: 1 }) }],
+      isError: true,
+    };
+    expect(sampleResultIsError(result)).toBe(true);
+  });
+
+  it("returns true (defense-in-depth) when content text has result:error but isError is false", () => {
+    // This simulates the bug: an older server that forgot to set isError:true.
+    const result = {
+      content: [{ type: "text", text: JSON.stringify({ result: "error", error: "patch failed", details: "no merge base" }) }],
+      isError: false,
+    };
+    expect(sampleResultIsError(result)).toBe(true);
+  });
+
+  it("returns false for non-JSON content text", () => {
+    const result = { content: [{ type: "text", text: "plain text, not JSON" }], isError: false };
+    expect(sampleResultIsError(result)).toBe(false);
+  });
+
+  it("returns false for null result", () => {
+    expect(sampleResultIsError(null)).toBe(false);
+  });
+
+  it("returns false for empty content array", () => {
+    const result = { content: [], isError: false };
+    expect(sampleResultIsError(result)).toBe(false);
   });
 });
