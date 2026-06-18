@@ -1,15 +1,1 @@
-{
-  "summary": {
-    "total_snapshots": 23,
-    "date_range": {"from": "2026-05-15", "to": "2026-06-17"},
-    "avg_success_pct": 80.1
-  },
-  "recent": [
-    {"date": "2026-06-12", "merged": 786, "closed": 206, "rate": 79},
-    {"date": "2026-06-13", "merged": 792, "closed": 204, "rate": 80},
-    {"date": "2026-06-14", "merged": 791, "closed": 202, "rate": 79.1, "insight": "update/remove verbs yield 92%+ rates; WIP tags drop to 34%"},
-    {"date": "2026-06-15", "merged": 792, "closed": 205, "rate": 79.4, "insight": "optimize/handle/move verbs yield 100% rates; update/replace/remove 91-93%; fix drops to 73.7%"},
-    {"date": "2026-06-16", "merged": 797, "closed": 196, "rate": 80, "insight": "Doc prompts lead at 86%; WIP PRs close at 8x rate; concise bodies (<200 words) outperform verbose; today 92% daily rate"},
-    {"date": "2026-06-17", "merged": 804, "closed": 192, "rate": 80.7, "insight": "Refactoring leads at 93%; code blocks yield 82.8% vs 71.3% without; WIP tags drop to 35%; short prompts (20-49 words) peak at 89%"}
-  ]
-}
+{"daily_analysis": [{"date": "2026-06-08", "merged": 794, "closed": 199, "rate": 80.0}, {"date": "2026-06-09", "merged": 787, "closed": 203, "rate": 79.5}, {"date": "2026-06-10", "merged": 793, "closed": 203, "rate": 79.6}, {"date": "2026-06-12", "merged": 786, "closed": 206, "rate": 79.2}, {"date": "2026-06-13", "merged": 792, "closed": 204, "rate": 79.5}, {"date": "2026-06-14", "merged": 791, "closed": 202, "rate": 79.7}, {"date": "2026-06-16", "merged": 797, "closed": 196, "rate": 80.3}, {"date": "2026-06-18", "merged": 792, "closed": 196, "open": 12, "rate": 80.2, "categories": {"bug_fix": 0.794, "feature": 0.827, "testing": 0.82, "documentation": 0.839, "refactor": 0.737}}]}
