@@ -162,7 +162,7 @@ steps:
     uses: actions/checkout@v6.0.3
     with:
       persist-credentials: false
-      lfs: true
+      lfs: false
 
   - name: Setup Node.js
     uses: actions/setup-node@v6.4.0
