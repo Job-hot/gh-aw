@@ -56,8 +56,18 @@
       "loops": 0,
       "data_quality": "metadata-only",
       "notes": "Completion collapse 16->4% (lowest since 05-25). 96% action_required gate-sweep. Both successes from Running-Copilot-cloud-agent (14.2/16.2m). 4 agent branches, top-2=68%. 0 orphans. Conversation logs empty 11th+ day."
+    },
+    {
+      "date": "2026-06-18",
+      "sessions": 50,
+      "completion_pct": 4.0,
+      "avg_dur_min": 0.502,
+      "median_dur_min": 0.0,
+      "loops": 0,
+      "data_quality": "metadata-only",
+      "notes": "Gate-sweep day: 48/50 action_required, 48 zero-duration. Both successes agentic (cloud-agent 12.8m, PR-comment 12.3m). 0 orphans (8 PRs all Copilot-assigned). Uptick from 0% (06-17). Logs empty 18th+ day."
     }
   ],
-  "last_updated": "2026-06-03",
+  "last_updated": "2026-06-18",
   "version": "1.2"
 }
