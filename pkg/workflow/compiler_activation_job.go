@@ -304,9 +304,11 @@ func buildCentralizedCommandOnSection(commandEvents []string) string {
 	seen := make(map[string]struct{})
 	for _, mapping := range GetAllCommentEvents() {
 		name := GetActualGitHubEventName(mapping.EventName)
-		if _, ok := seen[name]; !ok && eventSet[name] {
-			seen[name] = struct{}{}
-			b.WriteString("  " + name + ":\n    types: [created]\n")
+		if eventSet[name] {
+			if _, ok := seen[name]; !ok {
+				seen[name] = struct{}{}
+				b.WriteString("  " + name + ":\n    types: [created]\n")
+			}
 		}
 	}
 	return b.String()

@@ -377,12 +377,10 @@ func collectPackagesFromWorkflow(
 								for _, arg := range argsSlice {
 									if pkgStr, ok := arg.(string); ok {
 										// Skip flags (arguments starting with - or --)
-										if !strings.HasPrefix(pkgStr, "-") {
-											if _, ok := seen[pkgStr]; !ok {
-												packages = append(packages, pkgStr)
-												seen[pkgStr] = struct{}{}
-												break // Only take the first non-flag argument
-											}
+										if _, seenOk := seen[pkgStr]; !strings.HasPrefix(pkgStr, "-") && !seenOk {
+											packages = append(packages, pkgStr)
+											seen[pkgStr] = struct{}{}
+											break // Only take the first non-flag argument
 										}
 									}
 								}

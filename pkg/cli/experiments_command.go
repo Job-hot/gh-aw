@@ -502,7 +502,10 @@ func fetchLocalExperiments() ([]ExperimentInfo, error) {
 			continue
 		}
 		workflowID := extractExperimentName(line)
-		if _, ok := seen[workflowID]; workflowID == "" || ok {
+		if workflowID == "" {
+			continue
+		}
+		if _, ok := seen[workflowID]; ok {
 			continue
 		}
 		seen[workflowID] = struct{}{}
