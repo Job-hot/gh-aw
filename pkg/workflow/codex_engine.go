@@ -157,232 +157,158 @@ func (e *CodexEngine) GetHarnessScriptName() string {
 	return "codex_harness.cjs"
 }
 
-// GetExecutionSteps returns the GitHub Actions steps for executing Codex
-func (e *CodexEngine) GetExecutionSteps(workflowData *WorkflowData, logFile string) []GitHubActionStep {
-	modelConfigured := workflowData.EngineConfig != nil && workflowData.EngineConfig.Model != ""
-	firewallEnabled := isFirewallEnabled(workflowData)
-	codexEngineLog.Printf("Building Codex execution steps: workflow=%s, modelConfigured=%v, firewall=%v",
-		workflowData.Name, modelConfigured, firewallEnabled)
-
-	var steps []GitHubActionStep
-
-	// Codex does not support a native model environment variable, so model selection
-	// always uses GH_AW_MODEL_AGENT_CODEX or GH_AW_MODEL_DETECTION_CODEX with shell expansion
-	// via the --model flag. This also correctly handles GitHub Actions expressions like ${{ inputs.model }}.
-	// Note: Codex also supports config-layer model selection (config key `model`, including `-c model="..."`),
-	// but `--model` is a direct CLI flag and avoids TOML quoting/parsing edge cases in automation.
-	isDetectionJob := workflowData.SafeOutputs == nil
-	var modelEnvVar string
+// buildCodexModelConfig determines the model parameter string and environment variable name
+// to use for model selection in the Codex CLI command.
+func buildCodexModelConfig(workflowData *WorkflowData) (modelParam, modelEnvVar string, isDetectionJob bool) {
+	isDetectionJob = workflowData.SafeOutputs == nil
 	if isDetectionJob {
 		modelEnvVar = constants.EnvVarModelDetectionCodex
 	} else {
 		modelEnvVar = constants.EnvVarModelAgentCodex
 	}
-	modelParam := fmt.Sprintf(`${%s:+ --model "$%s"}`, modelEnvVar, modelEnvVar)
+	modelParam = fmt.Sprintf(`${%s:+ --model "$%s"}`, modelEnvVar, modelEnvVar)
+	return
+}
 
-	// Build search parameter: disable web search by default, enable only if web-search tool is present.
-	// Codex enables web search by default, so we must explicitly set web_search="disabled" to disable it.
-	// The --no-search flag does not exist; use the -c web_search="disabled" config option instead.
-	// See https://developers.openai.com/codex/cli/features#web-search
-	// Leading space is intentional: these params are concatenated directly and need their own separator.
-	webSearchParam := ` -c web_search="disabled"`
+// buildCodexExecutionFlags builds the web-search, web-fetch and execution-policy CLI flags.
+func buildCodexExecutionFlags(workflowData *WorkflowData, firewallEnabled bool) (webSearchParam, webFetchParam, executionPolicyParam string) {
+	webSearchParam = ` -c web_search="disabled"`
 	if workflowData.ParsedTools != nil && workflowData.ParsedTools.WebSearch != nil {
-		// Web search is enabled by default in Codex; no extra flag needed.
 		webSearchParam = ""
 	}
-
-	// Build fetch parameter: enforce AWF default-deny for fetch unless web-fetch tool is present.
-	// Codex enables fetch by default, so this code explicitly sets fetch="disabled" unless web-fetch is configured.
-	// Leading space is intentional: these params are concatenated directly and need their own separator.
-	webFetchParam := ` -c fetch="disabled"`
+	webFetchParam = ` -c fetch="disabled"`
 	if workflowData.ParsedTools != nil && workflowData.ParsedTools.WebFetch != nil {
-		// When web-fetch is configured, omit override so Codex default fetch behavior remains enabled.
 		webFetchParam = ""
 	}
-
-	// See https://github.com/github/gh-aw/issues/892
-	// In AWF mode we bypass Codex approvals/sandboxing because AWF provides the sandbox layer.
-	// Outside AWF, keep Codex sandboxing enabled and disable approvals for non-interactive execution.
-	executionPolicyParam := ` --sandbox workspace-write --skip-git-repo-check -c approval_policy="never" `
+	executionPolicyParam = ` --sandbox workspace-write --skip-git-repo-check -c approval_policy="never" `
 	if firewallEnabled {
 		executionPolicyParam = " --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check "
 	}
+	return
+}
 
-	// Build custom args parameter if specified in engineConfig
-	var customArgsParam string
-	if workflowData.EngineConfig != nil && len(workflowData.EngineConfig.Args) > 0 {
-		var customArgsParamSb strings.Builder
-		for _, arg := range workflowData.EngineConfig.Args {
-			customArgsParamSb.WriteString(arg + " ")
-		}
-		customArgsParam += customArgsParamSb.String()
+// buildCodexStructuredOutputConfig returns the --output-schema and -o flags for detection runs,
+// and the shell command that writes the schema file before Codex starts.
+func buildCodexStructuredOutputConfig(workflowData *WorkflowData) (structuredOutputParam, detectionSchemaWriteCmd string) {
+	if !workflowData.IsDetectionRun {
+		return
 	}
+	structuredOutputParam = fmt.Sprintf(` --output-schema %s -o %s`, detectionSchemaFilePath, detectionResultFilePath)
+	detectionSchemaWriteCmd = fmt.Sprintf("mkdir -p /tmp/gh-aw/threat-detection && printf '%%s' '%s' > %s", detectionResponseSchema, detectionSchemaFilePath)
+	codexEngineLog.Printf("Enabling structured outputs for Codex detection run")
+	return
+}
 
-	// Build structured output parameter for detection runs.
-	// Use --output-schema to constrain Codex output to the threat detection JSON schema,
-	// and -o (--output-last-message) to write the final structured verdict directly to a
-	// file. The parser (parse_threat_detection_results.cjs) reads detection_result.json
-	// first, bypassing the noisy log stream that caused false parse_error warnings.
-	//
-	// The schema file is written to detectionSchemaFilePath before Codex runs:
-	//   - AWF mode: in PathSetup (runs on host before the AWF container starts)
-	//   - Non-AWF mode: in the command preamble (inline shell command)
-	// Because /tmp/gh-aw/ is the read-write runtime tree mounted in both the host and
-	// the AWF container, the schema file is accessible inside the container and the
-	// result file written inside the container is accessible on the host after exit.
-	var structuredOutputParam string
-	var detectionSchemaWriteCmd string
-	if workflowData.IsDetectionRun {
-		// --output-schema <file>: constrain model output to the threat detection schema
-		// -o <file>: write the final structured verdict to a file for direct parsing
-		structuredOutputParam = fmt.Sprintf(` --output-schema %s -o %s`, detectionSchemaFilePath, detectionResultFilePath)
-		// Shell command to write the schema file before Codex runs.
-		// printf '%s' avoids the need to escape the JSON (no single quotes in schema).
-		detectionSchemaWriteCmd = fmt.Sprintf("mkdir -p /tmp/gh-aw/threat-detection && printf '%%s' '%s' > %s", detectionResponseSchema, detectionSchemaFilePath)
-		codexEngineLog.Printf("Enabling structured outputs for Codex detection run")
+// buildCodexCustomArgsParam joins any user-specified extra CLI args into a single string.
+func buildCodexCustomArgsParam(workflowData *WorkflowData) string {
+	if workflowData.EngineConfig == nil || len(workflowData.EngineConfig.Args) == 0 {
+		return ""
 	}
+	var sb strings.Builder
+	for _, arg := range workflowData.EngineConfig.Args {
+		sb.WriteString(arg + " ")
+	}
+	return sb.String()
+}
 
-	// Build the Codex command
-	// Determine which command to use
-	var commandName string
+// buildCodexBaseCommand returns the command name and harness script name to use for Codex execution.
+func (e *CodexEngine) buildCodexBaseCommand(workflowData *WorkflowData) (commandName, harnessScriptName string) {
+	commandName = "codex"
 	if workflowData.EngineConfig != nil && workflowData.EngineConfig.Command != "" {
 		commandName = workflowData.EngineConfig.Command
 		codexEngineLog.Printf("Using custom command: %s", commandName)
-	} else {
-		// Use regular codex command - PATH is inherited via --env-all in AWF mode
-		commandName = "codex"
 	}
-
-	// Determine harness script to wrap codex execution.
-	// The built-in harness provides retry logic for transient OpenAI API errors
-	// (rate limits, server errors).  A custom engine.harness overrides the built-in one.
-	harnessScriptName := e.GetHarnessScriptName()
+	harnessScriptName = e.GetHarnessScriptName()
 	if workflowData.EngineConfig != nil && workflowData.EngineConfig.HarnessScript != "" {
 		harnessScriptName = workflowData.EngineConfig.HarnessScript
 		codexEngineLog.Printf("Using custom harness script: %s", harnessScriptName)
 	}
+	return
+}
 
-	// Build the Codex command.
-	// The default harness (codex_harness.cjs) wraps execution with retry logic and reads the
-	// prompt via --prompt-file.  The else branch is a defensive fallback for the case where
-	// harnessScriptName is empty (e.g. a future code path that does not set a harness).
-	var codexCommand string
+// assembleCodexCLICommand combines the base command with all parameter strings into the final CLI command.
+func assembleCodexCLICommand(commandName, harnessScriptName, modelParam, webSearchParam, webFetchParam, executionPolicyParam, structuredOutputParam, customArgsParam string) string {
 	if harnessScriptName != "" {
-		// Harness-wrapped execution: the harness reads --prompt-file and passes its content
-		// as the last positional arg.  The harness also provides retry logic.
 		execPrefix := fmt.Sprintf(`%s %s/%s %s`, nodeRuntimeResolutionCommand, SetupActionDestinationShell, harnessScriptName, commandName)
-		codexCommand = fmt.Sprintf("%s exec%s%s%s%s%s%s --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt",
+		return fmt.Sprintf("%s exec%s%s%s%s%s%s --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt",
 			execPrefix, modelParam, webSearchParam, webFetchParam, executionPolicyParam, structuredOutputParam, customArgsParam)
+	}
+	return fmt.Sprintf("%s exec%s%s%s%s%s%s \"$INSTRUCTION\"",
+		commandName, modelParam, webSearchParam, webFetchParam, executionPolicyParam, structuredOutputParam, customArgsParam)
+}
+
+// buildCodexCommandWithPathSetup prepends the npm PATH setup (and optional MCP CLI path) to the codex command.
+func buildCodexCommandWithPathSetup(workflowData *WorkflowData, codexCommand, harnessScriptName string) string {
+	npmPathSetup := GetNpmBinPathSetup()
+	var codexCommandWithSetup string
+	if harnessScriptName != "" {
+		codexCommandWithSetup = fmt.Sprintf(`%s && %s`, npmPathSetup, codexCommand)
 	} else {
-		// Without harness: use shell expansion for the prompt (no retry logic).
-		codexCommand = fmt.Sprintf("%s exec%s%s%s%s%s%s \"$INSTRUCTION\"",
-			commandName, modelParam, webSearchParam, webFetchParam, executionPolicyParam, structuredOutputParam, customArgsParam)
+		codexCommandWithSetup = fmt.Sprintf(`%s && INSTRUCTION="$(cat /tmp/gh-aw/aw-prompts/prompt.txt)" && %s`, npmPathSetup, codexCommand)
+	}
+	if mcpCLIPath := GetMCPCLIPathSetup(workflowData); mcpCLIPath != "" {
+		codexCommandWithSetup = fmt.Sprintf("%s && %s", mcpCLIPath, codexCommandWithSetup)
+	}
+	return codexCommandWithSetup
+}
+
+// buildCodexAWFCommand builds the AWF-wrapped command for Codex execution when the firewall is enabled.
+func buildCodexAWFCommand(workflowData *WorkflowData, codexCommand, logFile string, harnessScriptName, detectionSchemaWriteCmd string) string {
+	var allowedDomains string
+	if workflowData.CachedAllowedDomainsComputed {
+		allowedDomains = workflowData.CachedAllowedDomainsStr
+	} else {
+		allowedDomains = GetAllowedDomainsForEngine(constants.CodexEngine, workflowData.NetworkPermissions, workflowData.Tools, workflowData.Runtimes)
+	}
+	if workflowData.EngineConfig != nil && workflowData.EngineConfig.APITarget != "" {
+		allowedDomains = mergeAPITargetDomains(allowedDomains, workflowData.EngineConfig.APITarget)
 	}
 
-	// Build the full command with agent file handling and AWF wrapping if enabled
-	var command string
-	if firewallEnabled {
-		// Build AWF-wrapped command using helper function
-		// Get allowed domains: prefer the pre-warmed cache on WorkflowData to avoid
-		// re-running the expensive map+sort operation.
-		var allowedDomains string
-		if workflowData.CachedAllowedDomainsComputed {
-			allowedDomains = workflowData.CachedAllowedDomainsStr
-		} else {
-			allowedDomains = GetAllowedDomainsForEngine(constants.CodexEngine, workflowData.NetworkPermissions, workflowData.Tools, workflowData.Runtimes)
-		}
-		// Add GHES/custom API target domains to the firewall allow-list when engine.api-target is set
-		if workflowData.EngineConfig != nil && workflowData.EngineConfig.APITarget != "" {
-			allowedDomains = mergeAPITargetDomains(allowedDomains, workflowData.EngineConfig.APITarget)
-		}
+	pathSetup := "mkdir -p \"$CODEX_HOME/logs\" && touch " + AgentStepSummaryPath
+	if workflowData.IsDetectionRun {
+		pathSetup = pathSetup + " && " + detectionSchemaWriteCmd
+	}
 
-		// AWF v0.15.0+ with --env-all handles most PATH setup natively (chroot mode is default):
-		// - GOROOT, JAVA_HOME, etc. are handled via AWF_HOST_PATH and entrypoint.sh
-		// However, npm-installed CLIs (like codex) need hostedtoolcache bin directories in PATH.
-		npmPathSetup := GetNpmBinPathSetup()
+	return BuildAWFCommand(AWFCommandConfig{
+		EngineName:         "codex",
+		EngineCommand:      buildCodexCommandWithPathSetup(workflowData, codexCommand, harnessScriptName),
+		LogFile:            logFile,
+		WorkflowData:       workflowData,
+		UsesTTY:            false,
+		AllowedDomains:     allowedDomains,
+		PathSetup:          pathSetup,
+		ExcludeEnvVarNames: ComputeAWFExcludeEnvVarNames(workflowData, []string{"CODEX_API_KEY", "OPENAI_API_KEY"}),
+	})
+}
 
-		// Build the codex command with PATH setup inside the AWF container.
-		// For engines that do not support native agent-file handling (including Codex),
-		// the compiler prepends the agent file content to prompt.txt.
-		// When using the harness, --prompt-file is passed directly; otherwise the prompt
-		// is read via shell variable expansion.
-		var codexCommandWithSetup string
-		if harnessScriptName != "" {
-			// Harness handles prompt reading via --prompt-file; no INSTRUCTION variable needed.
-			codexCommandWithSetup = fmt.Sprintf(`%s && %s`, npmPathSetup, codexCommand)
-		} else {
-			codexCommandWithSetup = fmt.Sprintf(`%s && INSTRUCTION="$(cat /tmp/gh-aw/aw-prompts/prompt.txt)" && %s`, npmPathSetup, codexCommand)
-		}
-		// Add MCP CLI bin directory to PATH when cli-proxy is enabled
-		if mcpCLIPath := GetMCPCLIPathSetup(workflowData); mcpCLIPath != "" {
-			codexCommandWithSetup = fmt.Sprintf("%s && %s", mcpCLIPath, codexCommandWithSetup)
-		}
-
-		command = BuildAWFCommand(AWFCommandConfig{
-			EngineName:     "codex",
-			EngineCommand:  codexCommandWithSetup,
-			LogFile:        logFile,
-			WorkflowData:   workflowData,
-			UsesTTY:        false, // Codex is not a TUI, outputs to stdout/stderr
-			AllowedDomains: allowedDomains,
-			// Create logs directory and agent step summary file before AWF.
-			// For detection runs, also write the JSON schema file that --output-schema
-			// references. PathSetup runs on the host before the AWF container starts;
-			// /tmp/gh-aw/ is the read-write runtime tree mounted in both environments,
-			// so the schema file is accessible inside the container.
-			PathSetup: func() string {
-				base := "mkdir -p \"$CODEX_HOME/logs\" && touch " + AgentStepSummaryPath
-				if workflowData.IsDetectionRun {
-					return base + " && " + detectionSchemaWriteCmd
-				}
-				return base
-			}(),
-			// Exclude Codex/OpenAI API key env vars from the AWF container.
-			// AWF's API proxy handles auth, so raw token values should not be
-			// visible to in-container tools (e.g., env/printenv).
-			ExcludeEnvVarNames: ComputeAWFExcludeEnvVarNames(workflowData, []string{"CODEX_API_KEY", "OPENAI_API_KEY"}),
-		})
-	} else {
-		// Build the command without AWF wrapping.
-		// For engines that do not support native agent-file handling (including Codex),
-		// the compiler prepends the agent file content to prompt.txt so no special
-		// shell variable juggling is needed here.
-
-		// Optionally prefix the detection schema write command for detection runs.
-		// Keep it chained with "&&" so a schema write failure stops before codex runs.
-		schemaWritePrefix := ""
-		if workflowData.IsDetectionRun {
-			schemaWritePrefix = detectionSchemaWriteCmd + " && "
-		}
-
-		if harnessScriptName != "" {
-			// Harness handles prompt reading via --prompt-file; no INSTRUCTION variable needed.
-			command = fmt.Sprintf(`set -o pipefail
+// buildCodexPlainCommand builds the non-AWF shell command for Codex execution.
+func buildCodexPlainCommand(codexCommand, logFile string, harnessScriptName, detectionSchemaWriteCmd string) string {
+	schemaWritePrefix := ""
+	if detectionSchemaWriteCmd != "" {
+		schemaWritePrefix = detectionSchemaWriteCmd + " && "
+	}
+	if harnessScriptName != "" {
+		return fmt.Sprintf(`set -o pipefail
 printf '%%s' "$(date +%%s%%3N)" > %s
 touch %s
 (umask 177 && touch %s)
 mkdir -p "$CODEX_HOME/logs"
 %s%s 2>&1 | tee %s`, AgentCLIStartMsPath, AgentStepSummaryPath, logFile, schemaWritePrefix, codexCommand, logFile)
-		} else {
-			command = fmt.Sprintf(`set -o pipefail
+	}
+	return fmt.Sprintf(`set -o pipefail
 printf '%%s' "$(date +%%s%%3N)" > %s
 touch %s
 (umask 177 && touch %s)
 INSTRUCTION="$(cat "$GH_AW_PROMPT")"
 mkdir -p "$CODEX_HOME/logs"
 %s%s 2>&1 | tee %s`, AgentCLIStartMsPath, AgentStepSummaryPath, logFile, schemaWritePrefix, codexCommand, logFile)
-		}
-	}
+}
 
-	// Get effective GitHub token based on precedence: custom token > default
+// buildCodexBaseEnv builds the base environment variable map for a Codex execution step.
+func buildCodexBaseEnv(workflowData *WorkflowData, firewallEnabled bool) map[string]string {
 	effectiveGitHubToken := getEffectiveGitHubToken("")
-
 	env := map[string]string{
-		"CODEX_API_KEY": "${{ secrets.CODEX_API_KEY || secrets.OPENAI_API_KEY }}",
-		// Override GITHUB_STEP_SUMMARY with a path that exists inside the sandbox.
-		// The runner's original path is unreachable within the AWF isolated filesystem;
-		// we create this file before the agent starts and append it to the real
-		// $GITHUB_STEP_SUMMARY after secret redaction.
+		"CODEX_API_KEY":       "${{ secrets.CODEX_API_KEY || secrets.OPENAI_API_KEY }}",
 		"GITHUB_STEP_SUMMARY": AgentStepSummaryPath,
 		"GH_AW_PROMPT":        constants.AwPromptsFile,
 		// Tag the step as a GitHub AW agentic execution for discoverability by agents
@@ -392,15 +318,13 @@ mkdir -p "$CODEX_HOME/logs"
 		// Keep Codex runtime state in /tmp/gh-aw because ${RUNNER_TEMP}/gh-aw is
 		// mounted read-only inside the AWF chroot sandbox.
 		"CODEX_HOME": constants.TmpMcpConfigDir,
-		// Enable verbose RUST_LOG only in debug mode (runner.debug == 1); default to warn to avoid noisy output.
+		// Enable verbose RUST_LOG only in debug mode.
 		"RUST_LOG":                     "${{ runner.debug == 1 && 'trace,hyper_util=info,mio=info,reqwest=info,os_info=info,codex_otel=warn,codex_core=debug,ocodex_exec=debug' || 'warn' }}",
 		"GH_AW_GITHUB_TOKEN":           effectiveGitHubToken,
-		"GITHUB_PERSONAL_ACCESS_TOKEN": effectiveGitHubToken,                                     // Used by GitHub MCP server via env_vars
-		"OPENAI_API_KEY":               "${{ secrets.CODEX_API_KEY || secrets.OPENAI_API_KEY }}", // Fallback for CODEX_API_KEY
+		"GITHUB_PERSONAL_ACCESS_TOKEN": effectiveGitHubToken,
+		"OPENAI_API_KEY":               "${{ secrets.CODEX_API_KEY || secrets.OPENAI_API_KEY }}",
 	}
 	injectWorkflowCallNetworkAllowedEnv(env, workflowData)
-	// Indicate the phase: "agent" for the main run, "detection" for threat detection
-	// Include the compiler version so agents can identify which gh-aw version generated the workflow
 	if workflowData.IsDetectionRun {
 		env["GH_AW_PHASE"] = "detection"
 	} else {
@@ -411,100 +335,126 @@ mkdir -p "$CODEX_HOME/logs"
 	} else {
 		env["GH_AW_VERSION"] = "dev"
 	}
-
 	// Add GH_AW_SAFE_OUTPUTS if output is needed
 	applySafeOutputEnvToMap(env, workflowData)
-
 	// Propagate W3C trace context so engine spans nest under the gh-aw.agent.setup span.
 	applyTraceContextEnvToMap(env)
-
-	// In sandbox (AWF) mode, set git identity environment variables so the first git commit
-	// succeeds inside the container. AWF's --env-all forwards these to the container, ensuring
-	// git does not rely on the host-side ~/.gitconfig which is not visible in the sandbox.
+	// In sandbox (AWF) mode, set git identity environment variables so the first git commit succeeds.
 	if firewallEnabled {
 		maps.Copy(env, getGitIdentityEnvVars())
 	}
+	return env
+}
 
-	// Add GH_AW_STARTUP_TIMEOUT environment variable (in seconds) if startup-timeout is specified
-	// Supports both literal integers and GitHub Actions expressions (e.g. "${{ inputs.startup-timeout }}")
+// applyCodexModelAndCustomEnv sets the max-turns, model, custom engine/agent env vars and
+// mcp-scripts secrets on the given env map for a Codex execution step.
+func applyCodexModelAndCustomEnv(env map[string]string, workflowData *WorkflowData, firewallEnabled bool, modelConfigured bool, modelEnvVar string) {
 	if workflowData.ToolsStartupTimeout != "" {
 		env["GH_AW_STARTUP_TIMEOUT"] = workflowData.ToolsStartupTimeout
 	}
-
-	// Add GH_AW_TOOL_TIMEOUT environment variable (in seconds) if timeout is specified
-	// Supports both literal integers and GitHub Actions expressions (e.g. "${{ inputs.tool-timeout }}")
 	if workflowData.ToolsTimeout != "" {
 		env["GH_AW_TOOL_TIMEOUT"] = workflowData.ToolsTimeout
 	}
-
 	if workflowData.EngineConfig != nil && workflowData.EngineConfig.MaxTurns != "" {
 		env["GH_AW_MAX_TURNS"] = workflowData.EngineConfig.MaxTurns
 	} else {
 		env["GH_AW_MAX_TURNS"] = compilerenv.BuildDefaultMaxTurnsExpression()
 	}
-
-	// Set the model environment variable.
-	// Codex has no native model env var, so model selection always goes through
-	// GH_AW_MODEL_AGENT_CODEX / GH_AW_MODEL_DETECTION_CODEX with shell expansion.
-	// When model is configured (static or GitHub Actions expression), set the env var directly.
-	// When not configured, use the GitHub variable fallback so users can set a default.
 	if modelConfigured {
 		codexEngineLog.Printf("Setting %s env var for model: %s", modelEnvVar, workflowData.EngineConfig.Model)
 		env[modelEnvVar] = workflowData.EngineConfig.Model
 	} else {
 		env[modelEnvVar] = compilerenv.BuildModelOverrideExpression(modelEnvVar, compilerenv.DefaultModelCodex, constants.CodexDefaultModel)
 	}
-
-	// Add custom environment variables from engine config
 	if workflowData.EngineConfig != nil && len(workflowData.EngineConfig.Env) > 0 {
 		maps.Copy(env, workflowData.EngineConfig.Env)
 	}
-
-	// Add custom environment variables from agent config
 	agentConfig := getAgentConfig(workflowData)
 	if agentConfig != nil && len(agentConfig.Env) > 0 {
 		maps.Copy(env, agentConfig.Env)
 		codexEngineLog.Printf("Added %d custom env vars from agent config", len(agentConfig.Env))
 	}
-
-	// Add mcp-scripts secrets to env for passthrough to MCP servers
 	if IsMCPScriptsEnabled(workflowData.MCPScripts) {
 		mcpScriptsSecrets := collectMCPScriptsSecrets(workflowData.MCPScripts)
 		for varName, secretExpr := range mcpScriptsSecrets {
-			// Only add if not already in env
 			if _, exists := env[varName]; !exists {
 				env[varName] = secretExpr
 			}
 		}
 	}
+}
 
-	// Generate the step for Codex execution
-	stepName := "Execute Codex CLI"
-	var stepLines []string
+// GetExecutionSteps returns the GitHub Actions steps for executing Codex
+func (e *CodexEngine) GetExecutionSteps(workflowData *WorkflowData, logFile string) []GitHubActionStep {
+	modelConfigured := workflowData.EngineConfig != nil && workflowData.EngineConfig.Model != ""
+	firewallEnabled := isFirewallEnabled(workflowData)
+	codexEngineLog.Printf("Building Codex execution steps: workflow=%s, modelConfigured=%v, firewall=%v",
+		workflowData.Name, modelConfigured, firewallEnabled)
 
-	stepLines = append(stepLines, "      - name: "+stepName)
-	stepLines = append(stepLines, "        id: agentic_execution")
+	var steps []GitHubActionStep
 
-	// Filter environment variables to only include allowed secrets
-	// This is a security measure to prevent exposing unnecessary secrets to the AWF container
+	modelParam, modelEnvVar, _ := buildCodexModelConfig(workflowData)
+	webSearchParam, webFetchParam, executionPolicyParam := buildCodexExecutionFlags(workflowData, firewallEnabled)
+	structuredOutputParam, detectionSchemaWriteCmd := buildCodexStructuredOutputConfig(workflowData)
+	customArgsParam := buildCodexCustomArgsParam(workflowData)
+	commandName, harnessScriptName := e.buildCodexBaseCommand(workflowData)
+	codexCommand := assembleCodexCLICommand(commandName, harnessScriptName, modelParam, webSearchParam, webFetchParam, executionPolicyParam, structuredOutputParam, customArgsParam)
+
+	var command string
+	if firewallEnabled {
+		command = buildCodexAWFCommand(workflowData, codexCommand, logFile, harnessScriptName, detectionSchemaWriteCmd)
+	} else {
+		command = buildCodexPlainCommand(codexCommand, logFile, harnessScriptName, detectionSchemaWriteCmd)
+	}
+
+	env := buildCodexBaseEnv(workflowData, firewallEnabled)
+	applyCodexModelAndCustomEnv(env, workflowData, firewallEnabled, modelConfigured, modelEnvVar)
+
+	stepLines := []string{
+		"      - name: Execute Codex CLI",
+		"        id: agentic_execution",
+	}
 	allowedSecrets := e.GetRequiredSecretNames(workflowData)
 	filteredEnv := FilterEnvForSecrets(env, allowedSecrets)
-
-	// Inject GH_TOKEN for CLI proxy (added after filtering since it uses a special
-	// fallback expression that is always allowed when cli-proxy is enabled)
 	addCliProxyGHTokenToEnv(filteredEnv, workflowData)
-
-	// Format step with command and filtered environment variables using shared helper
 	stepLines = FormatStepWithCommandAndEnv(stepLines, command, filteredEnv)
-
 	steps = append(steps, GitHubActionStep(stepLines))
-
 	return steps
 }
 
 // GetSquidLogsSteps returns the steps for uploading and parsing Squid logs (after secret redaction)
 func (e *CodexEngine) GetSquidLogsSteps(workflowData *WorkflowData) []GitHubActionStep {
 	return defaultGetSquidLogsSteps(workflowData, codexEngineLog)
+}
+
+// applyPlaywrightToolToCodexConfig updates the result ToolsConfig with the playwright tool
+// configuration derived from the source toolsConfig.
+func applyPlaywrightToolToCodexConfig(toolsConfig, result *ToolsConfig) {
+	if toolsConfig.Playwright == nil {
+		return
+	}
+	playwrightConfig := &PlaywrightToolConfig{
+		Version: toolsConfig.Playwright.Version,
+		Args:    toolsConfig.Playwright.Args,
+		Mode:    toolsConfig.Playwright.Mode,
+	}
+	result.Playwright = playwrightConfig
+	// In CLI mode, playwright is not an MCP server — remove from raw map and skip MCP config entry.
+	if playwrightConfig.IsCLIMode() {
+		delete(result.raw, "playwright")
+		return
+	}
+	// Also update the Custom map entry for playwright with allowed tools list
+	playwrightMCP := map[string]any{
+		"allowed": GetPlaywrightTools(),
+	}
+	if playwrightConfig.Version != "" {
+		playwrightMCP["version"] = playwrightConfig.Version
+	}
+	if len(playwrightConfig.Args) > 0 {
+		playwrightMCP["args"] = playwrightConfig.Args
+	}
+	result.raw["playwright"] = playwrightMCP
 }
 
 // expandNeutralToolsToCodexTools converts neutral tools to Codex-specific tools format
@@ -534,45 +484,11 @@ func (e *CodexEngine) expandNeutralToolsToCodexTools(toolsConfig *ToolsConfig) *
 		raw:              make(map[string]any),
 	}
 
-	// Copy custom tools
+	// Copy custom tools and raw map
 	maps.Copy(result.Custom, toolsConfig.Custom)
-
-	// Copy raw map
 	maps.Copy(result.raw, toolsConfig.raw)
 
-	// Handle playwright tool by converting it to an MCP tool configuration with copilot agent tools
-	if toolsConfig.Playwright != nil {
-		// Create an updated Playwright config preserving all fields including Mode
-		playwrightConfig := &PlaywrightToolConfig{
-			Version: toolsConfig.Playwright.Version,
-			Args:    toolsConfig.Playwright.Args,
-			Mode:    toolsConfig.Playwright.Mode,
-		}
-
-		result.Playwright = playwrightConfig
-
-		// In CLI mode, playwright is not an MCP server — remove from raw map and skip MCP config entry.
-		// result.raw is populated by maps.Copy(result.raw, toolsConfig.raw) earlier in this function,
-		// so delete is safe regardless of whether the key was originally present.
-		if playwrightConfig.IsCLIMode() {
-			delete(result.raw, "playwright")
-		} else {
-			// Also update the Custom map entry for playwright with allowed tools list
-			playwrightMCP := map[string]any{
-				"allowed": GetPlaywrightTools(),
-			}
-			if playwrightConfig.Version != "" {
-				playwrightMCP["version"] = playwrightConfig.Version
-			}
-			if len(playwrightConfig.Args) > 0 {
-				playwrightMCP["args"] = playwrightConfig.Args
-			}
-
-			// Update raw map for backward compatibility
-			result.raw["playwright"] = playwrightMCP
-		}
-	}
-
+	applyPlaywrightToolToCodexConfig(toolsConfig, result)
 	return result
 }
 
@@ -586,33 +502,33 @@ func (e *CodexEngine) expandNeutralToolsToCodexToolsFromMap(tools map[string]any
 
 func (e *CodexEngine) getShellEnvironmentPolicyVars(tools map[string]any, mcpTools []string) []string {
 	// Collect all environment variables needed by MCP servers
-	envVars := make(map[string]bool)
+	envVars := make(map[string]struct{})
 
 	// Always include core environment variables
-	envVars["PATH"] = true
-	envVars["HOME"] = true
+	envVars["PATH"] = struct{}{}
+	envVars["HOME"] = struct{}{}
 
 	// Add CODEX_API_KEY for authentication
-	envVars["CODEX_API_KEY"] = true
-	envVars["OPENAI_API_KEY"] = true // Fallback for CODEX_API_KEY
+	envVars["CODEX_API_KEY"] = struct{}{}
+	envVars["OPENAI_API_KEY"] = struct{}{} // Fallback for CODEX_API_KEY
 
 	// Check each MCP tool for required environment variables
 	for _, toolName := range mcpTools {
 		switch toolName {
 		case "github":
 			// GitHub MCP server needs GITHUB_PERSONAL_ACCESS_TOKEN
-			envVars["GITHUB_PERSONAL_ACCESS_TOKEN"] = true
+			envVars["GITHUB_PERSONAL_ACCESS_TOKEN"] = struct{}{}
 		case "agentic-workflows":
 			// Agentic workflows MCP server needs GITHUB_TOKEN
-			envVars["GITHUB_TOKEN"] = true
+			envVars["GITHUB_TOKEN"] = struct{}{}
 		case "safe-outputs":
 			// Safe outputs MCP server needs several environment variables
-			envVars["GH_AW_SAFE_OUTPUTS"] = true
-			envVars["GH_AW_ASSETS_BRANCH"] = true
-			envVars["GH_AW_ASSETS_MAX_SIZE_KB"] = true
-			envVars["GH_AW_ASSETS_ALLOWED_EXTS"] = true
-			envVars["GITHUB_REPOSITORY"] = true
-			envVars["GITHUB_SERVER_URL"] = true
+			envVars["GH_AW_SAFE_OUTPUTS"] = struct{}{}
+			envVars["GH_AW_ASSETS_BRANCH"] = struct{}{}
+			envVars["GH_AW_ASSETS_MAX_SIZE_KB"] = struct{}{}
+			envVars["GH_AW_ASSETS_ALLOWED_EXTS"] = struct{}{}
+			envVars["GITHUB_REPOSITORY"] = struct{}{}
+			envVars["GITHUB_SERVER_URL"] = struct{}{}
 		default:
 			// For custom MCP tools, check if they have env configuration
 			if toolValue, ok := tools[toolName]; ok {
@@ -620,7 +536,7 @@ func (e *CodexEngine) getShellEnvironmentPolicyVars(tools map[string]any, mcpToo
 					// Extract environment variable names from env configuration
 					if env, hasEnv := toolConfig["env"].(map[string]any); hasEnv {
 						for envKey := range env {
-							envVars[envKey] = true
+							envVars[envKey] = struct{}{}
 						}
 					}
 				}

@@ -140,41 +140,15 @@ func (e *AntigravityEngine) GetPreBundleSteps(workflowData *WorkflowData) []GitH
 	}
 }
 
-// GetExecutionSteps returns the GitHub Actions steps for executing Antigravity
-func (e *AntigravityEngine) GetExecutionSteps(workflowData *WorkflowData, logFile string) []GitHubActionStep {
-	antigravityLog.Printf("Generating execution steps for Antigravity engine: workflow=%s, firewall=%v", workflowData.Name, isFirewallEnabled(workflowData))
-
-	var steps []GitHubActionStep
-
-	// Write .antigravity/settings.json with context.includeDirectories and tools.core.
-	// This step runs after the MCP gateway setup (which may have written mcpServers config)
-	// and merges the context/tools settings into any existing settings.json.
-	settingsStep := e.generateAntigravitySettingsStep(workflowData)
-	steps = append(steps, settingsStep)
-
-	// Build agy CLI arguments based on configuration
-	var agyArgs []string
-
-	// Model is passed via the native ANTIGRAVITY_MODEL environment variable only when explicitly
-	// configured. When not configured, the Antigravity CLI uses its built-in default model.
-	// This avoids embedding the value directly in the shell command (which fails template injection
-	// validation for GitHub Actions expressions like ${{ inputs.model }}).
+// buildAntigravityAgyCommand builds the core agy CLI command string and returns it along
+// with a flag indicating whether the model was explicitly configured.
+func buildAntigravityAgyCommand(workflowData *WorkflowData) (string, bool) {
 	modelConfigured := workflowData.EngineConfig != nil && workflowData.EngineConfig.Model != ""
 
-	// Antigravity CLI reads MCP config from .antigravity/settings.json (project-level)
-	// The conversion script (convert_gateway_config_antigravity.sh) writes settings.json
-	// during the MCP setup step, so no --mcp-config flag is needed here.
-
 	// Auto-approve all tool executions so non-interactive CI runs don't block on permission prompts.
-	// agy does not support the Gemini-style --yolo/--skip-trust flags.
-	// This flag grants broad tool permission inside the workflow sandbox, so it is only used in AWF-managed runs.
+	var agyArgs []string
 	agyArgs = append(agyArgs, "--dangerously-skip-permissions")
 
-	// Note: the --prompt argument is appended raw after shellJoinArgs below because it contains
-	// a shell command substitution ("$(cat ...)") that must NOT go through shellEscapeArg —
-	// single-quoting it would prevent shell expansion at runtime.
-
-	// Build the command
 	commandName := "agy"
 	if workflowData.EngineConfig != nil && workflowData.EngineConfig.Command != "" {
 		commandName = workflowData.EngineConfig.Command
@@ -182,59 +156,57 @@ func (e *AntigravityEngine) GetExecutionSteps(workflowData *WorkflowData, logFil
 
 	// Append the prompt arg raw (not through shellJoinArgs) to preserve shell expansion
 	agyCommand := fmt.Sprintf(`%s %s --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"`, commandName, shellJoinArgs(agyArgs))
+	return agyCommand, modelConfigured
+}
 
-	// Build the full command with AWF wrapping if enabled
-	var command string
-	firewallEnabled := isFirewallEnabled(workflowData)
-	if firewallEnabled {
-		// Get allowed domains: prefer the pre-warmed cache on WorkflowData to avoid
-		// re-running the expensive map+sort operation.
-		var allowedDomains string
-		if workflowData.CachedAllowedDomainsComputed {
-			allowedDomains = workflowData.CachedAllowedDomainsStr
-		} else {
-			allowedDomains = GetAllowedDomainsForEngine(constants.AntigravityEngine,
-				workflowData.NetworkPermissions,
-				workflowData.Tools,
-				workflowData.Runtimes,
-			)
-		}
-		// Add GHES/custom API target domains to the firewall allow-list when engine.api-target is set
-		if workflowData.EngineConfig != nil && workflowData.EngineConfig.APITarget != "" {
-			allowedDomains = mergeAPITargetDomains(allowedDomains, workflowData.EngineConfig.APITarget)
-		}
-
-		npmPathSetup := GetNpmBinPathSetup()
-		agyCommandWithPath := fmt.Sprintf("%s && %s", npmPathSetup, agyCommand)
-		// Add MCP CLI bin directory to PATH when cli-proxy is enabled
-		if mcpCLIPath := GetMCPCLIPathSetup(workflowData); mcpCLIPath != "" {
-			agyCommandWithPath = fmt.Sprintf("%s && %s", mcpCLIPath, agyCommandWithPath)
-		}
-
-		command = BuildAWFCommand(AWFCommandConfig{
-			EngineName:     "antigravity",
-			EngineCommand:  agyCommandWithPath,
-			LogFile:        logFile,
-			WorkflowData:   workflowData,
-			UsesTTY:        false,
-			AllowedDomains: allowedDomains,
-			// Create the agent step summary file before AWF starts so it is accessible
-			// inside the sandbox. The agent writes its step summary content here, and the
-			// file is appended to $GITHUB_STEP_SUMMARY after secret redaction.
-			PathSetup: "touch " + AgentStepSummaryPath,
-			// Exclude every env var whose step-env value is a secret so the agent
-			// cannot read raw token values via bash tools (env / printenv).
-			ExcludeEnvVarNames: ComputeAWFExcludeEnvVarNames(workflowData, []string{"ANTIGRAVITY_API_KEY", "GEMINI_API_KEY"}),
-		})
-	} else {
-		command = fmt.Sprintf(`set -o pipefail
+// buildAntigravityCommandString builds the full shell command string to run the Antigravity CLI,
+// wrapping it with AWF if the firewall is enabled.
+func buildAntigravityCommandString(workflowData *WorkflowData, agyCommand, logFile string, firewallEnabled bool) string {
+	if !firewallEnabled {
+		return fmt.Sprintf(`set -o pipefail
 printf '%%s' "$(date +%%s%%3N)" > %s
 touch %s
 (umask 177 && touch %s)
 %s 2>&1 | tee -a %s`, AgentCLIStartMsPath, AgentStepSummaryPath, logFile, agyCommand, logFile)
 	}
 
-	// Build environment variables
+	// Get allowed domains: prefer the pre-warmed cache on WorkflowData to avoid
+	// re-running the expensive map+sort operation.
+	var allowedDomains string
+	if workflowData.CachedAllowedDomainsComputed {
+		allowedDomains = workflowData.CachedAllowedDomainsStr
+	} else {
+		allowedDomains = GetAllowedDomainsForEngine(constants.AntigravityEngine,
+			workflowData.NetworkPermissions,
+			workflowData.Tools,
+			workflowData.Runtimes,
+		)
+	}
+	if workflowData.EngineConfig != nil && workflowData.EngineConfig.APITarget != "" {
+		allowedDomains = mergeAPITargetDomains(allowedDomains, workflowData.EngineConfig.APITarget)
+	}
+
+	npmPathSetup := GetNpmBinPathSetup()
+	agyCommandWithPath := fmt.Sprintf("%s && %s", npmPathSetup, agyCommand)
+	if mcpCLIPath := GetMCPCLIPathSetup(workflowData); mcpCLIPath != "" {
+		agyCommandWithPath = fmt.Sprintf("%s && %s", mcpCLIPath, agyCommandWithPath)
+	}
+
+	return BuildAWFCommand(AWFCommandConfig{
+		EngineName:         "antigravity",
+		EngineCommand:      agyCommandWithPath,
+		LogFile:            logFile,
+		WorkflowData:       workflowData,
+		UsesTTY:            false,
+		AllowedDomains:     allowedDomains,
+		PathSetup:          "touch " + AgentStepSummaryPath,
+		ExcludeEnvVarNames: ComputeAWFExcludeEnvVarNames(workflowData, []string{"ANTIGRAVITY_API_KEY", "GEMINI_API_KEY"}),
+	})
+}
+
+// buildAntigravityBaseEnv builds the base environment variable map for an Antigravity execution step.
+// It includes standard keys, phase/version markers, optional MCP config, and firewall-specific vars.
+func buildAntigravityBaseEnv(workflowData *WorkflowData, firewallEnabled bool) map[string]string {
 	env := map[string]string{
 		"ANTIGRAVITY_API_KEY": "${{ secrets.ANTIGRAVITY_API_KEY }}",
 		"GH_AW_PROMPT":        constants.AwPromptsFile,
@@ -243,22 +215,13 @@ touch %s
 		"GITHUB_WORKSPACE": "${{ github.workspace }}",
 		"RUNNER_TEMP":      "${{ runner.temp }}",
 		// Override GITHUB_STEP_SUMMARY with a path that exists inside the sandbox.
-		// The runner's original path is unreachable within the AWF isolated filesystem;
-		// we create this file before the agent starts and append it to the real
-		// $GITHUB_STEP_SUMMARY after secret redaction.
 		"GITHUB_STEP_SUMMARY": AgentStepSummaryPath,
 		// Enable verbose debug logging from Antigravity CLI for better diagnostics.
-		// Antigravity CLI uses the npm 'debug' package, and 'antigravity-cli:*' enables all
-		// internal Antigravity CLI debug channels (see: https://antigravity.google/docs/cli-overview).
-		// Non-JSON debug lines are gracefully skipped by ParseLogMetrics.
 		"DEBUG": "antigravity-cli:*",
-		// Trust the workspace to prevent Antigravity CLI v1.x from overriding --yolo to default
-		// approval mode when the workspace is untrusted, which causes exit code 55.
+		// Trust the workspace to prevent Antigravity CLI v1.x from overriding --yolo.
 		"ANTIGRAVITY_CLI_TRUST_WORKSPACE": "true",
 	}
 	injectWorkflowCallNetworkAllowedEnv(env, workflowData)
-	// Indicate the phase: "agent" for the main run, "detection" for threat detection
-	// Include the compiler version so agents can identify which gh-aw version generated the workflow
 	if workflowData.IsDetectionRun {
 		env["GH_AW_PHASE"] = "detection"
 	} else {
@@ -269,29 +232,23 @@ touch %s
 	} else {
 		env["GH_AW_VERSION"] = "dev"
 	}
-
-	// Add MCP config env var if needed (points to .antigravity/settings.json for Antigravity)
 	if HasMCPServers(workflowData) {
 		env["GH_AW_MCP_CONFIG"] = "${{ github.workspace }}/.antigravity/settings.json"
 	}
-
-	// When the firewall (AWF) is enabled with --enable-api-proxy, point Antigravity CLI at the
-	// LLM gateway sidecar instead of the real googleapis.com endpoint.
 	if firewallEnabled {
 		env["ANTIGRAVITY_API_BASE_URL"] = fmt.Sprintf("http://host.docker.internal:%d", constants.AntigravityLLMGatewayPort)
-
-		// Set git identity environment variables so the first git commit succeeds inside the
-		// container. AWF's --env-all forwards these to the container, ensuring git does not
-		// rely on the host-side ~/.gitconfig which is not visible in the sandbox.
 		maps.Copy(env, getGitIdentityEnvVars())
 	}
-
 	// Add safe outputs env
 	applySafeOutputEnvToMap(env, workflowData)
-
 	// Propagate W3C trace context so engine spans nest under the gh-aw.agent.setup span.
 	applyTraceContextEnvToMap(env)
+	return env
+}
 
+// applyAntigravityModelAndCustomEnv sets the max-turns, model, custom engine/agent env vars, and
+// the GEMINI_API_KEY sync on the given env map for an Antigravity execution step.
+func applyAntigravityModelAndCustomEnv(env map[string]string, workflowData *WorkflowData, modelConfigured bool) {
 	if workflowData.EngineConfig != nil && workflowData.EngineConfig.MaxTurns != "" {
 		env["GH_AW_MAX_TURNS"] = workflowData.EngineConfig.MaxTurns
 	} else {
@@ -299,18 +256,12 @@ touch %s
 	}
 
 	// Set the model environment variable only when explicitly configured.
-	// When model is configured, use the native ANTIGRAVITY_MODEL env var - the Antigravity CLI reads it
-	// directly, avoiding the need to embed the value in the shell command (which would fail
-	// template injection validation for GitHub Actions expressions like ${{ inputs.model }}).
-	// When model is not configured, let the Antigravity CLI use its built-in default model.
 	if modelConfigured {
 		antigravityLog.Printf("Setting %s env var for model: %s", constants.AntigravityCLIModelEnvVar, workflowData.EngineConfig.Model)
 		env[constants.AntigravityCLIModelEnvVar] = workflowData.EngineConfig.Model
 	}
 
 	// Add custom environment variables from engine config.
-	// This allows users to override the default engine token expression (e.g.
-	// ANTIGRAVITY_API_KEY: ${{ secrets.MY_ORG_ANTIGRAVITY_KEY }}) via engine.env.
 	if workflowData.EngineConfig != nil && len(workflowData.EngineConfig.Env) > 0 {
 		maps.Copy(env, workflowData.EngineConfig.Env)
 	}
@@ -321,12 +272,29 @@ touch %s
 		maps.Copy(env, agentConfig.Env)
 		antigravityLog.Printf("Added %d custom env vars from agent config", len(agentConfig.Env))
 	}
-	// The Antigravity CLI and AWF's Gemini API proxy both rely on a Gemini provider key.
-	// Keep GEMINI_API_KEY aligned with the effective ANTIGRAVITY_API_KEY by default so the
-	// workflow can authenticate non-interactively without requiring users to duplicate secrets.
+
+	// Keep GEMINI_API_KEY aligned with the effective ANTIGRAVITY_API_KEY by default.
 	if _, hasGeminiKey := env["GEMINI_API_KEY"]; !hasGeminiKey {
 		env["GEMINI_API_KEY"] = env["ANTIGRAVITY_API_KEY"]
 	}
+}
+
+// GetExecutionSteps returns the GitHub Actions steps for executing Antigravity
+func (e *AntigravityEngine) GetExecutionSteps(workflowData *WorkflowData, logFile string) []GitHubActionStep {
+	antigravityLog.Printf("Generating execution steps for Antigravity engine: workflow=%s, firewall=%v", workflowData.Name, isFirewallEnabled(workflowData))
+
+	var steps []GitHubActionStep
+
+	// Write .antigravity/settings.json with context.includeDirectories and tools.core.
+	settingsStep := e.generateAntigravitySettingsStep(workflowData)
+	steps = append(steps, settingsStep)
+
+	agyCommand, modelConfigured := buildAntigravityAgyCommand(workflowData)
+	firewallEnabled := isFirewallEnabled(workflowData)
+	command := buildAntigravityCommandString(workflowData, agyCommand, logFile, firewallEnabled)
+
+	env := buildAntigravityBaseEnv(workflowData, firewallEnabled)
+	applyAntigravityModelAndCustomEnv(env, workflowData, modelConfigured)
 
 	// Generate the execution step
 	stepLines := []string{
@@ -338,8 +306,7 @@ touch %s
 	allowedSecrets := append([]string{"GEMINI_API_KEY"}, e.GetRequiredSecretNames(workflowData)...)
 	filteredEnv := FilterEnvForSecrets(env, allowedSecrets)
 
-	// Inject GH_TOKEN for CLI proxy (added after filtering since it uses a special
-	// fallback expression that is always allowed when cli-proxy is enabled)
+	// Inject GH_TOKEN for CLI proxy
 	addCliProxyGHTokenToEnv(filteredEnv, workflowData)
 
 	// Format step with command and env
