@@ -40,7 +40,7 @@ safe-outputs:
     max-uploads: 5
     retention-days: 14
     allowed-paths:
-      - "/tmp/visual-regression/**"
+      - "visual-regression-diffs/**"
 timeout-minutes: 30
 ---
 
@@ -51,7 +51,7 @@ Use filesystem-safe timestamps (no colons — colons break artifact uploads):
 
 If `/tmp/gh-aw/cache-memory/baselines/manifest.json` does not exist, copy screenshots there as new baselines and post: "Baselines initialized — N pages captured."
 
-Otherwise compare each screenshot to its baseline. Upload any diff images using `upload_artifact` (name: `visual-regression-diffs-${{ github.run_id }}`). Post a comment summarizing: pages unchanged / pages with diffs, and link to the uploaded artifact when diffs exist. If nothing changed, use the `noop` safe-output.
+Otherwise compare each screenshot to its baseline. Copy any diff images to `visual-regression-diffs/` (workspace-relative). Upload them using `upload_artifact` (name: `visual-regression-diffs-${{ github.run_id }}`). Post a comment summarizing: pages unchanged / pages with diffs, and link to the uploaded artifact when diffs exist. If nothing changed, use the `noop` safe-output.
 ```
 
 ## Baseline Storage
@@ -121,7 +121,7 @@ safe-outputs:
     max-uploads: 5
     retention-days: 14          # keep diffs for 2 weeks (range: 1-90)
     allowed-paths:
-      - "/tmp/visual-regression/**"
+      - "visual-regression-diffs/**"  # workspace-relative; agent copies diffs here before uploading
 ```
 
 - Set `retention-days` to match your PR review cadence (14 days covers most review cycles).
