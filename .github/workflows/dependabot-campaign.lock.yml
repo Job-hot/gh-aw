@@ -1078,10 +1078,9 @@ jobs:
     needs: safe_outputs
     if: needs.safe_outputs.outputs.call_workflow_name == 'dependabot-worker'
     permissions:
-      actions: read
-      contents: write
-      issues: write
-      pull-requests: write
+      contents: read
+      issues: read
+      pull-requests: read
     uses: ./.github/workflows/dependabot-worker.lock.yml
     with:
       aw_context: ${{ fromJSON(needs.safe_outputs.outputs.call_workflow_payload).aw_context }}
