@@ -32,8 +32,7 @@ safe-outputs:
   update-pull-request:
     title: false
     operation: append
-  threat-detection:
-    engine: false
+  threat-detection: {}
 timeout-minutes: 20
 features:
   gh-aw-detection: true
