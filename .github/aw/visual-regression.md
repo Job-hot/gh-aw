@@ -58,75 +58,15 @@ Otherwise compare each screenshot to its baseline. Copy any diff images to `visu
 
 Baselines are stored in `cache-memory` under `/tmp/gh-aw/cache-memory/baselines/`. The key is scoped per base branch so `main` and `develop` maintain independent baseline sets.
 
-**Manifest structure** (`manifest.json`):
-```json
-{
-  "created": "2024-01-15-10-30-00",
-  "pages": ["home", "dashboard", "settings"],
-  "screenshots": {
-    "home": "home-2024-01-15-10-30-00.png",
-    "dashboard": "dashboard-2024-01-15-10-30-00.png"
-  }
-}
-```
-
 ### Updating Baselines
 
-Baselines must be updated whenever the UI intentionally changes (new feature, redesign). Add a companion `workflow_dispatch` workflow for manual baseline updates:
-
-```markdown
----
-description: Manually update visual regression baselines for a given base branch
-on:
-  workflow_dispatch:
-    inputs:
-      base-branch:
-        description: "Base branch to update baselines for (e.g. main)"
-        required: true
-        default: "main"
-permissions:
-  contents: read
-tools:
-  playwright:
-    allowed_domains:
-      - localhost
-      - 127.0.0.1
-  cache-memory:
-    key: visual-regression-baselines-${{ github.event.inputs.base-branch }}
-    retention-days: 30
-    allowed-extensions: [".png", ".json"]
-  bash:
-    - "mkdir *"
-    - "cp *"
-    - "date *"
-safe-outputs:
-  add-comment:
-    max: 1
----
-
-Build and serve the app locally. Capture full-page screenshots of all key pages into `/tmp/visual-regression/current/`.
-
-Copy the screenshots to `/tmp/gh-aw/cache-memory/baselines/` and write a new `manifest.json` with the current timestamp. Post a comment: "Baselines updated for `${{ github.event.inputs.base-branch }}` — N pages captured."
-```
-
-> **Tip**: Run the baseline-update workflow on `main` after merging a PR that intentionally changes the UI. The PR regression workflow will then compare against the updated baselines on subsequent PRs.
+Add a companion `workflow_dispatch` workflow that captures fresh screenshots and writes them to `cache-memory` — using the same `key` pattern but with the target branch as an input. Run it on `main` after merging any PR that intentionally changes the UI.
 
 ## Artifact Retention
 
-Upload diff screenshots as workflow artifacts so reviewers can inspect them without re-running:
-
-```yaml
-safe-outputs:
-  upload-artifact:
-    max-uploads: 5
-    retention-days: 14          # keep diffs for 2 weeks (range: 1-90)
-    allowed-paths:
-      - "visual-regression-diffs/**"  # workspace-relative; agent copies diffs here before uploading
-```
-
 - Set `retention-days` to match your PR review cadence (14 days covers most review cycles).
 - Pair the `upload_artifact` call with an `add-comment` that links the artifact URL: `${{ steps.process_safe_outputs.outputs.upload_artifact_url }}`.
-- Use `upload-asset` instead of `upload-artifact` when diff images need stable embeddable URLs in the comment body (images embedded in GitHub markdown require a raw URL, not a zip archive link).
+- Use `upload-asset` instead of `upload-artifact` when diff images need stable embeddable URLs in the comment body.
 
 ## Key Design Decisions
 

@@ -114,21 +114,9 @@ safe-outputs:
     expires: 7
 ```
 
-**Prompt-side deduplication check** (instruct the agent to query for existing open issues):
+**Prompt-side deduplication check**: In the workflow prompt, tell the agent to search for open issues with the same title prefix before calling `create_issue`, and call `noop` referencing the existing issue number if a duplicate is found.
 
-In the workflow prompt, tell the agent to:
-1. Search for open issues with the same title prefix before calling `create_issue`.
-2. Call `noop` if an identical open issue already exists (the failure is already tracked).
-3. Call `create_issue` only when no open duplicate is found.
-
-Example prompt snippet:
-```
-Before creating an incident issue, search for open issues titled "[incident] <workflow-name>" using `gh issue list`.
-If an open issue already exists for this failure, call `noop` with a note referencing that issue number.
-Only call `create_issue` when no open duplicate exists.
-```
-
-> **When to use which**: `deduplicate-by-title: true` is a compile-time guardrail applied at the handler level; it costs nothing in agent tokens. The prompt-side check is more flexible (the agent can decide based on context) but consumes extra tokens. Combine both for defense-in-depth on high-volume triggers.
+> **When to use which**: `deduplicate-by-title: true` is a zero-token-cost guardrail. The prompt-side check is more flexible but consumes agent tokens. Combine both for defense-in-depth on high-volume triggers.
 
 ### 2b. Backend review compact guidance
 
