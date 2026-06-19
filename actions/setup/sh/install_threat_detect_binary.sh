@@ -8,7 +8,7 @@ set +o histexpand
 # Usage: install_threat_detect_binary.sh VERSION
 #
 # Arguments:
-#   VERSION - threat-detect version to install (e.g., v0.1.0)
+#   VERSION - threat-detect version to install (e.g., v0.2.2)
 #
 # Platform support:
 #   - Linux (x64, arm64): Downloads pre-built binary
@@ -92,7 +92,7 @@ install_linux_binary() {
   # Determine binary name based on architecture
   local binary_name
   case "$ARCH" in
-    x86_64|amd64) binary_name="threat-detect-linux-x64" ;;
+    x86_64|amd64) binary_name="threat-detect-linux-amd64" ;;
     aarch64|arm64) binary_name="threat-detect-linux-arm64" ;;
     *) echo "ERROR: Unsupported Linux architecture: ${ARCH}"; exit 1 ;;
   esac
