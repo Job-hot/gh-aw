@@ -1,6 +1,6 @@
 module github.com/github/gh-aw
 
-go 1.26.3
+go 1.25
 
 require (
 	charm.land/bubbles/v2 v2.1.0
@@ -13,14 +13,17 @@ require (
 	github.com/creack/pty v1.1.24
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/goccy/go-yaml v1.19.2
+	github.com/anthropics/anthropic-sdk-go v1.46.0
 	github.com/google/jsonschema-go v0.4.3
 	github.com/modelcontextprotocol/go-sdk v1.6.1
+	github.com/openai/openai-go/v3 v3.37.0
 	github.com/rhysd/actionlint v1.7.12
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2
 	github.com/securego/gosec/v2 v2.27.1
 	github.com/sourcegraph/conc v0.3.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
+	google.golang.org/genai v1.58.0
 	golang.org/x/crypto v0.53.0
 	golang.org/x/mod v0.37.0
 	golang.org/x/term v0.44.0
