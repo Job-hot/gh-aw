@@ -35,6 +35,8 @@ safe-outputs:
   threat-detection:
     engine: false
 timeout-minutes: 20
+features:
+  gh-aw-detection: true
 network:
   allowed:
     - defaults
