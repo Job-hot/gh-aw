@@ -2,7 +2,7 @@
   "counts": {
     "prompt_compression": {
       "caveman": 19,
-      "verbose": 15
+      "verbose": 16
     }
   },
   "runs": [
@@ -240,6 +240,13 @@
     {
       "run_id": "28051618331",
       "timestamp": "2026-06-23T19:32:02.534Z",
+      "assignments": {
+        "prompt_compression": "verbose"
+      }
+    },
+    {
+      "run_id": "28120415978",
+      "timestamp": "2026-06-24T18:24:38.900Z",
       "assignments": {
         "prompt_compression": "verbose"
       }
