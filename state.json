@@ -3,7 +3,7 @@
     "semgrep_output_format": {
       "structured_sections": 12,
       "prose": 14,
-      "bullet_list": 13
+      "bullet_list": 14
     }
   },
   "runs": [
@@ -278,6 +278,13 @@
       "timestamp": "2026-06-26T12:28:55.626Z",
       "assignments": {
         "semgrep_output_format": "prose"
+      }
+    },
+    {
+      "run_id": "28287347387",
+      "timestamp": "2026-06-27T11:06:33.193Z",
+      "assignments": {
+        "semgrep_output_format": "bullet_list"
       }
     }
   ]
