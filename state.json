@@ -2,7 +2,7 @@
   "counts": {
     "detail_level": {
       "brief": 3,
-      "comprehensive": 1
+      "comprehensive": 2
     }
   },
   "runs": [
@@ -37,6 +37,13 @@
     {
       "run_id": "27981102903",
       "timestamp": "2026-06-22T20:16:02.325Z",
+      "assignments": {
+        "detail_level": "comprehensive"
+      }
+    },
+    {
+      "run_id": "28392305244",
+      "timestamp": "2026-06-29T17:59:23.125Z",
       "assignments": {
         "detail_level": "comprehensive"
       }
