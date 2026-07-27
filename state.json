@@ -1,7 +1,7 @@
 {
   "counts": {
     "output_format": {
-      "detailed": 34,
+      "detailed": 35,
       "concise": 35
     }
   },
@@ -485,6 +485,13 @@
     {
       "run_id": "30189835044",
       "timestamp": "2026-07-26T05:43:24.697Z",
+      "assignments": {
+        "output_format": "detailed"
+      }
+    },
+    {
+      "run_id": "30241440673",
+      "timestamp": "2026-07-27T06:02:53.712Z",
       "assignments": {
         "output_format": "detailed"
       }
